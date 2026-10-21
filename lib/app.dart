@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/app_info.dart';
 import 'core/router.dart';
 import 'core/theme/app_theme.dart';
+import 'features/alarm/alarm_ring_listener.dart';
 
 class FitAlarmApp extends ConsumerWidget {
   const FitAlarmApp({super.key});
@@ -16,6 +17,7 @@ class FitAlarmApp extends ConsumerWidget {
       theme: AppTheme.light(),
       themeMode: ThemeMode.light,
       routerConfig: ref.watch(routerProvider),
+      builder: (context, child) => AlarmRingListener(child: child!),
     );
   }
 }

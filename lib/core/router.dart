@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/alarm/alarm_scheduler.dart';
+import '../features/alarm/alarms_screen.dart';
+import '../features/alarm/ring_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/placeholder/coming_soon_screen.dart';
@@ -9,16 +12,26 @@ import '../features/profile/profile_providers.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/shell/app_shell.dart';
 import '../features/splash/splash_screen.dart';
+import '../features/workout/domain/routine.dart';
+import '../features/workout/routine_editor_screen.dart';
+import '../features/workout/workout_done_screen.dart';
+import '../features/workout/workout_screen.dart';
 import 'theme/app_colors.dart';
 
 abstract final class Routes {
   static const splash = '/';
   static const onboarding = '/onboarding';
   static const home = '/home';
-  static const routine = '/routine';
-  static const workout = '/workout';
+  static const myDay = '/my-day';
+  static const alarms = '/alarms';
   static const diet = '/diet';
   static const profile = '/profile';
+
+  // Full-screen flows outside the tab shell.
+  static const ring = '/ring';
+  static const workout = '/workout';
+  static const workoutDone = '/workout-done';
+  static const routineEditor = '/routine-editor';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -41,6 +54,25 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: Routes.splash, builder: (_, _) => const SplashScreen()),
       GoRoute(path: Routes.onboarding, pageBuilder: (_, state) => _fade(state, const OnboardingScreen())),
+      GoRoute(
+        path: Routes.ring,
+        redirect: (_, s) => s.extra is RingInfo ? null : Routes.home,
+        pageBuilder: (_, s) => _fade(s, RingScreen(info: s.extra! as RingInfo)),
+      ),
+      GoRoute(
+        path: Routes.workout,
+        redirect: (_, s) => s.extra is WorkoutArgs ? null : Routes.home,
+        pageBuilder: (_, s) => _fade(s, WorkoutScreen(args: s.extra! as WorkoutArgs)),
+      ),
+      GoRoute(
+        path: Routes.workoutDone,
+        redirect: (_, s) => s.extra is WorkoutDoneArgs ? null : Routes.home,
+        pageBuilder: (_, s) => _fade(s, WorkoutDoneScreen(args: s.extra! as WorkoutDoneArgs)),
+      ),
+      GoRoute(
+        path: Routes.routineEditor,
+        builder: (_, s) => RoutineEditorScreen(routine: s.extra is Routine ? s.extra! as Routine : null),
+      ),
       StatefulShellRoute.indexedStack(
         pageBuilder: (_, state, shell) => _fade(state, AppShell(shell: shell)),
         branches: [
@@ -50,7 +82,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           StatefulShellBranch(
             routes: [
               GoRoute(
-                path: Routes.routine,
+                path: Routes.myDay,
                 builder: (_, _) => const ComingSoonScreen(
                   title: 'My Day',
                   subtitle: 'Build your whole day — alarms, meals, work, workouts — and get reminded at every step.',
@@ -61,17 +93,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
           StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: Routes.workout,
-                builder: (_, _) => const ComingSoonScreen(
-                  title: 'Workout Alarm',
-                  subtitle: 'An alarm that only stops when the camera sees you finish your reps.',
-                  icon: Icons.alarm_on_rounded,
-                  color: AppColors.workout,
-                ),
-              ),
-            ],
+            routes: [GoRoute(path: Routes.alarms, builder: (_, _) => const AlarmsScreen())],
           ),
           StatefulShellBranch(
             routes: [

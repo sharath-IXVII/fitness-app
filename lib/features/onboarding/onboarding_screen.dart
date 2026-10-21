@@ -11,6 +11,7 @@ import '../../core/widgets/aurora_background.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/gradient_button.dart';
 import '../../core/widgets/pressable.dart';
+import '../alarm/alarm_providers.dart';
 import '../profile/domain/health_targets.dart';
 import '../profile/domain/user_profile.dart';
 import '../profile/profile_providers.dart';
@@ -83,6 +84,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Future<void> _finish() async {
     HapticFeedback.heavyImpact();
+    // Create the first alarm before the profile, since saving the profile
+    // navigates away from onboarding.
+    await ref.read(alarmsProvider.notifier).createDefault(_draft);
     await ref.read(profileProvider.notifier).save(_draft);
   }
 

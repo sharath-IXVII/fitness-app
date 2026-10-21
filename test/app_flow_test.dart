@@ -59,11 +59,38 @@ void main() {
       expect(find.text("Today's score"), findsOneWidget);
       expect(prefs.getString('profile.v1'), contains('Sharath Kumar'));
 
+      // A default alarm was created from the wake-up time.
+      expect(prefs.getString('alarms.v1'), contains('"routine":"beginner"'));
+
       // Logging water updates the tile.
       await t.scrollUntilVisible(find.text('+250 ml'), 200, scrollable: find.byType(Scrollable).first);
       await _wait(t, 300);
       await _tap(t, '+250 ml');
       expect(find.textContaining('0.25 /'), findsOneWidget);
+
+      // Alarm tab: alarm card, then the editor sheet.
+      await _tap(t, 'Alarm');
+      expect(find.text('Alarms'), findsOneWidget);
+      expect(find.textContaining('Beginner routine'), findsOneWidget);
+      await t.tap(find.byIcon(Icons.add_rounded).first);
+      await _wait(t);
+      expect(find.text('New alarm'), findsOneWidget);
+      await t.drag(find.text('Routine to stop it'), const Offset(0, -300));
+      await _wait(t, 300);
+      await _tap(t, 'Save alarm');
+      await _wait(t);
+      expect(find.textContaining('Beginner routine'), findsNWidgets(2));
+      expect(find.textContaining('Alarm set for'), findsOneWidget);
+      await _wait(t, 5000); // let the snackbar go
+
+      // Custom routine builder.
+      await t.scrollUntilVisible(find.text('Custom'), 200, scrollable: find.byType(Scrollable).first);
+      await _tap(t, 'Custom');
+      expect(find.text('New routine'), findsOneWidget);
+      await _tap(t, 'Save routine');
+      expect(find.text('New routine'), findsNothing);
+      await t.scrollUntilVisible(find.text('My routine'), 200, scrollable: find.byType(Scrollable).first);
+      expect(find.text('My routine'), findsOneWidget);
     });
   }
 }

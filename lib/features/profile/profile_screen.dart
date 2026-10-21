@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/aurora_background.dart';
 import '../../core/widgets/glass_card.dart';
+import '../alarm/alarm_providers.dart';
 import '../streaks/daily_log_providers.dart';
 import 'domain/user_profile.dart';
 import 'profile_providers.dart';
@@ -112,6 +113,7 @@ class ProfileScreen extends ConsumerWidget {
                 );
                 if (ok == true) {
                   await ref.read(dailyLogsProvider.notifier).clearAll();
+                  await ref.read(alarmsProvider.notifier).clearAll();
                   await ref.read(profileProvider.notifier).clear();
                 }
               },

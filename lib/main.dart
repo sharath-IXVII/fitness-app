@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
 import 'core/storage.dart';
+import 'features/alarm/alarm_scheduler.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,6 +32,7 @@ Future<void> main() async {
     ),
   );
 
+  await AlarmScheduler.init();
   final prefs = await SharedPreferences.getInstance();
   runApp(ProviderScope(overrides: [sharedPrefsProvider.overrideWithValue(prefs)], child: const FitAlarmApp()));
 }

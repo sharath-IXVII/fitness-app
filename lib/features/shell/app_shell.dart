@@ -91,7 +91,7 @@ class _NavItem extends StatelessWidget {
         children: [
           AnimatedContainer(
             duration: const Duration(milliseconds: 350),
-            curve: Curves.easeOutBack,
+            curve: Curves.easeOutCubic,
             width: active ? 52 : 40,
             height: 32,
             decoration: BoxDecoration(

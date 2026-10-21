@@ -8,6 +8,7 @@ import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_logo.dart';
 import '../../core/widgets/aurora_background.dart';
+import '../alarm/alarm_scheduler.dart';
 import '../profile/profile_providers.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -21,10 +22,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(milliseconds: 2200), () {
+    Future.delayed(Duration(milliseconds: AlarmScheduler.ringingNow.isEmpty ? 2200 : 300), () {
       if (!mounted) return;
       final onboarded = ref.read(profileProvider) != null;
-      context.go(onboarded ? Routes.home : Routes.onboarding);
+      final ringing = AlarmScheduler.ringingNow;
+      if (onboarded && ringing.isNotEmpty) {
+        context.go(Routes.ring, extra: ringing.first);
+      } else {
+        context.go(onboarded ? Routes.home : Routes.onboarding);
+      }
     });
   }
 

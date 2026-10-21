@@ -13,11 +13,12 @@ import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/pressable.dart';
 import '../../core/widgets/progress_ring.dart';
 import '../profile/domain/health_targets.dart';
-import '../profile/domain/user_profile.dart';
+import '../alarm/alarm_providers.dart';
 import '../profile/profile_providers.dart';
 import '../streaks/daily_log_providers.dart';
 import '../streaks/domain/daily_log.dart';
 import '../streaks/widgets/consistency_card.dart';
+import '../workout/routine_providers.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -38,7 +39,7 @@ class HomeScreen extends ConsumerWidget {
       const SizedBox(height: 24),
       _ScoreCard(score: score),
       const SizedBox(height: 14),
-      _NextAlarmCard(profile: profile),
+      const _NextAlarmCard(),
       const SizedBox(height: 28),
       const _SectionTitle('Today'),
       const SizedBox(height: 12),
@@ -196,21 +197,26 @@ Color _taskColor(DailyTask t) => switch (t) {
   DailyTask.protein => AppColors.protein,
 };
 
-class _NextAlarmCard extends StatelessWidget {
-  const _NextAlarmCard({required this.profile});
-
-  final UserProfile profile;
+class _NextAlarmCard extends ConsumerWidget {
+  const _NextAlarmCard();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
-    final level = switch (profile.level) {
-      FitnessLevel.beginner => 'Beginner',
-      FitnessLevel.moderate => 'Moderate',
-      FitnessLevel.advanced => 'Advanced',
-    };
+    final next = ref.watch(nextAlarmProvider);
+    final routines = ref.watch(routinesProvider);
+    final String title, subtitle;
+    if (next == null) {
+      title = 'Set a workout alarm';
+      subtitle = 'Wake up and move — the camera checks';
+    } else {
+      final (alarm, at) = next;
+      final day = DateUtils.isSameDay(at, DateTime.now()) ? 'Today' : DateFormat.EEEE().format(at);
+      title = alarm.label;
+      subtitle = '$day · ${routineById(routines, alarm.routineId).name} routine';
+    }
     return Pressable(
-      onTap: () => context.go(Routes.workout),
+      onTap: () => context.go(Routes.alarms),
       child: GlassCard(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
         child: Row(
@@ -222,24 +228,20 @@ class _NextAlarmCard extends StatelessWidget {
                 color: AppColors.primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(Icons.alarm_rounded, color: AppColors.primary),
+              child: Icon(next == null ? Icons.alarm_add_rounded : Icons.alarm_rounded, color: AppColors.primary),
             ),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Wake-up workout', style: text.titleMedium),
-                  Text(
-                    '$level routine · camera verified',
-                    style: text.bodySmall,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                  Text(title, style: text.titleMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+                  Text(subtitle, style: text.bodySmall, maxLines: 1, overflow: TextOverflow.ellipsis),
                 ],
               ),
             ),
-            Text(profile.wakeTime.format(context), style: text.titleLarge?.copyWith(color: AppColors.primary)),
+            if (next != null)
+              Text(next.$1.time.format(context), style: text.titleLarge?.copyWith(color: AppColors.primary)),
             const SizedBox(width: 4),
             const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
           ],

@@ -40,6 +40,11 @@ dependencies:
   google_fonts: ^8.0.0
   shared_preferences: ^2.5.6
   intl: ^0.20.3
+  alarm: ^5.15.0
+  camera: ^0.12.1
+  google_mlkit_pose_detection: ^0.16.1
+  permission_handler: ^13.0.2
+  wakelock_plus: ^1.8.1
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +65,7 @@ flutter:
 
   assets:
     - assets/google_fonts/
+    - assets/sounds/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

@@ -46,10 +46,26 @@ class AlarmsNotifier extends Notifier<List<WorkoutAlarm>> {
   Future<void> toggle(int id, bool enabled) =>
       _set([for (final a in state) a.id == id ? a.copyWith(enabled: enabled) : a]);
 
+  /// Silences only the next ring of a repeating alarm (or undoes that).
+  Future<void> skipNext(int id, {bool skip = true}) => _set([
+    for (final a in state)
+      a.id == id
+          ? (skip
+                ? a.copyWith(skipDate: DateUtils.dateOnly(a.upcomingIgnoringSkip(DateTime.now())))
+                : a.copyWith(clearSkip: true))
+          : a,
+  ]);
+
+  Future<void> duplicate(WorkoutAlarm alarm) => save(alarm.copyWith(id: _nextId, enabled: false, clearSkip: true));
+
+  /// Puts a deleted alarm back (for "Undo").
+  Future<void> restore(WorkoutAlarm alarm) => save(alarm);
+
   /// Called after an alarm has been dealt with: one-off alarms switch off,
   /// repeating ones are re-armed for their next day.
   Future<void> handled(int id) async {
     await AlarmScheduler.stop(id);
+    await AlarmScheduler.stop(AlarmScheduler.snoozeIdFor(id));
     await _set([for (final a in state) a.id == id && !a.repeats ? a.copyWith(enabled: false) : a]);
   }
 

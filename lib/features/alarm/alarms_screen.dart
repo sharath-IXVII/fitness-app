@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
@@ -60,6 +63,33 @@ class _AlarmsScreenState extends ConsumerState<AlarmsScreen> with WidgetsBinding
     );
   }
 
+  void _deleteWithUndo(WorkoutAlarm a) {
+    final notifier = ref.read(alarmsProvider.notifier);
+    notifier.delete(a.id);
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: const Text('Alarm deleted'),
+          action: SnackBarAction(label: 'Undo', onPressed: () => notifier.restore(a)),
+        ),
+      );
+  }
+
+  void _onMenu(WorkoutAlarm a, _CardAction action) {
+    final notifier = ref.read(alarmsProvider.notifier);
+    switch (action) {
+      case _CardAction.skip:
+        notifier.skipNext(a.id);
+      case _CardAction.unskip:
+        notifier.skipNext(a.id, skip: false);
+      case _CardAction.duplicate:
+        notifier.duplicate(a);
+      case _CardAction.delete:
+        _deleteWithUndo(a);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
@@ -94,7 +124,9 @@ class _AlarmsScreenState extends ConsumerState<AlarmsScreen> with WidgetsBinding
             ),
             const SizedBox(height: 4),
             Text('Each alarm keeps ringing until the camera sees your workout.', style: text.bodyMedium),
-            const SizedBox(height: 20),
+            const SizedBox(height: 18),
+            _NextUpBanner(next: ref.watch(nextAlarmProvider)),
+            const SizedBox(height: 16),
             if (!_permissionsOk) ...[_PermissionBanner(onFixed: _checkPermissions), const SizedBox(height: 14)],
             if (alarms.isEmpty)
               _EmptyAlarms(onAdd: () => _edit(ref.read(alarmsProvider.notifier).draft(), isNew: true))
@@ -102,11 +134,26 @@ class _AlarmsScreenState extends ConsumerState<AlarmsScreen> with WidgetsBinding
               for (final (i, a) in alarms.indexed)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
-                  child: _AlarmCard(
-                    alarm: a,
-                    routine: routineById(routines, a.routineId),
-                    onTap: () => _edit(a),
-                    onToggle: (v) => ref.read(alarmsProvider.notifier).toggle(a.id, v),
+                  child: Dismissible(
+                    key: ValueKey('alarm-${a.id}'),
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.only(right: 28),
+                      decoration: BoxDecoration(
+                        color: AppColors.danger.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                      child: const Icon(Icons.delete_outline_rounded, color: AppColors.danger),
+                    ),
+                    onDismissed: (_) => _deleteWithUndo(a),
+                    child: _AlarmCard(
+                      alarm: a,
+                      routine: routineById(routines, a.routineId),
+                      onTap: () => _edit(a),
+                      onToggle: (v) => ref.read(alarmsProvider.notifier).toggle(a.id, v),
+                      onMenu: (action) => _onMenu(a, action),
+                    ),
                   ).animate(delay: (i * 50).ms).fadeIn(duration: 350.ms).slideY(begin: 0.08),
                 ),
             const SizedBox(height: 20),
@@ -137,18 +184,29 @@ class _AlarmsScreenState extends ConsumerState<AlarmsScreen> with WidgetsBinding
   }
 }
 
+enum _CardAction { skip, unskip, duplicate, delete }
+
 class _AlarmCard extends StatelessWidget {
-  const _AlarmCard({required this.alarm, required this.routine, required this.onTap, required this.onToggle});
+  const _AlarmCard({
+    required this.alarm,
+    required this.routine,
+    required this.onTap,
+    required this.onToggle,
+    required this.onMenu,
+  });
 
   final WorkoutAlarm alarm;
   final Routine routine;
   final VoidCallback onTap;
   final ValueChanged<bool> onToggle;
+  final ValueChanged<_CardAction> onMenu;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final on = alarm.enabled;
+    final now = DateTime.now();
+    final skipping = alarm.isSkipping(now);
     final time = alarm.time.format(context);
     final parts = time.split(' ');
     return Pressable(
@@ -156,7 +214,7 @@ class _AlarmCard extends StatelessWidget {
       scale: 0.98,
       child: GlassCard(
         glow: on ? AppColors.primary : null,
-        padding: const EdgeInsets.fromLTRB(20, 16, 14, 16),
+        padding: const EdgeInsets.fromLTRB(20, 14, 4, 14),
         child: Row(
           children: [
             Expanded(
@@ -170,38 +228,149 @@ class _AlarmCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.baseline,
                       textBaseline: TextBaseline.alphabetic,
                       children: [
-                        Text(parts.first, style: text.displaySmall?.copyWith(fontSize: 40)),
+                        Text(parts.first, style: text.displaySmall?.copyWith(fontSize: 42)),
                         if (parts.length > 1) ...[
                           const SizedBox(width: 4),
                           Text(parts[1], style: text.titleMedium?.copyWith(color: AppColors.textSecondary)),
                         ],
+                        if (alarm.hardMode) ...[
+                          const SizedBox(width: 8),
+                          const Icon(Icons.local_fire_department_rounded, size: 18, color: AppColors.danger),
+                        ],
                       ],
                     ),
-                    const SizedBox(height: 2),
                     Text('${alarm.label} · ${alarm.daysLabel}', style: text.bodyMedium),
                     const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.fitness_center_rounded, size: 14, color: AppColors.primary),
-                          const SizedBox(width: 6),
-                          Text('${routine.name} routine', style: text.labelMedium?.copyWith(color: AppColors.primary)),
-                        ],
-                      ),
+                    Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        _Tag(icon: Icons.fitness_center_rounded, label: '${routine.name} routine'),
+                        _Tag(icon: Icons.music_note_rounded, label: alarm.sound.label),
+                        if (skipping && on)
+                          _Tag(
+                            icon: Icons.redo_rounded,
+                            label: 'Skipping ${DateFormat.E().format(alarm.skipDate!)}',
+                            color: AppColors.gold,
+                          ),
+                      ],
                     ),
                   ],
                 ),
               ),
             ),
-            Switch(value: on, onChanged: onToggle, activeTrackColor: AppColors.primary),
+            Column(
+              children: [
+                Switch(value: on, onChanged: onToggle, activeTrackColor: AppColors.primary),
+                PopupMenuButton<_CardAction>(
+                  icon: const Icon(Icons.more_horiz_rounded, color: AppColors.textSecondary),
+                  color: AppColors.surface,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  onSelected: onMenu,
+                  itemBuilder: (_) => [
+                    if (on && alarm.repeats)
+                      skipping
+                          ? const PopupMenuItem(value: _CardAction.unskip, child: Text("Don't skip"))
+                          : const PopupMenuItem(value: _CardAction.skip, child: Text('Skip next')),
+                    const PopupMenuItem(value: _CardAction.duplicate, child: Text('Duplicate')),
+                    const PopupMenuItem(
+                      value: _CardAction.delete,
+                      child: Text('Delete', style: TextStyle(color: AppColors.danger)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _Tag extends StatelessWidget {
+  const _Tag({required this.icon, required this.label, this.color = AppColors.primary});
+
+  final IconData icon;
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+    decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 13, color: color),
+        const SizedBox(width: 5),
+        Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: color)),
+      ],
+    ),
+  );
+}
+
+/// "Next alarm in 7 h 12 min" hero with a live countdown.
+class _NextUpBanner extends StatefulWidget {
+  const _NextUpBanner({required this.next});
+
+  final (WorkoutAlarm, DateTime)? next;
+
+  @override
+  State<_NextUpBanner> createState() => _NextUpBannerState();
+}
+
+class _NextUpBannerState extends State<_NextUpBanner> {
+  late final Timer _tick = Timer.periodic(const Duration(seconds: 30), (_) => setState(() {}));
+
+  @override
+  void dispose() {
+    _tick.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final next = widget.next;
+    final String headline, sub;
+    if (next == null) {
+      headline = 'No alarm set';
+      sub = 'Add one to start your morning streak';
+    } else {
+      final d = next.$2.difference(DateTime.now());
+      headline = d.inDays >= 1 ? 'In ${d.inDays} d ${d.inHours % 24} h' : 'In ${d.inHours} h ${d.inMinutes % 60} min';
+      sub = '${next.$1.label} · ${DateFormat('EEE, h:mm a').format(next.$2)}';
+    }
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: AppColors.brandGradient,
+        borderRadius: BorderRadius.circular(26),
+        boxShadow: AppColors.softShadow(AppColors.primary),
+      ),
+      child: Row(
+        children: [
+          Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.18), shape: BoxShape.circle),
+                child: const Icon(Icons.wb_twilight_rounded, color: Colors.white),
+              )
+              .animate(onPlay: (c) => c.repeat(reverse: true))
+              .moveY(begin: 2, end: -2, duration: 1600.ms, curve: Curves.easeInOut),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('NEXT ALARM', style: text.labelSmall?.copyWith(color: Colors.white70, letterSpacing: 1.4)),
+                Text(headline, style: text.titleLarge?.copyWith(color: Colors.white)),
+                Text(sub, style: text.bodySmall?.copyWith(color: Colors.white.withValues(alpha: 0.85))),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

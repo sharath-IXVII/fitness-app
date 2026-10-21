@@ -73,7 +73,9 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.routineEditor,
         builder: (_, s) => RoutineEditorScreen(routine: s.extra is Routine ? s.extra! as Routine : null),
       ),
-      StatefulShellRoute.indexedStack(
+      StatefulShellRoute(
+        navigatorContainerBuilder: (_, shell, children) =>
+            _FadingBranches(index: shell.currentIndex, children: children),
         pageBuilder: (_, state, shell) => _fade(state, AppShell(shell: shell)),
         branches: [
           StatefulShellBranch(
@@ -129,3 +131,39 @@ CustomTransitionPage<void> _fade(GoRouterState state, Widget child) => CustomTra
     ),
   ),
 );
+
+/// Keeps every tab alive (like an IndexedStack) but cross-fades and lifts
+/// the newly selected one into place.
+class _FadingBranches extends StatelessWidget {
+  const _FadingBranches({required this.index, required this.children});
+
+  final int index;
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        for (var i = 0; i < children.length; i++)
+          IgnorePointer(
+            ignoring: i != index,
+            child: TickerMode(
+              enabled: i == index,
+              child: AnimatedOpacity(
+                opacity: i == index ? 1 : 0,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOut,
+                child: AnimatedSlide(
+                  offset: i == index ? Offset.zero : const Offset(0, 0.02),
+                  duration: const Duration(milliseconds: 380),
+                  curve: Curves.easeOutCubic,
+                  child: ExcludeSemantics(excluding: i != index, child: children[i]),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}

@@ -3,7 +3,6 @@
 An alarm that only stops when you've done your workout. The phone camera counts your reps. The app also includes a full daily-routine planner, verified step counting, diet planning, food scanning and a LeetCode-style streak heatmap.
 
 <p>
-  <img src="docs/screenshots/splash.png" width="200">
   <img src="docs/screenshots/welcome.png" width="200">
   <img src="docs/screenshots/home.png" width="200">
   <img src="docs/screenshots/home_heatmap.png" width="200">
@@ -11,6 +10,7 @@ An alarm that only stops when you've done your workout. The phone camera counts 
 <p>
   <img src="docs/screenshots/alarms.png" width="200">
   <img src="docs/screenshots/ring.png" width="200">
+  <img src="docs/screenshots/alarm_editor.png" width="200">
   <img src="docs/screenshots/workout_done.png" width="200">
 </p>
 
@@ -29,8 +29,9 @@ An alarm that only stops when you've done your workout. The phone camera counts 
 ## Tech
 
 - **Flutter** (Android first), Riverpod for state, go_router for navigation
+- Look: warm cream and caramel palette, Fraunces serif headings with Inter body text, and an animated sunrise on the splash and ring screens
 - flutter_animate for motion, with custom painters for the progress rings, aurora background and heatmap
-- Fonts (Inter + Sora) are bundled in `assets/google_fonts` and work offline
+- Fonts (Inter + Fraunces) are bundled in `assets/google_fonts` and work offline
 - Health maths in `lib/features/profile/domain/health_targets.dart`: Mifflin-St Jeor BMR, TDEE, macros, fiber, water and stride length
 
 ## Project layout
@@ -56,7 +57,8 @@ test/              unit tests (targets, streaks) and full onboarding flow tests
 2. The ring screen only offers **Start workout**. The **Emergency stop** needs a 3-second hold plus a maths question.
 3. During the workout, the ring is silenced and a **watchdog alarm** is set for 90 seconds later. Every rep pushes it back. If the user stops moving or leaves the app, it rings again.
 4. The front camera feeds ML Kit pose detection on the phone itself. `lib/features/workout/domain/rep_counter.dart` turns joint angles into reps, using thresholds with hysteresis, smoothing and a minimum time per rep.
-5. When every exercise is done, the alarm is cleared, today's workout counts toward the streak, and repeating alarms are set for their next day.
+5. Alarm options: 4 ringtones with preview, volume, gradual fade-in, vibration, limited snooze (0–3× of 3/5/10 min), skip next, duplicate, swipe-to-delete with undo, and **Hard mode** (no snooze, no emergency stop).
+6. When every exercise is done, the alarm is cleared, today's workout counts toward the streak, and repeating alarms are set for their next day.
 
 ### Testing on a phone
 - Use a real Android phone. Emulators have no usable camera for pose detection.

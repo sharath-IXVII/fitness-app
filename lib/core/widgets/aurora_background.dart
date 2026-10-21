@@ -9,7 +9,7 @@ class AuroraBackground extends StatefulWidget {
   const AuroraBackground({
     super.key,
     required this.child,
-    this.colors = const [AppColors.primary, AppColors.accent, AppColors.water],
+    this.colors = const [AppColors.accent, AppColors.gold, AppColors.sunrise],
     this.intensity = 0.16,
   });
 

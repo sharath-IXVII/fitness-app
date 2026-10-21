@@ -44,4 +44,40 @@ void main() {
     final a = alarm(5, 45, {1, 3});
     expect(WorkoutAlarm.fromJson(a.toJson()).toJson(), a.toJson());
   });
+
+  test('skip next silences exactly one occurrence', () {
+    final daily = alarm(6, 0, {1, 2, 3, 4, 5, 6, 7});
+    final next = daily.upcomingIgnoringSkip(now);
+    expect(next, DateTime(2026, 10, 22, 6, 0));
+    final skipped = daily.copyWith(skipDate: DateTime(2026, 10, 22));
+    expect(skipped.nextOccurrence(now), DateTime(2026, 10, 23, 6, 0));
+    expect(skipped.isSkipping(now), isTrue);
+    expect(skipped.isSkipping(DateTime(2026, 10, 23)), isFalse);
+    expect(skipped.copyWith(clearSkip: true).nextOccurrence(now), next);
+  });
+
+  test('hard mode removes snoozes', () {
+    final a = alarm(6, 0).copyWith(maxSnoozes: 3);
+    expect(a.allowedSnoozes, 3);
+    expect(a.copyWith(hardMode: true).allowedSnoozes, 0);
+  });
+
+  test('all settings survive json, and old saves get defaults', () {
+    final a = alarm(6, 15, {2}).copyWith(
+      sound: AlarmSound.bells,
+      volume: 0.6,
+      fadeIn: false,
+      vibrate: false,
+      maxSnoozes: 2,
+      snoozeMinutes: 10,
+      hardMode: true,
+      skipDate: DateTime(2026, 10, 27),
+    );
+    expect(WorkoutAlarm.fromJson(a.toJson()).toJson(), a.toJson());
+
+    final legacy = WorkoutAlarm.fromJson({'id': 3, 'time': 360, 'days': [], 'routine': 'beginner'});
+    expect(legacy.sound, AlarmSound.sunrise);
+    expect(legacy.maxSnoozes, 1);
+    expect(legacy.hardMode, isFalse);
+  });
 }

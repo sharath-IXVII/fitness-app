@@ -1,8 +1,11 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
-/// Placeholder brand mark: a gradient squircle with an alarm-bolt glyph.
+/// Placeholder brand mark: a sun rising over a horizon inside a caramel
+/// squircle — the "wake up and move" idea in one glyph.
 class AppLogo extends StatelessWidget {
   const AppLogo({super.key, this.size = 88});
 
@@ -25,16 +28,53 @@ class AppLogo extends StatelessWidget {
           ),
         ],
       ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Icon(Icons.alarm_rounded, size: size * 0.6, color: Colors.white),
-          Padding(
-            padding: EdgeInsets.only(top: size * 0.06),
-            child: Icon(Icons.bolt_rounded, size: size * 0.3, color: AppColors.gold),
-          ),
-        ],
-      ),
+      child: CustomPaint(painter: _SunMarkPainter()),
     );
   }
+}
+
+class _SunMarkPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.width;
+    final horizon = s * 0.64;
+    final center = Offset(s / 2, horizon);
+    final r = s * 0.2;
+    final white = Paint()..color = Colors.white;
+
+    canvas.save();
+    canvas.clipRect(Rect.fromLTRB(0, 0, s, horizon));
+    canvas.drawCircle(center, r, white);
+    canvas.restore();
+
+    final ray = Paint()
+      ..color = AppColors.gold
+      ..strokeWidth = s * 0.055
+      ..strokeCap = StrokeCap.round;
+    for (var i = 0; i < 5; i++) {
+      final a = math.pi + math.pi * (i + 1) / 6;
+      canvas.drawLine(
+        center + Offset(math.cos(a), math.sin(a)) * (r * 1.45),
+        center + Offset(math.cos(a), math.sin(a)) * (r * 1.95),
+        ray,
+      );
+    }
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(s / 2, horizon + s * 0.03), width: s * 0.62, height: s * 0.06),
+        Radius.circular(s * 0.03),
+      ),
+      white,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromCenter(center: Offset(s / 2, horizon + s * 0.13), width: s * 0.36, height: s * 0.05),
+        Radius.circular(s * 0.025),
+      ),
+      white..color = Colors.white.withValues(alpha: 0.6),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_SunMarkPainter oldDelegate) => false;
 }

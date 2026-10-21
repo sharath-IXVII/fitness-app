@@ -44,7 +44,7 @@ class WorkoutDoneScreen extends StatelessWidget {
       canPop: false,
       child: Scaffold(
         body: AuroraBackground(
-          colors: const [AppColors.accent, AppColors.gold, AppColors.water],
+          colors: const [AppColors.accent, AppColors.gold, AppColors.sunrise],
           intensity: 0.14,
           child: Stack(
             children: [

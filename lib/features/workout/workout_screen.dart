@@ -74,8 +74,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     if (ring != null) {
       // Silence the ring while the user works out; the watchdog re-rings if
       // they stop moving or leave this screen.
-      await AlarmScheduler.stop(AlarmScheduler.watchdogId);
-      await AlarmScheduler.stop(ring.alarmId);
+      await AlarmScheduler.silence(ring);
       await AlarmScheduler.armWatchdog(ring);
       _lastWatchdogArm = _clock.elapsed;
     }

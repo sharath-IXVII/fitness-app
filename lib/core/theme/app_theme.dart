@@ -28,20 +28,30 @@ abstract final class AppTheme {
 
     final body = GoogleFonts.interTextTheme(base.textTheme)
         .apply(bodyColor: AppColors.textPrimary, displayColor: AppColors.textPrimary);
-    final display = GoogleFonts.soraTextTheme(body);
+    // Fraunces, a soft editorial serif, gives headings a character no other
+    // fitness app has; Inter keeps body text crisp. Weights are passed to
+    // GoogleFonts directly so the matching bundled file is used.
+    TextStyle serif(TextStyle? b, FontWeight w, [double ls = -0.4]) =>
+        GoogleFonts.fraunces(textStyle: b, fontWeight: w, letterSpacing: ls);
+    TextStyle sans(TextStyle? b, FontWeight w, {Color? color}) =>
+        GoogleFonts.inter(textStyle: b, fontWeight: w, color: color);
 
     return base.copyWith(
       textTheme: body.copyWith(
-        displayLarge: display.displayLarge?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -1.5),
-        displayMedium: display.displayMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -1),
-        displaySmall: display.displaySmall?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.5),
-        headlineLarge: display.headlineLarge?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.5),
-        headlineMedium: display.headlineMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.5),
-        headlineSmall: display.headlineSmall?.copyWith(fontWeight: FontWeight.w600),
-        titleLarge: display.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-        titleMedium: body.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-        bodyMedium: body.bodyMedium?.copyWith(color: AppColors.textSecondary),
-        bodySmall: body.bodySmall?.copyWith(color: AppColors.textMuted),
+        displayLarge: serif(body.displayLarge, FontWeight.w700, -1),
+        displayMedium: serif(body.displayMedium, FontWeight.w700, -0.8),
+        displaySmall: serif(body.displaySmall, FontWeight.w700, -0.6),
+        headlineLarge: serif(body.headlineLarge, FontWeight.w700, -0.5),
+        headlineMedium: serif(body.headlineMedium, FontWeight.w700, -0.5),
+        headlineSmall: serif(body.headlineSmall, FontWeight.w600),
+        titleLarge: serif(body.titleLarge, FontWeight.w600, -0.2),
+        titleMedium: sans(body.titleMedium, FontWeight.w600),
+        titleSmall: sans(body.titleSmall, FontWeight.w600),
+        labelLarge: sans(body.labelLarge, FontWeight.w600),
+        labelMedium: sans(body.labelMedium, FontWeight.w500),
+        labelSmall: sans(body.labelSmall, FontWeight.w500),
+        bodyMedium: sans(body.bodyMedium, FontWeight.w400, color: AppColors.textSecondary),
+        bodySmall: sans(body.bodySmall, FontWeight.w400, color: AppColors.textMuted),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,

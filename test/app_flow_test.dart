@@ -75,16 +75,17 @@ void main() {
       await t.tap(find.byIcon(Icons.add_rounded).first);
       await _wait(t);
       expect(find.text('New alarm'), findsOneWidget);
-      await t.drag(find.text('Routine to stop it'), const Offset(0, -300));
       await _wait(t, 300);
       await _tap(t, 'Save alarm');
       await _wait(t);
-      expect(find.textContaining('Beginner routine'), findsNWidgets(2));
+      expect(RegExp('"id":').allMatches(prefs.getString('alarms.v1')!).length, 2);
       expect(find.textContaining('Alarm set for'), findsOneWidget);
       await _wait(t, 5000); // let the snackbar go
 
       // Custom routine builder.
       await t.scrollUntilVisible(find.text('Custom'), 200, scrollable: find.byType(Scrollable).first);
+      await t.drag(find.byType(Scrollable).hitTestable().first, const Offset(0, -200)); // clear the floating nav bar
+      await _wait(t, 400);
       await _tap(t, 'Custom');
       expect(find.text('New routine'), findsOneWidget);
       await _tap(t, 'Save routine');

@@ -251,7 +251,7 @@ class _AlarmCard extends StatelessWidget {
                           _Tag(
                             icon: Icons.redo_rounded,
                             label: 'Skipping ${DateFormat.E().format(alarm.skipDate!)}',
-                            color: AppColors.gold,
+                            color: AppColors.amber,
                           ),
                       ],
                     ),

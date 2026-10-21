@@ -3,6 +3,7 @@
 An alarm that only stops when you've done your workout. The phone camera counts your reps. The app also includes a full daily-routine planner, verified step counting, diet planning, food scanning and a LeetCode-style streak heatmap.
 
 <p>
+  <img src="docs/screenshots/splash.png" width="200">
   <img src="docs/screenshots/welcome.png" width="200">
   <img src="docs/screenshots/home.png" width="200">
   <img src="docs/screenshots/home_heatmap.png" width="200">
@@ -29,7 +30,8 @@ An alarm that only stops when you've done your workout. The phone camera counts 
 ## Tech
 
 - **Flutter** (Android first), Riverpod for state, go_router for navigation
-- Look: warm cream and caramel palette, Fraunces serif headings with Inter body text, and an animated sunrise on the splash and ring screens
+- Look: "Golden hour" palette (Salmon, Peach, Candy corn, Pale, Linen), Fraunces serif headings with Inter body text
+- Cinematic touches: letterbox splash opening with a title that tracks in, a sunrise scene with a slow camera push-in, lens flares and film grain, and screen transitions that pull focus from blurred to sharp
 - flutter_animate for motion, with custom painters for the progress rings, aurora background and heatmap
 - Fonts (Inter + Fraunces) are bundled in `assets/google_fonts` and work offline
 - Health maths in `lib/features/profile/domain/health_targets.dart`: Mifflin-St Jeor BMR, TDEE, macros, fiber, water and stride length

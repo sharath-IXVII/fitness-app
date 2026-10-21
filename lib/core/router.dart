@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -119,17 +121,36 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
+/// Cinematic "focus pull": the incoming screen starts slightly blurred and
+/// enlarged, then settles sharp as it fades in.
 CustomTransitionPage<void> _fade(GoRouterState state, Widget child) => CustomTransitionPage(
   key: state.pageKey,
   child: child,
-  transitionDuration: const Duration(milliseconds: 600),
-  transitionsBuilder: (_, animation, _, child) => FadeTransition(
-    opacity: CurvedAnimation(parent: animation, curve: Curves.easeOut),
-    child: ScaleTransition(
-      scale: Tween(begin: 1.04, end: 1.0).animate(CurvedAnimation(parent: animation, curve: Curves.easeOutCubic)),
+  transitionDuration: const Duration(milliseconds: 700),
+  reverseTransitionDuration: const Duration(milliseconds: 400),
+  transitionsBuilder: (_, animation, _, child) {
+    final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+    return AnimatedBuilder(
+      animation: curved,
       child: child,
-    ),
-  ),
+      builder: (_, child) {
+        final v = curved.value;
+        final blur = (1 - v) * 10;
+        return Opacity(
+          opacity: Curves.easeOut.transform(animation.value),
+          child: Transform.scale(
+            scale: 1.05 - 0.05 * v,
+            child: blur < 0.05
+                ? child
+                : ImageFiltered(
+                    imageFilter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                    child: child,
+                  ),
+          ),
+        );
+      },
+    );
+  },
 );
 
 /// Keeps every tab alive (like an IndexedStack) but cross-fades and lifts

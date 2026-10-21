@@ -3,19 +3,24 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import 'film_grain.dart';
 
 /// Slowly drifting, heavily blurred colour blobs behind the content.
 class AuroraBackground extends StatefulWidget {
   const AuroraBackground({
     super.key,
     required this.child,
-    this.colors = const [AppColors.accent, AppColors.gold, AppColors.sunrise],
+    this.colors = const [AppColors.salmon, AppColors.peach, AppColors.candyCorn],
     this.intensity = 0.16,
+    this.grain = true,
   });
 
   final Widget child;
   final List<Color> colors;
   final double intensity;
+
+  /// Fine film grain over the whole page for a cinematic texture.
+  final bool grain;
 
   @override
   State<AuroraBackground> createState() => _AuroraBackgroundState();
@@ -43,6 +48,7 @@ class _AuroraBackgroundState extends State<AuroraBackground> with SingleTickerPr
             ),
           ),
         ),
+        if (widget.grain) const Positioned.fill(child: FilmGrain(opacity: 0.035)),
         widget.child,
       ],
     );

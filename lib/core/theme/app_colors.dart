@@ -2,42 +2,54 @@ import 'package:flutter/material.dart';
 
 /// Brand palette. Warm cream canvas, white cards and a deep emerald accent.
 abstract final class AppColors {
-  // "Morning latte": warm cream paper, espresso ink, caramel accents.
-  static const background = Color(0xFFF7F1E8);
-  static const surface = Color(0xFFFFFCF7);
-  static const surfaceHigh = Color(0xFFF0E6D8);
-  static const stroke = Color(0xFFE8DCCB);
-  static const shadow = Color(0xFF5A3A1E);
+  // "Golden hour" — built on the Light & Airy palette:
+  // Salmon F28775 · Peach F7C289 · Candy corn EAE48F · Pale F9D9C0 · Linen F9F6E4.
+  static const linen = Color(0xFFF9F6E4);
+  static const pale = Color(0xFFF9D9C0);
+  static const peach = Color(0xFFF7C289);
+  static const salmon = Color(0xFFF28775);
+  static const candyCorn = Color(0xFFEAE48F);
 
-  static const textPrimary = Color(0xFF2B2118);
-  static const textSecondary = Color(0xFF7A6A58);
-  static const textMuted = Color(0xFFB0A08C);
+  static const background = Color(0xFFFAF6EA);
+  static const surface = Color(0xFFFFFDF7);
+  static const surfaceHigh = Color(0xFFF7EADB);
+  static const stroke = Color(0xFFF0E2CE);
+  static const shadow = Color(0xFF8A4A36);
 
-  static const primary = Color(0xFF8B5A35);
-  static const accent = Color(0xFFC9834B);
-  static const gold = Color(0xFFE2A94F);
-  static const sunrise = Color(0xFFF0B27A);
+  static const textPrimary = Color(0xFF2E2420);
+  static const textSecondary = Color(0xFF7D6A60);
+  static const textMuted = Color(0xFFB5A69A);
+
+  /// Salmon deepened just enough for white text to stay readable on it.
+  static const primary = Color(0xFFDE6450);
+  static const accent = salmon;
+  static const gold = peach;
+  static const sunrise = peach;
+
+  /// Peach is too light for text; use this amber when it has to be read.
+  static const amber = Color(0xFFB9772A);
 
   // One accent per pillar so the user learns the colour language.
   static const workout = primary;
-  static const water = Color(0xFF4F8DB5);
-  static const steps = Color(0xFF6E9B6A);
-  static const diet = Color(0xFF9478B4);
-  static const protein = Color(0xFFC8606E);
+  static const water = Color(0xFF5C9EC7);
+  static const steps = Color(0xFF8FA650);
+  static const diet = Color(0xFFA88BC9);
+  static const protein = Color(0xFFE26D8A);
 
-  static const danger = Color(0xFFC94A3F);
+  static const danger = Color(0xFFC9433A);
 
+  /// Sunset sweep used on primary buttons and the logo.
   static const brandGradient = LinearGradient(
-    colors: [Color(0xFF7E4E2C), Color(0xFFC9834B)],
+    colors: [Color(0xFFE0604B), Color(0xFFF28775), Color(0xFFF5A77A)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  /// Heatmap intensity levels, from "no activity" (cream) to "perfect day" (espresso).
-  static const heat = [Color(0xFFEFE5D7), Color(0xFFF2D7B5), Color(0xFFE3B47E), Color(0xFFC4844C), Color(0xFF7E4E2C)];
+  /// Heatmap levels: linen → pale → peach → salmon → deep coral.
+  static const heat = [Color(0xFFF1EADA), pale, peach, salmon, Color(0xFFD9584A)];
 
   static List<BoxShadow> softShadow([Color tint = shadow]) => [
-    BoxShadow(color: tint.withValues(alpha: 0.08), blurRadius: 28, offset: const Offset(0, 10), spreadRadius: -6),
+    BoxShadow(color: tint.withValues(alpha: 0.08), blurRadius: 30, offset: const Offset(0, 12), spreadRadius: -8),
     BoxShadow(color: tint.withValues(alpha: 0.05), blurRadius: 4, offset: const Offset(0, 1)),
   ];
 }

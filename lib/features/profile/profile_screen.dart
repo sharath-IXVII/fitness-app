@@ -213,6 +213,7 @@ Future<void> _clearLocal(WidgetRef ref) async {
   await ref.read(alarmsProvider.notifier).clearAll();
   await ref.read(myDayProvider.notifier).clear();
   await ref.read(mealLogProvider.notifier).clearAll();
+  await ref.read(myFoodsProvider.notifier).clearAll();
   await ref.read(weightLogProvider.notifier).clearAll();
   await ref.read(weightGoalProvider.notifier).set(null);
   await ref.read(profileProvider.notifier).clear();

@@ -103,5 +103,31 @@ void main() {
     await t.tap(find.text('Protein').first);
     await _wait(t);
     expect(find.text('What is protein?'), findsOneWidget);
+    await t.tapAt(const Offset(200, 40)); // close the explainer
+    await _wait(t);
+
+    // A custom food is saved to My foods and can be re-added from there.
+    final add = find.text('Add').hitTestable();
+    await t.scrollUntilVisible(add.first, 200, scrollable: find.byType(Scrollable).hitTestable().first);
+    await t.tap(add.first);
+    await _wait(t);
+    final custom = find.text('Add a custom food');
+    await t.scrollUntilVisible(custom, 300, scrollable: find.byType(Scrollable).hitTestable().last);
+    await t.tap(custom);
+    await _wait(t);
+    final fields = find.byType(TextField);
+    await t.enterText(fields.at(0), 'Protein bar');
+    await t.enterText(fields.at(2), '210');
+    await t.enterText(fields.at(3), '20');
+    await t.pump();
+    await t.tap(find.textContaining('Add to ').last);
+    await _wait(t);
+    expect(prefs.getString('myfoods.v1'), contains('Protein bar'));
+
+    await t.tap(find.text('Add').hitTestable().first);
+    await _wait(t);
+    await t.tap(find.text('My foods'));
+    await _wait(t, 300);
+    expect(find.text('Protein bar'), findsWidgets);
   });
 }

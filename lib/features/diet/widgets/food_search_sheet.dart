@@ -23,7 +23,7 @@ class FoodSearchSheet extends ConsumerStatefulWidget {
   ConsumerState<FoodSearchSheet> createState() => _FoodSearchSheetState();
 }
 
-enum _Filter { all, recent, protein, snack }
+enum _Filter { all, mine, recent, protein, snack }
 
 class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
   late MealType _meal = widget.meal;
@@ -42,15 +42,39 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
   List<Food> _results() {
     final diet = ref.read(profileProvider)?.diet;
     final q = _query.text.trim().toLowerCase();
+    final mine = ref.read(myFoodsProvider);
+    final byId = ref.read(allFoodsByIdProvider);
+    // Saved foods are the user's own, so they skip the diet filter.
+    bool fits(Food f) => f.tags.contains('mine') || diet == null || f.cls.fits(diet);
     Iterable<Food> list = switch (_filter) {
-      _Filter.recent => [for (final id in ref.read(recentFoodsProvider)) ?foodsById[id]],
-      _Filter.protein => foods.where((f) => f.highProtein),
+      _Filter.mine => mine,
+      _Filter.recent => [for (final id in ref.read(recentFoodsProvider)) ?byId[id]],
+      _Filter.protein => [...mine, ...foods].where((f) => f.highProtein),
       _Filter.snack => foods.where((f) => f.tags.contains('snack')),
-      _Filter.all => foods,
+      _Filter.all => [...mine, ...foods],
     };
-    if (diet != null) list = list.where((f) => f.cls.fits(diet));
+    list = list.where(fits);
     if (q.isNotEmpty) list = list.where((f) => f.name.toLowerCase().contains(q));
     return list.toList();
+  }
+
+  Future<void> _forget(Food f) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text('Remove ${f.name}?'),
+        content: const Text('It will no longer appear in My foods. Meals you already logged stay as they are.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('Remove')),
+        ],
+      ),
+    );
+    if (ok == true) {
+      await ref.read(myFoodsProvider.notifier).remove(f.id);
+      if (mounted) setState(() {});
+    }
   }
 
   Future<void> _add(MealEntry e) async {
@@ -122,6 +146,7 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
             children: [
               for (final (f, label) in [
                 (_Filter.all, 'All'),
+                if (ref.watch(myFoodsProvider).isNotEmpty) (_Filter.mine, 'My foods'),
                 (_Filter.recent, 'Recent'),
                 (_Filter.protein, 'High protein'),
                 (_Filter.snack, 'Snacks'),
@@ -146,17 +171,25 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
                     '${f.serving} · ${f.macros.kcal.round()} kcal · ${f.macros.protein.round()} g protein',
                     style: text.bodySmall,
                   ),
+                  leading: f.tags.contains('mine')
+                      ? const Icon(Icons.bookmark_rounded, color: AppColors.accent, size: 20)
+                      : null,
                   trailing: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primary),
                   onTap: () => setState(() {
                     _picked = f;
                     _servings = 1;
                   }),
+                  onLongPress: f.tags.contains('mine') ? () => _forget(f) : null,
                 ),
               if (results.isEmpty)
                 Padding(
                   padding: const EdgeInsets.all(20),
                   child: Text(
-                    _filter == _Filter.recent ? 'Foods you log will show up here.' : 'No foods match.',
+                    switch (_filter) {
+                      _Filter.recent => 'Foods you log will show up here.',
+                      _Filter.mine => 'Foods you save will show up here.',
+                      _ => 'No foods match. Add it as a custom food below.',
+                    },
                     style: text.bodyMedium,
                     textAlign: TextAlign.center,
                   ),
@@ -286,18 +319,20 @@ class MacroSummary extends StatelessWidget {
   }
 }
 
-class _CustomFood extends StatefulWidget {
+class _CustomFood extends ConsumerStatefulWidget {
   const _CustomFood({super.key, required this.meal, required this.onAdd});
 
   final MealType meal;
   final Future<void> Function(MealEntry) onAdd;
 
   @override
-  State<_CustomFood> createState() => _CustomFoodState();
+  ConsumerState<_CustomFood> createState() => _CustomFoodState();
 }
 
-class _CustomFoodState extends State<_CustomFood> {
+class _CustomFoodState extends ConsumerState<_CustomFood> {
   final _name = TextEditingController();
+  final _serving = TextEditingController(text: '1 serving');
+  bool _remember = true;
   final _fields = {
     for (final k in ['kcal', 'protein', 'carbs', 'fat', 'fiber']) k: TextEditingController(),
   };
@@ -305,6 +340,7 @@ class _CustomFoodState extends State<_CustomFood> {
   @override
   void dispose() {
     _name.dispose();
+    _serving.dispose();
     for (final c in _fields.values) {
       c.dispose();
     }
@@ -314,6 +350,41 @@ class _CustomFoodState extends State<_CustomFood> {
   double _v(String k) => double.tryParse(_fields[k]!.text.trim()) ?? 0;
 
   bool get _valid => _name.text.trim().isNotEmpty && _v('kcal') > 0 && _v('kcal') < 5000;
+
+  Future<void> _submit() async {
+    final macros = Macros(
+      kcal: _v('kcal'),
+      protein: _v('protein'),
+      carbs: _v('carbs'),
+      fat: _v('fat'),
+      fiber: _v('fiber'),
+    );
+    final serving = _serving.text.trim().isEmpty ? '1 serving' : _serving.text.trim();
+    String? foodId;
+    if (_remember) {
+      final food = Food(
+        MyFoodsNotifier.newId(),
+        _name.text.trim(),
+        serving,
+        FoodClass.veg,
+        macros,
+        tags: const {'mine'},
+      );
+      await ref.read(myFoodsProvider.notifier).add(food);
+      foodId = food.id;
+    }
+    await widget.onAdd(
+      MealEntry(
+        id: MealLogNotifier.newId(),
+        meal: widget.meal,
+        name: _name.text.trim(),
+        servings: 1,
+        perServing: macros,
+        foodId: foodId,
+        serving: serving,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -337,6 +408,11 @@ class _CustomFoodState extends State<_CustomFood> {
             decoration: const InputDecoration(labelText: 'Name', hintText: 'e.g. Protein bar'),
           ),
           const SizedBox(height: 12),
+          TextField(
+            controller: _serving,
+            decoration: const InputDecoration(labelText: 'Serving', hintText: 'e.g. 1 bar (40 g)'),
+          ),
+          const SizedBox(height: 12),
           Row(children: [num('kcal', 'Calories', 'kcal'), const SizedBox(width: 10), num('protein', 'Protein', 'g')]),
           const SizedBox(height: 12),
           Row(
@@ -348,27 +424,19 @@ class _CustomFoodState extends State<_CustomFood> {
               num('fiber', 'Fiber', 'g'),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 8),
+          SettingToggle(
+            icon: Icons.bookmark_outline_rounded,
+            title: 'Save to My foods',
+            subtitle: 'Add it again later in one tap',
+            value: _remember,
+            onChanged: (v) => setState(() => _remember = v),
+          ),
+          const SizedBox(height: 12),
           GradientButton(
             label: 'Add to ${widget.meal.label.toLowerCase()}',
             icon: Icons.add_rounded,
-            onPressed: _valid
-                ? () => widget.onAdd(
-                    MealEntry(
-                      id: MealLogNotifier.newId(),
-                      meal: widget.meal,
-                      name: _name.text.trim(),
-                      servings: 1,
-                      perServing: Macros(
-                        kcal: _v('kcal'),
-                        protein: _v('protein'),
-                        carbs: _v('carbs'),
-                        fat: _v('fat'),
-                        fiber: _v('fiber'),
-                      ),
-                    ),
-                  )
-                : null,
+            onPressed: _valid ? _submit : null,
           ),
         ],
       ),

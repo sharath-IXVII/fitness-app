@@ -26,6 +26,7 @@ class MealEntry {
     this.foodId,
     this.serving,
     this.source = 'manual',
+    this.photo,
   });
 
   final String id;
@@ -39,6 +40,9 @@ class MealEntry {
   /// "manual", "plan" or "scan".
   final String source;
 
+  /// File name of a meal photo kept on this phone (see PhotoStore).
+  final String? photo;
+
   Macros get macros => perServing.scale(servings);
 
   MealEntry copyWith({double? servings, MealType? meal}) => MealEntry(
@@ -50,6 +54,7 @@ class MealEntry {
     foodId: foodId,
     serving: serving,
     source: source,
+    photo: photo,
   );
 
   factory MealEntry.ofFood(String id, MealType meal, Food f, double servings, {String source = 'manual'}) => MealEntry(
@@ -72,6 +77,7 @@ class MealEntry {
     'food': ?foodId,
     'serving': ?serving,
     'source': source,
+    'photo': ?photo,
   };
 
   factory MealEntry.fromJson(Map<String, dynamic> j) => MealEntry(
@@ -83,6 +89,7 @@ class MealEntry {
     foodId: j['food'] as String?,
     serving: j['serving'] as String?,
     source: j['source'] as String? ?? 'manual',
+    photo: j['photo'] as String?,
   );
 }
 

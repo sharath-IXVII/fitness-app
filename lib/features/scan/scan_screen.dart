@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../core/photo_store.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/form_controls.dart';
 import '../../core/widgets/glass_card.dart';
@@ -52,6 +55,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
   ScanResult? _result;
   List<ScannedItem> _items = [];
   String? _error;
+  bool _remember = false;
 
   @override
   void dispose() {
@@ -101,6 +105,26 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
 
   Future<void> _log() async {
     final base = MealLogNotifier.newId();
+    // The photo stays on this phone, attached to the first item of the meal.
+    // It's written in the background so logging never waits on storage.
+    final photo = _image != null && PhotoStore.supported ? '$base.jpg' : null;
+    if (photo != null) unawaited(PhotoStore.save(photo, _image!.bytes));
+    if (_remember) {
+      for (final item in _items) {
+        await ref
+            .read(myFoodsProvider.notifier)
+            .add(
+              Food(
+                MyFoodsNotifier.newId(),
+                item.name,
+                item.portion.isEmpty ? '1 portion' : item.portion,
+                item.cls,
+                item.macros,
+                tags: const {'mine'},
+              ),
+            );
+      }
+    }
     await ref.read(mealLogProvider.notifier).addAll([
       for (final (i, item) in _items.indexed)
         MealEntry(
@@ -111,6 +135,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
           perServing: item.macros,
           serving: item.portion.isEmpty ? null : item.portion,
           source: 'scan',
+          photo: i == 0 ? photo : null,
         ),
     ]);
     HapticFeedback.mediumImpact();
@@ -185,7 +210,8 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
               Text('Photograph your plate', style: text.titleLarge),
               const SizedBox(height: 6),
               Text(
-                'Shoot from above in good light with the whole plate in view. You can adjust every value before saving.',
+                'Shoot from above in good light with the whole plate in view. You can adjust every value before '
+                'saving. Photos are kept only on this phone.',
                 style: text.bodyMedium,
                 textAlign: TextAlign.center,
               ),
@@ -296,7 +322,17 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
                 icon: Icons.info_outline_rounded,
                 text: 'Estimates from a photo. Hidden oil, sugar and portion depth can change the real numbers.',
               ),
-              if (_items.isNotEmpty) FormSection(title: 'Add to', child: _mealPills()),
+              if (_items.isNotEmpty) ...[
+                FormSection(title: 'Add to', child: _mealPills()),
+                const SizedBox(height: 8),
+                SettingToggle(
+                  icon: Icons.bookmark_outline_rounded,
+                  title: 'Save to My foods',
+                  subtitle: 'Log these again later without scanning',
+                  value: _remember,
+                  onChanged: (v) => setState(() => _remember = v),
+                ),
+              ],
             ],
           ),
         ),

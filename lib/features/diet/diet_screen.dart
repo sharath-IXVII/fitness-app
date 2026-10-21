@@ -23,6 +23,7 @@ import 'domain/meal_plan.dart';
 import 'domain/weight_goal.dart';
 import 'widgets/food_search_sheet.dart';
 import 'widgets/goal_sheets.dart';
+import 'widgets/meal_photo.dart';
 import 'widgets/nutrient_explainer.dart';
 import 'widgets/sheet_frame.dart';
 
@@ -334,9 +335,13 @@ class _MealSection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                     onTap: () => SheetFrame.show<void>(context, EntryEditSheet(entry: e)),
                     child: Padding(
-                      padding: const EdgeInsets.fromLTRB(50, 8, 8, 8),
+                      padding: EdgeInsets.fromLTRB(e.photo == null ? 50 : 0, 8, 8, 8),
                       child: Row(
                         children: [
+                          if (e.photo != null) ...[
+                            SizedBox(width: 38, child: MealPhoto(name: e.photo!, size: 38)),
+                            const SizedBox(width: 12),
+                          ],
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

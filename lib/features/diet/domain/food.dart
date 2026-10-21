@@ -63,3 +63,22 @@ class Food {
 
   bool get highProtein => macros.protein >= 12 || macros.protein / (macros.kcal / 100) >= 8;
 }
+
+extension FoodJson on Food {
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'name': name,
+    'serving': serving,
+    'cls': cls.name,
+    'macros': macros.toJson(),
+  };
+
+  static Food fromJson(Map<String, dynamic> j) => Food(
+    j['id'] as String,
+    j['name'] as String,
+    j['serving'] as String? ?? '1 serving',
+    FoodClass.values.asNameMap()[j['cls']] ?? FoodClass.veg,
+    Macros.fromJson(j['macros'] as Map<String, dynamic>),
+    tags: const {'mine'},
+  );
+}

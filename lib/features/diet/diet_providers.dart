@@ -4,12 +4,14 @@ import 'dart:math' as math;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/photo_store.dart';
 import '../../core/storage.dart';
 import '../profile/domain/user_profile.dart';
 import '../profile/profile_providers.dart';
 import '../streaks/daily_log_providers.dart';
 import '../streaks/domain/daily_log.dart';
 import 'domain/food.dart';
+import 'domain/food_db.dart';
 import 'domain/meal_log.dart';
 import 'domain/meal_plan.dart';
 import 'domain/weight_goal.dart';
@@ -59,7 +61,11 @@ class MealLogNotifier extends Notifier<List<MealEntry>> {
 
   Future<void> replace(MealEntry e) => _save([for (final x in state) x.id == e.id ? e : x]);
 
-  Future<void> remove(String id) => _save([...state.where((e) => e.id != id)]);
+  Future<void> remove(String id) async {
+    final photo = state.where((e) => e.id == id).firstOrNull?.photo;
+    await _save([...state.where((e) => e.id != id)]);
+    if (photo != null) await PhotoStore.delete(photo);
+  }
 
   Future<void> clearAll() async {
     final prefs = ref.read(sharedPrefsProvider);
@@ -67,10 +73,48 @@ class MealLogNotifier extends Notifier<List<MealEntry>> {
       await prefs.remove(k);
     }
     state = const [];
+    await PhotoStore.clearAll();
   }
 }
 
 final mealLogProvider = NotifierProvider<MealLogNotifier, List<MealEntry>>(MealLogNotifier.new);
+
+/// Foods the user saved for reuse: custom foods and scanned items. Shown
+/// first in search, whatever the diet filter.
+class MyFoodsNotifier extends Notifier<List<Food>> {
+  static const _key = 'myfoods.v1';
+
+  @override
+  List<Food> build() {
+    final raw = ref.read(sharedPrefsProvider).getString(_key);
+    if (raw == null) return const [];
+    return [for (final j in jsonDecode(raw) as List) FoodJson.fromJson(j as Map<String, dynamic>)];
+  }
+
+  static String newId() => 'my-${DateTime.now().microsecondsSinceEpoch.toRadixString(36)}';
+
+  Future<void> _save(List<Food> next) async {
+    state = next;
+    await ref.read(sharedPrefsProvider).setString(_key, jsonEncode([for (final f in next) f.toJson()]));
+  }
+
+  /// Adds [food], replacing any saved food with the same name.
+  Future<void> add(Food food) {
+    final name = food.name.toLowerCase();
+    return _save([food, ...state.where((f) => f.name.toLowerCase() != name)]);
+  }
+
+  Future<void> remove(String id) => _save([...state.where((f) => f.id != id)]);
+
+  Future<void> clearAll() => _save(const []);
+}
+
+final myFoodsProvider = NotifierProvider<MyFoodsNotifier, List<Food>>(MyFoodsNotifier.new);
+
+/// Built-in and saved foods by id.
+final allFoodsByIdProvider = Provider<Map<String, Food>>(
+  (ref) => {...foodsById, for (final f in ref.watch(myFoodsProvider)) f.id: f},
+);
 
 final mealTotalsProvider = Provider<Macros>((ref) => totalOf(ref.watch(mealLogProvider)));
 

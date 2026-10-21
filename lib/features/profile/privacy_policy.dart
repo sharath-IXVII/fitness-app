@@ -16,8 +16,9 @@ const privacySections = <(String, String)>[
   (
     'Data stored on your phone',
     'Your profile (age, height, weight, goal, diet), daily logs (workouts, water, steps, meals, protein), alarms, '
-        'routines, your My Day plan, weigh-ins and weight goal are stored only on your device. Uninstalling the app '
-        'or using "Reset data on this device" removes them.',
+        'routines, your My Day plan, weigh-ins, weight goal, saved foods and meal photos are stored only on your '
+        'device. We don\'t keep a copy on any server. Uninstalling the app or using "Reset data on this device" '
+        'removes them.',
   ),
   (
     'Camera during workouts',
@@ -26,9 +27,10 @@ const privacySections = <(String, String)>[
   ),
   (
     'Food photos',
-    'When you scan a meal, the photo and any note you type are sent over an encrypted connection to our server '
-        '(Google Cloud Functions) and to Anthropic, which provides the AI model that estimates nutrition. We don\'t '
-        'store the photo. Anthropic processes it under its commercial terms and does not use it to train its models. '
+    'When you scan a meal, the photo and any note you type are sent once, over an encrypted connection, to our '
+        'server (Google Cloud Functions) and to Anthropic, which provides the AI model that estimates nutrition. '
+        'Only the estimate comes back. We don\'t store the photo: it is kept only on your phone, next to the meal '
+        'you logged. Anthropic processes it under its commercial terms and does not use it to train its models. '
         'We keep a daily count of scans per account to limit use.',
   ),
   (

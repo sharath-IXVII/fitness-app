@@ -6,6 +6,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/widgets/page_background.dart';
 import '../../core/widgets/glass_card.dart';
 import '../alarm/alarm_providers.dart';
+import '../auth/auth_providers.dart';
+import '../auth/domain/app_user.dart';
 import '../streaks/daily_log_providers.dart';
 import 'domain/user_profile.dart';
 import 'profile_providers.dart';
@@ -32,6 +34,7 @@ class ProfileScreen extends ConsumerWidget {
     if (p == null || t == null) return const SizedBox.shrink();
     final text = Theme.of(context).textTheme;
     final streak = ref.watch(streakProvider);
+    final account = ref.watch(authProvider);
 
     Widget row(String label, String value) => Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -89,6 +92,31 @@ class ProfileScreen extends ConsumerWidget {
                   row('Fat', '${t.fatG} g'),
                   row('Fiber', '${t.fiberG} g'),
                   row('Water', '${(t.waterMl / 1000).toStringAsFixed(1)} L'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 14),
+            GlassCard(
+              child: Row(
+                children: [
+                  Icon(
+                    account?.method == SignInMethod.google ? Icons.mail_outline_rounded : Icons.phone_iphone_rounded,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Signed in with ${account?.method == SignInMethod.google ? 'Google' : 'phone'}',
+                          style: text.bodySmall,
+                        ),
+                        Text(account?.handle ?? '—', style: text.titleSmall),
+                      ],
+                    ),
+                  ),
+                  TextButton(onPressed: () => ref.read(authProvider.notifier).signOut(), child: const Text('Sign out')),
                 ],
               ),
             ),

@@ -47,3 +47,9 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+// Real phone/Google sign-in turns on once Firebase's google-services.json is
+// placed in android/app/. Without it the app builds and runs in demo mode.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}

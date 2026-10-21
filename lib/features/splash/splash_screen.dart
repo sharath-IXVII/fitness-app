@@ -8,6 +8,7 @@ import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_logo.dart';
 import '../alarm/alarm_scheduler.dart';
+import '../auth/auth_providers.dart';
 import '../profile/profile_providers.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -23,12 +24,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     super.initState();
     Future.delayed(Duration(milliseconds: AlarmScheduler.ringingNow.isEmpty ? 1400 : 300), () {
       if (!mounted) return;
+      final signedIn = ref.read(authProvider) != null;
       final onboarded = ref.read(profileProvider) != null;
       final ringing = AlarmScheduler.ringingNow;
       if (onboarded && ringing.isNotEmpty) {
         context.go(Routes.ring, extra: ringing.first);
       } else {
-        context.go(onboarded ? Routes.home : Routes.onboarding);
+        context.go(!signedIn ? Routes.auth : (onboarded ? Routes.home : Routes.onboarding));
       }
     });
   }

@@ -12,6 +12,7 @@ import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/gradient_button.dart';
 import '../../core/widgets/pressable.dart';
 import '../alarm/alarm_providers.dart';
+import '../auth/auth_providers.dart';
 import '../profile/domain/health_targets.dart';
 import '../profile/domain/user_profile.dart';
 import '../profile/profile_providers.dart';
@@ -27,7 +28,8 @@ class OnboardingScreen extends ConsumerStatefulWidget {
 
 class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   final _pages = PageController();
-  final _nameController = TextEditingController();
+  // Pre-filled from the Google account when there is one.
+  late final _nameController = TextEditingController(text: ref.read(authProvider)?.name ?? '');
   int _page = 0;
 
   // Draft answers.

@@ -5,6 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../features/alarm/alarm_scheduler.dart';
 import '../features/alarm/alarms_screen.dart';
 import '../features/alarm/ring_screen.dart';
+import '../features/auth/auth_providers.dart';
+import '../features/auth/auth_screen.dart';
+import '../features/auth/otp_screen.dart';
+import '../features/auth/phone_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/placeholder/coming_soon_screen.dart';
@@ -20,6 +24,9 @@ import 'theme/app_colors.dart';
 
 abstract final class Routes {
   static const splash = '/';
+  static const auth = '/auth';
+  static const authPhone = '/auth/phone';
+  static const authOtp = '/auth/otp';
   static const onboarding = '/onboarding';
   static const home = '/home';
   static const myDay = '/my-day';
@@ -35,9 +42,10 @@ abstract final class Routes {
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
-  // Re-run redirects whenever the profile is created or cleared.
+  // Re-run redirects whenever the user signs in/out or the profile changes.
   final refresh = ValueNotifier(0);
   ref.listen(profileProvider, (_, _) => refresh.value++);
+  ref.listen(authProvider, (_, _) => refresh.value++);
   ref.onDispose(refresh.dispose);
 
   return GoRouter(
@@ -46,13 +54,31 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final loc = state.matchedLocation;
       if (loc == Routes.splash) return null;
+      // Signed out → auth flow. Signed in → onboarding until a profile exists.
+      final inAuth = loc.startsWith(Routes.auth);
+      if (ref.read(authProvider) == null) return inAuth ? null : Routes.auth;
       final onboarded = ref.read(profileProvider) != null;
-      if (!onboarded && loc != Routes.onboarding) return Routes.onboarding;
-      if (onboarded && loc == Routes.onboarding) return Routes.home;
+      if (!onboarded) return loc == Routes.onboarding ? null : Routes.onboarding;
+      if (inAuth || loc == Routes.onboarding) return Routes.home;
       return null;
     },
     routes: [
       GoRoute(path: Routes.splash, builder: (_, _) => const SplashScreen()),
+      GoRoute(
+        path: Routes.auth,
+        pageBuilder: (_, s) => _fade(s, const AuthScreen()),
+        routes: [
+          GoRoute(
+            path: 'phone',
+            builder: (_, s) => PhoneScreen(signUp: s.extra as bool? ?? true),
+          ),
+          GoRoute(
+            path: 'otp',
+            redirect: (_, s) => s.extra is OtpArgs ? null : Routes.authPhone,
+            builder: (_, s) => OtpScreen(args: s.extra! as OtpArgs),
+          ),
+        ],
+      ),
       GoRoute(path: Routes.onboarding, pageBuilder: (_, state) => _fade(state, const OnboardingScreen())),
       GoRoute(
         path: Routes.ring,

@@ -3,15 +3,15 @@
 An alarm that only stops when you've done your workout. The phone camera counts your reps. The app also includes a full daily-routine planner, verified step counting, diet planning, food scanning and a LeetCode-style streak heatmap.
 
 <p>
-  <img src="docs/screenshots/welcome.png" width="200">
+  <img src="docs/screenshots/auth.png" width="200">
+  <img src="docs/screenshots/otp.png" width="200">
   <img src="docs/screenshots/home.png" width="200">
-  <img src="docs/screenshots/home_heatmap.png" width="200">
+  <img src="docs/screenshots/home_scrolled.png" width="200">
 </p>
 <p>
   <img src="docs/screenshots/alarms.png" width="200">
   <img src="docs/screenshots/ring.png" width="200">
-  <img src="docs/screenshots/alarm_editor.png" width="200">
-  <img src="docs/screenshots/workout_done.png" width="200">
+  <img src="docs/screenshots/profile.png" width="200">
 </p>
 
 ## Roadmap
@@ -29,7 +29,7 @@ An alarm that only stops when you've done your workout. The phone camera counts 
 ## Tech
 
 - **Flutter** (Android first), Riverpod for state, go_router for navigation
-- Look: very light neutral canvas, white cards and one indigo accent, with Inter throughout
+- Look: light cream, light brown and white only, with Inter throughout
 - Motion is kept quiet: short fades, small rises, press feedback and progress rings that animate to their value
 - flutter_animate for motion, with custom painters for the progress rings, aurora background and heatmap
 - Fonts (Inter) are bundled in `assets/google_fonts` and work offline
@@ -65,6 +65,18 @@ test/              unit tests (targets, streaks) and full onboarding flow tests
 - Use a real Android phone. Emulators have no usable camera for pose detection.
 - On first launch, allow notifications, alarms & reminders, camera, and "ignore battery optimisation".
 - Some brands (Xiaomi, Oppo, Vivo, Samsung…) also need **Autostart** enabled for the app in system settings, or alarms may not fire while the app is closed.
+
+## Sign-in (phone OTP + Google)
+
+Signed-out users see **Sign up / Log in** with *Continue with phone* (6-digit SMS code) or *Continue with Google*.
+
+Until Firebase is connected the app runs in **demo mode**: a banner says so, any phone number works with code `123456`, and Google returns a sample account. To turn on real sign-in:
+
+1. Create a project at [console.firebase.google.com](https://console.firebase.google.com) and add an **Android app** with package name `com.fitalarm.fitalarm`.
+2. Add your debug and release **SHA-1 and SHA-256** fingerprints (`cd android && ./gradlew signingReport`). Phone and Google sign-in both need them.
+3. Download **google-services.json** into `android/app/`. The build picks it up automatically.
+4. In *Authentication → Sign-in method*, enable **Phone** and **Google**.
+5. For phone sign-in on real devices, also enable the **Play Integrity API** for the project in Google Cloud.
 
 ## Run it
 

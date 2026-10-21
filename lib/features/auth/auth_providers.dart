@@ -1,0 +1,31 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'auth_service.dart';
+import 'domain/app_user.dart';
+
+/// Overridden in `main()` with the Firebase or demo implementation.
+final authServiceProvider = Provider<AuthService>((ref) => throw UnimplementedError('authServiceProvider'));
+
+class AuthNotifier extends Notifier<AppUser?> {
+  StreamSubscription<AppUser?>? _sub;
+
+  @override
+  AppUser? build() {
+    final service = ref.watch(authServiceProvider);
+    _sub = service.changes.listen((u) => state = u);
+    ref.onDispose(() => _sub?.cancel());
+    return service.currentUser;
+  }
+
+  /// Applies a sign-in result immediately rather than waiting for the stream.
+  void signedIn(AppUser user) => state = user;
+
+  Future<void> signOut() async {
+    await ref.read(authServiceProvider).signOut();
+    state = null;
+  }
+}
+
+final authProvider = NotifierProvider<AuthNotifier, AppUser?>(AuthNotifier.new);

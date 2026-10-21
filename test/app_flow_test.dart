@@ -1,5 +1,7 @@
 import 'package:fitalarm/app.dart';
 import 'package:fitalarm/core/storage.dart';
+import 'package:fitalarm/features/auth/auth_providers.dart';
+import 'package:fitalarm/features/auth/auth_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,6 +21,14 @@ Future<void> _tap(WidgetTester t, String text) async {
   await _wait(t);
 }
 
+Widget _app(SharedPreferences prefs) => ProviderScope(
+  overrides: [
+    sharedPrefsProvider.overrideWithValue(prefs),
+    authServiceProvider.overrideWithValue(DemoAuthService(prefs)),
+  ],
+  child: const FitAlarmApp(),
+);
+
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
@@ -30,10 +40,19 @@ void main() {
 
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
-      await t.pumpWidget(
-        ProviderScope(overrides: [sharedPrefsProvider.overrideWithValue(prefs)], child: const FitAlarmApp()),
-      );
-      await _wait(t, 3200);
+      await t.pumpWidget(_app(prefs));
+      await _wait(t, 2000);
+
+      // Sign up with phone (demo backend: code 123456).
+      expect(find.text('Create your account'), findsOneWidget);
+      await _tap(t, 'Continue with phone');
+      await t.enterText(find.byType(TextField), '9876543210');
+      await _wait(t, 200);
+      await _tap(t, 'Send code');
+      await _wait(t, 1200);
+      expect(find.text('Enter the code'), findsOneWidget);
+      await t.enterText(find.byType(TextField), '123456');
+      await _wait(t, 1500);
 
       await _tap(t, 'Get started');
       await t.enterText(find.byType(TextField), 'Sharath Kumar');
@@ -92,4 +111,38 @@ void main() {
       expect(find.text('My routine'), findsOneWidget);
     });
   }
+
+  testWidgets('a wrong code is rejected, Google sign-in works, sign-out returns to auth', (t) async {
+    t.view.physicalSize = const Size(412, 915) * 3;
+    t.view.devicePixelRatio = 3;
+    addTearDown(t.view.reset);
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    await t.pumpWidget(_app(prefs));
+    await _wait(t, 2000);
+
+    await _tap(t, 'Log in');
+    expect(find.text('Welcome back'), findsOneWidget);
+    await _tap(t, 'Continue with phone');
+    await t.enterText(find.byType(TextField), '9876543210');
+    await _wait(t, 200);
+    await _tap(t, 'Send code');
+    await _wait(t, 1200);
+    await t.enterText(find.byType(TextField), '000000');
+    await _wait(t, 1200);
+    expect(find.textContaining('incorrect'), findsOneWidget);
+    expect(prefs.getString('auth.demo.v1'), isNull);
+
+    // Back to the start and use Google instead.
+    await t.pageBack();
+    await _wait(t);
+    await t.pageBack();
+    await _wait(t);
+    await _tap(t, 'Continue with Google');
+    await _wait(t, 1500);
+    expect(prefs.getString('auth.demo.v1'), contains('demo.user@gmail.com'));
+    // Name is pre-filled from the Google account.
+    await _tap(t, 'Get started');
+    expect(find.text('Demo User'), findsOneWidget);
+  });
 }

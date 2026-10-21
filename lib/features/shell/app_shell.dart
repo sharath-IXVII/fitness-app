@@ -1,13 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../steps/steps_providers.dart';
+import '../water/water_providers.dart';
 
-class AppShell extends StatelessWidget {
+class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key, required this.shell});
 
   final StatefulNavigationShell shell;
+
+  @override
+  ConsumerState<AppShell> createState() => _AppShellState();
+}
+
+class _AppShellState extends ConsumerState<AppShell> {
+  StatefulNavigationShell get shell => widget.shell;
+
+  @override
+  void initState() {
+    super.initState();
+    // The shell only exists once the user is signed in and onboarded, so this
+    // is where background services start: step tracking and water reminders.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(stepsProvider.notifier).start();
+      ref.read(waterSettingsProvider.notifier).reschedule();
+    });
+  }
 
   static const _items = [
     (Icons.space_dashboard_outlined, Icons.space_dashboard_rounded, 'Today'),

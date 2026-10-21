@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSMotionUsageDescription</key>
+	<string>Counts your steps and notices when you are in a vehicle so rides are not counted.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Measures the distance of GPS walks you start.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>The camera counts your reps so your workout alarm knows you really moved. Video never leaves your phone.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>

@@ -52,6 +52,9 @@ dependencies:
   flutter_local_notifications: ^22.3.2
   timezone: ^0.11.2
   flutter_timezone: ^5.1.1
+  pedometer_2: ^5.0.4
+  geolocator: ^14.0.1
+  flutter_activity_recognition: ^4.0.0
 
 dev_dependencies:
   flutter_test:

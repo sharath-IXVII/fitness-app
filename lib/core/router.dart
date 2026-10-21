@@ -17,6 +17,8 @@ import '../features/profile/profile_providers.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/shell/app_shell.dart';
 import '../features/splash/splash_screen.dart';
+import '../features/steps/steps_screen.dart';
+import '../features/water/water_screen.dart';
 import '../features/workout/domain/routine.dart';
 import '../features/workout/routine_editor_screen.dart';
 import '../features/workout/workout_done_screen.dart';
@@ -40,6 +42,8 @@ abstract final class Routes {
   static const workout = '/workout';
   static const workoutDone = '/workout-done';
   static const routineEditor = '/routine-editor';
+  static const steps = '/steps';
+  static const water = '/water';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -97,6 +101,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         redirect: (_, s) => s.extra is WorkoutDoneArgs ? null : Routes.home,
         pageBuilder: (_, s) => _fade(s, WorkoutDoneScreen(args: s.extra! as WorkoutDoneArgs)),
       ),
+      GoRoute(path: Routes.steps, builder: (_, _) => const StepsScreen()),
+      GoRoute(path: Routes.water, builder: (_, _) => const WaterScreen()),
       GoRoute(
         path: Routes.routineEditor,
         builder: (_, s) => RoutineEditorScreen(routine: s.extra is Routine ? s.extra! as Routine : null),

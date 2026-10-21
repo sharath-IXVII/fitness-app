@@ -278,6 +278,7 @@ class _TaskGrid extends ConsumerWidget {
             children: [
               Expanded(
                 child: _TaskTile(
+                  onTap: () => context.push(Routes.water),
                   title: 'Water',
                   value: '${_litres(log.waterMl)} / ${_litres(targets.waterMl)} L',
                   progress: log.waterMl / targets.waterMl,
@@ -297,6 +298,7 @@ class _TaskGrid extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _TaskTile(
+                  onTap: () => context.push(Routes.steps),
                   title: 'Steps',
                   value:
                       '${NumberFormat.compact().format(log.steps)} / ${NumberFormat.compact().format(targets.steps)}',
@@ -317,6 +319,7 @@ class _TaskGrid extends ConsumerWidget {
             children: [
               Expanded(
                 child: _TaskTile(
+                  onTap: () => context.go(Routes.alarms),
                   title: 'Workout',
                   value: log.workoutDone ? 'Completed' : 'Pending',
                   progress: log.workoutDone ? 1 : 0,
@@ -328,6 +331,7 @@ class _TaskGrid extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _TaskTile(
+                  onTap: () => context.go(Routes.diet),
                   title: 'Meals',
                   value: '${log.mealsLogged} / 3 logged',
                   progress: log.mealsLogged / 3,
@@ -359,6 +363,7 @@ class _TaskTile extends StatelessWidget {
     required this.done,
     this.action,
     this.caption,
+    this.onTap,
   });
 
   final String title;
@@ -369,11 +374,12 @@ class _TaskTile extends StatelessWidget {
   final bool done;
   final Widget? action;
   final String? caption;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    return GlassCard(
+    final card = GlassCard(
       glow: done ? color : null,
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -428,6 +434,7 @@ class _TaskTile extends StatelessWidget {
         ],
       ),
     );
+    return onTap == null ? card : Pressable(onTap: onTap, scale: 0.97, child: card);
   }
 }
 

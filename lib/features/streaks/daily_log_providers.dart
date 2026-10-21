@@ -38,7 +38,8 @@ class DailyLogsNotifier extends Notifier<Map<DateTime, DailyLog>> {
     await ref.read(sharedPrefsProvider).setString('$_prefix${_keyFormat.format(next.date)}', jsonEncode(next.toJson()));
   }
 
-  Future<void> addWater(int ml) => update((l) => l.copyWith(waterMl: l.waterMl + ml));
+  /// Adds (or, with a negative [ml], undoes) water; never drops below zero.
+  Future<void> addWater(int ml) => update((l) => l.copyWith(waterMl: (l.waterMl + ml).clamp(0, 20000)));
 
   Future<void> clearAll() async {
     final prefs = ref.read(sharedPrefsProvider);

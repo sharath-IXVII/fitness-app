@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/page_background.dart';
 import '../../core/widgets/glass_card.dart';
@@ -122,39 +124,118 @@ class ProfileScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            TextButton.icon(
-              onPressed: () async {
-                final ok = await showDialog<bool>(
-                  context: context,
-                  builder: (c) => AlertDialog(
-                    backgroundColor: AppColors.surfaceHigh,
-                    title: const Text('Start over?'),
-                    content: const Text('This clears your profile and history on this device.'),
-                    actions: [
-                      TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
-                      TextButton(
-                        onPressed: () => Navigator.pop(c, true),
-                        child: const Text('Reset', style: TextStyle(color: AppColors.danger)),
-                      ),
-                    ],
+            const SizedBox(height: 22),
+            Text('Data & privacy', style: text.titleMedium),
+            const SizedBox(height: 10),
+            GlassCard(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Column(
+                children: [
+                  _Action(
+                    icon: Icons.shield_outlined,
+                    label: 'Privacy policy',
+                    onTap: () => context.push(Routes.privacy),
                   ),
-                );
-                if (ok == true) {
-                  await ref.read(dailyLogsProvider.notifier).clearAll();
-                  await ref.read(alarmsProvider.notifier).clearAll();
-                  await ref.read(myDayProvider.notifier).clear();
-                  await ref.read(mealLogProvider.notifier).clearAll();
-                  await ref.read(weightLogProvider.notifier).clearAll();
-                  await ref.read(weightGoalProvider.notifier).set(null);
-                  await ref.read(profileProvider.notifier).clear();
-                }
-              },
-              icon: const Icon(Icons.restart_alt_rounded, color: AppColors.danger),
-              label: const Text('Reset profile', style: TextStyle(color: AppColors.danger)),
+                  _Action(
+                    icon: Icons.restart_alt_rounded,
+                    label: 'Reset data on this device',
+                    onTap: () async {
+                      if (await _confirm(
+                        context,
+                        title: 'Start over?',
+                        body: 'This clears your profile, history, meals and alarms on this device. You stay signed in.',
+                        action: 'Reset',
+                      )) {
+                        await _clearLocal(ref);
+                      }
+                    },
+                  ),
+                  _Action(
+                    icon: Icons.person_remove_outlined,
+                    label: 'Delete account',
+                    danger: true,
+                    onTap: () async {
+                      if (!await _confirm(
+                        context,
+                        title: 'Delete your account?',
+                        body:
+                            'This permanently deletes your sign-in and clears all FitAlarm data on this device. '
+                            'It can\'t be undone.',
+                        action: 'Delete',
+                      )) {
+                        return;
+                      }
+                      try {
+                        await ref.read(authProvider.notifier).deleteAccount();
+                        await _clearLocal(ref);
+                      } on AuthFailure catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+                        }
+                      }
+                    },
+                  ),
+                ],
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+Future<bool> _confirm(
+  BuildContext context, {
+  required String title,
+  required String body,
+  required String action,
+}) async =>
+    await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        backgroundColor: AppColors.surfaceHigh,
+        title: Text(title),
+        content: Text(body),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(c, true),
+            child: Text(action, style: const TextStyle(color: AppColors.danger)),
+          ),
+        ],
+      ),
+    ) ??
+    false;
+
+Future<void> _clearLocal(WidgetRef ref) async {
+  await ref.read(dailyLogsProvider.notifier).clearAll();
+  await ref.read(alarmsProvider.notifier).clearAll();
+  await ref.read(myDayProvider.notifier).clear();
+  await ref.read(mealLogProvider.notifier).clearAll();
+  await ref.read(weightLogProvider.notifier).clearAll();
+  await ref.read(weightGoalProvider.notifier).set(null);
+  await ref.read(profileProvider.notifier).clear();
+}
+
+class _Action extends StatelessWidget {
+  const _Action({required this.icon, required this.label, required this.onTap, this.danger = false});
+
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final bool danger;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = danger ? AppColors.danger : AppColors.textPrimary;
+    return Material(
+      type: MaterialType.transparency,
+      child: ListTile(
+        leading: Icon(icon, color: danger ? AppColors.danger : AppColors.primary),
+        title: Text(label, style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: color)),
+        trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+        onTap: onTap,
       ),
     );
   }

@@ -22,6 +22,10 @@ abstract class AuthService {
   /// Returns null if the user closed the Google account picker.
   Future<AppUser?> signInWithGoogle();
   Future<void> signOut();
+
+  /// Permanently deletes the account. Throws [AuthFailure] if the user must
+  /// sign in again first.
+  Future<void> deleteAccount();
 }
 
 class FirebaseAuthService implements AuthService {
@@ -113,6 +117,19 @@ class FirebaseAuthService implements AuthService {
     await _auth.signOut();
   }
 
+  @override
+  Future<void> deleteAccount() async {
+    try {
+      await _auth.currentUser?.delete();
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login') {
+        throw const AuthFailure('For your security, sign out and sign in again, then delete your account.');
+      }
+      throw _failure(e);
+    }
+    await signOut();
+  }
+
   static AuthFailure _failure(FirebaseAuthException e) => AuthFailure(switch (e.code) {
     'invalid-phone-number' => 'That phone number doesn\'t look right.',
     'invalid-verification-code' => 'That code is incorrect. Check the SMS and try again.',
@@ -183,4 +200,7 @@ class DemoAuthService implements AuthService {
 
   @override
   Future<void> signOut() async => _set(null);
+
+  @override
+  Future<void> deleteAccount() async => _set(null);
 }

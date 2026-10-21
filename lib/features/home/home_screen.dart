@@ -15,6 +15,7 @@ import '../../core/widgets/progress_ring.dart';
 import '../profile/domain/health_targets.dart';
 import '../alarm/alarm_providers.dart';
 import '../profile/profile_providers.dart';
+import '../progress/progress_card.dart';
 import '../streaks/daily_log_providers.dart';
 import '../streaks/domain/daily_log.dart';
 import '../streaks/widgets/consistency_card.dart';
@@ -41,6 +42,8 @@ class HomeScreen extends ConsumerWidget {
       ConsistencyCard(scores: scores, current: streak.current, longest: streak.longest),
       const SizedBox(height: 14),
       _ScoreCard(score: score),
+      const SizedBox(height: 14),
+      const ProgressCard(),
       const SizedBox(height: 14),
       const _NextAlarmCard(),
       const SizedBox(height: 28),

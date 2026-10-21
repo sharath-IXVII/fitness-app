@@ -14,7 +14,10 @@ import '../features/diet/domain/meal_log.dart';
 import '../features/home/home_screen.dart';
 import '../features/myday/myday_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
+import '../features/profile/privacy_screen.dart';
 import '../features/profile/profile_providers.dart';
+import '../features/progress/achievements_screen.dart';
+import '../features/progress/weekly_report_screen.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/scan/scan_screen.dart';
 import '../features/shell/app_shell.dart';
@@ -46,6 +49,9 @@ abstract final class Routes {
   static const steps = '/steps';
   static const water = '/water';
   static const scan = '/scan';
+  static const achievements = '/achievements';
+  static const report = '/report';
+  static const privacy = '/privacy';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -105,6 +111,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: Routes.steps, builder: (_, _) => const StepsScreen()),
       GoRoute(path: Routes.water, builder: (_, _) => const WaterScreen()),
+      GoRoute(path: Routes.achievements, builder: (_, _) => const AchievementsScreen()),
+      GoRoute(path: Routes.report, builder: (_, _) => const WeeklyReportScreen()),
+      GoRoute(path: Routes.privacy, builder: (_, _) => const PrivacyScreen()),
       GoRoute(
         path: Routes.scan,
         builder: (_, s) => ScanFoodScreen(meal: s.extra is MealType ? s.extra! as MealType : MealType.lunch),

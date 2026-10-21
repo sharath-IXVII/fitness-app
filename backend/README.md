@@ -26,7 +26,7 @@ cd .. && firebase deploy --only functions,firestore:rules
 
 The function deploys to `asia-south1` (Mumbai), which is the region the app calls. If you change one, change the other: `region` in `functions/src/index.ts` and `instanceFor(region:)` in `lib/features/scan/food_scanner.dart`.
 
-The app turns the scanner on automatically once it is connected to Firebase (see "Firebase setup" in the root README). In demo builds the scan screen explains this and offers manual entry instead.
+The app turns the scanner on automatically once it is connected to Firebase (see "Sign-in" in the root README). In demo builds the scan screen explains this and offers manual entry instead.
 
 ## Cost
 

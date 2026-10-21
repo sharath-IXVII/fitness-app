@@ -26,6 +26,11 @@ class AuthNotifier extends Notifier<AppUser?> {
     await ref.read(authServiceProvider).signOut();
     state = null;
   }
+
+  Future<void> deleteAccount() async {
+    await ref.read(authServiceProvider).deleteAccount();
+    state = null;
+  }
 }
 
 final authProvider = NotifierProvider<AuthNotifier, AppUser?>(AuthNotifier.new);

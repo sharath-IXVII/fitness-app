@@ -3,7 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/router.dart';
+import '../../core/storage.dart';
 import '../../core/theme/app_colors.dart';
+import '../progress/domain/progress.dart';
+import '../progress/progress_providers.dart';
 import '../steps/steps_providers.dart';
 import '../water/water_providers.dart';
 
@@ -27,6 +31,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(stepsProvider.notifier).start();
       ref.read(waterSettingsProvider.notifier).reschedule();
+      _announce(ref.read(achievementsProvider));
     });
   }
 
@@ -38,8 +43,45 @@ class _AppShellState extends ConsumerState<AppShell> {
     (Icons.person_outline_rounded, Icons.person_rounded, 'Me'),
   ];
 
+  static const _seenKey = 'achievements.seen.v1';
+
+  /// Shows a quiet notice for achievements earned since the last check. The
+  /// first time, everything already earned is marked seen without a notice.
+  void _announce(Map<Achievement, DateTime> earned) {
+    final prefs = ref.read(sharedPrefsProvider);
+    final seen = prefs.getStringList(_seenKey);
+    final names = earned.keys.map((a) => a.name).toList();
+    if (seen == null) {
+      prefs.setStringList(_seenKey, names);
+      return;
+    }
+    final fresh = earned.keys.where((a) => !seen.contains(a.name)).toList();
+    if (fresh.isEmpty) return;
+    prefs.setStringList(_seenKey, {...seen, ...names}.toList());
+    HapticFeedback.mediumImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(fresh.first.icon, color: AppColors.primary, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                fresh.length == 1
+                    ? 'Achievement unlocked: ${fresh.first.title}'
+                    : '${fresh.length} achievements unlocked',
+              ),
+            ),
+          ],
+        ),
+        action: SnackBarAction(label: 'View', onPressed: () => context.push(Routes.achievements)),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen(achievementsProvider, (_, next) => _announce(next));
     final index = shell.currentIndex;
     return Scaffold(
       body: shell,

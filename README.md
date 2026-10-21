@@ -26,6 +26,8 @@ An alarm that only stops when you've done your workout. The phone camera counts 
 <p>
   <img src="docs/screenshots/scan_pick.png" width="200">
   <img src="docs/screenshots/scan_result.png" width="200">
+  <img src="docs/screenshots/weekly_report.png" width="200">
+  <img src="docs/screenshots/achievements.png" width="200">
 </p>
 
 ## Roadmap
@@ -38,7 +40,7 @@ An alarm that only stops when you've done your workout. The phone camera counts 
 | 4 | Dual step counter (sensor + GPS, vehicle filtering) and water reminders | ✅ Built, needs device testing |
 | 5 | Diet: calorie and macro targets, meal logging, daily meal plans per diet, weight goal with a deadline, explainers | ✅ Done |
 | 6 | Food camera scanner: photo → editable per-item estimate via a Cloud Function (Claude vision) | ✅ Built, needs Firebase + deploy |
-| 7 | Badges, XP, weekly reports, Play Store release prep | ⏳ Next |
+| 7 | XP and levels, 12 achievements, weekly report, privacy policy, account deletion, release signing and Play checklist | ✅ Done |
 
 ## Tech
 
@@ -69,6 +71,7 @@ lib/
     water/         water log and reminders
     diet/          food list, meal log, meal-plan generator, weight goal, diet screen and sheets
     scan/          food photo scanner (calls the scanFood Cloud Function)
+    progress/      XP, levels, achievements, weekly report
     shell/         bottom navigation
 test/              unit tests (targets, streaks) and full onboarding flow tests
 ```
@@ -84,6 +87,16 @@ test/              unit tests (targets, streaks) and full onboarding flow tests
 ## How the food scanner works
 
 Tap the camera on the Diet tab, take or choose a photo, and optionally say what it is. The photo goes to the `scanFood` Cloud Function in `backend/functions`, which returns each item it can see with a portion, an estimated weight and its macros. You can scale each item (½× to 3×), edit its numbers, remove items, and see a warning when something doesn't fit your diet. Then you log it to a meal. The AI key stays on the server. Until the backend is deployed, the screen explains the setup and offers manual entry. See `backend/README.md`.
+
+## XP, achievements and the weekly report
+
+- **XP** comes from your history, so nothing extra is stored: 10 per daily goal hit, +20 for a perfect day, plus a streak bonus (+1 per streak day, capped at +30). Levels need 0, 100, 300, 600, 1000… XP.
+- **12 achievements**, from "First rep" to "Hundred" (a 100-day streak). Each is stamped with the day it was earned, and a quiet notice appears when you unlock one.
+- **Weekly report** (Home → *Your week*): completion ring, workouts, streak days and steps compared with last week, goals hit per day, a steps chart, your best day and one suggestion for the goal you missed most.
+
+## Release
+
+See `docs/RELEASE.md` for signing, the Play Console forms (including data safety) and the device test checklist. The privacy policy is in `docs/PRIVACY.md` and in the app under Me → Privacy policy.
 
 ## How the workout alarm works
 

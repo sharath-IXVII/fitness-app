@@ -5,6 +5,7 @@ import { FieldValue, getFirestore } from "firebase-admin/firestore";
 import { logger } from "firebase-functions";
 import { defineSecret } from "firebase-functions/params";
 import { HttpsError, onCall } from "firebase-functions/v2/https";
+import { auth as authV1 } from "firebase-functions/v1";
 
 import { normalize, ScanSchema, SYSTEM_PROMPT, userPrompt, validateRequest } from "./scan";
 
@@ -90,3 +91,13 @@ export const scanFood = onCall(
     }
   },
 );
+
+/** Deletes a user's scan counters when their account is deleted. */
+export const cleanupUser = authV1.user().onDelete(async (user) => {
+  const db = getFirestore();
+  const docs = await db.collection("scanUsage").where("uid", "==", user.uid).get();
+  const batch = db.batch();
+  docs.forEach((d) => batch.delete(d.ref));
+  await batch.commit();
+  logger.info("cleanupUser: removed scan counters", { count: docs.size });
+});

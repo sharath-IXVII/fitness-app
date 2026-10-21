@@ -36,7 +36,10 @@ class HomeScreen extends ConsumerWidget {
 
     final sections = <Widget>[
       _Header(name: profile.name, streak: streak.current),
-      const SizedBox(height: 24),
+      const SizedBox(height: 20),
+      // The streak calendar leads the page — it's the habit we want to build.
+      ConsistencyCard(scores: scores, current: streak.current, longest: streak.longest),
+      const SizedBox(height: 14),
       _ScoreCard(score: score),
       const SizedBox(height: 14),
       const _NextAlarmCard(),
@@ -44,10 +47,6 @@ class HomeScreen extends ConsumerWidget {
       const _SectionTitle('Today'),
       const SizedBox(height: 12),
       _TaskGrid(log: log, targets: targets, score: score),
-      const SizedBox(height: 28),
-      const _SectionTitle('Consistency'),
-      const SizedBox(height: 12),
-      ConsistencyCard(scores: scores, current: streak.current, longest: streak.longest),
       const SizedBox(height: 32),
     ];
 

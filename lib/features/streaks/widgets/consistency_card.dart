@@ -19,7 +19,7 @@ class ConsistencyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final today = dayOnly(DateTime.now());
-    final from = today.subtract(const Duration(days: 7 * 17));
+    final from = DateTime(today.year, today.month - 3);
     final recent = scores.entries.where((e) => !e.key.isBefore(from));
     final perfect = recent.where((e) => e.value.count == DayScore.total).length;
     final active = recent.where((e) => e.value.keepsStreak).length;
@@ -46,17 +46,17 @@ class ConsistencyCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          _WeekStrip(scores: scores, today: today),
-          const SizedBox(height: 20),
           Row(
             children: [
-              Text('Last 4 months', style: Theme.of(context).textTheme.titleSmall),
+              Text('Your streak calendar', style: Theme.of(context).textTheme.titleSmall),
               const Spacer(),
-              Text('$active active days', style: Theme.of(context).textTheme.bodySmall),
+              Text('$active active days · 4 months', style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
           const SizedBox(height: 10),
           ActivityHeatmap(scores: scores),
+          const SizedBox(height: 16),
+          _WeekStrip(scores: scores, today: today),
         ],
       ),
     );

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -5,25 +7,27 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_colors.dart';
 import '../domain/daily_log.dart';
 
-/// Contribution grid (weeks as columns, Mon–Sun as rows) that always fits
-/// the available width — cell size is derived from it, so there's no
-/// sideways scrolling.
+/// LeetCode-style streak calendar: one block per month (weeks as columns,
+/// Mon–Sun as rows), each on its own panel so months read as separate units.
+/// The current month is highlighted. Cell size is derived from the width so
+/// it always fits without scrolling.
 class ActivityHeatmap extends StatefulWidget {
-  const ActivityHeatmap({super.key, required this.scores, this.weeks = 17});
+  const ActivityHeatmap({super.key, required this.scores, this.months = 4});
 
   final Map<DateTime, DayScore> scores;
-  final int weeks;
+  final int months;
 
   @override
   State<ActivityHeatmap> createState() => _ActivityHeatmapState();
 }
 
 class _ActivityHeatmapState extends State<ActivityHeatmap> with SingleTickerProviderStateMixin {
-  late final _intro = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..forward();
+  late final _intro = AnimationController(vsync: this, duration: const Duration(milliseconds: 700))..forward();
   DateTime? _selected;
 
-  static const _gap = 4.0;
-  static const _labelWidth = 18.0;
+  static const _gap = 3.0;
+  static const _blockPad = 5.0;
+  static const _blockGap = 6.0;
 
   @override
   void dispose() {
@@ -31,64 +35,38 @@ class _ActivityHeatmapState extends State<ActivityHeatmap> with SingleTickerProv
     super.dispose();
   }
 
+  /// Weeks (columns) a month spans in a Monday-first grid.
+  static int columnsFor(DateTime month) {
+    final offset = DateTime(month.year, month.month).weekday - 1;
+    final days = DateUtils.getDaysInMonth(month.year, month.month);
+    return ((offset + days) / 7).ceil();
+  }
+
   @override
   Widget build(BuildContext context) {
     final today = dayOnly(DateTime.now());
-    final thisMonday = today.subtract(Duration(days: today.weekday - 1));
-    final start = thisMonday.subtract(Duration(days: 7 * (widget.weeks - 1)));
-    final labelStyle = Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 10.5, color: AppColors.textMuted);
+    final months = [for (var i = widget.months - 1; i >= 0; i--) DateTime(today.year, today.month - i)];
+    final labelStyle = Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11);
 
     return LayoutBuilder(
       builder: (context, box) {
-        final cell = (box.maxWidth - _labelWidth - _gap * (widget.weeks - 1)) / widget.weeks;
+        final cols = months.fold(0, (n, m) => n + columnsFor(m));
+        final fixed =
+            months.length * 2 * (_blockPad + 1) + (months.length - 1) * _blockGap + (cols - months.length) * _gap;
+        final cell = math.min(16.0, (box.maxWidth - fixed) / cols).floorToDouble();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Month labels, positioned over the first week of each month.
-            SizedBox(
-              height: 18,
-              child: Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  for (var w = 0; w < widget.weeks; w++)
-                    if (start.add(Duration(days: 7 * w)).day <= 7)
-                      Positioned(
-                        left: _labelWidth + w * (cell + _gap),
-                        child: Text(DateFormat.MMM().format(start.add(Duration(days: 7 * w))), style: labelStyle),
-                      ),
-                ],
-              ),
-            ),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  width: _labelWidth,
-                  child: Column(
-                    children: [
-                      for (final l in ['M', '', 'W', '', 'F', '', 'S'])
-                        SizedBox(
-                          height: cell + _gap,
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(l, style: labelStyle),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                for (var w = 0; w < widget.weeks; w++)
-                  Padding(
-                    padding: EdgeInsets.only(right: w == widget.weeks - 1 ? 0 : _gap),
-                    child: Column(
-                      children: [
-                        for (var d = 0; d < 7; d++) _cell(start.add(Duration(days: 7 * w + d)), today, w, cell),
-                      ],
-                    ),
-                  ),
+                for (final (i, m) in months.indexed) ...[
+                  if (i > 0) const SizedBox(width: _blockGap),
+                  _month(m, today, cell, i, labelStyle),
+                ],
               ],
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 12),
             Row(
               children: [
                 Expanded(
@@ -109,8 +87,8 @@ class _ActivityHeatmapState extends State<ActivityHeatmap> with SingleTickerProv
                 const SizedBox(width: 6),
                 for (final c in AppColors.heat)
                   Container(
-                    width: 11,
-                    height: 11,
+                    width: 10,
+                    height: 10,
                     margin: const EdgeInsets.symmetric(horizontal: 1.5),
                     decoration: BoxDecoration(color: c, borderRadius: BorderRadius.circular(3)),
                   ),
@@ -124,51 +102,96 @@ class _ActivityHeatmapState extends State<ActivityHeatmap> with SingleTickerProv
     );
   }
 
+  Widget _month(DateTime month, DateTime today, double cell, int index, TextStyle? labelStyle) {
+    final current = month.year == today.year && month.month == today.month;
+    final offset = month.weekday - 1;
+    final days = DateUtils.getDaysInMonth(month.year, month.month);
+    final cols = columnsFor(month);
+    final active = widget.scores.entries
+        .where((e) => e.key.year == month.year && e.key.month == month.month && e.value.keepsStreak)
+        .length;
+    final anim = CurvedAnimation(
+      parent: _intro,
+      curve: Interval(index * 0.15, math.min(1, index * 0.15 + 0.55), curve: Curves.easeOut),
+    );
+
+    return FadeTransition(
+      opacity: anim,
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(_blockPad),
+            decoration: BoxDecoration(
+              color: current ? AppColors.primarySoft : AppColors.background,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: current ? AppColors.primary.withValues(alpha: 0.5) : AppColors.stroke),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var c = 0; c < cols; c++)
+                  Padding(
+                    padding: EdgeInsets.only(right: c == cols - 1 ? 0 : _gap),
+                    child: Column(
+                      children: [
+                        for (var r = 0; r < 7; r++)
+                          Padding(
+                            padding: EdgeInsets.only(bottom: r == 6 ? 0 : _gap),
+                            child: _cell(c * 7 + r - offset + 1, month, days, today, cell),
+                          ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            DateFormat.MMM().format(month),
+            style: labelStyle?.copyWith(
+              color: current ? AppColors.textPrimary : AppColors.textMuted,
+              fontWeight: current ? FontWeight.w700 : FontWeight.w500,
+            ),
+          ),
+          Text('$active days', style: labelStyle?.copyWith(fontSize: 10, color: AppColors.textMuted)),
+        ],
+      ),
+    );
+  }
+
+  Widget _cell(int dayNumber, DateTime month, int days, DateTime today, double size) {
+    if (dayNumber < 1 || dayNumber > days) return SizedBox.square(dimension: size);
+    final day = DateTime(month.year, month.month, dayNumber);
+    final future = day.isAfter(today);
+    final level = widget.scores[day]?.level ?? 0;
+    final isToday = day == today;
+    final selected = day == _selected;
+    return GestureDetector(
+      onTap: future
+          ? null
+          : () {
+              HapticFeedback.selectionClick();
+              setState(() => _selected = selected ? null : day);
+            },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          color: future ? AppColors.surface : AppColors.heat[level],
+          borderRadius: BorderRadius.circular(size * 0.25),
+          border: selected || isToday
+              ? Border.all(color: selected ? AppColors.textPrimary : AppColors.primary, width: 1.4)
+              : (future ? Border.all(color: AppColors.stroke, width: 0.6) : null),
+        ),
+      ),
+    );
+  }
+
   String _selectedLabel() {
     final s = _selected;
     if (s == null) return 'Tap a day for details';
     final count = widget.scores[s]?.count ?? 0;
     return '${DateFormat('EEE, d MMM').format(s)} · $count of ${DayScore.total} goals';
-  }
-
-  Widget _cell(DateTime day, DateTime today, int week, double size) {
-    final future = day.isAfter(today);
-    final level = widget.scores[day]?.level ?? 0;
-    final isToday = day == today;
-    final selected = day == _selected;
-
-    // Stagger the intro so the grid fills in from left to right.
-    final begin = (week / widget.weeks) * 0.6;
-    final anim = CurvedAnimation(
-      parent: _intro,
-      curve: Interval(begin, begin + 0.4, curve: Curves.easeOut),
-    );
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: _gap),
-      child: FadeTransition(
-        opacity: anim,
-        child: GestureDetector(
-          onTap: future
-              ? null
-              : () {
-                  HapticFeedback.selectionClick();
-                  setState(() => _selected = selected ? null : day);
-                },
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            width: size,
-            height: size,
-            decoration: BoxDecoration(
-              color: future ? AppColors.heat[0].withValues(alpha: 0.35) : AppColors.heat[level],
-              borderRadius: BorderRadius.circular(size * 0.28),
-              border: selected || isToday
-                  ? Border.all(color: selected ? AppColors.textPrimary : AppColors.primary, width: 1.6)
-                  : null,
-            ),
-          ),
-        ),
-      ),
-    );
   }
 }

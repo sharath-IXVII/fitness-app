@@ -83,14 +83,12 @@ void main() {
       await _wait(t, 5000); // let the snackbar go
 
       // Custom routine builder.
-      await t.scrollUntilVisible(find.text('Custom'), 200, scrollable: find.byType(Scrollable).first);
-      await t.drag(find.byType(Scrollable).hitTestable().first, const Offset(0, -200)); // clear the floating nav bar
-      await _wait(t, 400);
+      await t.scrollUntilVisible(find.text('Custom'), 200, scrollable: find.byType(Scrollable).hitTestable().first);
       await _tap(t, 'Custom');
       expect(find.text('New routine'), findsOneWidget);
       await _tap(t, 'Save routine');
       expect(find.text('New routine'), findsNothing);
-      await t.scrollUntilVisible(find.text('My routine'), 200, scrollable: find.byType(Scrollable).first);
+      await t.scrollUntilVisible(find.text('My routine'), 200, scrollable: find.byType(Scrollable).hitTestable().first);
       expect(find.text('My routine'), findsOneWidget);
     });
   }

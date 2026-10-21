@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 enum AlarmSound {
-  sunrise('Sunrise chime', 'sunrise'),
+  sunrise('Morning chime', 'sunrise'),
   bells('Gentle bells', 'bells'),
   pulse('Energy pulse', 'pulse'),
   classic('Classic beep', 'classic');

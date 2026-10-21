@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/widgets/aurora_background.dart';
+import '../../core/widgets/page_background.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/pressable.dart';
 import '../workout/domain/routine.dart';
@@ -96,13 +96,12 @@ class _AlarmsScreenState extends ConsumerState<AlarmsScreen> with WidgetsBinding
     final alarms = ref.watch(alarmsProvider);
     final routines = ref.watch(routinesProvider);
 
-    return AuroraBackground(
-      intensity: 0.07,
+    return PageBackground(
       child: SafeArea(
         bottom: false,
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 130),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
           children: [
             Row(
               children: [
@@ -112,11 +111,7 @@ class _AlarmsScreenState extends ConsumerState<AlarmsScreen> with WidgetsBinding
                   child: Container(
                     width: 48,
                     height: 48,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.brandGradient,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: AppColors.softShadow(AppColors.primary),
-                    ),
+                    decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(16)),
                     child: const Icon(Icons.add_rounded, color: Colors.white),
                   ),
                 ),
@@ -344,29 +339,23 @@ class _NextUpBannerState extends State<_NextUpBanner> {
     }
     return Container(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: AppColors.brandGradient,
-        borderRadius: BorderRadius.circular(26),
-        boxShadow: AppColors.softShadow(AppColors.primary),
-      ),
+      decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(26)),
       child: Row(
         children: [
           Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.18), shape: BoxShape.circle),
-                child: const Icon(Icons.wb_twilight_rounded, color: Colors.white),
-              )
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .moveY(begin: 2, end: -2, duration: 1600.ms, curve: Curves.easeInOut),
+            width: 48,
+            height: 48,
+            decoration: const BoxDecoration(color: AppColors.surface, shape: BoxShape.circle),
+            child: const Icon(Icons.alarm_rounded, color: AppColors.primary),
+          ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('NEXT ALARM', style: text.labelSmall?.copyWith(color: Colors.white70, letterSpacing: 1.4)),
-                Text(headline, style: text.titleLarge?.copyWith(color: Colors.white)),
-                Text(sub, style: text.bodySmall?.copyWith(color: Colors.white.withValues(alpha: 0.85))),
+                Text('Next alarm', style: text.labelMedium?.copyWith(color: AppColors.primary)),
+                Text(headline, style: text.titleLarge),
+                Text(sub, style: text.bodySmall?.copyWith(color: AppColors.textSecondary)),
               ],
             ),
           ),

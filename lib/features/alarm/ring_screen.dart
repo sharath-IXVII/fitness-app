@@ -12,7 +12,6 @@ import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/gradient_button.dart';
-import '../../core/widgets/sunrise_scene.dart';
 import '../workout/routine_providers.dart';
 import '../workout/workout_screen.dart';
 import 'alarm_providers.dart';
@@ -86,114 +85,126 @@ class _RingScreenState extends ConsumerState<RingScreen> {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        body: Stack(
-          fit: StackFit.expand,
-          children: [
-            const SunriseScene(),
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 28, 24, 12),
-                child: Column(
-                  children: [
-                    Text(
-                      DateFormat('EEEE, d MMMM').format(_now).toUpperCase(),
-                      style: text.labelMedium?.copyWith(letterSpacing: 1.8, color: AppColors.textSecondary),
-                    ).animate().fadeIn(duration: 600.ms),
-                    const SizedBox(height: 4),
-                    Text(
-                      DateFormat.jm().format(_now),
-                      style: text.displayLarge?.copyWith(fontSize: 72, color: AppColors.textPrimary, height: 1.05),
-                    ).animate().fadeIn(duration: 800.ms).slideY(begin: -0.15, curve: Curves.easeOutCubic),
-                    const SizedBox(height: 10),
-                    Text(info.label, style: text.titleLarge).animate(delay: 300.ms).fadeIn(),
-                    const SizedBox(height: 4),
-                    Text(
-                      _quote,
-                      style: text.bodyMedium?.copyWith(fontStyle: FontStyle.italic),
-                      textAlign: TextAlign.center,
-                    ).animate(delay: 500.ms).fadeIn(),
-                    const Spacer(),
-                    GlassCard(
-                      blur: true,
-                      padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
-                      child: Column(
+        backgroundColor: AppColors.background,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 32, 24, 12),
+            child: Column(
+              children: [
+                const _RingingIcon(),
+                const SizedBox(height: 28),
+                Text(
+                  DateFormat.jm().format(_now),
+                  style: text.displayLarge?.copyWith(fontSize: 64, color: AppColors.textPrimary, height: 1.05),
+                ),
+                const SizedBox(height: 4),
+                Text(DateFormat('EEEE, d MMMM').format(_now), style: text.bodyMedium),
+                const SizedBox(height: 20),
+                Text(info.label, style: text.titleLarge),
+                const SizedBox(height: 4),
+                Text(_quote, style: text.bodyMedium, textAlign: TextAlign.center),
+                const Spacer(),
+                GlassCard(
+                  padding: const EdgeInsets.fromLTRB(18, 14, 18, 14),
+                  child: Column(
+                    children: [
+                      Row(
                         children: [
-                          Row(
-                            children: [
-                              Text('TO TURN IT OFF', style: text.labelSmall?.copyWith(letterSpacing: 1.3)),
-                              const Spacer(),
-                              if (info.hardMode)
-                                Row(
-                                  children: [
-                                    const Icon(Icons.local_fire_department_rounded, size: 14, color: AppColors.danger),
-                                    const SizedBox(width: 4),
-                                    Text('Hard mode', style: text.labelSmall?.copyWith(color: AppColors.danger)),
-                                  ],
-                                ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          for (final (i, s) in routine.steps.indexed)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                children: [
-                                  Icon(s.exercise.icon, size: 20, color: AppColors.primary),
-                                  const SizedBox(width: 12),
-                                  Expanded(child: Text(s.exercise.label, style: text.titleSmall)),
-                                  Text(s.exercise.formatTarget(s.target), style: text.titleSmall),
-                                ],
-                              ),
-                            ).animate(delay: (700 + i * 90).ms).fadeIn().slideX(begin: 0.06),
+                          Text('To turn it off', style: text.labelMedium?.copyWith(color: AppColors.textSecondary)),
+                          const Spacer(),
+                          if (info.hardMode)
+                            Text('Hard mode', style: text.labelMedium?.copyWith(color: AppColors.danger)),
                         ],
                       ),
-                    ).animate(delay: 500.ms).fadeIn(duration: 500.ms).slideY(begin: 0.12),
-                    const SizedBox(height: 16),
-                    GradientButton(
-                          label: 'Start workout',
-                          icon: Icons.play_arrow_rounded,
-                          onPressed: () => context.go(
-                            Routes.workout,
-                            extra: WorkoutArgs(routineId: routine.id, ring: info),
+                      const SizedBox(height: 6),
+                      for (final s in routine.steps)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 5),
+                          child: Row(
+                            children: [
+                              Icon(s.exercise.icon, size: 20, color: AppColors.primary),
+                              const SizedBox(width: 12),
+                              Expanded(child: Text(s.exercise.label, style: text.titleSmall)),
+                              Text(s.exercise.formatTarget(s.target), style: text.titleSmall),
+                            ],
                           ),
-                        )
-                        .animate(onPlay: (c) => c.repeat(reverse: true))
-                        .scaleXY(end: 1.03, duration: 900.ms, curve: Curves.easeInOut),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        if (canSnooze)
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: _snooze,
-                              icon: const Icon(Icons.snooze_rounded, size: 18),
-                              label: Text('Snooze ${info.snoozeMinutes} min · ${info.snoozesLeft} left'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppColors.primary,
-                                backgroundColor: AppColors.surface.withValues(alpha: 0.7),
-                                side: const BorderSide(color: AppColors.stroke),
-                                minimumSize: const Size.fromHeight(50),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                              ),
-                            ),
+                        ),
+                    ],
+                  ),
+                ).animate().fadeIn(duration: 300.ms, delay: 150.ms).moveY(begin: 8, end: 0, curve: Curves.easeOutCubic),
+                const SizedBox(height: 16),
+                GradientButton(
+                  label: 'Start workout',
+                  icon: Icons.play_arrow_rounded,
+                  onPressed: () => context.go(
+                    Routes.workout,
+                    extra: WorkoutArgs(routineId: routine.id, ring: info),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    if (canSnooze)
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _snooze,
+                          icon: const Icon(Icons.snooze_rounded, size: 18),
+                          label: Text('Snooze ${info.snoozeMinutes} min · ${info.snoozesLeft} left'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.textPrimary,
+                            backgroundColor: AppColors.surface,
+                            side: const BorderSide(color: AppColors.stroke),
+                            minimumSize: const Size.fromHeight(52),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           ),
-                        if (canSnooze && !info.hardMode) const SizedBox(width: 10),
-                        if (!info.hardMode)
-                          TextButton(
-                            onPressed: _emergencyStop,
-                            child: Text('Emergency stop', style: text.bodySmall?.copyWith(color: AppColors.textMuted)),
-                          ),
-                      ],
-                    ),
+                        ),
+                      ),
+                    if (canSnooze) const SizedBox(width: 8),
+                    if (!info.hardMode)
+                      TextButton(
+                        onPressed: _emergencyStop,
+                        child: Text('Emergency stop', style: text.bodySmall?.copyWith(color: AppColors.textMuted)),
+                      ),
                   ],
                 ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
+}
+
+/// Alarm icon with two soft rings expanding outward — the only motion on
+/// the screen, so it reads as "ringing" without being noisy.
+class _RingingIcon extends StatelessWidget {
+  const _RingingIcon();
+
+  @override
+  Widget build(BuildContext context) => SizedBox.square(
+    dimension: 120,
+    child: Stack(
+      alignment: Alignment.center,
+      children: [
+        for (var i = 0; i < 2; i++)
+          Container(
+                width: 72,
+                height: 72,
+                decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primarySoft),
+              )
+              .animate(onPlay: (c) => c.repeat(), delay: (i * 1000).ms)
+              .scaleXY(begin: 1, end: 1.65, duration: 2000.ms, curve: Curves.easeOut)
+              .fadeOut(duration: 2000.ms, curve: Curves.easeIn),
+        Container(
+          width: 72,
+          height: 72,
+          decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primary),
+          child: const Icon(Icons.alarm_rounded, size: 34, color: Colors.white),
+        ),
+      ],
+    ),
+  );
 }
 
 /// Hold for three seconds, then solve a sum. Annoying on purpose.

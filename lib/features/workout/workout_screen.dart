@@ -363,7 +363,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                       '${counter.progress}',
                       key: ValueKey(_repPulse),
                       style: text.displayLarge?.copyWith(fontSize: 88, color: AppColors.primary, height: 1),
-                    ).animate().scaleXY(begin: 1.25, end: 1, duration: 300.ms, curve: Curves.easeOutBack),
+                    ).animate().scaleXY(begin: 1.08, end: 1, duration: 200.ms, curve: Curves.easeOutCubic),
                     const SizedBox(width: 6),
                     Text(
                       '/ ${step.exercise.formatTarget(step.target)}',

@@ -1,5 +1,3 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -121,40 +119,25 @@ final routerProvider = Provider<GoRouter>((ref) {
   );
 });
 
-/// Cinematic "focus pull": the incoming screen starts slightly blurred and
-/// enlarged, then settles sharp as it fades in.
+/// Quiet route transition: a short fade with an 8 px rise.
 CustomTransitionPage<void> _fade(GoRouterState state, Widget child) => CustomTransitionPage(
   key: state.pageKey,
   child: child,
-  transitionDuration: const Duration(milliseconds: 700),
-  reverseTransitionDuration: const Duration(milliseconds: 400),
+  transitionDuration: const Duration(milliseconds: 280),
+  reverseTransitionDuration: const Duration(milliseconds: 200),
   transitionsBuilder: (_, animation, _, child) {
     final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
-    return AnimatedBuilder(
-      animation: curved,
-      child: child,
-      builder: (_, child) {
-        final v = curved.value;
-        final blur = (1 - v) * 10;
-        return Opacity(
-          opacity: Curves.easeOut.transform(animation.value),
-          child: Transform.scale(
-            scale: 1.05 - 0.05 * v,
-            child: blur < 0.05
-                ? child
-                : ImageFiltered(
-                    imageFilter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-                    child: child,
-                  ),
-          ),
-        );
-      },
+    return FadeTransition(
+      opacity: curved,
+      child: SlideTransition(
+        position: Tween(begin: const Offset(0, 0.012), end: Offset.zero).animate(curved),
+        child: child,
+      ),
     );
   },
 );
 
-/// Keeps every tab alive (like an IndexedStack) but cross-fades and lifts
-/// the newly selected one into place.
+/// Keeps every tab alive (like an IndexedStack) with a short cross-fade.
 class _FadingBranches extends StatelessWidget {
   const _FadingBranches({required this.index, required this.children});
 
@@ -173,14 +156,9 @@ class _FadingBranches extends StatelessWidget {
               enabled: i == index,
               child: AnimatedOpacity(
                 opacity: i == index ? 1 : 0,
-                duration: const Duration(milliseconds: 300),
+                duration: const Duration(milliseconds: 200),
                 curve: Curves.easeOut,
-                child: AnimatedSlide(
-                  offset: i == index ? Offset.zero : const Offset(0, 0.02),
-                  duration: const Duration(milliseconds: 380),
-                  curve: Curves.easeOutCubic,
-                  child: ExcludeSemantics(excluding: i != index, child: children[i]),
-                ),
+                child: ExcludeSemantics(excluding: i != index, child: children[i]),
               ),
             ),
           ),

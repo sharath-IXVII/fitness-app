@@ -15,7 +15,7 @@ Future<void> main() async {
   // or depends on the network.
   GoogleFonts.config.allowRuntimeFetching = false;
   LicenseRegistry.addLicense(() async* {
-    for (final family in ['Inter', 'Fraunces']) {
+    for (final family in ['Inter']) {
       final license = await rootBundle.loadString('assets/google_fonts/$family-OFL.txt');
       yield LicenseEntryWithLineBreaks([family], license);
     }

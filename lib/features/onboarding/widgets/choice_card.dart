@@ -79,7 +79,7 @@ class ChoiceCard extends StatelessWidget {
                   AnimatedScale(
                     scale: selected ? 1 : 0,
                     duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeOutBack,
+                    curve: Curves.easeOutCubic,
                     child: Icon(Icons.check_circle_rounded, color: color),
                   ),
                 ],

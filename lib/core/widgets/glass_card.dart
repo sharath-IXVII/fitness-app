@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
-/// Frosted card used across the app. Optional [glow] tints the border and
-/// casts a soft coloured shadow.
+/// White card used across the app. Optional [glow] tints the border to mark
+/// a completed or active state.
 class GlassCard extends StatelessWidget {
   const GlassCard({
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(20),
-    this.radius = 24,
+    this.radius = 20,
     this.glow,
     this.blur = false,
   });
@@ -30,8 +30,8 @@ class GlassCard extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: shape,
         color: AppColors.surface.withValues(alpha: blur ? 0.8 : 1),
-        border: Border.all(color: glow?.withValues(alpha: 0.45) ?? AppColors.stroke),
-        boxShadow: AppColors.softShadow(glow ?? AppColors.shadow),
+        border: Border.all(color: glow?.withValues(alpha: 0.3) ?? AppColors.stroke),
+        boxShadow: AppColors.softShadow(),
       ),
       child: child,
     );

@@ -3,7 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_colors.dart';
-import '../../core/widgets/aurora_background.dart';
+import '../../core/widgets/page_background.dart';
 import '../../core/widgets/glass_card.dart';
 import '../alarm/alarm_providers.dart';
 import '../streaks/daily_log_providers.dart';
@@ -44,13 +44,12 @@ class ProfileScreen extends ConsumerWidget {
       ),
     );
 
-    return AuroraBackground(
-      intensity: 0.08,
+    return PageBackground(
       child: SafeArea(
         bottom: false,
         child: ListView(
           physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 120),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
           children: [
             Center(
               child: Container(
@@ -63,7 +62,7 @@ class ProfileScreen extends ConsumerWidget {
                   style: text.displaySmall?.copyWith(color: Colors.white),
                 ),
               ),
-            ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
+            ).animate().fadeIn(duration: 300.ms),
             const SizedBox(height: 14),
             Center(child: Text(p.name, style: text.headlineSmall)),
             Center(child: Text('🔥 ${streak.current}-day streak · best ${streak.longest}', style: text.bodyMedium)),

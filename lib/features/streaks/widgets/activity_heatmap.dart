@@ -141,13 +141,13 @@ class _ActivityHeatmapState extends State<ActivityHeatmap> with SingleTickerProv
     final begin = (week / widget.weeks) * 0.6;
     final anim = CurvedAnimation(
       parent: _intro,
-      curve: Interval(begin, begin + 0.4, curve: Curves.easeOutBack),
+      curve: Interval(begin, begin + 0.4, curve: Curves.easeOut),
     );
 
     return Padding(
       padding: const EdgeInsets.only(bottom: _gap),
-      child: ScaleTransition(
-        scale: anim,
+      child: FadeTransition(
+        opacity: anim,
         child: GestureDetector(
           onTap: future
               ? null

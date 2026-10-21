@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/animated_number.dart';
-import '../../core/widgets/aurora_background.dart';
+import '../../core/widgets/page_background.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/pressable.dart';
 import '../../core/widgets/progress_ring.dart';
@@ -48,11 +48,10 @@ class HomeScreen extends ConsumerWidget {
       const _SectionTitle('Consistency'),
       const SizedBox(height: 12),
       ConsistencyCard(scores: scores, current: streak.current, longest: streak.longest),
-      const SizedBox(height: 120),
+      const SizedBox(height: 32),
     ];
 
-    return AuroraBackground(
-      intensity: 0.09,
+    return PageBackground(
       child: SafeArea(
         bottom: false,
         child: ListView(
@@ -60,7 +59,10 @@ class HomeScreen extends ConsumerWidget {
           padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
           children: [
             for (final (i, s) in sections.indexed)
-              s.animate(delay: (i * 45).ms).fadeIn(duration: 500.ms).slideY(begin: 0.06, curve: Curves.easeOutCubic),
+              s
+                  .animate(delay: (i * 30).ms)
+                  .fadeIn(duration: 300.ms)
+                  .moveY(begin: 8, end: 0, curve: Curves.easeOutCubic),
           ],
         ),
       ),
@@ -108,9 +110,7 @@ class _Header extends StatelessWidget {
           ),
           child: Row(
             children: [
-              const Icon(Icons.local_fire_department_rounded, color: AppColors.steps, size: 22)
-                  .animate(onPlay: (c) => c.repeat(reverse: true))
-                  .scaleXY(begin: 0.9, end: 1.1, duration: 700.ms, curve: Curves.easeInOut),
+              const Icon(Icons.local_fire_department_rounded, color: AppColors.steps, size: 22),
               const SizedBox(width: 6),
               AnimatedNumber(streak, style: text.titleLarge?.copyWith(color: AppColors.steps)),
             ],

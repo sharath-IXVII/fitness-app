@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
@@ -7,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/animated_number.dart';
-import '../../core/widgets/aurora_background.dart';
+import '../../core/widgets/page_background.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/gradient_button.dart';
 import 'domain/routine.dart';
@@ -43,12 +41,9 @@ class WorkoutDoneScreen extends StatelessWidget {
     return PopScope(
       canPop: false,
       child: Scaffold(
-        body: AuroraBackground(
-          colors: const [AppColors.accent, AppColors.gold, AppColors.sunrise],
-          intensity: 0.14,
+        body: PageBackground(
           child: Stack(
             children: [
-              const Positioned.fill(child: IgnorePointer(child: _Confetti())),
               SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
@@ -56,15 +51,18 @@ class WorkoutDoneScreen extends StatelessWidget {
                     children: [
                       const Spacer(),
                       Container(
-                        width: 110,
-                        height: 110,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: AppColors.brandGradient,
-                          boxShadow: AppColors.softShadow(AppColors.primary),
-                        ),
-                        child: const Icon(Icons.check_rounded, color: Colors.white, size: 60),
-                      ).animate().scale(duration: 600.ms, curve: Curves.elasticOut, begin: const Offset(0.3, 0.3)),
+                            width: 88,
+                            height: 88,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: AppColors.brandGradient,
+                              boxShadow: AppColors.softShadow(AppColors.primary),
+                            ),
+                            child: const Icon(Icons.check_rounded, color: Colors.white, size: 46),
+                          )
+                          .animate()
+                          .fadeIn(duration: 300.ms)
+                          .scaleXY(begin: 0.9, end: 1, duration: 400.ms, curve: Curves.easeOutCubic),
                       const SizedBox(height: 24),
                       Text(
                         args.fromAlarm ? 'Alarm off. You earned it.' : 'Workout complete!',
@@ -140,81 +138,4 @@ class WorkoutDoneScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-/// A one-shot burst of falling confetti.
-class _Confetti extends StatefulWidget {
-  const _Confetti();
-
-  @override
-  State<_Confetti> createState() => _ConfettiState();
-}
-
-class _ConfettiState extends State<_Confetti> with SingleTickerProviderStateMixin {
-  late final _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 3200))..forward();
-  final _pieces = List.generate(70, (i) => _Piece(math.Random(i)));
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) => AnimatedBuilder(
-    animation: _c,
-    builder: (_, _) => CustomPaint(painter: _ConfettiPainter(_c.value, _pieces)),
-  );
-}
-
-class _Piece {
-  _Piece(math.Random r)
-    : x = r.nextDouble(),
-      delay = r.nextDouble() * 0.3,
-      speed = 0.7 + r.nextDouble() * 0.6,
-      drift = (r.nextDouble() - 0.5) * 0.3,
-      spin = r.nextDouble() * 12,
-      size = 6 + r.nextDouble() * 6,
-      color = const [
-        AppColors.primary,
-        AppColors.accent,
-        AppColors.gold,
-        AppColors.water,
-        AppColors.protein,
-      ][r.nextInt(5)];
-
-  final double x, delay, speed, drift, spin, size;
-  final Color color;
-}
-
-class _ConfettiPainter extends CustomPainter {
-  _ConfettiPainter(this.t, this.pieces);
-
-  final double t;
-  final List<_Piece> pieces;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    for (final p in pieces) {
-      final local = ((t - p.delay) / (1 - p.delay)).clamp(0.0, 1.0);
-      if (local <= 0) continue;
-      final y = -20 + local * p.speed * (size.height + 40);
-      final x = (p.x + p.drift * local + 0.02 * math.sin(local * 10 + p.spin)) * size.width;
-      final paint = Paint()..color = p.color.withValues(alpha: 1 - local * 0.6);
-      canvas.save();
-      canvas.translate(x, y);
-      canvas.rotate(p.spin * local);
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset.zero, width: p.size, height: p.size * 0.5),
-          const Radius.circular(2),
-        ),
-        paint,
-      );
-      canvas.restore();
-    }
-  }
-
-  @override
-  bool shouldRepaint(_ConfettiPainter old) => old.t != t;
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../core/widgets/aurora_background.dart';
+import '../../core/widgets/page_background.dart';
 
 /// Temporary tab body for modules that land in later phases.
 class ComingSoonScreen extends StatelessWidget {
@@ -21,28 +21,24 @@ class ComingSoonScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    return AuroraBackground(
-      colors: [color, color.withValues(alpha: 0.6)],
-      intensity: 0.1,
+    return PageBackground(
       child: SafeArea(
         child: Center(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(32, 0, 32, 100),
+            padding: const EdgeInsets.fromLTRB(32, 0, 32, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                      width: 96,
-                      height: 96,
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.12),
-                        shape: BoxShape.circle,
-                        border: Border.all(color: color.withValues(alpha: 0.4)),
-                      ),
-                      child: Icon(icon, size: 44, color: color),
-                    )
-                    .animate(onPlay: (c) => c.repeat(reverse: true))
-                    .moveY(begin: -4, end: 4, duration: 1800.ms, curve: Curves.easeInOut),
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: color.withValues(alpha: 0.4)),
+                  ),
+                  child: Icon(icon, size: 44, color: color),
+                ),
                 const SizedBox(height: 28),
                 Text(title, style: text.headlineMedium, textAlign: TextAlign.center),
                 const SizedBox(height: 10),

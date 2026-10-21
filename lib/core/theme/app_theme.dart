@@ -21,37 +21,34 @@ abstract final class AppTheme {
         onSurface: AppColors.textPrimary,
         error: AppColors.danger,
       ),
-      splashFactory: InkSparkle.splashFactory,
+      splashFactory: InkRipple.splashFactory,
       dialogTheme: const DialogThemeData(backgroundColor: AppColors.surface),
       timePickerTheme: const TimePickerThemeData(backgroundColor: AppColors.surface),
     );
 
     final body = GoogleFonts.interTextTheme(base.textTheme)
         .apply(bodyColor: AppColors.textPrimary, displayColor: AppColors.textPrimary);
-    // Fraunces, a soft editorial serif, gives headings a character no other
-    // fitness app has; Inter keeps body text crisp. Weights are passed to
-    // GoogleFonts directly so the matching bundled file is used.
-    TextStyle serif(TextStyle? b, FontWeight w, [double ls = -0.4]) =>
-        GoogleFonts.fraunces(textStyle: b, fontWeight: w, letterSpacing: ls);
-    TextStyle sans(TextStyle? b, FontWeight w, {Color? color}) =>
-        GoogleFonts.inter(textStyle: b, fontWeight: w, color: color);
+    // Inter throughout. Weights are passed to GoogleFonts directly so the
+    // matching bundled file is used rather than a synthesised bold.
+    TextStyle t(TextStyle? b, FontWeight w, {double ls = 0, Color? color}) =>
+        GoogleFonts.inter(textStyle: b, fontWeight: w, letterSpacing: ls, color: color);
 
     return base.copyWith(
       textTheme: body.copyWith(
-        displayLarge: serif(body.displayLarge, FontWeight.w700, -1),
-        displayMedium: serif(body.displayMedium, FontWeight.w700, -0.8),
-        displaySmall: serif(body.displaySmall, FontWeight.w700, -0.6),
-        headlineLarge: serif(body.headlineLarge, FontWeight.w700, -0.5),
-        headlineMedium: serif(body.headlineMedium, FontWeight.w700, -0.5),
-        headlineSmall: serif(body.headlineSmall, FontWeight.w600),
-        titleLarge: serif(body.titleLarge, FontWeight.w600, -0.2),
-        titleMedium: sans(body.titleMedium, FontWeight.w600),
-        titleSmall: sans(body.titleSmall, FontWeight.w600),
-        labelLarge: sans(body.labelLarge, FontWeight.w600),
-        labelMedium: sans(body.labelMedium, FontWeight.w500),
-        labelSmall: sans(body.labelSmall, FontWeight.w500),
-        bodyMedium: sans(body.bodyMedium, FontWeight.w400, color: AppColors.textSecondary),
-        bodySmall: sans(body.bodySmall, FontWeight.w400, color: AppColors.textMuted),
+        displayLarge: t(body.displayLarge, FontWeight.w700, ls: -1.5),
+        displayMedium: t(body.displayMedium, FontWeight.w700, ls: -1.2),
+        displaySmall: t(body.displaySmall, FontWeight.w700, ls: -1),
+        headlineLarge: t(body.headlineLarge, FontWeight.w700, ls: -0.8),
+        headlineMedium: t(body.headlineMedium, FontWeight.w700, ls: -0.6),
+        headlineSmall: t(body.headlineSmall, FontWeight.w600, ls: -0.4),
+        titleLarge: t(body.titleLarge, FontWeight.w600, ls: -0.3),
+        titleMedium: t(body.titleMedium, FontWeight.w600, ls: -0.1),
+        titleSmall: t(body.titleSmall, FontWeight.w600),
+        labelLarge: t(body.labelLarge, FontWeight.w600),
+        labelMedium: t(body.labelMedium, FontWeight.w500),
+        labelSmall: t(body.labelSmall, FontWeight.w500),
+        bodyMedium: t(body.bodyMedium, FontWeight.w400, color: AppColors.textSecondary),
+        bodySmall: t(body.bodySmall, FontWeight.w400, color: AppColors.textMuted),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -60,7 +57,7 @@ abstract final class AppTheme {
       ),
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
-          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
         },
       ),

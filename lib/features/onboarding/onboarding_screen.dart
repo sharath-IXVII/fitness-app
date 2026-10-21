@@ -7,7 +7,7 @@ import '../../core/app_info.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/animated_number.dart';
 import '../../core/widgets/app_logo.dart';
-import '../../core/widgets/aurora_background.dart';
+import '../../core/widgets/page_background.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/gradient_button.dart';
 import '../../core/widgets/pressable.dart';
@@ -95,8 +95,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final last = _page == _stepCount - 1;
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      body: AuroraBackground(
-        intensity: _page == 0 || last ? 0.18 : 0.08,
+      body: PageBackground(
         child: SafeArea(
           child: Column(
             children: [
@@ -240,7 +239,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Spacer(),
-        const AppLogo(size: 72).animate().scale(duration: 600.ms, curve: Curves.easeOutBack).fadeIn(),
+        const AppLogo(size: 64).animate().fadeIn(duration: 400.ms),
         const SizedBox(height: 28),
         Text(
           'Your mornings\nare about to change.',
@@ -627,9 +626,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ],
                   ),
                 ),
-                const Icon(Icons.local_fire_department_rounded, color: AppColors.primary, size: 44)
-                    .animate(onPlay: (c) => c.repeat(reverse: true))
-                    .scale(begin: const Offset(0.9, 0.9), end: const Offset(1.08, 1.08), duration: 900.ms),
+                const Icon(Icons.local_fire_department_rounded, color: AppColors.primary, size: 44),
               ],
             ),
           ).animate(delay: 200.ms).fadeIn(duration: 500.ms),

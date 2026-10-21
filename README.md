@@ -29,6 +29,11 @@ An alarm that only stops when you've done your workout. The phone camera counts 
   <img src="docs/screenshots/weekly_report.png" width="200">
   <img src="docs/screenshots/achievements.png" width="200">
 </p>
+<p>
+  <img src="docs/screenshots/alarm_editor.png" width="200">
+  <img src="docs/screenshots/game_math.png" width="200">
+  <img src="docs/screenshots/game_memory.png" width="200">
+</p>
 
 ## Roadmap
 

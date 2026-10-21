@@ -130,7 +130,7 @@ class _WeekStrip extends StatelessWidget {
                       Text(
                         DateFormat.E().format(day).substring(0, 1),
                         style: text.labelSmall?.copyWith(
-                          color: isToday ? AppColors.primary : AppColors.textMuted,
+                          color: isToday ? AppColors.primary : AppColors.textTertiary,
                           fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
                         ),
                       ),

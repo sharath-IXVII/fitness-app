@@ -3,6 +3,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:intl/intl.dart';
+
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/page_background.dart';
@@ -13,7 +15,9 @@ import '../diet/diet_providers.dart';
 import '../myday/myday_providers.dart';
 import '../auth/domain/app_user.dart';
 import '../streaks/daily_log_providers.dart';
+import '../diet/widgets/sheet_frame.dart';
 import 'domain/user_profile.dart';
+import 'edit_profile_sheet.dart';
 import 'profile_providers.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -41,7 +45,7 @@ class ProfileScreen extends ConsumerWidget {
     final account = ref.watch(authProvider);
 
     Widget row(String label, String value) => Padding(
-      padding: const EdgeInsets.symmetric(vertical: 10),
+      padding: const EdgeInsets.symmetric(vertical: 9),
       child: Row(
         children: [
           Text(label, style: text.bodyMedium),
@@ -58,23 +62,44 @@ class ProfileScreen extends ConsumerWidget {
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
           children: [
-            Center(
-              child: Container(
-                width: 92,
-                height: 92,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.brandGradient),
-                child: Text(
-                  p.name.isEmpty ? '?' : p.name[0].toUpperCase(),
-                  style: text.displaySmall?.copyWith(color: Colors.white),
+            Row(
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.brandGradient),
+                  child: Text(
+                    p.name.isEmpty ? '?' : p.name[0].toUpperCase(),
+                    style: text.headlineSmall?.copyWith(color: Colors.white),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(p.name, style: text.titleLarge),
+                      Text('${streak.current}-day streak · best ${streak.longest}', style: text.bodyMedium),
+                    ],
+                  ),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () => SheetFrame.show<void>(context, const EditProfileSheet()),
+                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  label: const Text('Edit'),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: AppColors.stroke),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                ),
+              ],
             ).animate().fadeIn(duration: 300.ms),
-            const SizedBox(height: 14),
-            Center(child: Text(p.name, style: text.headlineSmall)),
-            Center(child: Text('🔥 ${streak.current}-day streak · best ${streak.longest}', style: text.bodyMedium)),
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
+            Text('About you', style: text.titleMedium),
+            const SizedBox(height: 10),
             GlassCard(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
               child: Column(
                 children: [
                   row('Goal', _goalLabel[p.goal]!),
@@ -82,24 +107,29 @@ class ProfileScreen extends ConsumerWidget {
                   row('Height', '${p.heightCm.round()} cm'),
                   row('Weight', '${p.weightKg.toStringAsFixed(1)} kg'),
                   row('BMI', '${t.bmi}'),
+                  row('Wake up · sleep', '${p.wakeTime.format(context)} · ${p.sleepTime.format(context)}'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 22),
+            Text('Daily targets', style: text.titleMedium),
+            const SizedBox(height: 10),
+            GlassCard(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+              child: Column(
+                children: [
+                  row('Calories', '${t.calories} kcal'),
+                  row('Protein · carbs · fat', '${t.proteinG} · ${t.carbsG} · ${t.fatG} g'),
+                  row('Fiber', '${t.fiberG} g'),
+                  row('Water', '${(t.waterMl / 1000).toStringAsFixed(1)} L'),
+                  row('Steps', NumberFormat.decimalPattern().format(t.steps)),
                   row('Stride length', '${t.strideM} m'),
                 ],
               ),
             ),
-            const SizedBox(height: 14),
-            GlassCard(
-              child: Column(
-                children: [
-                  row('Calories', '${t.calories} kcal'),
-                  row('Protein', '${t.proteinG} g'),
-                  row('Carbs', '${t.carbsG} g'),
-                  row('Fat', '${t.fatG} g'),
-                  row('Fiber', '${t.fiberG} g'),
-                  row('Water', '${(t.waterMl / 1000).toStringAsFixed(1)} L'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 14),
+            const SizedBox(height: 22),
+            Text('Account', style: text.titleMedium),
+            const SizedBox(height: 10),
             GlassCard(
               child: Row(
                 children: [

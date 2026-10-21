@@ -100,7 +100,7 @@ void main() {
     expect(find.text('Goal pace'), findsOneWidget);
 
     // Explainers.
-    await t.tap(find.text('Protein').first);
+    await t.tap(find.text('Protein').hitTestable().first);
     await _wait(t);
     expect(find.text('What is protein?'), findsOneWidget);
     await t.tapAt(const Offset(200, 40)); // close the explainer

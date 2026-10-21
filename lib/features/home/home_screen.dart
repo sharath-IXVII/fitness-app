@@ -36,20 +36,20 @@ class HomeScreen extends ConsumerWidget {
     final scores = ref.watch(dayScoresProvider);
 
     final sections = <Widget>[
-      _Header(name: profile.name, streak: streak.current),
+      _Header(name: profile.name),
       const SizedBox(height: 20),
       // The streak calendar leads the page — it's the habit we want to build.
       ConsistencyCard(scores: scores, current: streak.current, longest: streak.longest),
       const SizedBox(height: 14),
       _ScoreCard(score: score),
-      const SizedBox(height: 14),
-      const ProgressCard(),
-      const SizedBox(height: 14),
-      const _NextAlarmCard(),
-      const SizedBox(height: 28),
-      const _SectionTitle('Today'),
       const SizedBox(height: 12),
       _TaskGrid(log: log, targets: targets, score: score),
+      const SizedBox(height: 26),
+      const _SectionTitle('Coming up'),
+      const SizedBox(height: 12),
+      const _NextAlarmCard(),
+      const SizedBox(height: 12),
+      const ProgressCard(),
       const SizedBox(height: 32),
     ];
 
@@ -73,10 +73,9 @@ class HomeScreen extends ConsumerWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.name, required this.streak});
+  const _Header({required this.name});
 
   final String name;
-  final int streak;
 
   String get _greeting {
     final h = DateTime.now().hour;
@@ -96,26 +95,33 @@ class _Header extends StatelessWidget {
             children: [
               Text(
                 DateFormat('EEEE, d MMMM').format(DateTime.now()).toUpperCase(),
-                style: text.labelSmall?.copyWith(color: AppColors.textMuted, letterSpacing: 1.4),
+                style: text.labelSmall?.copyWith(color: AppColors.textTertiary, letterSpacing: 1.4),
               ),
               const SizedBox(height: 4),
-              Text('$_greeting,\n${name.split(' ').first}', style: text.headlineMedium?.copyWith(height: 1.15)),
+              Text('$_greeting, ${name.split(' ').first}', style: text.headlineSmall),
             ],
           ),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-          decoration: BoxDecoration(
-            color: AppColors.steps.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: AppColors.steps.withValues(alpha: 0.35)),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.local_fire_department_rounded, color: AppColors.steps, size: 22),
-              const SizedBox(width: 6),
-              AnimatedNumber(streak, style: text.titleLarge?.copyWith(color: AppColors.steps)),
-            ],
+        // The streak lives in the calendar card below; this opens the profile.
+        Semantics(
+          button: true,
+          label: 'Profile',
+          child: Pressable(
+            onTap: () => context.go(Routes.profile),
+            child: Container(
+              width: 44,
+              height: 44,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.primarySoft,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.stroke),
+              ),
+              child: Text(
+                name.isEmpty ? '?' : name[0].toUpperCase(),
+                style: text.titleMedium?.copyWith(color: AppColors.primary),
+              ),
+            ),
           ),
         ),
       ],
@@ -141,32 +147,32 @@ class _ScoreCard extends StatelessWidget {
 
     return GlassCard(
       glow: AppColors.primary,
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(18),
       child: Row(
         children: [
           ProgressRing(
             progress: score.count / DayScore.total,
             color: AppColors.primary,
             secondaryColor: AppColors.accent,
-            size: 104,
-            stroke: 11,
+            size: 84,
+            stroke: 9,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                AnimatedNumber(score.count, style: text.headlineLarge),
+                AnimatedNumber(score.count, style: text.headlineSmall),
                 Text('of ${DayScore.total}', style: text.bodySmall),
               ],
             ),
           ),
-          const SizedBox(width: 22),
+          const SizedBox(width: 18),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Today's score", style: text.titleLarge),
-                const SizedBox(height: 6),
+                Text("Today's score", style: text.titleMedium),
+                const SizedBox(height: 4),
                 Text(message, style: text.bodyMedium?.copyWith(height: 1.4)),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
                 Row(
                   children: [
                     for (final t in DailyTask.values)
@@ -310,6 +316,11 @@ class _TaskGrid extends ConsumerWidget {
                   icon: Icons.directions_walk_rounded,
                   done: score.completed.contains(DailyTask.steps),
                   caption: 'Verified',
+                  action: _QuickAction(
+                    label: 'GPS walk',
+                    color: AppColors.steps,
+                    onTap: () => context.push(Routes.steps),
+                  ),
                 ),
               ),
             ],

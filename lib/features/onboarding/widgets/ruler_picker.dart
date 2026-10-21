@@ -150,7 +150,7 @@ class _RulerPickerState extends State<RulerPicker> {
               maxWidth: 40,
               child: Text(
                 _valueAt(i).toStringAsFixed(0),
-                style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                style: const TextStyle(fontSize: 11, color: AppColors.textTertiary),
               ),
             ),
           ),

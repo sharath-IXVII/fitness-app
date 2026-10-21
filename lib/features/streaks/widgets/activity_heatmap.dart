@@ -149,11 +149,11 @@ class _ActivityHeatmapState extends State<ActivityHeatmap> with SingleTickerProv
           Text(
             DateFormat.MMM().format(month),
             style: labelStyle?.copyWith(
-              color: current ? AppColors.textPrimary : AppColors.textMuted,
+              color: current ? AppColors.textPrimary : AppColors.textTertiary,
               fontWeight: current ? FontWeight.w700 : FontWeight.w500,
             ),
           ),
-          Text('$active days', style: labelStyle?.copyWith(fontSize: 10, color: AppColors.textMuted)),
+          Text('$active days', style: labelStyle?.copyWith(fontSize: 10, color: AppColors.textTertiary)),
         ],
       ),
     );

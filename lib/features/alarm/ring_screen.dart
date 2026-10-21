@@ -196,7 +196,7 @@ class _RingScreenState extends ConsumerState<RingScreen> {
                     if (!info.hardMode)
                       TextButton(
                         onPressed: _emergencyStop,
-                        child: Text('Emergency stop', style: text.bodySmall?.copyWith(color: AppColors.textMuted)),
+                        child: Text('Emergency stop', style: text.bodySmall),
                       ),
                   ],
                 ),

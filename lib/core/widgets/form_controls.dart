@@ -20,7 +20,7 @@ class FormSection extends StatelessWidget {
       children: [
         Text(
           title.toUpperCase(),
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.textMuted, letterSpacing: 1.2),
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.textTertiary, letterSpacing: 1.2),
         ),
         const SizedBox(height: 10),
         child,

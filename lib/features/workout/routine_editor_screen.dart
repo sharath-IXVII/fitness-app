@@ -53,6 +53,12 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
     if (picked != null) setState(() => _steps = [..._steps, RoutineStep(picked, picked.defaultTarget)]);
   }
 
+  /// Rough duration: ~3 s per rep, holds as set, ~10 s to get ready per step.
+  static int _minutes(List<RoutineStep> steps) {
+    final seconds = steps.fold(0, (t, s) => t + 10 + (s.exercise.timed ? s.target : s.target * 3));
+    return (seconds / 60).ceil().clamp(1, 999);
+  }
+
   Future<void> _save() async {
     final id = widget.routine?.id ?? 'custom-${DateTime.now().millisecondsSinceEpoch}';
     final name = _name.text.trim().isEmpty ? 'My routine' : _name.text.trim();
@@ -83,11 +89,26 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
             Expanded(
               child: ReorderableListView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                buildDefaultDragHandles: false,
                 header: Padding(
                   padding: const EdgeInsets.only(bottom: 16),
-                  child: TextField(
-                    controller: _name,
-                    decoration: const InputDecoration(labelText: 'Name'),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextField(
+                        controller: _name,
+                        decoration: const InputDecoration(labelText: 'Name'),
+                      ),
+                      const SizedBox(height: 20),
+                      Row(
+                        children: [
+                          Expanded(child: Text('Exercises', style: text.titleMedium)),
+                          Text('${_steps.length} · about ${_minutes(_steps)} min', style: text.bodySmall),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text('Drag ⋮⋮ to reorder', style: text.bodySmall),
+                    ],
                   ),
                 ),
                 footer: Padding(
@@ -113,9 +134,16 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                       key: ValueKey('$i-${s.exercise.name}'),
                       padding: const EdgeInsets.only(bottom: 10),
                       child: GlassCard(
-                        padding: const EdgeInsets.fromLTRB(16, 10, 8, 10),
+                        padding: const EdgeInsets.fromLTRB(4, 10, 4, 10),
                         child: Row(
                           children: [
+                            ReorderableDragStartListener(
+                              index: i,
+                              child: const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                                child: Icon(Icons.drag_indicator_rounded, color: AppColors.textMuted, size: 20),
+                              ),
+                            ),
                             Icon(s.exercise.icon, color: AppColors.primary),
                             const SizedBox(width: 12),
                             Expanded(
@@ -138,6 +166,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                             ),
                             _Round(icon: Icons.add_rounded, onTap: () => _change(i, 1)),
                             IconButton(
+                              tooltip: 'Remove ${s.exercise.label}',
                               onPressed: _steps.length == 1
                                   ? null
                                   : () => setState(() => _steps = [..._steps]..removeAt(i)),
@@ -216,7 +245,7 @@ class _ExercisePicker extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(8, 16, 8, 4),
               child: Text(
                 g.label.toUpperCase(),
-                style: text.labelSmall?.copyWith(letterSpacing: 1.2, color: AppColors.textMuted),
+                style: text.labelSmall?.copyWith(letterSpacing: 1.2, color: AppColors.textTertiary),
               ),
             ),
             for (final e in Exercise.values.where((e) => e.group == g))

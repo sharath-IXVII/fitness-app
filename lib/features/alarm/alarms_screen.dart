@@ -118,7 +118,7 @@ class _AlarmsScreenState extends ConsumerState<AlarmsScreen> with WidgetsBinding
               ],
             ),
             const SizedBox(height: 4),
-            Text('Each alarm keeps ringing until the camera sees your workout.', style: text.bodyMedium),
+            Text('Each alarm keeps ringing until you finish its workout or brain game.', style: text.bodyMedium),
             const SizedBox(height: 18),
             _NextUpBanner(next: ref.watch(nextAlarmProvider)),
             const SizedBox(height: 16),

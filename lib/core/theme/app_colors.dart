@@ -11,8 +11,11 @@ abstract final class AppColors {
   static const shadow = Color(0xFF5C4430);
 
   static const textPrimary = Color(0xFF3A2E25);
-  static const textSecondary = Color(0xFF85725F);
-  static const textMuted = Color(0xFFB7A796);
+  // Text greys are tuned for legibility on cream: secondary ≈ 5.9:1,
+  // tertiary ≈ 4.8:1 (small print), muted only for icons and placeholders.
+  static const textSecondary = Color(0xFF6E5C4B);
+  static const textTertiary = Color(0xFF7D6A58);
+  static const textMuted = Color(0xFFAE9D8B);
 
   static const primary = Color(0xFFA47551); // light brown
   static const primarySoft = Color(0xFFF2E7DA);

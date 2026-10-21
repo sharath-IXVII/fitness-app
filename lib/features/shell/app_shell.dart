@@ -164,7 +164,7 @@ class _NavItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 11.5,
                 fontWeight: active ? FontWeight.w600 : FontWeight.w500,
-                color: active ? AppColors.textPrimary : AppColors.textMuted,
+                color: active ? AppColors.textPrimary : AppColors.textTertiary,
               ),
               child: Text(label),
             ),

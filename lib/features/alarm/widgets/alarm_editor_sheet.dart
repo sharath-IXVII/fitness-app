@@ -243,15 +243,27 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          for (final c in AlarmChallenge.values)
-                            _ChoiceRow(
-                              icon: c.icon,
-                              title: c.label,
-                              subtitle: c.description,
-                              selected: _a.challenge == c,
-                              onTap: () => _update(_a.copyWith(challenge: c)),
+                          LayoutBuilder(
+                            builder: (_, box) => Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: [
+                                for (final c in AlarmChallenge.values)
+                                  SizedBox(
+                                    width: (box.maxWidth - 8) / 2,
+                                    child: _ChoiceTile(
+                                      icon: c.icon,
+                                      title: c.label,
+                                      selected: _a.challenge == c,
+                                      onTap: () => _update(_a.copyWith(challenge: c)),
+                                    ),
+                                  ),
+                              ],
                             ),
-                          const SizedBox(height: 6),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(_a.challenge.description, style: text.bodySmall),
+                          const SizedBox(height: 10),
                           AnimatedSize(
                             duration: const Duration(milliseconds: 250),
                             alignment: Alignment.topCenter,
@@ -427,19 +439,12 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
   }
 }
 
-/// A selectable row with an icon, used for the challenge choice.
-class _ChoiceRow extends StatelessWidget {
-  const _ChoiceRow({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.selected,
-    required this.onTap,
-  });
+/// A compact selectable tile with an icon, used for the challenge choice.
+class _ChoiceTile extends StatelessWidget {
+  const _ChoiceTile({required this.icon, required this.title, required this.selected, required this.onTap});
 
   final IconData icon;
   final String title;
-  final String subtitle;
   final bool selected;
   final VoidCallback onTap;
 
@@ -451,33 +456,22 @@ class _ChoiceRow extends StatelessWidget {
       button: true,
       child: Pressable(
         onTap: onTap,
-        scale: 0.98,
+        scale: 0.97,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          height: 52,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             color: selected ? AppColors.primary.withValues(alpha: 0.08) : Colors.transparent,
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(color: selected ? AppColors.primary.withValues(alpha: 0.5) : AppColors.stroke),
           ),
           child: Row(
             children: [
-              Icon(icon, size: 22, color: selected ? AppColors.primary : AppColors.textSecondary),
-              const SizedBox(width: 12),
+              Icon(icon, size: 20, color: selected ? AppColors.primary : AppColors.textSecondary),
+              const SizedBox(width: 10),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: text.titleSmall),
-                    Text(subtitle, style: text.bodySmall),
-                  ],
-                ),
-              ),
-              AnimatedOpacity(
-                duration: const Duration(milliseconds: 200),
-                opacity: selected ? 1 : 0,
-                child: const Icon(Icons.check_rounded, color: AppColors.primary, size: 20),
+                child: Text(title, style: text.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
               ),
             ],
           ),

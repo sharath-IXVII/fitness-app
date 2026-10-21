@@ -54,13 +54,13 @@ class WeekBars extends StatelessWidget {
                       Text(
                         DateFormat.E().format(d).substring(0, 1),
                         style: text.labelSmall?.copyWith(
-                          color: d == today ? AppColors.textPrimary : AppColors.textMuted,
+                          color: d == today ? AppColors.textPrimary : AppColors.textTertiary,
                           fontWeight: d == today ? FontWeight.w700 : FontWeight.w500,
                         ),
                       ),
                       Text(
                         format?.call(v) ?? '',
-                        style: text.labelSmall?.copyWith(fontSize: 9, color: AppColors.textMuted),
+                        style: text.labelSmall?.copyWith(fontSize: 10, color: AppColors.textTertiary),
                       ),
                     ],
                   ),

@@ -35,11 +35,11 @@ abstract final class AppTheme {
 
     return base.copyWith(
       textTheme: body.copyWith(
-        displayLarge: t(body.displayLarge, FontWeight.w700, ls: -1.5),
-        displayMedium: t(body.displayMedium, FontWeight.w700, ls: -1.2),
-        displaySmall: t(body.displaySmall, FontWeight.w700, ls: -1),
-        headlineLarge: t(body.headlineLarge, FontWeight.w700, ls: -0.8),
-        headlineMedium: t(body.headlineMedium, FontWeight.w700, ls: -0.6),
+        displayLarge: t(body.displayLarge, FontWeight.w600, ls: -1.5),
+        displayMedium: t(body.displayMedium, FontWeight.w600, ls: -1.2),
+        displaySmall: t(body.displaySmall, FontWeight.w600, ls: -1),
+        headlineLarge: t(body.headlineLarge, FontWeight.w600, ls: -0.8),
+        headlineMedium: t(body.headlineMedium, FontWeight.w600, ls: -0.6),
         headlineSmall: t(body.headlineSmall, FontWeight.w600, ls: -0.4),
         titleLarge: t(body.titleLarge, FontWeight.w600, ls: -0.3),
         titleMedium: t(body.titleMedium, FontWeight.w600, ls: -0.1),
@@ -48,7 +48,7 @@ abstract final class AppTheme {
         labelMedium: t(body.labelMedium, FontWeight.w500),
         labelSmall: t(body.labelSmall, FontWeight.w500),
         bodyMedium: t(body.bodyMedium, FontWeight.w400, color: AppColors.textSecondary),
-        bodySmall: t(body.bodySmall, FontWeight.w400, color: AppColors.textMuted),
+        bodySmall: t(body.bodySmall, FontWeight.w400, color: AppColors.textTertiary),
       ),
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,

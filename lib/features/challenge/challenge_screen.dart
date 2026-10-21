@@ -130,7 +130,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                           if (_games.length > 1)
                             Text(
                               'GAME ${_index + 1} OF ${_games.length}',
-                              style: text.labelSmall?.copyWith(letterSpacing: 1.4, color: AppColors.textMuted),
+                              style: text.labelSmall?.copyWith(letterSpacing: 1.4, color: AppColors.textTertiary),
                             ),
                           if (_ring?.strict ?? false)
                             Padding(

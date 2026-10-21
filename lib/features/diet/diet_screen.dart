@@ -4,8 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/animated_number.dart';
 import '../../core/widgets/glass_card.dart';
@@ -59,6 +61,16 @@ class DietScreen extends ConsumerWidget {
               ],
             ),
           ),
+          Pressable(
+            onTap: () => context.push(Routes.scan, extra: _suggestedMeal()),
+            child: Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(14)),
+              child: const Icon(Icons.photo_camera_outlined, color: AppColors.primary, semanticLabel: 'Scan food'),
+            ),
+          ),
+          const SizedBox(width: 8),
           Pressable(
             onTap: () => add(_suggestedMeal()),
             child: Container(

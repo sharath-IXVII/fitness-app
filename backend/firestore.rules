@@ -1,0 +1,9 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Scan quotas are written only by the scanFood function (admin SDK).
+    match /scanUsage/{doc} {
+      allow read, write: if false;
+    }
+  }
+}

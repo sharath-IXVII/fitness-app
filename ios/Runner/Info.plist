@@ -7,7 +7,9 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Measures the distance of GPS walks you start.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>The camera counts your reps so your workout alarm knows you really moved. Video never leaves your phone.</string>
+	<string>The camera counts your workout reps on your phone (video never leaves it) and takes meal photos you choose to scan for nutrition.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Choose a meal photo to scan for calories and protein.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

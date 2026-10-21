@@ -23,6 +23,10 @@ An alarm that only stops when you've done your workout. The phone camera counts 
   <img src="docs/screenshots/diet_plan.png" width="200">
   <img src="docs/screenshots/diet_goal.png" width="200">
 </p>
+<p>
+  <img src="docs/screenshots/scan_pick.png" width="200">
+  <img src="docs/screenshots/scan_result.png" width="200">
+</p>
 
 ## Roadmap
 
@@ -33,8 +37,8 @@ An alarm that only stops when you've done your workout. The phone camera counts 
 | 3 | My Day routine maker and scheduled reminders | ✅ Built, needs device testing |
 | 4 | Dual step counter (sensor + GPS, vehicle filtering) and water reminders | ✅ Built, needs device testing |
 | 5 | Diet: calorie and macro targets, meal logging, daily meal plans per diet, weight goal with a deadline, explainers | ✅ Done |
-| 6 | Food camera scanner (AI nutrition estimate) | ⏳ Next |
-| 7 | Badges, XP, weekly reports, friends, Play Store release | |
+| 6 | Food camera scanner: photo → editable per-item estimate via a Cloud Function (Claude vision) | ✅ Built, needs Firebase + deploy |
+| 7 | Badges, XP, weekly reports, Play Store release prep | ⏳ Next |
 
 ## Tech
 
@@ -64,6 +68,7 @@ lib/
     steps/         step sensor + activity recognition + GPS walks
     water/         water log and reminders
     diet/          food list, meal log, meal-plan generator, weight goal, diet screen and sheets
+    scan/          food photo scanner (calls the scanFood Cloud Function)
     shell/         bottom navigation
 test/              unit tests (targets, streaks) and full onboarding flow tests
 ```
@@ -75,6 +80,10 @@ test/              unit tests (targets, streaks) and full onboarding flow tests
 - **Meal plans** are built per day from Indian-style meal ideas that fit the user's diet (vegan, veg, eggetarian, non-veg), favouring higher-protein options, with servings scaled to each meal's share of calories. *Shuffle* gives another combination; each meal can be logged with one tap.
 - **Logging** uses a built-in list of ~70 common foods (per serving) plus custom foods. Each change updates the day's meals and protein, which feed the score and streak calendar.
 - Tap any macro, or the *Learn the basics* cards, for a plain-language explainer.
+
+## How the food scanner works
+
+Tap the camera on the Diet tab, take or choose a photo, and optionally say what it is. The photo goes to the `scanFood` Cloud Function in `backend/functions`, which returns each item it can see with a portion, an estimated weight and its macros. You can scale each item (½× to 3×), edit its numbers, remove items, and see a warning when something doesn't fit your diet. Then you log it to a meal. The AI key stays on the server. Until the backend is deployed, the screen explains the setup and offers manual entry. See `backend/README.md`.
 
 ## How the workout alarm works
 

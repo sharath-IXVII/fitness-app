@@ -10,11 +10,13 @@ import '../features/auth/auth_screen.dart';
 import '../features/auth/otp_screen.dart';
 import '../features/auth/phone_screen.dart';
 import '../features/diet/diet_screen.dart';
+import '../features/diet/domain/meal_log.dart';
 import '../features/home/home_screen.dart';
 import '../features/myday/myday_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/profile/profile_providers.dart';
 import '../features/profile/profile_screen.dart';
+import '../features/scan/scan_screen.dart';
 import '../features/shell/app_shell.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/steps/steps_screen.dart';
@@ -43,6 +45,7 @@ abstract final class Routes {
   static const routineEditor = '/routine-editor';
   static const steps = '/steps';
   static const water = '/water';
+  static const scan = '/scan';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -102,6 +105,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: Routes.steps, builder: (_, _) => const StepsScreen()),
       GoRoute(path: Routes.water, builder: (_, _) => const WaterScreen()),
+      GoRoute(
+        path: Routes.scan,
+        builder: (_, s) => ScanFoodScreen(meal: s.extra is MealType ? s.extra! as MealType : MealType.lunch),
+      ),
       GoRoute(
         path: Routes.routineEditor,
         builder: (_, s) => RoutineEditorScreen(routine: s.extra is Routine ? s.extra! as Routine : null),

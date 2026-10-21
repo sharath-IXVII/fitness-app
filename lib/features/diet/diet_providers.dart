@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 
@@ -64,7 +65,7 @@ class MealLogNotifier extends Notifier<List<MealEntry>> {
   Future<void> remove(String id) async {
     final photo = state.where((e) => e.id == id).firstOrNull?.photo;
     await _save([...state.where((e) => e.id != id)]);
-    if (photo != null) await PhotoStore.delete(photo);
+    if (photo != null) unawaited(PhotoStore.delete(photo));
   }
 
   Future<void> clearAll() async {
@@ -73,7 +74,8 @@ class MealLogNotifier extends Notifier<List<MealEntry>> {
       await prefs.remove(k);
     }
     state = const [];
-    await PhotoStore.clearAll();
+    // Photos are removed in the background so a reset never waits on storage.
+    unawaited(PhotoStore.clearAll());
   }
 }
 

@@ -9,6 +9,7 @@ import '../features/auth/auth_providers.dart';
 import '../features/auth/auth_screen.dart';
 import '../features/auth/otp_screen.dart';
 import '../features/auth/phone_screen.dart';
+import '../features/challenge/challenge_screen.dart';
 import '../features/diet/diet_screen.dart';
 import '../features/diet/domain/meal_log.dart';
 import '../features/home/home_screen.dart';
@@ -52,6 +53,7 @@ abstract final class Routes {
   static const achievements = '/achievements';
   static const report = '/report';
   static const privacy = '/privacy';
+  static const challenge = '/challenge';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -114,6 +116,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.achievements, builder: (_, _) => const AchievementsScreen()),
       GoRoute(path: Routes.report, builder: (_, _) => const WeeklyReportScreen()),
       GoRoute(path: Routes.privacy, builder: (_, _) => const PrivacyScreen()),
+      GoRoute(
+        path: Routes.challenge,
+        redirect: (_, s) => s.extra is ChallengeArgs ? null : Routes.home,
+        pageBuilder: (_, s) => _fade(s, ChallengeScreen(args: s.extra! as ChallengeArgs)),
+      ),
       GoRoute(
         path: Routes.scan,
         builder: (_, s) => ScanFoodScreen(meal: s.extra is MealType ? s.extra! as MealType : MealType.lunch),

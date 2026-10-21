@@ -36,6 +36,8 @@ flutter build appbundle --release      # → build/app/outputs/bundle/release/ap
 Before uploading, test the release build on a real phone (`flutter install --release`). Check:
 
 - The alarm rings with the screen locked and the app closed, survives a reboot, and only stops after the workout.
+- Strict mode: the volume keys don't lower it, pressing Home or opening another app brings the alarm back within about a second, and powering off then on rings it again after unlock.
+- Each brain game (maths, memory, number order) turns the alarm off, and "Try it" works from the editor.
 - The camera counts reps for each exercise in normal room light.
 - Steps go up while walking and pause in a car or on a bike. A GPS walk records distance outdoors.
 - Water and My Day reminders arrive on time, and their action buttons work.
@@ -60,6 +62,7 @@ Before uploading, test the release build on a real phone (`flutter install --rel
 | Exact alarms | `USE_EXACT_ALARM`: the core function is an alarm clock |
 | Full-screen intent | Alarm clock that must show over the lock screen |
 | Foreground service | Media playback: the alarm sound plays until the workout is done |
+| Display over other apps | Only used by the optional strict alarm mode, to bring the alarm back if the user leaves it before finishing. Requested when the user turns strict mode on |
 
 ### Data safety answers
 

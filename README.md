@@ -98,6 +98,19 @@ Tap the camera on the Diet tab, take or choose a photo, and optionally say what 
 
 See `docs/RELEASE.md` for signing, the Play Console forms (including data safety) and the device test checklist. The privacy policy is in `docs/PRIVACY.md` and in the app under Me → Privacy policy.
 
+## Strict mode and brain games
+
+Each alarm chooses how it is turned off: a **workout** on camera, or a **brain game** for mornings when the goal is to be awake and studying. The games are maths, memory (repeat a tile pattern) and number order (tap 1, 2, 3… in a shuffled grid), or mixed. Each comes in easy, medium or hard, and the editor has a "Try it" button.
+
+**Strict mode**, a per-alarm toggle, keeps the alarm going until the task is finished:
+- Full volume from the first second. The volume keys can't lower it.
+- No snooze and no emergency stop.
+- Full screen. Leaving the app (Home, recents, another app) brings the alarm straight back. This needs "Display over other apps", which the app asks for when you turn strict mode on.
+- The screen is pinned where Android allows it.
+- If the phone is switched off, the alarm rings again after it restarts.
+
+Limits: no app can block the power button or a forced restart, because Android reserves those for the system. Strict mode makes the alarm come back instead. If the camera isn't available, a strict workout alarm can still be turned off with hard brain games.
+
 ## How the workout alarm works
 
 1. The alarm rings through the `alarm` plugin as a full-screen alarm with looping sound and vibration. The notification has no stop button, and swiping it away or killing the app does not stop it.

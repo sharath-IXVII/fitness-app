@@ -19,6 +19,9 @@ class RingInfo {
     this.snoozesLeft = 0,
     this.snoozeMinutes = 5,
     this.hardMode = false,
+    this.strict = false,
+    this.challenge = AlarmChallenge.workout,
+    this.level = ChallengeLevel.medium,
     this.sound = AlarmSound.sunrise,
     this.volume = 0.9,
     this.fadeIn = true,
@@ -31,7 +34,10 @@ class RingInfo {
     label: a.label,
     snoozesLeft: a.allowedSnoozes,
     snoozeMinutes: a.snoozeMinutes,
-    hardMode: a.hardMode,
+    hardMode: a.noEscape,
+    strict: a.strict,
+    challenge: a.challenge,
+    level: a.level,
     sound: a.sound,
     volume: a.volume,
     fadeIn: a.fadeIn,
@@ -48,6 +54,9 @@ class RingInfo {
   final int snoozesLeft;
   final int snoozeMinutes;
   final bool hardMode;
+  final bool strict;
+  final AlarmChallenge challenge;
+  final ChallengeLevel level;
   final AlarmSound sound;
   final double volume;
   final bool fadeIn;
@@ -61,6 +70,9 @@ class RingInfo {
     snoozesLeft: snoozesLeft ?? this.snoozesLeft,
     snoozeMinutes: snoozeMinutes,
     hardMode: hardMode,
+    strict: strict,
+    challenge: challenge,
+    level: level,
     sound: sound,
     volume: volume,
     fadeIn: fadeIn,
@@ -74,30 +86,40 @@ class RingInfo {
     'snoozes': snoozesLeft,
     'snoozeMin': snoozeMinutes,
     'hard': hardMode,
+    'strict': strict,
+    'challenge': challenge.name,
+    'level': level.name,
     'sound': sound.name,
     'volume': volume,
     'fade': fadeIn,
     'vibrate': vibrate,
   });
 
-  static RingInfo fromSettings(AlarmSettings s) {
+  static RingInfo fromSettings(AlarmSettings s) =>
+      fromPayload(s.payload, nativeId: s.id) ??
+      RingInfo(alarmId: s.id, nativeId: s.id, routineId: Routine.beginner.id, label: 'Workout alarm');
+
+  static RingInfo? fromPayload(String? payload, {int? nativeId}) {
     try {
-      final j = jsonDecode(s.payload ?? '') as Map<String, dynamic>;
+      final j = jsonDecode(payload ?? '') as Map<String, dynamic>;
       return RingInfo(
         alarmId: j['alarm'] as int,
-        nativeId: s.id,
+        nativeId: nativeId,
         routineId: j['routine'] as String,
         label: j['label'] as String,
         snoozesLeft: j['snoozes'] as int? ?? 0,
         snoozeMinutes: j['snoozeMin'] as int? ?? 5,
         hardMode: j['hard'] as bool? ?? false,
+        strict: j['strict'] as bool? ?? false,
+        challenge: AlarmChallenge.values.asNameMap()[j['challenge']] ?? AlarmChallenge.workout,
+        level: ChallengeLevel.values.asNameMap()[j['level']] ?? ChallengeLevel.medium,
         sound: AlarmSound.values.asNameMap()[j['sound']] ?? AlarmSound.sunrise,
         volume: (j['volume'] as num?)?.toDouble() ?? 0.9,
         fadeIn: j['fade'] as bool? ?? true,
         vibrate: j['vibrate'] as bool? ?? true,
       );
     } catch (_) {
-      return RingInfo(alarmId: s.id, nativeId: s.id, routineId: Routine.beginner.id, label: 'Workout alarm');
+      return null;
     }
   }
 }
@@ -145,7 +167,11 @@ abstract final class AlarmScheduler {
     androidFullScreenIntent: true,
     androidStopAlarmOnTermination: false,
     payload: info.toPayload(),
-    volumeSettings: info.fadeIn
+    // Strict mode: full volume from the first second, and the volume keys
+    // can't turn it down (the plugin resets any change).
+    volumeSettings: info.strict
+        ? const VolumeSettings.fixed(volume: 1, volumeEnforced: true)
+        : info.fadeIn
         ? VolumeSettings.fade(volume: info.volume, fadeDuration: const Duration(seconds: 20), volumeEnforced: true)
         : VolumeSettings.fixed(volume: info.volume, volumeEnforced: true),
     notificationSettings: NotificationSettings(
@@ -191,6 +217,22 @@ abstract final class AlarmScheduler {
     }
   }
 
+  /// Rings again a few seconds from now, used to resume a strict alarm that
+  /// was interrupted (e.g. the phone was switched off).
+  static const recoveryId = 9998;
+
+  static Future<void> ringSoon(RingInfo info) async {
+    if (!supported) return;
+    await Alarm.set(
+      alarmSettings: _settings(
+        id: recoveryId,
+        at: DateTime.now().add(const Duration(seconds: 3)),
+        info: info,
+        body: 'Your alarm is still on — finish it to turn it off',
+      ),
+    );
+  }
+
   /// (Re)arms the idle watchdog [idleTimeout] from now.
   static Future<void> armWatchdog(RingInfo info) async {
     if (!supported) return;
@@ -222,7 +264,7 @@ abstract final class AlarmScheduler {
   /// Silences every ring belonging to [info]'s alarm.
   static Future<void> silence(RingInfo info) async {
     if (!supported) return;
-    for (final id in {info.nativeId, info.alarmId, snoozeIdFor(info.alarmId), watchdogId}) {
+    for (final id in {info.nativeId, info.alarmId, snoozeIdFor(info.alarmId), watchdogId, recoveryId}) {
       if (id != null && await Alarm.isRinging(id)) await Alarm.stop(id);
     }
   }

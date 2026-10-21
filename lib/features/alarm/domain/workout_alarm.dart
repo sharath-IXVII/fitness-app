@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'challenge.dart';
+
+export 'challenge.dart';
+
 enum AlarmSound {
   sunrise('Morning chime', 'sunrise'),
   bells('Gentle bells', 'bells'),
@@ -30,6 +34,9 @@ class WorkoutAlarm {
     this.maxSnoozes = 1,
     this.snoozeMinutes = 5,
     this.hardMode = false,
+    this.strict = false,
+    this.challenge = AlarmChallenge.workout,
+    this.level = ChallengeLevel.medium,
     this.skipDate,
   });
 
@@ -55,13 +62,22 @@ class WorkoutAlarm {
   /// No snooze and no emergency stop: the workout is the only way out.
   final bool hardMode;
 
+  /// Strict mode: everything in [hardMode], plus volume locked at maximum
+  /// and the phone kept on the alarm until the challenge is done.
+  final bool strict;
+
+  /// How the alarm is turned off, and how hard the brain games are.
+  final AlarmChallenge challenge;
+  final ChallengeLevel level;
+
   /// A single day on which a repeating alarm stays silent.
   final DateTime? skipDate;
 
   static const maxUserId = 9000;
 
   bool get repeats => days.isNotEmpty;
-  int get allowedSnoozes => hardMode ? 0 : maxSnoozes;
+  bool get noEscape => hardMode || strict;
+  int get allowedSnoozes => noEscape ? 0 : maxSnoozes;
 
   /// The next moment this alarm should ring, strictly after [now].
   DateTime nextOccurrence(DateTime now) {
@@ -103,6 +119,9 @@ class WorkoutAlarm {
     int? maxSnoozes,
     int? snoozeMinutes,
     bool? hardMode,
+    bool? strict,
+    AlarmChallenge? challenge,
+    ChallengeLevel? level,
     DateTime? skipDate,
     bool clearSkip = false,
   }) => WorkoutAlarm(
@@ -119,6 +138,9 @@ class WorkoutAlarm {
     maxSnoozes: maxSnoozes ?? this.maxSnoozes,
     snoozeMinutes: snoozeMinutes ?? this.snoozeMinutes,
     hardMode: hardMode ?? this.hardMode,
+    strict: strict ?? this.strict,
+    challenge: challenge ?? this.challenge,
+    level: level ?? this.level,
     skipDate: clearSkip ? null : (skipDate ?? this.skipDate),
   );
 
@@ -136,6 +158,9 @@ class WorkoutAlarm {
     'maxSnoozes': maxSnoozes,
     'snoozeMinutes': snoozeMinutes,
     'hardMode': hardMode,
+    'strict': strict,
+    'challenge': challenge.name,
+    'level': level.name,
     if (skipDate != null) 'skip': skipDate!.toIso8601String(),
   };
 
@@ -155,6 +180,9 @@ class WorkoutAlarm {
       maxSnoozes: j['maxSnoozes'] as int? ?? 1,
       snoozeMinutes: j['snoozeMinutes'] as int? ?? 5,
       hardMode: j['hardMode'] as bool? ?? false,
+      strict: j['strict'] as bool? ?? false,
+      challenge: AlarmChallenge.values.asNameMap()[j['challenge']] ?? AlarmChallenge.workout,
+      level: ChallengeLevel.values.asNameMap()[j['level']] ?? ChallengeLevel.medium,
       skipDate: j['skip'] == null ? null : DateTime.parse(j['skip'] as String),
     );
   }

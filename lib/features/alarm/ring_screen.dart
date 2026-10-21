@@ -9,17 +9,21 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/router.dart';
+import '../../core/storage.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/gradient_button.dart';
+import '../challenge/challenge_screen.dart';
+import '../workout/domain/routine.dart';
 import '../workout/routine_providers.dart';
 import '../workout/workout_screen.dart';
 import 'alarm_providers.dart';
 import 'alarm_scheduler.dart';
+import 'strict_mode.dart';
 
-/// Full-screen view while an alarm rings: an animated sunrise over rolling
-/// hills. There is no dismiss button — the way out is the workout. Snooze
-/// and a deliberately awkward emergency stop exist unless hard mode is on.
+/// Full-screen view while an alarm rings. There is no dismiss button — the
+/// way out is the workout or brain game. Snooze and a deliberately awkward
+/// emergency stop exist unless the alarm has no snooze or strict mode on.
 class RingScreen extends ConsumerStatefulWidget {
   const RingScreen({super.key, required this.info});
 
@@ -46,6 +50,23 @@ class _RingScreenState extends ConsumerState<RingScreen> {
   void initState() {
     super.initState();
     _clock = Timer.periodic(const Duration(seconds: 1), (_) => setState(() => _now = DateTime.now()));
+    if (widget.info.strict) StrictMode.engage(ref.read(sharedPrefsProvider), widget.info);
+  }
+
+  void _start(Routine routine) {
+    HapticFeedback.mediumImpact();
+    final info = widget.info;
+    if (info.challenge.isGame) {
+      context.go(
+        Routes.challenge,
+        extra: ChallengeArgs(challenge: info.challenge, level: info.level, ring: info),
+      );
+    } else {
+      context.go(
+        Routes.workout,
+        extra: WorkoutArgs(routineId: routine.id, ring: info),
+      );
+    }
   }
 
   @override
@@ -112,34 +133,46 @@ class _RingScreenState extends ConsumerState<RingScreen> {
                         children: [
                           Text('To turn it off', style: text.labelMedium?.copyWith(color: AppColors.textSecondary)),
                           const Spacer(),
-                          if (info.hardMode)
-                            Text('Hard mode', style: text.labelMedium?.copyWith(color: AppColors.danger)),
+                          if (info.strict)
+                            _Tag(icon: Icons.lock_outline_rounded, label: 'Strict mode')
+                          else if (info.hardMode)
+                            _Tag(icon: Icons.local_fire_department_outlined, label: 'No snooze'),
                         ],
                       ),
                       const SizedBox(height: 6),
-                      for (final s in routine.steps)
+                      if (info.challenge.isGame)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 5),
                           child: Row(
                             children: [
-                              Icon(s.exercise.icon, size: 20, color: AppColors.primary),
+                              Icon(info.challenge.icon, size: 20, color: AppColors.primary),
                               const SizedBox(width: 12),
-                              Expanded(child: Text(s.exercise.label, style: text.titleSmall)),
-                              Text(s.exercise.formatTarget(s.target), style: text.titleSmall),
+                              Expanded(child: Text(info.challenge.description, style: text.titleSmall)),
+                              Text(info.level.label, style: text.titleSmall),
                             ],
                           ),
-                        ),
+                        )
+                      else
+                        for (final s in routine.steps)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 5),
+                            child: Row(
+                              children: [
+                                Icon(s.exercise.icon, size: 20, color: AppColors.primary),
+                                const SizedBox(width: 12),
+                                Expanded(child: Text(s.exercise.label, style: text.titleSmall)),
+                                Text(s.exercise.formatTarget(s.target), style: text.titleSmall),
+                              ],
+                            ),
+                          ),
                     ],
                   ),
                 ).animate().fadeIn(duration: 300.ms, delay: 150.ms).moveY(begin: 8, end: 0, curve: Curves.easeOutCubic),
                 const SizedBox(height: 16),
                 GradientButton(
-                  label: 'Start workout',
+                  label: info.challenge.isGame ? 'Start ${info.challenge.label.toLowerCase()}' : 'Start workout',
                   icon: Icons.play_arrow_rounded,
-                  onPressed: () => context.go(
-                    Routes.workout,
-                    extra: WorkoutArgs(routineId: routine.id, ring: info),
-                  ),
+                  onPressed: () => _start(routine),
                 ),
                 const SizedBox(height: 10),
                 Row(
@@ -174,6 +207,23 @@ class _RingScreenState extends ConsumerState<RingScreen> {
       ),
     );
   }
+}
+
+class _Tag extends StatelessWidget {
+  const _Tag({required this.icon, required this.label});
+
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      Icon(icon, size: 14, color: AppColors.amber),
+      const SizedBox(width: 4),
+      Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: AppColors.amber)),
+    ],
+  );
 }
 
 /// Alarm icon with two soft rings expanding outward — the only motion on

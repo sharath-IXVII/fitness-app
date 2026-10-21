@@ -10,6 +10,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <!-- Strict mode: reopen the alarm over other apps until it's dealt with. -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <!-- Rep counting with the front camera -->
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-feature android:name="android.hardware.camera.front" android:required="false"/>
@@ -54,6 +56,13 @@
             </intent-filter>
         </activity>
         <service android:name="com.gdelataillade.alarm.services.NotificationOnKillService"/>
+        <!-- Strict mode: reopen the app after a reboot if a strict alarm was active. -->
+        <receiver android:exported="false" android:name=".StrictBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.QUICKBOOT_POWERON"/>
+            </intent-filter>
+        </receiver>
         <!-- My Day and water reminders (flutter_local_notifications). -->
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver"/>
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ActionBroadcastReceiver"/>

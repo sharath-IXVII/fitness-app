@@ -10,11 +10,15 @@ import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 
 import '../../core/router.dart';
+import '../../core/storage.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/gradient_button.dart';
 import '../alarm/alarm_providers.dart';
 import '../alarm/alarm_scheduler.dart';
 import '../alarm/app_permissions.dart';
+import '../alarm/domain/challenge.dart';
+import '../alarm/strict_mode.dart';
+import '../challenge/challenge_screen.dart';
 import '../streaks/daily_log_providers.dart';
 import 'domain/rep_counter.dart';
 import 'domain/routine.dart';
@@ -157,6 +161,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     if (ring != null) {
       await AlarmScheduler.stop(AlarmScheduler.watchdogId);
       await ref.read(alarmsProvider.notifier).handled(ring.alarmId);
+      if (ring.strict) await StrictMode.release(ref.read(sharedPrefsProvider));
     }
     await ref.read(dailyLogsProvider.notifier).update((l) => l.copyWith(workoutDone: true));
     if (!mounted) return;
@@ -480,6 +485,19 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
           ),
           TextButton(onPressed: AppPermissions.openSettings, child: const Text('Open settings')),
           if (!_alarmMode) TextButton(onPressed: () => context.pop(), child: const Text('Back')),
+          // Without a camera the alarm can still be turned off the hard way.
+          if (_alarmMode)
+            TextButton(
+              onPressed: () => context.go(
+                Routes.challenge,
+                extra: ChallengeArgs(
+                  challenge: AlarmChallenge.mixed,
+                  level: ChallengeLevel.hard,
+                  ring: widget.args.ring,
+                ),
+              ),
+              child: const Text('No camera? Solve hard brain games instead'),
+            ),
         ],
       ),
     );

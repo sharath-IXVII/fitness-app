@@ -228,9 +228,12 @@ class _AlarmCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(parts[1], style: text.titleMedium?.copyWith(color: AppColors.textSecondary)),
                         ],
-                        if (alarm.hardMode) ...[
+                        if (alarm.strict) ...[
                           const SizedBox(width: 8),
-                          const Icon(Icons.local_fire_department_rounded, size: 18, color: AppColors.danger),
+                          const Icon(Icons.lock_outline_rounded, size: 18, color: AppColors.amber),
+                        ] else if (alarm.hardMode) ...[
+                          const SizedBox(width: 8),
+                          const Icon(Icons.local_fire_department_rounded, size: 18, color: AppColors.amber),
                         ],
                       ],
                     ),
@@ -240,7 +243,11 @@ class _AlarmCard extends StatelessWidget {
                       spacing: 6,
                       runSpacing: 6,
                       children: [
-                        _Tag(icon: Icons.fitness_center_rounded, label: '${routine.name} routine'),
+                        if (alarm.challenge.isGame)
+                          _Tag(icon: alarm.challenge.icon, label: '${alarm.challenge.label} · ${alarm.level.label}')
+                        else
+                          _Tag(icon: Icons.fitness_center_rounded, label: '${routine.name} routine'),
+                        if (alarm.strict) const _Tag(icon: Icons.lock_outline_rounded, label: 'Strict'),
                         _Tag(icon: Icons.music_note_rounded, label: alarm.sound.label),
                         if (skipping && on)
                           _Tag(

@@ -104,7 +104,9 @@ class SettingToggle extends StatelessWidget {
   final String title;
   final String? subtitle;
   final bool value;
-  final ValueChanged<bool> onChanged;
+
+  /// Null shows the toggle disabled.
+  final ValueChanged<bool>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -126,10 +128,12 @@ class SettingToggle extends StatelessWidget {
           ),
           Switch(
             value: value,
-            onChanged: (v) {
-              HapticFeedback.selectionClick();
-              onChanged(v);
-            },
+            onChanged: onChanged == null
+                ? null
+                : (v) {
+                    HapticFeedback.selectionClick();
+                    onChanged!(v);
+                  },
             activeTrackColor: AppColors.primary,
           ),
         ],

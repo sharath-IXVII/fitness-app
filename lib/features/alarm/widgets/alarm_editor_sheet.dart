@@ -4,15 +4,19 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../core/router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/gradient_button.dart';
 import '../../../core/widgets/form_controls.dart';
 import '../../../core/widgets/pressable.dart';
+import '../../challenge/challenge_screen.dart';
 import '../../workout/routine_providers.dart';
 import '../alarm_providers.dart';
 import '../app_permissions.dart';
 import '../domain/workout_alarm.dart';
+import '../strict_mode.dart';
 
 class AlarmEditorSheet extends ConsumerStatefulWidget {
   const AlarmEditorSheet({super.key, required this.alarm, this.isNew = false});
@@ -76,6 +80,27 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
     final messenger = ScaffoldMessenger.of(context);
     Navigator.pop(context);
     messenger.showSnackBar(SnackBar(content: Text('Alarm set for ${_untilText(saved)} from now')));
+  }
+
+  Future<void> _setStrict(bool on) async {
+    _update(_a.copyWith(strict: on));
+    if (!on || await StrictMode.canReopenItself() || !mounted) return;
+    final open = await showDialog<bool>(
+      context: context,
+      builder: (c) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: const Text('One more permission'),
+        content: const Text(
+          'To bring the alarm back when someone leaves it, FitAlarm needs "Display over other apps". '
+          'On the next screen, find FitAlarm and turn it on.',
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Later')),
+          TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('Open settings')),
+        ],
+      ),
+    );
+    if (open == true) await StrictMode.openReopenSettings();
   }
 
   static String _untilText(WorkoutAlarm a) {
@@ -214,24 +239,62 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                       ),
                     ),
                     FormSection(
-                      title: 'Routine to stop it',
+                      title: 'Turn it off by',
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: [
-                              for (final r in routines)
-                                ChoicePill(
-                                  label: r.name,
-                                  selected: _a.routineId == r.id,
-                                  onTap: () => _update(_a.copyWith(routineId: r.id)),
-                                ),
-                            ],
-                          ),
+                          for (final c in AlarmChallenge.values)
+                            _ChoiceRow(
+                              icon: c.icon,
+                              title: c.label,
+                              subtitle: c.description,
+                              selected: _a.challenge == c,
+                              onTap: () => _update(_a.copyWith(challenge: c)),
+                            ),
                           const SizedBox(height: 6),
-                          Text(routineById(routines, _a.routineId).summary, style: text.bodySmall),
+                          AnimatedSize(
+                            duration: const Duration(milliseconds: 250),
+                            alignment: Alignment.topCenter,
+                            child: _a.challenge.isGame
+                                ? Row(
+                                    children: [
+                                      Expanded(
+                                        child: SegmentedPills(
+                                          options: [for (final l in ChallengeLevel.values) l.label],
+                                          index: _a.level.index,
+                                          onChanged: (i) => _update(_a.copyWith(level: ChallengeLevel.values[i])),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      TextButton(
+                                        onPressed: () => context.push(
+                                          Routes.challenge,
+                                          extra: ChallengeArgs(challenge: _a.challenge, level: _a.level),
+                                        ),
+                                        child: const Text('Try it'),
+                                      ),
+                                    ],
+                                  )
+                                : Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Wrap(
+                                        spacing: 8,
+                                        runSpacing: 8,
+                                        children: [
+                                          for (final r in routines)
+                                            ChoicePill(
+                                              label: r.name,
+                                              selected: _a.routineId == r.id,
+                                              onTap: () => _update(_a.copyWith(routineId: r.id)),
+                                            ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(routineById(routines, _a.routineId).summary, style: text.bodySmall),
+                                    ],
+                                  ),
+                          ),
                         ],
                       ),
                     ),
@@ -293,9 +356,9 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                       title: 'Snooze',
                       child: AnimatedOpacity(
                         duration: const Duration(milliseconds: 250),
-                        opacity: _a.hardMode ? 0.4 : 1,
+                        opacity: _a.noEscape ? 0.4 : 1,
                         child: IgnorePointer(
-                          ignoring: _a.hardMode,
+                          ignoring: _a.noEscape,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -327,13 +390,26 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                       ),
                     ),
                     FormSection(
-                      title: 'Challenge',
-                      child: SettingToggle(
-                        icon: Icons.local_fire_department_rounded,
-                        title: 'Hard mode',
-                        subtitle: 'No snooze and no emergency stop — the workout is the only way out',
-                        value: _a.hardMode,
-                        onChanged: (v) => _update(_a.copyWith(hardMode: v)),
+                      title: 'How strict',
+                      child: Column(
+                        children: [
+                          SettingToggle(
+                            icon: Icons.snooze_rounded,
+                            title: 'No snooze or emergency stop',
+                            subtitle: 'Finishing the task is the only way to turn it off',
+                            value: _a.noEscape,
+                            onChanged: _a.strict ? null : (v) => _update(_a.copyWith(hardMode: v)),
+                          ),
+                          SettingToggle(
+                            icon: Icons.lock_outline_rounded,
+                            title: 'Strict mode',
+                            subtitle:
+                                'Rings at full volume that the buttons can\'t lower, keeps your phone on the alarm '
+                                'until you finish, and rings again if the phone is restarted',
+                            value: _a.strict,
+                            onChanged: _setStrict,
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -345,6 +421,66 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
               child: GradientButton(label: 'Save alarm', icon: Icons.check_rounded, onPressed: _save),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// A selectable row with an icon, used for the challenge choice.
+class _ChoiceRow extends StatelessWidget {
+  const _ChoiceRow({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: Pressable(
+        onTap: onTap,
+        scale: 0.98,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          margin: const EdgeInsets.only(bottom: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.primary.withValues(alpha: 0.08) : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: selected ? AppColors.primary.withValues(alpha: 0.5) : AppColors.stroke),
+          ),
+          child: Row(
+            children: [
+              Icon(icon, size: 22, color: selected ? AppColors.primary : AppColors.textSecondary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: text.titleSmall),
+                    Text(subtitle, style: text.bodySmall),
+                  ],
+                ),
+              ),
+              AnimatedOpacity(
+                duration: const Duration(milliseconds: 200),
+                opacity: selected ? 1 : 0,
+                child: const Icon(Icons.check_rounded, color: AppColors.primary, size: 20),
+              ),
+            ],
+          ),
         ),
       ),
     );

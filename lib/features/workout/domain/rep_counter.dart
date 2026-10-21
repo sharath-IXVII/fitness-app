@@ -22,6 +22,16 @@ abstract class RepCounter {
     Exercise.lunge => LungeCounter(),
     Exercise.highKnees => HighKneesCounter(),
     Exercise.plank => PlankTimer(),
+    Exercise.kneePushUp => PushUpCounter(kneeling: true),
+    Exercise.bicepCurl => BicepCurlCounter(),
+    Exercise.tricepDip => TricepDipCounter(),
+    Exercise.shoulderPress => ShoulderPressCounter(),
+    Exercise.lateralRaise => LateralRaiseCounter(),
+    Exercise.sitUp => SitUpCounter(),
+    Exercise.gluteBridge => GluteBridgeCounter(),
+    Exercise.mountainClimber => MountainClimberCounter(),
+    Exercise.wallSit => WallSitTimer(),
+    Exercise.burpee => BurpeeCounter(),
   };
 
   static const minVisibility = 0.5;
@@ -170,24 +180,29 @@ class SquatCounter extends RepCounter {
 }
 
 /// Side view: body roughly horizontal, elbows below ~95° then back past ~150°.
+/// With [kneeling], the knee replaces the ankle as the end of the body line.
 class PushUpCounter extends RepCounter {
+  PushUpCounter({this.kneeling = false});
+
+  final bool kneeling;
   static const down = 95.0, up = 150.0;
   final _elbow = _Smooth();
   bool _isDown = false;
 
   @override
   bool update(Landmarks? lm, Duration now) {
-    final pts = lm == null ? null : _bestSide(lm, ['shoulder', 'elbow', 'wrist', 'hip', 'ankle']);
+    final end = kneeling ? 'knee' : 'ankle';
+    final pts = lm == null ? null : _bestSide(lm, ['shoulder', 'elbow', 'wrist', 'hip', end]);
     visible = pts != null;
     if (pts == null) {
       hint = 'Place the phone to your side so your whole body is visible';
       return false;
     }
-    if (_tilt(pts['shoulder']!, pts['ankle']!) > 40) {
+    if (_tilt(pts['shoulder']!, pts[end]!) > (kneeling ? 50 : 40)) {
       hint = 'Get into push-up position';
       return false;
     }
-    final straight = jointAngle(pts['shoulder']!, pts['hip']!, pts['ankle']!);
+    final straight = jointAngle(pts['shoulder']!, pts['hip']!, pts[end]!);
     hint = straight < 150 ? 'Keep your body in a straight line' : null;
 
     final elbow = _elbow.add(jointAngle(pts['shoulder']!, pts['elbow']!, pts['wrist']!));
@@ -346,6 +361,319 @@ class PlankTimer extends RepCounter {
       return seconds.floor() > before;
     }
     motion = 0;
+    return false;
+  }
+}
+
+/// Elbow flexion on either arm: a rep when a curled arm (below ~55°)
+/// straightens again (past ~145°). Alternating arms each count; both arms
+/// curling together count once, since the second lands inside [minRepGap].
+class BicepCurlCounter extends RepCounter {
+  static const curled = 55.0, extended = 145.0;
+  final _smooth = {_Side.left: _Smooth(), _Side.right: _Smooth()};
+  final _isCurled = {_Side.left: false, _Side.right: false};
+
+  @override
+  bool update(Landmarks? lm, Duration now) {
+    final angles = <_Side, double>{};
+    if (lm != null) {
+      for (final s in _Side.values) {
+        final sh = _p(lm, _j('shoulder', s)), el = _p(lm, _j('elbow', s)), wr = _p(lm, _j('wrist', s));
+        if (sh != null && el != null && wr != null) angles[s] = _smooth[s]!.add(jointAngle(sh, el, wr));
+      }
+    }
+    visible = angles.isNotEmpty;
+    if (!visible) {
+      hint = 'Face the phone so your arms are visible';
+      return false;
+    }
+    hint = null;
+    motion = angles.values.map((a) => _ramp(a, 160, curled)).reduce(math.max);
+    var counted = false;
+    for (final MapEntry(key: side, value: a) in angles.entries) {
+      if (!_isCurled[side]! && a < curled) {
+        _isCurled[side] = true;
+      } else if (_isCurled[side]! && a > extended) {
+        _isCurled[side] = false;
+        counted = countRep(now) || counted;
+      }
+    }
+    return counted;
+  }
+}
+
+/// Bench/chair dips, side view: elbows bend below ~100° then extend past ~150°.
+class TricepDipCounter extends RepCounter {
+  static const down = 100.0, up = 150.0;
+  final _elbow = _Smooth();
+  bool _isDown = false;
+
+  @override
+  bool update(Landmarks? lm, Duration now) {
+    final pts = lm == null ? null : _bestSide(lm, ['shoulder', 'elbow', 'wrist', 'hip']);
+    visible = pts != null;
+    if (pts == null) {
+      hint = 'Sit side-on to the phone so your arm and hip are visible';
+      return false;
+    }
+    if (pts['wrist']!.y < pts['shoulder']!.y) {
+      hint = 'Place your hands on the edge behind you';
+      return false;
+    }
+    hint = null;
+    final elbow = _elbow.add(jointAngle(pts['shoulder']!, pts['elbow']!, pts['wrist']!));
+    motion = _ramp(elbow, 165, down);
+    if (!_isDown && elbow < down) {
+      _isDown = true;
+    } else if (_isDown && elbow > up) {
+      _isDown = false;
+      return countRep(now);
+    }
+    return false;
+  }
+}
+
+/// Facing the camera: from hands at shoulder height (elbows bent) to both
+/// arms straight overhead. Counted at the top.
+class ShoulderPressCounter extends RepCounter {
+  bool _ready = false;
+
+  @override
+  bool update(Landmarks? lm, Duration now) {
+    final pts = <_Side, (PoseLandmark, PoseLandmark, PoseLandmark)>{};
+    if (lm != null) {
+      for (final s in _Side.values) {
+        final sh = _p(lm, _j('shoulder', s)), el = _p(lm, _j('elbow', s)), wr = _p(lm, _j('wrist', s));
+        if (sh != null && el != null && wr != null) pts[s] = (sh, el, wr);
+      }
+    }
+    visible = pts.length == 2;
+    if (!visible) {
+      hint = 'Face the phone so both arms are visible';
+      return false;
+    }
+    hint = null;
+    final arms = pts.values.toList();
+    final upperArm = math.max(_dist(arms[0].$1, arms[0].$2), 1.0);
+    // 0 with wrists at shoulder height, 1 with wrists a full arm above it.
+    final lift = arms.map((a) => _ramp(a.$1.y - a.$3.y, 0, upperArm * 1.8)).reduce(math.min);
+    final straight = arms.every((a) => jointAngle(a.$1, a.$2, a.$3) > 150);
+    final bent = arms.every((a) => jointAngle(a.$1, a.$2, a.$3) < 110);
+    motion = lift;
+    if (!_ready && bent && lift < 0.5) {
+      _ready = true;
+    } else if (_ready && straight && lift > 0.85) {
+      _ready = false;
+      return countRep(now);
+    }
+    return false;
+  }
+}
+
+/// Facing the camera: both arms raised out to the side (shoulder angle past
+/// ~75°) and lowered again (below ~30°).
+class LateralRaiseCounter extends RepCounter {
+  static const top = 75.0, bottom = 30.0;
+  bool _isUp = false;
+
+  @override
+  bool update(Landmarks? lm, Duration now) {
+    final angles = <double>[];
+    if (lm != null) {
+      for (final s in _Side.values) {
+        final h = _p(lm, _j('hip', s)), sh = _p(lm, _j('shoulder', s)), el = _p(lm, _j('elbow', s));
+        if (h != null && sh != null && el != null) angles.add(jointAngle(h, sh, el));
+      }
+    }
+    visible = angles.length == 2;
+    if (!visible) {
+      hint = 'Face the phone so both arms and hips are visible';
+      return false;
+    }
+    final low = math.min(angles[0], angles[1]);
+    motion = _ramp(low, 15, top);
+    hint = (angles[0] - angles[1]).abs() > 35 ? 'Raise both arms together' : null;
+    if (!_isUp && low > top) {
+      _isUp = true;
+    } else if (_isUp && math.max(angles[0], angles[1]) < bottom) {
+      _isUp = false;
+      return countRep(now);
+    }
+    return false;
+  }
+}
+
+/// Side view, lying with knees bent: the hip angle (shoulder–hip–knee) closes
+/// below ~70° at the top of the sit-up and opens past ~115° lying down.
+class SitUpCounter extends RepCounter {
+  static const upAngle = 70.0, downAngle = 115.0;
+  final _hip = _Smooth();
+  bool _isUp = false;
+  bool _wasDown = false;
+
+  @override
+  bool update(Landmarks? lm, Duration now) {
+    final pts = lm == null ? null : _bestSide(lm, ['shoulder', 'hip', 'knee']);
+    visible = pts != null;
+    if (pts == null) {
+      hint = 'Lie side-on to the phone so your shoulders, hips and knees are visible';
+      return false;
+    }
+    hint = null;
+    final hip = _hip.add(jointAngle(pts['shoulder']!, pts['hip']!, pts['knee']!));
+    motion = _ramp(hip, 130, upAngle);
+    if (hip > downAngle) {
+      _wasDown = true;
+      _isUp = false;
+    } else if (_wasDown && !_isUp && hip < upAngle) {
+      _isUp = true;
+      _wasDown = false;
+      return countRep(now);
+    }
+    return false;
+  }
+}
+
+/// Side view, lying on the back: hips drop (shoulder–hip–knee below ~145°)
+/// then lift until the body is straight (past ~165°). Counted at the top.
+class GluteBridgeCounter extends RepCounter {
+  static const down = 145.0, up = 165.0;
+  final _hip = _Smooth();
+  bool _isDown = false;
+
+  @override
+  bool update(Landmarks? lm, Duration now) {
+    final pts = lm == null ? null : _bestSide(lm, ['shoulder', 'hip', 'knee']);
+    visible = pts != null;
+    if (pts == null) {
+      hint = 'Lie side-on to the phone so your shoulders, hips and knees are visible';
+      return false;
+    }
+    if (_tilt(pts['shoulder']!, pts['knee']!) > 50) {
+      hint = 'Lie on your back with your knees bent';
+      return false;
+    }
+    hint = null;
+    final hip = _hip.add(jointAngle(pts['shoulder']!, pts['hip']!, pts['knee']!));
+    motion = _ramp(hip, 130, up);
+    if (!_isDown && hip < down) {
+      _isDown = true;
+    } else if (_isDown && hip > up) {
+      _isDown = false;
+      return countRep(now);
+    }
+    return false;
+  }
+}
+
+/// Plank position, side view: each knee driven towards the chest (hip angle
+/// below ~100°) counts once it extends back (past ~150°).
+class MountainClimberCounter extends RepCounter {
+  static const tucked = 100.0, extended = 150.0;
+  final _in = {_Side.left: false, _Side.right: false};
+
+  @override
+  bool update(Landmarks? lm, Duration now) {
+    final shoulder = lm == null ? null : _bestSide(lm, ['shoulder', 'wrist']);
+    final legs = <_Side, double>{};
+    if (lm != null && shoulder != null) {
+      for (final s in _Side.values) {
+        final h = _p(lm, _j('hip', s)), k = _p(lm, _j('knee', s));
+        if (h != null && k != null) legs[s] = jointAngle(shoulder['shoulder']!, h, k);
+      }
+    }
+    visible = shoulder != null && legs.isNotEmpty;
+    if (!visible) {
+      hint = 'Place the phone to your side so your whole body is visible';
+      return false;
+    }
+    if (shoulder!['wrist']!.y < shoulder['shoulder']!.y) {
+      hint = 'Get into push-up position';
+      return false;
+    }
+    hint = null;
+    motion = legs.values.map((a) => _ramp(a, 170, tucked)).reduce(math.max);
+    var counted = false;
+    for (final MapEntry(key: side, value: a) in legs.entries) {
+      if (!_in[side]! && a < tucked) {
+        _in[side] = true;
+      } else if (_in[side]! && a > extended) {
+        _in[side] = false;
+        counted = countRep(now) || counted;
+      }
+    }
+    return counted;
+  }
+}
+
+/// Seconds held with knees at roughly 90° (70–115°) and the back upright.
+class WallSitTimer extends RepCounter {
+  double seconds = 0;
+  Duration? _last;
+  bool holding = false;
+
+  @override
+  int get progress => seconds.floor();
+
+  @override
+  bool update(Landmarks? lm, Duration now) {
+    final dt = _last == null ? Duration.zero : now - _last!;
+    _last = now;
+    final pts = lm == null ? null : _bestSide(lm, ['shoulder', 'hip', 'knee', 'ankle']);
+    visible = pts != null;
+    holding = false;
+    if (pts == null) {
+      hint = 'Sit side-on to the phone so your whole body is visible';
+      return false;
+    }
+    final knee = jointAngle(pts['hip']!, pts['knee']!, pts['ankle']!);
+    final upright = _tilt(pts['hip']!, pts['shoulder']!) > 60;
+    if (!upright) {
+      hint = 'Keep your back against the wall';
+    } else if (knee > 115) {
+      hint = 'Slide down until your knees are at 90°';
+    } else if (knee < 70) {
+      hint = 'Come up a little — knees at 90°';
+    } else {
+      hint = null;
+      holding = true;
+      final before = seconds.floor();
+      seconds += math.min(dt.inMicroseconds / 1e6, 0.5);
+      motion = 1;
+      return seconds.floor() > before;
+    }
+    motion = 0;
+    return false;
+  }
+}
+
+/// Side view: from standing to the floor (body horizontal) and back up to
+/// standing tall. Counted on returning to standing.
+class BurpeeCounter extends RepCounter {
+  bool _wasDown = false;
+
+  @override
+  bool update(Landmarks? lm, Duration now) {
+    final pts = lm == null ? null : _bestSide(lm, ['shoulder', 'hip', 'knee', 'ankle']);
+    visible = pts != null;
+    if (pts == null) {
+      hint = 'Step back so your whole body is in the frame';
+      return false;
+    }
+    hint = null;
+    final body = _tilt(pts['ankle']!, pts['shoulder']!);
+    final knee = jointAngle(pts['hip']!, pts['knee']!, pts['ankle']!);
+    final hip = jointAngle(pts['shoulder']!, pts['hip']!, pts['knee']!);
+    final standing = body > 70 && knee > 155 && hip > 155;
+    // Both torso and legs flat, so a deep squat isn't mistaken for the floor.
+    final floor = _tilt(pts['hip']!, pts['shoulder']!) < 35 && _tilt(pts['hip']!, pts['ankle']!) < 35;
+    motion = _ramp(body, 85, 20);
+    if (!_wasDown && floor) {
+      _wasDown = true;
+    } else if (_wasDown && standing) {
+      _wasDown = false;
+      return countRep(now);
+    }
     return false;
   }
 }

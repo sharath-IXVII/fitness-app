@@ -45,27 +45,12 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
   Future<void> _addStep() async {
     final picked = await showModalBottomSheet<Exercise>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
-      builder: (c) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (final e in Exercise.values)
-                ListTile(
-                  leading: Icon(e.icon, color: AppColors.primary),
-                  title: Text(e.label),
-                  subtitle: Text(e.timed ? 'Timed hold' : 'Counted reps'),
-                  onTap: () => Navigator.pop(c, e),
-                ),
-            ],
-          ),
-        ),
-      ),
+      builder: (c) => const _ExercisePicker(),
     );
-    if (picked != null) setState(() => _steps = [..._steps, RoutineStep(picked, picked.timed ? 30 : 10)]);
+    if (picked != null) setState(() => _steps = [..._steps, RoutineStep(picked, picked.defaultTarget)]);
   }
 
   Future<void> _save() async {
@@ -133,7 +118,15 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                           children: [
                             Icon(s.exercise.icon, color: AppColors.primary),
                             const SizedBox(width: 12),
-                            Expanded(child: Text(s.exercise.label, style: text.titleMedium)),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(s.exercise.label, style: text.titleMedium),
+                                  Text(s.exercise.muscles, style: text.bodySmall),
+                                ],
+                              ),
+                            ),
                             _Round(icon: Icons.remove_rounded, onTap: () => _change(i, -1)),
                             SizedBox(
                               width: 52,
@@ -185,4 +178,64 @@ class _Round extends StatelessWidget {
       child: Icon(icon, size: 18, color: AppColors.textPrimary),
     ),
   );
+}
+
+/// All exercises, grouped by body area.
+class _ExercisePicker extends StatelessWidget {
+  const _ExercisePicker();
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return DraggableScrollableSheet(
+      expand: false,
+      initialChildSize: 0.75,
+      maxChildSize: 0.92,
+      minChildSize: 0.4,
+      builder: (c, scroll) => ListView(
+        controller: scroll,
+        padding: const EdgeInsets.fromLTRB(12, 10, 12, 24),
+        children: [
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(color: AppColors.stroke, borderRadius: BorderRadius.circular(2)),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 14, 8, 2),
+            child: Text('Add exercise', style: text.titleLarge),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
+            child: Text('Every exercise is counted by the camera.', style: text.bodySmall),
+          ),
+          for (final g in ExerciseGroup.values) ...[
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 16, 8, 4),
+              child: Text(
+                g.label.toUpperCase(),
+                style: text.labelSmall?.copyWith(letterSpacing: 1.2, color: AppColors.textMuted),
+              ),
+            ),
+            for (final e in Exercise.values.where((e) => e.group == g))
+              ListTile(
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                leading: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(12)),
+                  child: Icon(e.icon, color: AppColors.primary, size: 20),
+                ),
+                title: Text(e.label, style: text.titleSmall),
+                subtitle: Text('${e.muscles} · ${e.timed ? 'timed hold' : 'reps'}', style: text.bodySmall),
+                trailing: const Icon(Icons.add_rounded, color: AppColors.primary),
+                onTap: () => Navigator.pop(context, e),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
 }

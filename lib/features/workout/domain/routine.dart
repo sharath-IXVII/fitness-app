@@ -73,7 +73,43 @@ class Routine {
     ],
   );
 
-  static const presets = [beginner, moderate, advanced];
+  static const upperBody = Routine(
+    id: 'upper',
+    name: 'Upper body',
+    builtIn: true,
+    steps: [
+      RoutineStep(Exercise.pushUp, 12),
+      RoutineStep(Exercise.bicepCurl, 20),
+      RoutineStep(Exercise.shoulderPress, 12),
+      RoutineStep(Exercise.lateralRaise, 12),
+      RoutineStep(Exercise.tricepDip, 12),
+    ],
+  );
+
+  static const core = Routine(
+    id: 'core',
+    name: 'Core',
+    builtIn: true,
+    steps: [
+      RoutineStep(Exercise.sitUp, 15),
+      RoutineStep(Exercise.mountainClimber, 20),
+      RoutineStep(Exercise.gluteBridge, 15),
+      RoutineStep(Exercise.plank, 40),
+    ],
+  );
+
+  static const cardio = Routine(
+    id: 'cardio',
+    name: 'Wake-up cardio',
+    builtIn: true,
+    steps: [
+      RoutineStep(Exercise.jumpingJack, 30),
+      RoutineStep(Exercise.highKnees, 30),
+      RoutineStep(Exercise.burpee, 6),
+    ],
+  );
+
+  static const presets = [beginner, moderate, advanced, upperBody, core, cardio];
 
   static Routine forLevel(FitnessLevel level) => switch (level) {
     FitnessLevel.beginner => beginner,

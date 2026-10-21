@@ -41,7 +41,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       await t.pumpWidget(_app(prefs));
-      await _wait(t, 2000);
+      await _wait(t, 3400);
 
       // Sign up with phone (demo backend: code 123456).
       expect(find.text('Create your account'), findsOneWidget);
@@ -52,7 +52,7 @@ void main() {
       await _wait(t, 1200);
       expect(find.text('Enter the code'), findsOneWidget);
       await t.enterText(find.byType(TextField), '123456');
-      await _wait(t, 1500);
+      await _wait(t, 2800); // success animation plays over the next screen
 
       await _tap(t, 'Get started');
       await t.enterText(find.byType(TextField), 'Sharath Kumar');
@@ -119,7 +119,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     await t.pumpWidget(_app(prefs));
-    await _wait(t, 2000);
+    await _wait(t, 3400);
 
     await _tap(t, 'Log in');
     expect(find.text('Welcome back'), findsOneWidget);
@@ -139,7 +139,7 @@ void main() {
     await t.pageBack();
     await _wait(t);
     await _tap(t, 'Continue with Google');
-    await _wait(t, 1500);
+    await _wait(t, 2800);
     expect(prefs.getString('auth.demo.v1'), contains('demo.user@gmail.com'));
     // Name is pre-filled from the Google account.
     await _tap(t, 'Get started');

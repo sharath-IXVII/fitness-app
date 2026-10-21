@@ -10,6 +10,7 @@ import '../../core/widgets/gradient_button.dart';
 import 'auth_providers.dart';
 import 'domain/app_user.dart';
 import 'widgets/auth_scaffold.dart';
+import 'widgets/auth_success.dart';
 
 class OtpArgs {
   const OtpArgs({required this.phone, required this.verificationId, this.resendToken});
@@ -74,6 +75,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     try {
       final user = await ref.read(authServiceProvider).verifyCode(_verificationId, _code.text);
       HapticFeedback.mediumImpact();
+      if (mounted) showAuthSuccess(context, name: user.name);
       ref.read(authProvider.notifier).signedIn(user);
     } on AuthFailure catch (e) {
       HapticFeedback.heavyImpact();
@@ -92,6 +94,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     try {
       final r = await ref.read(authServiceProvider).sendCode(widget.args.phone, resendToken: _resendToken);
       if (r.autoSignedIn != null) {
+        if (mounted) showAuthSuccess(context, name: r.autoSignedIn!.name);
         ref.read(authProvider.notifier).signedIn(r.autoSignedIn!);
         return;
       }

@@ -30,7 +30,9 @@ An alarm that only stops when you've done your workout. The phone camera counts 
 
 - **Flutter** (Android first), Riverpod for state, go_router for navigation
 - Look: light cream, light brown and white only, with Inter throughout
-- Motion is kept quiet: short fades, small rises, press feedback and progress rings that animate to their value
+- Opening: the Android launch screen shows the logo tile, then the app draws the clock and check onto it, the name rises in letter by letter, and the logo flies into place on the sign-in screen (see `docs/screenshots/opening_animation.png`)
+- Sign-in: steps slide in with a shared-axis transition, and a drawn check with a greeting confirms success
+- Motion is otherwise kept quiet: short fades, small rises, press feedback and progress rings that animate to their value
 - flutter_animate for motion, with custom painters for the progress rings, aurora background and heatmap
 - Fonts (Inter) are bundled in `assets/google_fonts` and work offline
 - Health maths in `lib/features/profile/domain/health_targets.dart`: Mifflin-St Jeor BMR, TDEE, macros, fiber, water and stride length

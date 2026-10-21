@@ -13,6 +13,7 @@ import '../../core/widgets/pressable.dart';
 import 'auth_providers.dart';
 import 'domain/app_user.dart';
 import 'widgets/auth_scaffold.dart';
+import 'widgets/auth_success.dart';
 
 /// First screen for signed-out users: choose Sign up or Log in, then phone
 /// or Google. Both modes use the same methods — the first sign-in creates
@@ -32,13 +33,22 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     setState(() => _googleBusy = true);
     try {
       final user = await ref.read(authServiceProvider).signInWithGoogle();
-      if (user != null) ref.read(authProvider.notifier).signedIn(user);
+      if (user != null) {
+        if (mounted) showAuthSuccess(context, name: user.name);
+        ref.read(authProvider.notifier).signedIn(user);
+      }
     } on AuthFailure catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
     } finally {
       if (mounted) setState(() => _googleBusy = false);
     }
   }
+
+  /// Staggered entrance that starts as the logo lands from the splash.
+  Widget _in(int order, Widget child) => child
+      .animate(delay: (280 + order * 70).ms)
+      .fadeIn(duration: 420.ms, curve: Curves.easeOut)
+      .moveY(begin: 14, end: 0, duration: 420.ms, curve: Curves.easeOutCubic);
 
   @override
   Widget build(BuildContext context) {
@@ -57,43 +67,52 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   children: [
                     const AppLogo(size: 56),
                     const SizedBox(height: 28),
-                    _ModeSwitch(signUp: _signUp, onChanged: (v) => setState(() => _signUp = v)),
+                    _in(0, _ModeSwitch(signUp: _signUp, onChanged: (v) => setState(() => _signUp = v))),
                     const SizedBox(height: 28),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
-                      child: Column(
-                        key: ValueKey(_signUp),
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(_signUp ? 'Create your account' : 'Welcome back', style: text.headlineMedium),
-                          const SizedBox(height: 8),
-                          Text(
-                            _signUp
-                                ? 'Join ${AppInfo.name} and turn every alarm into a workout.'
-                                : 'Log in to pick up your streak where you left it.',
-                            style: text.bodyMedium?.copyWith(height: 1.5),
-                          ),
-                        ],
+                    _in(
+                      1,
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 200),
+                        child: Column(
+                          key: ValueKey(_signUp),
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(_signUp ? 'Create your account' : 'Welcome back', style: text.headlineMedium),
+                            const SizedBox(height: 8),
+                            Text(
+                              _signUp
+                                  ? 'Join ${AppInfo.name} and turn every alarm into a workout.'
+                                  : 'Log in to pick up your streak where you left it.',
+                              style: text.bodyMedium?.copyWith(height: 1.5),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 32),
-                    GradientButton(
-                      label: 'Continue with phone',
-                      icon: Icons.phone_iphone_rounded,
-                      onPressed: () => context.push(Routes.authPhone, extra: _signUp),
+                    _in(
+                      2,
+                      GradientButton(
+                        label: 'Continue with phone',
+                        icon: Icons.phone_iphone_rounded,
+                        onPressed: () => context.push(Routes.authPhone, extra: _signUp),
+                      ),
                     ),
                     const SizedBox(height: 12),
-                    _GoogleButton(busy: _googleBusy, onTap: _google),
+                    _in(3, _GoogleButton(busy: _googleBusy, onTap: _google)),
                     const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        const Expanded(child: Divider(color: AppColors.stroke)),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          child: Text(_signUp ? 'Already have an account?' : 'New here?', style: text.bodySmall),
-                        ),
-                        const Expanded(child: Divider(color: AppColors.stroke)),
-                      ],
+                    _in(
+                      4,
+                      Row(
+                        children: [
+                          const Expanded(child: Divider(color: AppColors.stroke)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(_signUp ? 'Already have an account?' : 'New here?', style: text.bodySmall),
+                          ),
+                          const Expanded(child: Divider(color: AppColors.stroke)),
+                        ],
+                      ),
                     ),
                     Center(
                       child: TextButton(
@@ -102,10 +121,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       ),
                     ),
                   ],
-                ).animate().fadeIn(duration: 300.ms),
+                ),
               ),
             ),
-            if (demo) const DemoNote(),
+            if (demo) _in(5, const DemoNote()),
             Padding(
               padding: const EdgeInsets.fromLTRB(32, 0, 32, 16),
               child: Text(

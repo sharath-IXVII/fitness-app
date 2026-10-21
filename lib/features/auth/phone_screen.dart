@@ -10,6 +10,7 @@ import 'auth_providers.dart';
 import 'domain/app_user.dart';
 import 'otp_screen.dart';
 import 'widgets/auth_scaffold.dart';
+import 'widgets/auth_success.dart';
 
 class Country {
   const Country(this.name, this.flag, this.dial, this.digits);
@@ -90,6 +91,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
       final result = await ref.read(authServiceProvider).sendCode(_e164);
       if (!mounted) return;
       if (result.autoSignedIn != null) {
+        showAuthSuccess(context, name: result.autoSignedIn!.name);
         ref.read(authProvider.notifier).signedIn(result.autoSignedIn!);
         return;
       }

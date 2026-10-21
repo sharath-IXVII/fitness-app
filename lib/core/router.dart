@@ -66,16 +66,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.splash, builder: (_, _) => const SplashScreen()),
       GoRoute(
         path: Routes.auth,
-        pageBuilder: (_, s) => _fade(s, const AuthScreen()),
+        // Slower fade so the logo has time to fly in from the splash.
+        pageBuilder: (_, s) => _fade(s, const AuthScreen(), duration: const Duration(milliseconds: 650)),
         routes: [
           GoRoute(
             path: 'phone',
-            builder: (_, s) => PhoneScreen(signUp: s.extra as bool? ?? true),
+            pageBuilder: (_, s) => _sharedAxis(s, PhoneScreen(signUp: s.extra as bool? ?? true)),
           ),
           GoRoute(
             path: 'otp',
             redirect: (_, s) => s.extra is OtpArgs ? null : Routes.authPhone,
-            builder: (_, s) => OtpScreen(args: s.extra! as OtpArgs),
+            pageBuilder: (_, s) => _sharedAxis(s, OtpScreen(args: s.extra! as OtpArgs)),
           ),
         ],
       ),
@@ -146,10 +147,14 @@ final routerProvider = Provider<GoRouter>((ref) {
 });
 
 /// Quiet route transition: a short fade with an 8 px rise.
-CustomTransitionPage<void> _fade(GoRouterState state, Widget child) => CustomTransitionPage(
+CustomTransitionPage<void> _fade(
+  GoRouterState state,
+  Widget child, {
+  Duration duration = const Duration(milliseconds: 280),
+}) => CustomTransitionPage(
   key: state.pageKey,
   child: child,
-  transitionDuration: const Duration(milliseconds: 280),
+  transitionDuration: duration,
   reverseTransitionDuration: const Duration(milliseconds: 200),
   transitionsBuilder: (_, animation, _, child) {
     final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
@@ -158,6 +163,29 @@ CustomTransitionPage<void> _fade(GoRouterState state, Widget child) => CustomTra
       child: SlideTransition(
         position: Tween(begin: const Offset(0, 0.012), end: Offset.zero).animate(curved),
         child: child,
+      ),
+    );
+  },
+);
+
+/// Material "shared axis" (horizontal) for step-by-step flows: the new step
+/// slides in from the right while fading; the old one drifts left and fades.
+CustomTransitionPage<void> _sharedAxis(GoRouterState state, Widget child) => CustomTransitionPage(
+  key: state.pageKey,
+  child: child,
+  transitionDuration: const Duration(milliseconds: 380),
+  reverseTransitionDuration: const Duration(milliseconds: 320),
+  transitionsBuilder: (_, animation, secondary, child) {
+    final inCurve = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic, reverseCurve: Curves.easeInCubic);
+    final outCurve = CurvedAnimation(parent: secondary, curve: Curves.easeOutCubic);
+    return SlideTransition(
+      position: Tween(begin: const Offset(0.12, 0), end: Offset.zero).animate(inCurve),
+      child: FadeTransition(
+        opacity: CurvedAnimation(parent: animation, curve: const Interval(0.2, 1)),
+        child: SlideTransition(
+          position: Tween(begin: Offset.zero, end: const Offset(-0.08, 0)).animate(outCurve),
+          child: FadeTransition(opacity: Tween(begin: 1.0, end: 0.0).animate(outCurve), child: child),
+        ),
       ),
     );
   },

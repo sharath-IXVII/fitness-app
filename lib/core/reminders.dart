@@ -1,0 +1,258 @@
+import 'dart:convert';
+import 'dart:io' show Platform;
+import 'dart:ui' show DartPluginRegistrant;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest_all.dart' as tzdata;
+import 'package:timezone/timezone.dart' as tz;
+
+import '../features/myday/domain/day_block.dart';
+
+/// Storage keys shared with the background notification handler, which runs
+/// in its own isolate and can't use providers.
+abstract final class ReminderKeys {
+  static final _date = DateFormat('yyyy-MM-dd');
+  static String done(DateTime day) => 'myday.done.v1.${_date.format(day)}';
+  static String log(DateTime day) => 'log.v1.${_date.format(day)}';
+}
+
+/// Local notifications for My Day blocks and water reminders.
+///
+/// Every reminder carries action buttons ("Done", "Snooze 10 min",
+/// "+250 ml") that work straight from the notification shade, even when
+/// the app is closed.
+abstract final class Reminders {
+  static final _plugin = FlutterLocalNotificationsPlugin();
+  static bool _ready = false;
+
+  // Id ranges so each group can be cleared without touching the others.
+  static const _blockBase = 100000;
+  static const _waterBase = 200000;
+  static const _snoozeBase = 300000;
+
+  static bool get supported => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+
+  static const _routineChannel = AndroidNotificationDetails(
+    'routine',
+    'My Day reminders',
+    channelDescription: 'Reminders for the items in your daily routine',
+    importance: Importance.high,
+    priority: Priority.high,
+    icon: 'ic_stat_notify',
+    actions: [
+      AndroidNotificationAction('done', 'Done ✓', showsUserInterface: false),
+      AndroidNotificationAction('snooze', 'Snooze 10 min', showsUserInterface: false),
+    ],
+  );
+
+  static const _waterChannel = AndroidNotificationDetails(
+    'water',
+    'Water reminders',
+    channelDescription: 'Regular nudges to drink water',
+    importance: Importance.defaultImportance,
+    icon: 'ic_stat_notify',
+    actions: [
+      AndroidNotificationAction('water_250', '+250 ml', showsUserInterface: false),
+      AndroidNotificationAction('water_500', '+500 ml', showsUserInterface: false),
+    ],
+  );
+
+  /// Called in the foreground isolate when a reminder or action is tapped.
+  static void Function()? onChanged;
+
+  static Future<void> init() async {
+    if (!supported || _ready) return;
+    await _initTimeZone();
+    await _plugin.initialize(
+      settings: const InitializationSettings(
+        android: AndroidInitializationSettings('ic_stat_notify'),
+        iOS: DarwinInitializationSettings(
+          requestAlertPermission: false,
+          requestBadgePermission: false,
+          requestSoundPermission: false,
+        ),
+      ),
+      onDidReceiveNotificationResponse: (r) async {
+        await handleAction(r.actionId, r.payload);
+        onChanged?.call();
+      },
+      onDidReceiveBackgroundNotificationResponse: reminderBackgroundHandler,
+    );
+    _ready = true;
+  }
+
+  static Future<void> _initTimeZone() async {
+    tzdata.initializeTimeZones();
+    try {
+      final info = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(info.identifier));
+    } catch (_) {
+      tz.setLocalLocation(tz.UTC);
+    }
+  }
+
+  static Future<bool> requestPermission() async {
+    if (!supported) return true;
+    await init();
+    final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    if (android != null) return await android.requestNotificationsPermission() ?? false;
+    final ios = _plugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>();
+    return await ios?.requestPermissions(alert: true, sound: true, badge: true) ?? false;
+  }
+
+  static Future<void> _cancelRange(int from, int to) async {
+    for (final p in await _plugin.pendingNotificationRequests()) {
+      if (p.id >= from && p.id < to) await _plugin.cancel(id: p.id);
+    }
+  }
+
+  /// Next occurrence of [minuteOfDay] on ISO [weekday], from now.
+  static tz.TZDateTime _next(int weekday, int minuteOfDay) {
+    final now = tz.TZDateTime.now(tz.local);
+    var dayShift = 0;
+    var m = minuteOfDay;
+    if (m < 0) {
+      // A lead time that crosses midnight belongs to the previous day.
+      m += 24 * 60;
+      dayShift = -1;
+    }
+    var d = tz.TZDateTime(tz.local, now.year, now.month, now.day, m ~/ 60, m % 60);
+    final target = ((weekday - 1 + dayShift) % 7) + 1;
+    while (d.weekday != target || !d.isAfter(now)) {
+      d = d.add(const Duration(days: 1));
+    }
+    return d;
+  }
+
+  /// Replaces all My Day reminders with weekly ones for [blocks].
+  static Future<void> scheduleBlocks(List<DayBlock> blocks, {required bool enabled}) async {
+    if (!supported) return;
+    await init();
+    await _cancelRange(_blockBase, _waterBase);
+    if (!enabled) return;
+    for (final b in blocks.where((b) => b.remind)) {
+      for (final day in b.days) {
+        await _plugin.zonedSchedule(
+          id: _blockBase + b.id * 8 + day,
+          title: _title(b),
+          body: _body(b),
+          scheduledDate: _next(day, b.remindMinute),
+          notificationDetails: const NotificationDetails(android: _routineChannel, iOS: DarwinNotificationDetails()),
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+          payload: jsonEncode({'type': 'block', 'id': b.id, 'title': _title(b), 'body': _body(b)}),
+        );
+      }
+    }
+  }
+
+  static String _title(DayBlock b) => switch (b.kind) {
+    BlockKind.wake => 'Good morning ☀️',
+    BlockKind.water => 'Time for water 💧',
+    BlockKind.sleep => 'Wind down for bed 🌙',
+    _ when b.kind.isMeal => '${b.name} time 🍽️',
+    BlockKind.workout => 'Workout time 💪',
+    _ => b.name,
+  };
+
+  static String _body(DayBlock b) {
+    final at = '${b.time.hour.toString().padLeft(2, '0')}:${b.time.minute.toString().padLeft(2, '0')}';
+    if (b.leadMinutes > 0) return '${b.name} starts in ${b.leadMinutes} min ($at)';
+    return switch (b.kind) {
+      BlockKind.water => 'A glass now keeps you on track for today.',
+      _ when b.kind.isMeal => 'Log what you eat to hit your protein target.',
+      BlockKind.sleep => 'A good night makes tomorrow\'s alarm easier.',
+      _ => b.minutes > 0 ? '$at · ${b.minutes} min' : at,
+    };
+  }
+
+  /// Daily water nudges every [everyMinutes] between [from] and [to].
+  static Future<void> scheduleWater({
+    required TimeOfDay from,
+    required TimeOfDay to,
+    required int everyMinutes,
+    required bool enabled,
+  }) async {
+    if (!supported) return;
+    await init();
+    await _cancelRange(_waterBase, _snoozeBase);
+    if (!enabled) return;
+    final slots = waterSlots(from, to, everyMinutes);
+    for (final (i, m) in slots.indexed) {
+      final now = tz.TZDateTime.now(tz.local);
+      var at = tz.TZDateTime(tz.local, now.year, now.month, now.day, m ~/ 60, m % 60);
+      if (!at.isAfter(now)) at = at.add(const Duration(days: 1));
+      await _plugin.zonedSchedule(
+        id: _waterBase + i,
+        title: 'Time for water 💧',
+        body: 'Tap +250 ml when you\'ve had a glass.',
+        scheduledDate: at,
+        notificationDetails: const NotificationDetails(android: _waterChannel, iOS: DarwinNotificationDetails()),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        matchDateTimeComponents: DateTimeComponents.time,
+        payload: jsonEncode({'type': 'water'}),
+      );
+    }
+  }
+
+  /// Minutes-after-midnight for each water reminder.
+  static List<int> waterSlots(TimeOfDay from, TimeOfDay to, int everyMinutes) {
+    final start = from.hour * 60 + from.minute + 60; // first one an hour after waking
+    final end = to.hour * 60 + to.minute - 60; // none in the last hour before bed
+    return [for (var m = start; m <= end && everyMinutes > 0; m += everyMinutes) m];
+  }
+
+  /// Applies a notification action. Safe to call from any isolate.
+  static Future<void> handleAction(String? action, String? payload) async {
+    if (action == null || payload == null) return;
+    final data = jsonDecode(payload) as Map<String, dynamic>;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.reload();
+    final today = DateTime.now();
+
+    switch (action) {
+      case 'done':
+        final key = ReminderKeys.done(today);
+        final done = {...(jsonDecode(prefs.getString(key) ?? '[]') as List).cast<int>(), data['id'] as int};
+        await prefs.setString(key, jsonEncode(done.toList()));
+      case 'snooze':
+        await _ensureInBackground();
+        await _plugin.zonedSchedule(
+          id: _snoozeBase + (data['id'] as int),
+          title: data['title'] as String?,
+          body: data['body'] as String?,
+          scheduledDate: tz.TZDateTime.now(tz.local).add(const Duration(minutes: 10)),
+          notificationDetails: const NotificationDetails(android: _routineChannel, iOS: DarwinNotificationDetails()),
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          payload: payload,
+        );
+      case 'water_250' || 'water_500':
+        final key = ReminderKeys.log(today);
+        final log = jsonDecode(prefs.getString(key) ?? '{}') as Map<String, dynamic>;
+        log['water'] = (log['water'] as int? ?? 0) + (action == 'water_250' ? 250 : 500);
+        await prefs.setString(key, jsonEncode(log));
+    }
+  }
+
+  static Future<void> _ensureInBackground() async {
+    if (_ready) return;
+    await _initTimeZone();
+    await _plugin.initialize(
+      settings: const InitializationSettings(android: AndroidInitializationSettings('ic_stat_notify')),
+    );
+    _ready = true;
+  }
+}
+
+/// Entry point for notification actions tapped while the app isn't running.
+@pragma('vm:entry-point')
+Future<void> reminderBackgroundHandler(NotificationResponse response) async {
+  WidgetsFlutterBinding.ensureInitialized();
+  DartPluginRegistrant.ensureInitialized();
+  await Reminders.handleAction(response.actionId, response.payload);
+}

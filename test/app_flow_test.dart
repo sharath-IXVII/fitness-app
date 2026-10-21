@@ -109,6 +109,15 @@ void main() {
       expect(find.text('New routine'), findsNothing);
       await t.scrollUntilVisible(find.text('My routine'), 200, scrollable: find.byType(Scrollable).hitTestable().first);
       expect(find.text('My routine'), findsOneWidget);
+
+      // My Day: start from a template and tick an item off.
+      await _tap(t, 'My Day');
+      expect(find.text('Plan your day'), findsOneWidget);
+      await _tap(t, 'Choose a template');
+      await _tap(t, 'Office');
+      await _wait(t, 600);
+      expect(['Next:', 'Now:', 'All done'].any((p) => find.textContaining(p).evaluate().isNotEmpty), isTrue);
+      expect(prefs.getString('myday.v1'), contains('"kind":"lunch"'));
     });
   }
 

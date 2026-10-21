@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
+import 'core/reminders.dart';
 import 'core/storage.dart';
 import 'features/alarm/alarm_scheduler.dart';
 import 'features/auth/auth_providers.dart';
@@ -38,6 +39,7 @@ Future<void> main() async {
   );
 
   await AlarmScheduler.init();
+  await Reminders.init();
   final prefs = await SharedPreferences.getInstance();
   final auth = await _authService(prefs);
   runApp(

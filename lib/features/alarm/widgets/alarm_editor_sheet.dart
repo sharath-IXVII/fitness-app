@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/gradient_button.dart';
+import '../../../core/widgets/form_controls.dart';
 import '../../../core/widgets/pressable.dart';
 import '../../workout/routine_providers.dart';
 import '../alarm_providers.dart';
@@ -136,7 +136,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          _Wheel(
+                          TimeWheel(
                             count: 24,
                             value: _a.time.hour,
                             onChanged: (v) => _update(
@@ -146,7 +146,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                             ),
                           ),
                           Text(':', style: text.displaySmall),
-                          _Wheel(
+                          TimeWheel(
                             count: 60,
                             value: _a.time.minute,
                             onChanged: (v) => _update(
@@ -168,7 +168,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                         ),
                       ),
                     ),
-                    _Section(
+                    FormSection(
                       title: 'Repeat',
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -183,7 +183,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                                 ('Weekends', {6, 7}),
                                 ('Every day', {1, 2, 3, 4, 5, 6, 7}),
                               ])
-                                _Chip(
+                                ChoicePill(
                                   label: label,
                                   selected: _a.days.length == days.length && _a.days.containsAll(days),
                                   onTap: () => _update(_a.copyWith(days: days)),
@@ -197,7 +197,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                                 Expanded(
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 3),
-                                    child: _DayDot(
+                                    child: DayDot(
                                       label: d,
                                       selected: _a.days.contains(i + 1),
                                       onTap: () {
@@ -213,7 +213,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                         ],
                       ),
                     ),
-                    _Section(
+                    FormSection(
                       title: 'Routine to stop it',
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,7 +223,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                             runSpacing: 8,
                             children: [
                               for (final r in routines)
-                                _Chip(
+                                ChoicePill(
                                   label: r.name,
                                   selected: _a.routineId == r.id,
                                   onTap: () => _update(_a.copyWith(routineId: r.id)),
@@ -235,14 +235,14 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                         ],
                       ),
                     ),
-                    _Section(
+                    FormSection(
                       title: 'Label',
                       child: TextField(
                         controller: _label,
                         decoration: const InputDecoration(hintText: 'Wake-up workout'),
                       ),
                     ),
-                    _Section(
+                    FormSection(
                       title: 'Sound',
                       child: Column(
                         children: [
@@ -273,14 +273,14 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                               const Icon(Icons.volume_up_rounded, color: AppColors.textSecondary),
                             ],
                           ),
-                          _ToggleRow(
+                          SettingToggle(
                             icon: Icons.trending_up_rounded,
                             title: 'Gradually increase volume',
                             subtitle: 'Starts soft and builds up over 20 seconds',
                             value: _a.fadeIn,
                             onChanged: (v) => _update(_a.copyWith(fadeIn: v)),
                           ),
-                          _ToggleRow(
+                          SettingToggle(
                             icon: Icons.vibration_rounded,
                             title: 'Vibrate',
                             value: _a.vibrate,
@@ -289,7 +289,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                         ],
                       ),
                     ),
-                    _Section(
+                    FormSection(
                       title: 'Snooze',
                       child: AnimatedOpacity(
                         duration: const Duration(milliseconds: 250),
@@ -299,7 +299,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _Segmented(
+                              SegmentedPills(
                                 options: const ['Off', '1×', '2×', '3×'],
                                 index: _a.maxSnoozes,
                                 onChanged: (i) => _update(_a.copyWith(maxSnoozes: i)),
@@ -313,7 +313,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                                         spacing: 8,
                                         children: [
                                           for (final m in [3, 5, 10])
-                                            _Chip(
+                                            ChoicePill(
                                               label: '$m min',
                                               selected: _a.snoozeMinutes == m,
                                               onTap: () => _update(_a.copyWith(snoozeMinutes: m)),
@@ -326,9 +326,9 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                         ),
                       ),
                     ),
-                    _Section(
+                    FormSection(
                       title: 'Challenge',
-                      child: _ToggleRow(
+                      child: SettingToggle(
                         icon: Icons.local_fire_department_rounded,
                         title: 'Hard mode',
                         subtitle: 'No snooze and no emergency stop — the workout is the only way out',
@@ -349,90 +349,6 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
       ),
     );
   }
-}
-
-class _Section extends StatelessWidget {
-  const _Section({required this.title, required this.child});
-
-  final String title;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: 22),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title.toUpperCase(),
-          style: Theme.of(context).textTheme.labelSmall?.copyWith(color: AppColors.textMuted, letterSpacing: 1.2),
-        ),
-        const SizedBox(height: 10),
-        child,
-      ],
-    ),
-  );
-}
-
-class _Chip extends StatelessWidget {
-  const _Chip({required this.label, required this.selected, required this.onTap});
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => Pressable(
-    onTap: onTap,
-    scale: 0.93,
-    child: AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOutCubic,
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-      decoration: BoxDecoration(
-        color: selected ? AppColors.primary : AppColors.surfaceHigh.withValues(alpha: 0.6),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: selected ? Colors.white : AppColors.textSecondary,
-          fontWeight: FontWeight.w600,
-          fontSize: 13.5,
-        ),
-      ),
-    ),
-  );
-}
-
-class _DayDot extends StatelessWidget {
-  const _DayDot({required this.label, required this.selected, required this.onTap});
-
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) => Pressable(
-    onTap: onTap,
-    scale: 0.88,
-    child: AspectRatio(
-      aspectRatio: 1,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: selected ? AppColors.brandGradient : null,
-          color: selected ? null : AppColors.surfaceHigh,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(fontWeight: FontWeight.w700, color: selected ? Colors.white : AppColors.textSecondary),
-        ),
-      ),
-    ),
-  );
 }
 
 class _SoundRow extends StatelessWidget {
@@ -504,158 +420,4 @@ class _Equalizer extends StatelessWidget {
             .scaleY(begin: 0.3, end: 1, duration: 350.ms, alignment: Alignment.bottomCenter),
     ],
   );
-}
-
-class _ToggleRow extends StatelessWidget {
-  const _ToggleRow({
-    required this.icon,
-    required this.title,
-    required this.value,
-    required this.onChanged,
-    this.subtitle,
-  });
-
-  final IconData icon;
-  final String title;
-  final String? subtitle;
-  final bool value;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Icon(icon, color: value ? AppColors.primary : AppColors.textMuted, size: 22),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: text.titleSmall),
-                if (subtitle != null) Text(subtitle!, style: text.bodySmall),
-              ],
-            ),
-          ),
-          Switch(
-            value: value,
-            onChanged: (v) {
-              HapticFeedback.selectionClick();
-              onChanged(v);
-            },
-            activeTrackColor: AppColors.primary,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Segmented control with a sliding highlight.
-class _Segmented extends StatelessWidget {
-  const _Segmented({required this.options, required this.index, required this.onChanged});
-
-  final List<String> options;
-  final int index;
-  final ValueChanged<int> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 44,
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(color: AppColors.surfaceHigh, borderRadius: BorderRadius.circular(14)),
-      child: Stack(
-        children: [
-          AnimatedAlign(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
-            alignment: Alignment(-1 + 2 * index / (options.length - 1), 0),
-            child: FractionallySizedBox(
-              widthFactor: 1 / options.length,
-              heightFactor: 1,
-              child: Container(
-                decoration: BoxDecoration(
-                  color: AppColors.surface,
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: AppColors.softShadow(),
-                ),
-              ),
-            ),
-          ),
-          Row(
-            children: [
-              for (final (i, o) in options.indexed)
-                Expanded(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      onChanged(i);
-                    },
-                    child: Center(
-                      child: Text(
-                        o,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: i == index ? AppColors.textPrimary : AppColors.textSecondary,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _Wheel extends StatefulWidget {
-  const _Wheel({required this.count, required this.value, required this.onChanged});
-
-  final int count;
-  final int value;
-  final ValueChanged<int> onChanged;
-
-  @override
-  State<_Wheel> createState() => _WheelState();
-}
-
-class _WheelState extends State<_Wheel> {
-  late final _controller = FixedExtentScrollController(initialItem: widget.value);
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.displaySmall;
-    return SizedBox(
-      width: 96,
-      child: ListWheelScrollView.useDelegate(
-        controller: _controller,
-        itemExtent: 56,
-        perspective: 0.004,
-        diameterRatio: 1.6,
-        physics: const FixedExtentScrollPhysics(),
-        overAndUnderCenterOpacity: 0.3,
-        onSelectedItemChanged: (i) {
-          HapticFeedback.selectionClick();
-          widget.onChanged(i % widget.count);
-        },
-        childDelegate: ListWheelChildLoopingListDelegate(
-          children: [
-            for (var i = 0; i < widget.count; i++) Center(child: Text(i.toString().padLeft(2, '0'), style: style)),
-          ],
-        ),
-      ),
-    );
-  }
 }

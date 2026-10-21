@@ -10,6 +10,7 @@ import '../features/auth/auth_screen.dart';
 import '../features/auth/otp_screen.dart';
 import '../features/auth/phone_screen.dart';
 import '../features/home/home_screen.dart';
+import '../features/myday/myday_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/placeholder/coming_soon_screen.dart';
 import '../features/profile/profile_providers.dart';
@@ -109,17 +110,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [GoRoute(path: Routes.home, builder: (_, _) => const HomeScreen())],
           ),
           StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: Routes.myDay,
-                builder: (_, _) => const ComingSoonScreen(
-                  title: 'My Day',
-                  subtitle: 'Build your whole day — alarms, meals, work, workouts — and get reminded at every step.',
-                  icon: Icons.view_timeline_rounded,
-                  color: AppColors.accent,
-                ),
-              ),
-            ],
+            routes: [GoRoute(path: Routes.myDay, builder: (_, _) => const MyDayScreen())],
           ),
           StatefulShellBranch(
             routes: [GoRoute(path: Routes.alarms, builder: (_, _) => const AlarmsScreen())],

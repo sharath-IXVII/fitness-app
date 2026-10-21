@@ -7,6 +7,7 @@ import '../../core/widgets/page_background.dart';
 import '../../core/widgets/glass_card.dart';
 import '../alarm/alarm_providers.dart';
 import '../auth/auth_providers.dart';
+import '../diet/diet_providers.dart';
 import '../myday/myday_providers.dart';
 import '../auth/domain/app_user.dart';
 import '../streaks/daily_log_providers.dart';
@@ -143,6 +144,9 @@ class ProfileScreen extends ConsumerWidget {
                   await ref.read(dailyLogsProvider.notifier).clearAll();
                   await ref.read(alarmsProvider.notifier).clearAll();
                   await ref.read(myDayProvider.notifier).clear();
+                  await ref.read(mealLogProvider.notifier).clearAll();
+                  await ref.read(weightLogProvider.notifier).clearAll();
+                  await ref.read(weightGoalProvider.notifier).set(null);
                   await ref.read(profileProvider.notifier).clear();
                 }
               },

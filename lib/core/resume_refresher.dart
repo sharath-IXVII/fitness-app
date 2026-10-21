@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../features/diet/diet_providers.dart';
 import '../features/myday/myday_providers.dart';
 import '../features/streaks/daily_log_providers.dart';
 import 'reminders.dart';
@@ -43,6 +44,7 @@ class _ResumeRefresherState extends ConsumerState<ResumeRefresher> with WidgetsB
     if (!mounted) return;
     ref.invalidate(dailyLogsProvider);
     ref.invalidate(doneTodayProvider);
+    ref.invalidate(mealLogProvider);
   }
 
   @override

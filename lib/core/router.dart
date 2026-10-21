@@ -9,10 +9,10 @@ import '../features/auth/auth_providers.dart';
 import '../features/auth/auth_screen.dart';
 import '../features/auth/otp_screen.dart';
 import '../features/auth/phone_screen.dart';
+import '../features/diet/diet_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/myday/myday_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
-import '../features/placeholder/coming_soon_screen.dart';
 import '../features/profile/profile_providers.dart';
 import '../features/profile/profile_screen.dart';
 import '../features/shell/app_shell.dart';
@@ -23,7 +23,6 @@ import '../features/workout/domain/routine.dart';
 import '../features/workout/routine_editor_screen.dart';
 import '../features/workout/workout_done_screen.dart';
 import '../features/workout/workout_screen.dart';
-import 'theme/app_colors.dart';
 
 abstract final class Routes {
   static const splash = '/';
@@ -122,17 +121,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [GoRoute(path: Routes.alarms, builder: (_, _) => const AlarmsScreen())],
           ),
           StatefulShellBranch(
-            routes: [
-              GoRoute(
-                path: Routes.diet,
-                builder: (_, _) => const ComingSoonScreen(
-                  title: 'Diet & Food Scan',
-                  subtitle: 'Personal meal plans and a camera that reads the protein, carbs and fiber on your plate.',
-                  icon: Icons.restaurant_rounded,
-                  color: AppColors.diet,
-                ),
-              ),
-            ],
+            routes: [GoRoute(path: Routes.diet, builder: (_, _) => const DietScreen())],
           ),
           StatefulShellBranch(
             routes: [GoRoute(path: Routes.profile, builder: (_, _) => const ProfileScreen())],

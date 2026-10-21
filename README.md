@@ -13,6 +13,16 @@ An alarm that only stops when you've done your workout. The phone camera counts 
   <img src="docs/screenshots/ring.png" width="200">
   <img src="docs/screenshots/profile.png" width="200">
 </p>
+<p>
+  <img src="docs/screenshots/myday.png" width="200">
+  <img src="docs/screenshots/steps.png" width="200">
+  <img src="docs/screenshots/water.png" width="200">
+</p>
+<p>
+  <img src="docs/screenshots/diet.png" width="200">
+  <img src="docs/screenshots/diet_plan.png" width="200">
+  <img src="docs/screenshots/diet_goal.png" width="200">
+</p>
 
 ## Roadmap
 
@@ -20,10 +30,10 @@ An alarm that only stops when you've done your workout. The phone camera counts 
 |---|---|---|
 | 1 | App shell, premium design system, onboarding, health targets, home dashboard, streak heatmap | ✅ Done |
 | 2 | Workout alarm: full-screen alarm and camera pose detection (ML Kit) with rep counting, custom routines | ✅ Built, needs device testing |
-| 3 | My Day routine maker and scheduled reminders | ⏳ Next |
-| 4 | Dual step counter (sensor + GPS, vehicle filtering) and water reminders | |
-| 5 | Diet plans, custom goals with deadlines, meal logging | |
-| 6 | Food camera scanner (AI nutrition estimate) | |
+| 3 | My Day routine maker and scheduled reminders | ✅ Built, needs device testing |
+| 4 | Dual step counter (sensor + GPS, vehicle filtering) and water reminders | ✅ Built, needs device testing |
+| 5 | Diet: calorie and macro targets, meal logging, daily meal plans per diet, weight goal with a deadline, explainers | ✅ Done |
+| 6 | Food camera scanner (AI nutrition estimate) | ⏳ Next |
 | 7 | Badges, XP, weekly reports, friends, Play Store release | |
 
 ## Tech
@@ -50,9 +60,21 @@ lib/
     profile/       user profile model, targets, profile screen
     alarm/         alarms tab, editor, scheduler (alarm plugin), ring screen, permissions
     workout/       exercises, routines, rep counters, camera + ML Kit pose, workout & done screens
-    shell/         floating glass bottom navigation
+    myday/         daily routine timeline, templates and reminders
+    steps/         step sensor + activity recognition + GPS walks
+    water/         water log and reminders
+    diet/          food list, meal log, meal-plan generator, weight goal, diet screen and sheets
+    shell/         bottom navigation
 test/              unit tests (targets, streaks) and full onboarding flow tests
 ```
+
+## How the diet planner works
+
+- **Targets** come from the profile (Mifflin-St Jeor TDEE, protein per kg for the goal, 25% fat, carbs for the rest, 14 g fiber per 1,000 kcal).
+- **Weight goal with a deadline**: the needed pace is (target − current) ÷ weeks left. Daily calories change by pace × 7,700 ÷ 7, capped at 1 kg/week loss or 0.5 kg/week gain, and never below 1,200 (women) or 1,500 (men) kcal. Too-fast goals are flagged with the date the safe pace would reach them.
+- **Meal plans** are built per day from Indian-style meal ideas that fit the user's diet (vegan, veg, eggetarian, non-veg), favouring higher-protein options, with servings scaled to each meal's share of calories. *Shuffle* gives another combination; each meal can be logged with one tap.
+- **Logging** uses a built-in list of ~70 common foods (per serving) plus custom foods. Each change updates the day's meals and protein, which feed the score and streak calendar.
+- Tap any macro, or the *Learn the basics* cards, for a plain-language explainer.
 
 ## How the workout alarm works
 

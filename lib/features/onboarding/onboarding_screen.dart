@@ -206,7 +206,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       ),
       (
         Icons.view_timeline_rounded,
-        AppColors.mint,
+        AppColors.accent,
         'Your whole day, planned',
         'Meals, work, water & workouts — on time',
       ),
@@ -343,7 +343,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         max: 220,
         value: _height,
         unit: 'cm',
-        color: AppColors.mint,
+        color: AppColors.accent,
         onChanged: (v) => setState(() => _height = v),
       ),
     ),
@@ -400,14 +400,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           'Stay fit',
           'Keep your weight, build healthy habits',
           Icons.favorite_rounded,
-          AppColors.mint,
+          AppColors.accent,
         ),
         (
           FitnessGoal.buildMuscle,
           'Build muscle',
           'High protein and a small surplus',
           Icons.fitness_center_rounded,
-          AppColors.lime,
+          AppColors.primary,
         ),
       ],
       _goal,
@@ -439,14 +439,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           'Moderately active',
           'On your feet, exercise 3–5×/week',
           Icons.directions_run_rounded,
-          AppColors.mint,
+          AppColors.accent,
         ),
         (
           ActivityLevel.active,
           'Very active',
           'Hard exercise 6–7×/week',
           Icons.sports_gymnastics_rounded,
-          AppColors.lime,
+          AppColors.primary,
         ),
         (
           ActivityLevel.veryActive,
@@ -506,14 +506,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           'Beginner',
           '10 squats · 10 jumping jacks · 20s plank',
           Icons.looks_one_rounded,
-          AppColors.mint,
+          AppColors.accent,
         ),
         (
           FitnessLevel.moderate,
           'Moderate',
           '20 squats · 15 push-ups · 20 lunges',
           Icons.looks_two_rounded,
-          AppColors.lime,
+          AppColors.primary,
         ),
         (
           FitnessLevel.advanced,
@@ -536,7 +536,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     Widget card(bool wake) {
       final t = wake ? _wake : _sleep;
-      final color = wake ? AppColors.lime : AppColors.diet;
+      final color = wake ? AppColors.primary : AppColors.diet;
       final text = Theme.of(context).textTheme;
       return Pressable(
         onTap: () => pick(wake),
@@ -605,7 +605,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       child: Column(
         children: [
           GlassCard(
-            glow: AppColors.lime,
+            glow: AppColors.primary,
             child: Row(
               children: [
                 Expanded(
@@ -616,14 +616,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       AnimatedNumber(
                         t.calories,
                         suffix: ' kcal',
-                        style: text.displaySmall?.copyWith(color: AppColors.lime),
+                        style: text.displaySmall?.copyWith(color: AppColors.primary),
                       ),
                       const SizedBox(height: 4),
                       Text('Maintenance ${t.tdee} kcal · BMI ${t.bmi}', style: text.bodySmall),
                     ],
                   ),
                 ),
-                const Icon(Icons.local_fire_department_rounded, color: AppColors.lime, size: 44)
+                const Icon(Icons.local_fire_department_rounded, color: AppColors.primary, size: 44)
                     .animate(onPlay: (c) => c.repeat(reverse: true))
                     .scale(begin: const Offset(0.9, 0.9), end: const Offset(1.08, 1.08), duration: 900.ms),
               ],
@@ -643,9 +643,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               tile('Protein', t.proteinG, ' g', AppColors.protein, Icons.egg_alt_rounded, 0),
               tile('Carbs', t.carbsG, ' g', AppColors.steps, Icons.bakery_dining_rounded, 1),
               tile('Fat', t.fatG, ' g', AppColors.diet, Icons.water_drop_outlined, 2),
-              tile('Fiber', t.fiberG, ' g', AppColors.mint, Icons.grass_rounded, 3),
+              tile('Fiber', t.fiberG, ' g', AppColors.accent, Icons.grass_rounded, 3),
               tile('Water', t.waterMl / 1000, ' L', AppColors.water, Icons.water_drop_rounded, 4),
-              tile('Steps', t.steps, '', AppColors.lime, Icons.directions_walk_rounded, 5),
+              tile('Steps', t.steps, '', AppColors.primary, Icons.directions_walk_rounded, 5),
             ],
           ),
           const SizedBox(height: 16),

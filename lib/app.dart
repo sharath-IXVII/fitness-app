@@ -13,9 +13,8 @@ class FitAlarmApp extends ConsumerWidget {
     return MaterialApp.router(
       title: AppInfo.name,
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.dark(),
-      darkTheme: AppTheme.dark(),
-      themeMode: ThemeMode.dark,
+      theme: AppTheme.light(),
+      themeMode: ThemeMode.light,
       routerConfig: ref.watch(routerProvider),
     );
   }

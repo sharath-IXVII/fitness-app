@@ -26,34 +26,37 @@ class AppShell extends StatelessWidget {
       body: shell,
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(28),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
-            child: Container(
-              height: 70,
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceHigh.withValues(alpha: 0.72),
-                borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: AppColors.stroke),
-              ),
-              child: Row(
-                children: [
-                  for (final (i, item) in _items.indexed)
-                    Expanded(
-                      child: _NavItem(
-                        icon: item.$1,
-                        activeIcon: item.$2,
-                        label: item.$3,
-                        active: shell.currentIndex == i,
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          shell.goBranch(i, initialLocation: i == shell.currentIndex);
-                        },
+        child: DecoratedBox(
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(28), boxShadow: AppColors.softShadow()),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(28),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+              child: Container(
+                height: 70,
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                decoration: BoxDecoration(
+                  color: AppColors.surface.withValues(alpha: 0.86),
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(color: AppColors.stroke),
+                ),
+                child: Row(
+                  children: [
+                    for (final (i, item) in _items.indexed)
+                      Expanded(
+                        child: _NavItem(
+                          icon: item.$1,
+                          activeIcon: item.$2,
+                          label: item.$3,
+                          active: shell.currentIndex == i,
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            shell.goBranch(i, initialLocation: i == shell.currentIndex);
+                          },
+                        ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -95,10 +98,11 @@ class _NavItem extends StatelessWidget {
               gradient: active ? AppColors.brandGradient : null,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
-                if (active) BoxShadow(color: AppColors.lime.withValues(alpha: 0.4), blurRadius: 16, spreadRadius: -4),
+                if (active)
+                  BoxShadow(color: AppColors.primary.withValues(alpha: 0.4), blurRadius: 16, spreadRadius: -4),
               ],
             ),
-            child: Icon(active ? activeIcon : icon, size: 21, color: active ? Colors.black : AppColors.textSecondary),
+            child: Icon(active ? activeIcon : icon, size: 21, color: active ? Colors.white : AppColors.textSecondary),
           ),
           const SizedBox(height: 4),
           AnimatedDefaultTextStyle(

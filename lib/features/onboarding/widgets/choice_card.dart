@@ -12,7 +12,7 @@ class ChoiceCard extends StatelessWidget {
     this.subtitle,
     this.icon,
     this.emoji,
-    this.color = AppColors.lime,
+    this.color = AppColors.primary,
     this.compact = false,
   });
 
@@ -30,7 +30,7 @@ class ChoiceCard extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     final leading = emoji != null
         ? Text(emoji!, style: const TextStyle(fontSize: 26))
-        : Icon(icon, color: selected ? Colors.black : color, size: 24);
+        : Icon(icon, color: selected ? Colors.white : color, size: 24);
 
     return Pressable(
       onTap: onTap,

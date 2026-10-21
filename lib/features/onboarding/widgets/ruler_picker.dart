@@ -14,7 +14,7 @@ class RulerPicker extends StatefulWidget {
     required this.unit,
     this.step = 1,
     this.decimals = 0,
-    this.color = AppColors.lime,
+    this.color = AppColors.primary,
   });
 
   final double min;

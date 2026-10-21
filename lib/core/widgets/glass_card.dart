@@ -29,18 +29,9 @@ class GlassCard extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         borderRadius: shape,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppColors.surfaceHigh.withValues(alpha: blur ? 0.7 : 1),
-            AppColors.surface.withValues(alpha: blur ? 0.6 : 1),
-          ],
-        ),
-        border: Border.all(color: glow?.withValues(alpha: 0.35) ?? AppColors.stroke),
-        boxShadow: [
-          if (glow != null) BoxShadow(color: glow!.withValues(alpha: 0.18), blurRadius: 32, spreadRadius: -6),
-        ],
+        color: AppColors.surface.withValues(alpha: blur ? 0.8 : 1),
+        border: Border.all(color: glow?.withValues(alpha: 0.45) ?? AppColors.stroke),
+        boxShadow: AppColors.softShadow(glow ?? AppColors.shadow),
       ),
       child: child,
     );

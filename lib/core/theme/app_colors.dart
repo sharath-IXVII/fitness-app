@@ -1,34 +1,41 @@
 import 'package:flutter/material.dart';
 
-/// Brand palette. Dark-first, with a lime → mint signature gradient.
+/// Brand palette. Warm cream canvas, white cards and a deep emerald accent.
 abstract final class AppColors {
-  static const background = Color(0xFF07090D);
-  static const surface = Color(0xFF10141B);
-  static const surfaceHigh = Color(0xFF171C26);
-  static const stroke = Color(0x1AFFFFFF);
+  static const background = Color(0xFFF6F3EC);
+  static const surface = Color(0xFFFFFFFF);
+  static const surfaceHigh = Color(0xFFEFEAE0);
+  static const stroke = Color(0xFFE7E1D5);
+  static const shadow = Color(0xFF3C2D19);
 
-  static const textPrimary = Color(0xFFF4F6FA);
-  static const textSecondary = Color(0xFF9AA3B2);
-  static const textMuted = Color(0xFF5E6675);
+  static const textPrimary = Color(0xFF1F1D1A);
+  static const textSecondary = Color(0xFF6F685E);
+  static const textMuted = Color(0xFFA8A095);
 
-  static const lime = Color(0xFFC6F432);
-  static const mint = Color(0xFF2EE6A8);
+  static const primary = Color(0xFF1F6B4F);
+  static const accent = Color(0xFF3E9C77);
+  static const gold = Color(0xFFE9A93B);
 
   // One accent per pillar so the user learns the colour language.
-  static const workout = lime;
-  static const water = Color(0xFF4FC3F7);
-  static const steps = Color(0xFFFF8A3D);
-  static const diet = Color(0xFFA78BFA);
-  static const protein = Color(0xFFFF5C8A);
+  static const workout = primary;
+  static const water = Color(0xFF2F7FC1);
+  static const steps = Color(0xFFD9733B);
+  static const diet = Color(0xFF7C5CC4);
+  static const protein = Color(0xFFCC4F74);
 
-  static const danger = Color(0xFFFF4D5E);
+  static const danger = Color(0xFFD64545);
 
   static const brandGradient = LinearGradient(
-    colors: [lime, mint],
+    colors: [primary, accent],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   /// Heatmap intensity levels, from "no activity" to "perfect day".
-  static const heat = [Color(0xFF1A1F29), Color(0xFF1F4A2E), Color(0xFF2B7A3F), Color(0xFF55B84A), Color(0xFFC6F432)];
+  static const heat = [Color(0xFFECE6DA), Color(0xFFCFE5D6), Color(0xFF94C9A9), Color(0xFF4E9E77), Color(0xFF1F6B4F)];
+
+  static List<BoxShadow> softShadow([Color tint = shadow]) => [
+    BoxShadow(color: tint.withValues(alpha: 0.07), blurRadius: 24, offset: const Offset(0, 8), spreadRadius: -4),
+    BoxShadow(color: tint.withValues(alpha: 0.04), blurRadius: 4, offset: const Offset(0, 1)),
+  ];
 }

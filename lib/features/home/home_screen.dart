@@ -17,7 +17,7 @@ import '../profile/domain/user_profile.dart';
 import '../profile/profile_providers.dart';
 import '../streaks/daily_log_providers.dart';
 import '../streaks/domain/daily_log.dart';
-import '../streaks/widgets/activity_heatmap.dart';
+import '../streaks/widgets/consistency_card.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -44,12 +44,9 @@ class HomeScreen extends ConsumerWidget {
       const SizedBox(height: 12),
       _TaskGrid(log: log, targets: targets, score: score),
       const SizedBox(height: 28),
-      _SectionTitle('Consistency', trailing: 'Best ${streak.longest} days'),
+      const _SectionTitle('Consistency'),
       const SizedBox(height: 12),
-      GlassCard(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-        child: ActivityHeatmap(scores: scores),
-      ),
+      ConsistencyCard(scores: scores, current: streak.current, longest: streak.longest),
       const SizedBox(height: 120),
     ];
 
@@ -140,14 +137,14 @@ class _ScoreCard extends StatelessWidget {
     };
 
     return GlassCard(
-      glow: AppColors.lime,
+      glow: AppColors.primary,
       padding: const EdgeInsets.all(22),
       child: Row(
         children: [
           ProgressRing(
             progress: score.count / DayScore.total,
-            color: AppColors.lime,
-            secondaryColor: AppColors.mint,
+            color: AppColors.primary,
+            secondaryColor: AppColors.accent,
             size: 104,
             stroke: 11,
             child: Column(
@@ -222,10 +219,10 @@ class _NextAlarmCard extends StatelessWidget {
               width: 46,
               height: 46,
               decoration: BoxDecoration(
-                color: AppColors.lime.withValues(alpha: 0.12),
+                color: AppColors.primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(14),
               ),
-              child: const Icon(Icons.alarm_rounded, color: AppColors.lime),
+              child: const Icon(Icons.alarm_rounded, color: AppColors.primary),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -242,7 +239,7 @@ class _NextAlarmCard extends StatelessWidget {
                 ],
               ),
             ),
-            Text(profile.wakeTime.format(context), style: text.titleLarge?.copyWith(color: AppColors.lime)),
+            Text(profile.wakeTime.format(context), style: text.titleLarge?.copyWith(color: AppColors.primary)),
             const SizedBox(width: 4),
             const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
           ],
@@ -253,23 +250,12 @@ class _NextAlarmCard extends StatelessWidget {
 }
 
 class _SectionTitle extends StatelessWidget {
-  const _SectionTitle(this.title, {this.trailing});
+  const _SectionTitle(this.title);
 
   final String title;
-  final String? trailing;
 
   @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return Row(
-      children: [
-        Expanded(
-          child: Text(title, style: text.titleLarge, maxLines: 1, overflow: TextOverflow.ellipsis),
-        ),
-        if (trailing != null) Text(trailing!, style: text.bodySmall),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => Text(title, style: Theme.of(context).textTheme.titleLarge);
 }
 
 class _TaskGrid extends ConsumerWidget {

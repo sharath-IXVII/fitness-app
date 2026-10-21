@@ -59,7 +59,7 @@ class ProfileScreen extends ConsumerWidget {
                 decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.brandGradient),
                 child: Text(
                   p.name.isEmpty ? '?' : p.name[0].toUpperCase(),
-                  style: text.displaySmall?.copyWith(color: Colors.black),
+                  style: text.displaySmall?.copyWith(color: Colors.white),
                 ),
               ),
             ).animate().scale(duration: 500.ms, curve: Curves.easeOutBack),

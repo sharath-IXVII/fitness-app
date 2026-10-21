@@ -28,7 +28,7 @@ class GradientButton extends StatelessWidget {
           boxShadow: [
             if (enabled)
               BoxShadow(
-                color: AppColors.lime.withValues(alpha: 0.35),
+                color: AppColors.primary.withValues(alpha: 0.35),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
                 spreadRadius: -8,
@@ -42,14 +42,14 @@ class GradientButton extends StatelessWidget {
             Text(
               label,
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: enabled ? Colors.black : AppColors.textMuted,
+                color: enabled ? Colors.white : AppColors.textMuted,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.2,
               ),
             ),
             if (icon != null) ...[
               const SizedBox(width: 10),
-              Icon(icon, color: enabled ? Colors.black : AppColors.textMuted, size: 20),
+              Icon(icon, color: enabled ? Colors.white : AppColors.textMuted, size: 20),
             ],
           ],
         ),

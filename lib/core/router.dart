@@ -55,7 +55,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                   title: 'My Day',
                   subtitle: 'Build your whole day — alarms, meals, work, workouts — and get reminded at every step.',
                   icon: Icons.view_timeline_rounded,
-                  color: AppColors.mint,
+                  color: AppColors.accent,
                 ),
               ),
             ],

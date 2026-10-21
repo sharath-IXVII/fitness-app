@@ -6,20 +6,24 @@ import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
 abstract final class AppTheme {
-  static ThemeData dark() {
+  static ThemeData light() {
     final base = ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.background,
-      colorScheme: const ColorScheme.dark(
-        primary: AppColors.lime,
-        secondary: AppColors.mint,
+      colorScheme: const ColorScheme.light(
+        surfaceContainerHighest: AppColors.surfaceHigh,
+        outline: AppColors.stroke,
+        primary: AppColors.primary,
+        secondary: AppColors.accent,
         surface: AppColors.surface,
-        onPrimary: Colors.black,
+        onPrimary: Colors.white,
         onSurface: AppColors.textPrimary,
         error: AppColors.danger,
       ),
       splashFactory: InkSparkle.splashFactory,
+      dialogTheme: const DialogThemeData(backgroundColor: AppColors.surface),
+      timePickerTheme: const TimePickerThemeData(backgroundColor: AppColors.surface),
     );
 
     final body = GoogleFonts.interTextTheme(base.textTheme)
@@ -42,7 +46,7 @@ abstract final class AppTheme {
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
@@ -71,7 +75,7 @@ abstract final class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: AppColors.lime, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
       ),
     );

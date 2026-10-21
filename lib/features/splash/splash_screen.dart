@@ -47,7 +47,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                           height: 96,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: AppColors.lime.withValues(alpha: 0.5), width: 2),
+                            border: Border.all(color: AppColors.primary.withValues(alpha: 0.5), width: 2),
                           ),
                         )
                         .animate(onPlay: (c) => c.repeat(), delay: (i * 700).ms)
@@ -70,7 +70,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               Text(AppInfo.tagline, style: text.bodyMedium)
                   .animate(delay: 700.ms)
                   .fadeIn(duration: 600.ms)
-                  .shimmer(delay: 600.ms, duration: 1200.ms, color: AppColors.lime),
+                  .shimmer(delay: 600.ms, duration: 1200.ms, color: AppColors.primary),
             ],
           ),
         ),

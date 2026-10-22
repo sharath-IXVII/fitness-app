@@ -1,0 +1,66 @@
+# Builds an installable test APK on every push to the working branches.
+# Download it from the "Test build" release (phone-friendly) or from the
+# run's artifacts. Signed with debug keys until a release keystore is set up
+# (see docs/RELEASE.md), so it's for testing, not for the Play Store.
+name: Build test APK
+
+on:
+  push:
+    branches: [main, "claude/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.7"
+          channel: stable
+          cache: true
+
+      - name: Install packages
+        run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
+      - name: Build APK
+        run: flutter build apk --release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fitalarm-test-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Publish "Test build" release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: test-build
+          name: Test build (latest)
+          prerelease: true
+          make_latest: false
+          body: |
+            Test build from `${{ github.ref_name }}` at ${{ github.sha }}.
+            Install `app-release.apk` on an Android phone (allow "Install unknown apps" when asked).
+            Runs in demo mode until Firebase is connected: any phone number, code 123456.
+          files: build/app/outputs/flutter-apk/app-release.apk

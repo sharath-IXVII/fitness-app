@@ -57,6 +57,7 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
         SnackBar(
           content: const Text('Turn on location and allow Fit Tracker to use it to record a GPS walk.'),
           action: SnackBarAction(label: 'Settings', onPressed: AppPermissions.openSettings),
+          persist: false,
         ),
       );
     }

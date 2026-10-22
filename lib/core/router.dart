@@ -24,6 +24,15 @@ import '../features/scan/scan_screen.dart';
 import '../features/shell/app_shell.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/steps/steps_screen.dart';
+import '../features/training/challenge_plan_screen.dart';
+import '../features/training/domain/move.dart';
+import '../features/training/domain/plans.dart';
+import '../features/training/focus_screen.dart';
+import '../features/training/library_screen.dart';
+import '../features/training/player_screen.dart';
+import '../features/training/training_done_screen.dart';
+import '../features/training/training_screen.dart';
+import '../features/training/workout_preview_screen.dart';
 import '../features/water/water_screen.dart';
 import '../features/workout/domain/routine.dart';
 import '../features/workout/routine_editor_screen.dart';
@@ -37,6 +46,11 @@ abstract final class Routes {
   static const authOtp = '/auth/otp';
   static const onboarding = '/onboarding';
   static const home = '/home';
+  static const training = '/workouts';
+  static const trainingFocus = '/workouts/focus';
+  static const trainingPreview = '/workouts/preview';
+  static const trainingChallenge = '/workouts/challenge';
+  static const trainingLibrary = '/workouts/library';
   static const myDay = '/my-day';
   static const alarms = '/alarms';
   static const diet = '/diet';
@@ -54,6 +68,8 @@ abstract final class Routes {
   static const report = '/report';
   static const privacy = '/privacy';
   static const challenge = '/challenge';
+  static const trainingPlayer = '/train';
+  static const trainingDone = '/train-done';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
@@ -116,6 +132,17 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.achievements, builder: (_, _) => const AchievementsScreen()),
       GoRoute(path: Routes.report, builder: (_, _) => const WeeklyReportScreen()),
       GoRoute(path: Routes.privacy, builder: (_, _) => const PrivacyScreen()),
+      GoRoute(path: Routes.profile, builder: (_, _) => const ProfileScreen()),
+      GoRoute(
+        path: Routes.trainingPlayer,
+        redirect: (_, s) => s.extra is TrainingWorkout ? null : Routes.training,
+        pageBuilder: (_, s) => _fade(s, PlayerScreen(workout: s.extra! as TrainingWorkout)),
+      ),
+      GoRoute(
+        path: Routes.trainingDone,
+        redirect: (_, s) => s.extra is TrainingDoneArgs ? null : Routes.training,
+        pageBuilder: (_, s) => _fade(s, TrainingDoneScreen(args: s.extra! as TrainingDoneArgs)),
+      ),
       GoRoute(
         path: Routes.challenge,
         redirect: (_, s) => s.extra is ChallengeArgs ? null : Routes.home,
@@ -138,6 +165,33 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [GoRoute(path: Routes.home, builder: (_, _) => const HomeScreen())],
           ),
           StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: Routes.training,
+                builder: (_, _) => const TrainingScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'focus',
+                    redirect: (_, s) => s.extra is BodyFocus ? null : Routes.training,
+                    builder: (_, s) => FocusScreen(focus: s.extra! as BodyFocus),
+                  ),
+                  GoRoute(
+                    path: 'preview',
+                    redirect: (_, s) => s.extra is TrainingWorkout ? null : Routes.training,
+                    builder: (_, s) => WorkoutPreviewScreen(workout: s.extra! as TrainingWorkout),
+                  ),
+                  GoRoute(
+                    path: 'challenge',
+                    redirect: (_, s) =>
+                        s.extra is String && challengeById(s.extra! as String) != null ? null : Routes.training,
+                    builder: (_, s) => ChallengePlanScreen(challenge: challengeById(s.extra! as String)!),
+                  ),
+                  GoRoute(path: 'library', builder: (_, _) => const LibraryScreen()),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
             routes: [GoRoute(path: Routes.myDay, builder: (_, _) => const MyDayScreen())],
           ),
           StatefulShellBranch(
@@ -145,9 +199,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           StatefulShellBranch(
             routes: [GoRoute(path: Routes.diet, builder: (_, _) => const DietScreen())],
-          ),
-          StatefulShellBranch(
-            routes: [GoRoute(path: Routes.profile, builder: (_, _) => const ProfileScreen())],
           ),
         ],
       ),

@@ -4,14 +4,25 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../domain/exercise.dart';
+import 'move_demos.dart';
 
 /// A looping stick-figure animation of how to do [exercise], with the phone
 /// drawn where it should be placed (in front, or on the floor to the side).
 class ExerciseDemo extends StatefulWidget {
-  const ExerciseDemo({super.key, required this.exercise, this.height = 170, this.dark = false});
+  ExerciseDemo({super.key, required Exercise exercise, this.height = 170, this.dark = false})
+    : demoId = exercise.name,
+      label = exercise.label,
+      showPhone = true;
 
-  final Exercise exercise;
+  /// A guided move (no camera), so no phone is drawn.
+  const ExerciseDemo.move({super.key, required this.demoId, required this.label, this.height = 170, this.dark = false})
+    : showPhone = false;
+
+  /// Key into the demo table: an [Exercise] name or a move id.
+  final String demoId;
+  final String label;
   final double height;
+  final bool showPhone;
 
   /// Light strokes for use over the camera preview.
   final bool dark;
@@ -21,14 +32,14 @@ class ExerciseDemo extends StatefulWidget {
 }
 
 class _ExerciseDemoState extends State<ExerciseDemo> with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(vsync: this, duration: _demoFor(widget.exercise).cycle)
+  late final AnimationController _c = AnimationController(vsync: this, duration: demoFor(widget.demoId).cycle)
     ..repeat();
 
   @override
   void didUpdateWidget(ExerciseDemo old) {
     super.didUpdateWidget(old);
-    if (old.exercise != widget.exercise) {
-      _c.duration = _demoFor(widget.exercise).cycle;
+    if (old.demoId != widget.demoId) {
+      _c.duration = demoFor(widget.demoId).cycle;
       _c
         ..reset()
         ..repeat();
@@ -43,15 +54,17 @@ class _ExerciseDemoState extends State<ExerciseDemo> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    final demo = _demoFor(widget.exercise);
+    final demo = demoFor(widget.demoId);
     return Semantics(
-      label: 'Animation showing how to do ${widget.exercise.label}',
+      label: 'Animation showing how to do ${widget.label}',
       child: SizedBox(
         height: widget.height,
         width: double.infinity,
         child: AnimatedBuilder(
           animation: _c,
-          builder: (_, _) => CustomPaint(painter: _DemoPainter(demo, _c.value, dark: widget.dark)),
+          builder: (_, _) => CustomPaint(
+            painter: _DemoPainter(demo, _c.value, dark: widget.dark, phone: widget.showPhone),
+          ),
         ),
       ),
     );
@@ -63,16 +76,17 @@ class _ExerciseDemoState extends State<ExerciseDemo> with SingleTickerProviderSt
 /// Joint positions in a 100×100 box (y down). "f" = far side, drawn lighter.
 typedef Pose = Map<String, Offset>;
 
-enum _View { front, side }
+enum DemoView { front, side }
 
-class _Demo {
-  const _Demo(this.view, this.frames, {this.cycle = const Duration(milliseconds: 1800), this.prop});
+class DemoSpec {
+  const DemoSpec(this.view, this.frames, {this.cycle = const Duration(milliseconds: 1800), this.prop});
 
-  final _View view;
+  final DemoView view;
   final List<Pose> frames;
   final Duration cycle;
 
-  /// Extra scenery: 'wall' or 'bench'.
+  /// Extra scenery: 'wall', 'bench' (under the hands) or 'step' (under the
+  /// feet).
   final String? prop;
 }
 
@@ -81,8 +95,9 @@ Offset _go(Offset from, double len, double deg) =>
 
 /// Front view. Arm angles are measured from straight down, positive away from
 /// the body (180 = straight up). [crouch] 0–1 bends the knees; [lift] raises a
-/// knee to hip height.
-Pose _front({
+/// knee to hip height. [hop] lifts the feet off the ground; every frame of a
+/// demo that hops must pass it (0 when on the ground).
+Pose frontPose({
   double crouch = 0,
   double spread = 0,
   double upL = 12,
@@ -91,6 +106,7 @@ Pose _front({
   double foreR = 12,
   double liftL = 0,
   double liftR = 0,
+  double? hop,
 }) {
   final drop = 14 * crouch;
   final p = <String, Offset>{};
@@ -116,13 +132,19 @@ Pose _front({
     p['kn$side'] = knee;
     p['an$side'] = foot;
   }
+  if (hop != null) {
+    for (final e in p.entries.toList()) {
+      p[e.key] = e.value - Offset(0, hop);
+    }
+    p['gnd'] = const Offset(50, 86);
+  }
   return p;
 }
 
 /// Side view, facing right. Angles are absolute directions in degrees
 /// (0 = right, 90 = down, 180 = left, 270 = up). The far leg/arm default to
 /// the near ones.
-Pose _side({
+Pose sidePose({
   required double torso,
   required double thigh,
   required double shin,
@@ -149,91 +171,93 @@ Pose _side({
   return p;
 }
 
-final Map<Exercise, _Demo> _demos = {
-  Exercise.squat: _Demo(_View.front, [
-    _front(upL: 70, foreL: 85, upR: 70, foreR: 85),
-    _front(crouch: 1, upL: 80, foreL: 90, upR: 80, foreR: 90),
+final Map<String, DemoSpec> _exerciseDemos = {
+  'squat': DemoSpec(DemoView.front, [
+    frontPose(upL: 70, foreL: 85, upR: 70, foreR: 85),
+    frontPose(crouch: 1, upL: 80, foreL: 90, upR: 80, foreR: 90),
   ]),
-  Exercise.jumpingJack: _Demo(_View.front, [
-    _front(),
-    _front(spread: 1, upL: 160, foreL: 170, upR: 160, foreR: 170),
+  'jumpingJack': DemoSpec(DemoView.front, [
+    frontPose(),
+    frontPose(spread: 1, upL: 160, foreL: 170, upR: 160, foreR: 170),
   ], cycle: const Duration(milliseconds: 1100)),
-  Exercise.highKnees: _Demo(_View.front, [
-    _front(liftL: 1, upL: 30, foreL: 140, upR: 20, foreR: 20),
-    _front(liftR: 1, upR: 30, foreR: 140, upL: 20, foreL: 20),
+  'highKnees': DemoSpec(DemoView.front, [
+    frontPose(liftL: 1, upL: 30, foreL: 140, upR: 20, foreR: 20),
+    frontPose(liftR: 1, upR: 30, foreR: 140, upL: 20, foreL: 20),
   ], cycle: const Duration(milliseconds: 900)),
-  Exercise.bicepCurl: _Demo(_View.front, [
-    _front(upL: 8, foreL: 8, upR: 8, foreR: 8),
-    _front(upL: 8, foreL: 165, upR: 8, foreR: 165),
+  'bicepCurl': DemoSpec(DemoView.front, [
+    frontPose(upL: 8, foreL: 8, upR: 8, foreR: 8),
+    frontPose(upL: 8, foreL: 165, upR: 8, foreR: 165),
   ]),
-  Exercise.shoulderPress: _Demo(_View.front, [
-    _front(upL: 85, foreL: 175, upR: 85, foreR: 175),
-    _front(upL: 168, foreL: 175, upR: 168, foreR: 175),
+  'shoulderPress': DemoSpec(DemoView.front, [
+    frontPose(upL: 85, foreL: 175, upR: 85, foreR: 175),
+    frontPose(upL: 168, foreL: 175, upR: 168, foreR: 175),
   ]),
-  Exercise.lateralRaise: _Demo(_View.front, [
-    _front(upL: 12, foreL: 14, upR: 12, foreR: 14),
-    _front(upL: 88, foreL: 90, upR: 88, foreR: 90),
+  'lateralRaise': DemoSpec(DemoView.front, [
+    frontPose(upL: 12, foreL: 14, upR: 12, foreR: 14),
+    frontPose(upL: 88, foreL: 90, upR: 88, foreR: 90),
   ]),
-  Exercise.pushUp: _Demo(_View.side, [
-    _side(torso: 192, thigh: 4, shin: 4, upper: 90, fore: 90),
-    _side(torso: 184, thigh: 1, shin: 1, upper: 40, fore: 135),
+  'pushUp': DemoSpec(DemoView.side, [
+    sidePose(torso: 192, thigh: 4, shin: 4, upper: 90, fore: 90),
+    sidePose(torso: 184, thigh: 1, shin: 1, upper: 40, fore: 135),
   ]),
-  Exercise.kneePushUp: _Demo(_View.side, [
-    _side(torso: 200, thigh: 30, shin: -20, upper: 90, fore: 90),
-    _side(torso: 190, thigh: 18, shin: -30, upper: 40, fore: 135),
+  'kneePushUp': DemoSpec(DemoView.side, [
+    sidePose(torso: 200, thigh: 30, shin: -20, upper: 90, fore: 90),
+    sidePose(torso: 190, thigh: 18, shin: -30, upper: 40, fore: 135),
   ]),
-  Exercise.plank: _Demo(_View.side, [
-    _side(torso: 186, thigh: 3, shin: 3, upper: 90, fore: 180),
-    _side(torso: 186.5, thigh: 3.5, shin: 3.5, upper: 90, fore: 180),
+  'plank': DemoSpec(DemoView.side, [
+    sidePose(torso: 186, thigh: 3, shin: 3, upper: 90, fore: 180),
+    sidePose(torso: 186.5, thigh: 3.5, shin: 3.5, upper: 90, fore: 180),
   ], cycle: const Duration(milliseconds: 2400)),
-  Exercise.sitUp: _Demo(_View.side, [
-    _side(torso: 180, thigh: -45, shin: 45, upper: 5, fore: 0),
-    _side(torso: 245, thigh: -45, shin: 45, upper: -30, fore: -30),
+  'sitUp': DemoSpec(DemoView.side, [
+    sidePose(torso: 180, thigh: -45, shin: 45, upper: 5, fore: 0),
+    sidePose(torso: 245, thigh: -45, shin: 45, upper: -30, fore: -30),
   ]),
-  Exercise.gluteBridge: _Demo(_View.side, [
-    _side(torso: 180, thigh: -48, shin: 55, upper: 10, fore: 0),
-    _side(torso: 163, thigh: -12, shin: 80, upper: 28, fore: 0),
+  'gluteBridge': DemoSpec(DemoView.side, [
+    sidePose(torso: 180, thigh: -48, shin: 55, upper: 10, fore: 0),
+    sidePose(torso: 163, thigh: -12, shin: 80, upper: 28, fore: 0),
   ]),
-  Exercise.mountainClimber: _Demo(_View.side, [
-    _side(torso: 192, thigh: 140, shin: 50, thighF: 4, shinF: 4, upper: 90, fore: 90),
-    _side(torso: 192, thigh: 4, shin: 4, thighF: 140, shinF: 50, upper: 90, fore: 90),
+  'mountainClimber': DemoSpec(DemoView.side, [
+    sidePose(torso: 192, thigh: 140, shin: 50, thighF: 4, shinF: 4, upper: 90, fore: 90),
+    sidePose(torso: 192, thigh: 4, shin: 4, thighF: 140, shinF: 50, upper: 90, fore: 90),
   ], cycle: const Duration(milliseconds: 1000)),
-  Exercise.tricepDip: _Demo(_View.side, [
-    _side(torso: 272, thigh: 0, shin: 85, upper: 100, fore: 92),
-    _side(torso: 268, thigh: -8, shin: 75, upper: 140, fore: 60),
+  'tricepDip': DemoSpec(DemoView.side, [
+    sidePose(torso: 272, thigh: 0, shin: 85, upper: 100, fore: 92),
+    sidePose(torso: 268, thigh: -8, shin: 75, upper: 140, fore: 60),
   ], prop: 'bench'),
-  Exercise.wallSit: _Demo(
-    _View.side,
+  'wallSit': DemoSpec(
+    DemoView.side,
     [
-      _side(torso: 270, thigh: 0, shin: 90, upper: 70, fore: 20),
-      _side(torso: 270.5, thigh: 0.5, shin: 90, upper: 71, fore: 21),
+      sidePose(torso: 270, thigh: 0, shin: 90, upper: 70, fore: 20),
+      sidePose(torso: 270.5, thigh: 0.5, shin: 90, upper: 71, fore: 21),
     ],
     cycle: const Duration(milliseconds: 2400),
     prop: 'wall',
   ),
-  Exercise.lunge: _Demo(_View.side, [
-    _side(torso: 270, thigh: 95, shin: 90, thighF: 85, shinF: 90),
-    _side(torso: 270, thigh: 5, shin: 90, thighF: 115, shinF: 178),
+  'lunge': DemoSpec(DemoView.side, [
+    sidePose(torso: 270, thigh: 95, shin: 90, thighF: 85, shinF: 90),
+    sidePose(torso: 270, thigh: 5, shin: 90, thighF: 115, shinF: 178),
   ]),
-  Exercise.burpee: _Demo(_View.side, [
-    _side(torso: 270, thigh: 90, shin: 90, upper: 90, fore: 90),
-    _side(torso: 225, thigh: -30, shin: 110, upper: 70, fore: 90),
-    _side(torso: 192, thigh: 4, shin: 4, upper: 90, fore: 90),
-    _side(torso: 225, thigh: -30, shin: 110, upper: 70, fore: 90),
-    _side(torso: 270, thigh: 92, shin: 90, upper: 255, fore: 265),
+  'burpee': DemoSpec(DemoView.side, [
+    sidePose(torso: 270, thigh: 90, shin: 90, upper: 90, fore: 90),
+    sidePose(torso: 225, thigh: -30, shin: 110, upper: 70, fore: 90),
+    sidePose(torso: 192, thigh: 4, shin: 4, upper: 90, fore: 90),
+    sidePose(torso: 225, thigh: -30, shin: 110, upper: 70, fore: 90),
+    sidePose(torso: 270, thigh: 92, shin: 90, upper: 255, fore: 265),
   ], cycle: const Duration(milliseconds: 3200)),
 };
 
-_Demo _demoFor(Exercise e) => _demos[e]!;
+/// The demo for an [Exercise] name or a guided move id.
+DemoSpec demoFor(String id) => _exerciseDemos[id] ?? moveDemos[id] ?? _exerciseDemos['squat']!;
 
 // ---------------------------------------------------------------- painter
 
 class _DemoPainter extends CustomPainter {
-  _DemoPainter(this.demo, this.t, {required this.dark});
+  _DemoPainter(this.demo, this.t, {required this.dark, required this.phone});
 
-  final _Demo demo;
+  final DemoSpec demo;
   final double t;
   final bool dark;
+  final bool phone;
 
   static const ground = 88.0;
 
@@ -253,14 +277,19 @@ class _DemoPainter extends CustomPainter {
     var pose = _pose();
     // Stand the figure on the ground and centre it, leaving room for the phone.
     final maxY = pose.values.map((o) => o.dy).reduce(math.max);
-    final xs = pose.values.map((o) => o.dx);
+    final xs = [
+      for (final e in pose.entries)
+        if (e.key != 'gnd') e.value.dx,
+    ];
     final cx = (xs.reduce(math.min) + xs.reduce(math.max)) / 2;
-    final shift = Offset(58 - cx, ground - 1.5 - maxY);
+    // Without the phone the figure gets the whole, narrower box (bigger).
+    final boxW = phone ? 130.0 : 96.0;
+    final shift = Offset((phone ? 58 : boxW / 2) - cx, ground - 1.5 - maxY);
     pose = {for (final e in pose.entries) e.key: e.value + shift};
 
-    final scale = math.min(size.width / 130, size.height / 100);
+    final scale = math.min(size.width / boxW, size.height / 100);
     canvas.save();
-    canvas.translate((size.width - 130 * scale) / 2, (size.height - 100 * scale) / 2);
+    canvas.translate((size.width - boxW * scale) / 2, (size.height - 100 * scale) / 2);
     canvas.scale(scale);
 
     final ink = dark ? Colors.white : AppColors.primary;
@@ -270,7 +299,7 @@ class _DemoPainter extends CustomPainter {
     // Ground and props.
     canvas.drawLine(
       const Offset(4, ground),
-      const Offset(126, ground),
+      Offset(boxW - 4, ground),
       Paint()
         ..color = line
         ..strokeWidth = 1.2,
@@ -278,8 +307,8 @@ class _DemoPainter extends CustomPainter {
     if (demo.prop == 'wall') {
       final x = pose['sh']!.dx - 4;
       canvas.drawRect(Rect.fromLTWH(x - 3, 10, 3, ground - 10), Paint()..color = line);
-    } else if (demo.prop == 'bench') {
-      final w = pose['wr']!;
+    } else if (demo.prop == 'bench' || demo.prop == 'step') {
+      final w = pose[demo.prop == 'bench' ? 'wr' : 'an']!;
       final top = w.dy + 1;
       final bench = Paint()..color = line;
       canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(w.dx - 14, top, 20, 3), const Radius.circular(1)), bench);
@@ -287,7 +316,7 @@ class _DemoPainter extends CustomPainter {
       canvas.drawRect(Rect.fromLTWH(w.dx + 2, top, 2, ground - top), bench);
     }
 
-    _phone(canvas, ink, line);
+    if (phone) _phone(canvas, ink, line);
 
     final near = Paint()
       ..color = ink
@@ -309,7 +338,7 @@ class _DemoPainter extends CustomPainter {
       canvas.drawPath(path, p);
     }
 
-    if (demo.view == _View.front) {
+    if (demo.view == DemoView.front) {
       limb(['shL', 'elL', 'wrL'], near);
       limb(['shR', 'elR', 'wrR'], near);
       limb(['hipL', 'knL', 'anL'], near);
@@ -335,7 +364,7 @@ class _DemoPainter extends CustomPainter {
   void _phone(Canvas canvas, Color ink, Color line) {
     final body = Paint()..color = ink.withValues(alpha: 0.85);
     final screen = Paint()..color = dark ? Colors.black45 : Colors.white;
-    if (demo.view == _View.front) {
+    if (demo.view == DemoView.front) {
       final r = RRect.fromRectAndRadius(Rect.fromLTWH(8, ground - 22, 11, 20), const Radius.circular(2.5));
       canvas.drawRRect(r, body);
       canvas.drawRRect(
@@ -362,18 +391,18 @@ class _DemoPainter extends CustomPainter {
     final dash = Paint()
       ..color = line
       ..strokeWidth = 1;
-    final y = demo.view == _View.front ? ground - 14 : ground - 6;
+    final y = demo.view == DemoView.front ? ground - 14 : ground - 6;
     for (var x = 26.0; x < 38; x += 4) {
       canvas.drawLine(Offset(x, y), Offset(x + 2, y), dash);
     }
   }
 
   @override
-  bool shouldRepaint(_DemoPainter old) => old.t != t || old.demo != demo || old.dark != dark;
+  bool shouldRepaint(_DemoPainter old) => old.t != t || old.demo != demo || old.dark != dark || old.phone != phone;
 }
 
 /// One line on where to put the phone, for under the animation.
-String phonePlacement(Exercise e) => _demoFor(e).view == _View.front
+String phonePlacement(Exercise e) => demoFor(e.name).view == DemoView.front
     ? 'Phone upright in front of you, about 2 m away'
     : 'Phone on the floor to your side, about 2 m away';
 

@@ -103,11 +103,10 @@ class _Header extends StatelessWidget {
           ),
         ),
         // The streak lives in the calendar card below; this opens the profile.
-        Semantics(
-          button: true,
-          label: 'Profile',
+        Tooltip(
+          message: 'Profile',
           child: Pressable(
-            onTap: () => context.go(Routes.profile),
+            onTap: () => context.push(Routes.profile),
             child: Container(
               width: 44,
               height: 44,

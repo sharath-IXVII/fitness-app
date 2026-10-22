@@ -93,7 +93,13 @@ void main() {
     await t.pageBack();
     await _wait(t);
 
-    await t.tap(find.text('Me').last);
+    // The profile opens from the avatar at the top of Today.
+    await t.scrollUntilVisible(
+      find.byTooltip('Profile'),
+      -200,
+      scrollable: find.byType(Scrollable).hitTestable().first,
+    );
+    await t.tap(find.byTooltip('Profile'));
     await _wait(t);
     final me = find.byType(Scrollable).hitTestable().first;
     await t.scrollUntilVisible(find.text('Delete account'), 200, scrollable: me);

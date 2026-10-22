@@ -55,160 +55,167 @@ class ProfileScreen extends ConsumerWidget {
       ),
     );
 
-    return PageBackground(
-      child: SafeArea(
-        bottom: false,
-        child: ListView(
-          physics: const BouncingScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 64,
-                  height: 64,
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.brandGradient),
-                  child: Text(
-                    p.name.isEmpty ? '?' : p.name[0].toUpperCase(),
-                    style: text.headlineSmall?.copyWith(color: Colors.white),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(p.name, style: text.titleLarge),
-                      Text('${streak.current}-day streak · best ${streak.longest}', style: text.bodyMedium),
-                    ],
-                  ),
-                ),
-                OutlinedButton.icon(
-                  onPressed: () => SheetFrame.show<void>(context, const EditProfileSheet()),
-                  icon: const Icon(Icons.edit_outlined, size: 18),
-                  label: const Text('Edit'),
-                  style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: AppColors.stroke),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                ),
-              ],
-            ).animate().fadeIn(duration: 300.ms),
-            const SizedBox(height: 24),
-            Text('About you', style: text.titleMedium),
-            const SizedBox(height: 10),
-            GlassCard(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-              child: Column(
+    return Scaffold(
+      appBar: AppBar(title: const Text('Profile')),
+      body: PageBackground(
+        child: SafeArea(
+          bottom: false,
+          child: ListView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),
+            children: [
+              Row(
                 children: [
-                  row('Goal', _goalLabel[p.goal]!),
-                  row('Diet', _dietLabel[p.diet]!),
-                  row('Height', '${p.heightCm.round()} cm'),
-                  row('Weight', '${p.weightKg.toStringAsFixed(1)} kg'),
-                  row('BMI', '${t.bmi}'),
-                  row('Wake up · sleep', '${p.wakeTime.format(context)} · ${p.sleepTime.format(context)}'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 22),
-            Text('Daily targets', style: text.titleMedium),
-            const SizedBox(height: 10),
-            GlassCard(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-              child: Column(
-                children: [
-                  row('Calories', '${t.calories} kcal'),
-                  row('Protein · carbs · fat', '${t.proteinG} · ${t.carbsG} · ${t.fatG} g'),
-                  row('Fiber', '${t.fiberG} g'),
-                  row('Water', '${(t.waterMl / 1000).toStringAsFixed(1)} L'),
-                  row('Steps', NumberFormat.decimalPattern().format(t.steps)),
-                  row('Stride length', '${t.strideM} m'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 22),
-            Text('Account', style: text.titleMedium),
-            const SizedBox(height: 10),
-            GlassCard(
-              child: Row(
-                children: [
-                  Icon(
-                    account?.method == SignInMethod.google ? Icons.mail_outline_rounded : Icons.phone_iphone_rounded,
-                    color: AppColors.primary,
+                  Container(
+                    width: 64,
+                    height: 64,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.brandGradient),
+                    child: Text(
+                      p.name.isEmpty ? '?' : p.name[0].toUpperCase(),
+                      style: text.headlineSmall?.copyWith(color: Colors.white),
+                    ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Signed in with ${account?.method == SignInMethod.google ? 'Google' : 'phone'}',
-                          style: text.bodySmall,
-                        ),
-                        Text(account?.handle ?? '—', style: text.titleSmall),
+                        Text(p.name, style: text.titleLarge),
+                        Text('${streak.current}-day streak · best ${streak.longest}', style: text.bodyMedium),
                       ],
                     ),
                   ),
-                  TextButton(onPressed: () => ref.read(authProvider.notifier).signOut(), child: const Text('Sign out')),
+                  OutlinedButton.icon(
+                    onPressed: () => SheetFrame.show<void>(context, const EditProfileSheet()),
+                    icon: const Icon(Icons.edit_outlined, size: 18),
+                    label: const Text('Edit'),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.stroke),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                  ),
                 ],
+              ).animate().fadeIn(duration: 300.ms),
+              const SizedBox(height: 24),
+              Text('About you', style: text.titleMedium),
+              const SizedBox(height: 10),
+              GlassCard(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                child: Column(
+                  children: [
+                    row('Goal', _goalLabel[p.goal]!),
+                    row('Diet', _dietLabel[p.diet]!),
+                    row('Height', '${p.heightCm.round()} cm'),
+                    row('Weight', '${p.weightKg.toStringAsFixed(1)} kg'),
+                    row('BMI', '${t.bmi}'),
+                    row('Wake up · sleep', '${p.wakeTime.format(context)} · ${p.sleepTime.format(context)}'),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(height: 22),
-            Text('Data & privacy', style: text.titleMedium),
-            const SizedBox(height: 10),
-            GlassCard(
-              padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Column(
-                children: [
-                  _Action(
-                    icon: Icons.shield_outlined,
-                    label: 'Privacy policy',
-                    onTap: () => context.push(Routes.privacy),
-                  ),
-                  _Action(
-                    icon: Icons.restart_alt_rounded,
-                    label: 'Reset data on this device',
-                    onTap: () async {
-                      if (await _confirm(
-                        context,
-                        title: 'Start over?',
-                        body: 'This clears your profile, history, meals and alarms on this device. You stay signed in.',
-                        action: 'Reset',
-                      )) {
-                        await _clearLocal(ref);
-                      }
-                    },
-                  ),
-                  _Action(
-                    icon: Icons.person_remove_outlined,
-                    label: 'Delete account',
-                    danger: true,
-                    onTap: () async {
-                      if (!await _confirm(
-                        context,
-                        title: 'Delete your account?',
-                        body:
-                            'This permanently deletes your sign-in and clears all Fit Tracker data on this device. '
-                            'It can\'t be undone.',
-                        action: 'Delete',
-                      )) {
-                        return;
-                      }
-                      try {
-                        await ref.read(authProvider.notifier).deleteAccount();
-                        await _clearLocal(ref);
-                      } on AuthFailure catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+              const SizedBox(height: 22),
+              Text('Daily targets', style: text.titleMedium),
+              const SizedBox(height: 10),
+              GlassCard(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+                child: Column(
+                  children: [
+                    row('Calories', '${t.calories} kcal'),
+                    row('Protein · carbs · fat', '${t.proteinG} · ${t.carbsG} · ${t.fatG} g'),
+                    row('Fiber', '${t.fiberG} g'),
+                    row('Water', '${(t.waterMl / 1000).toStringAsFixed(1)} L'),
+                    row('Steps', NumberFormat.decimalPattern().format(t.steps)),
+                    row('Stride length', '${t.strideM} m'),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+              Text('Account', style: text.titleMedium),
+              const SizedBox(height: 10),
+              GlassCard(
+                child: Row(
+                  children: [
+                    Icon(
+                      account?.method == SignInMethod.google ? Icons.mail_outline_rounded : Icons.phone_iphone_rounded,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Signed in with ${account?.method == SignInMethod.google ? 'Google' : 'phone'}',
+                            style: text.bodySmall,
+                          ),
+                          Text(account?.handle ?? '—', style: text.titleSmall),
+                        ],
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => ref.read(authProvider.notifier).signOut(),
+                      child: const Text('Sign out'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+              Text('Data & privacy', style: text.titleMedium),
+              const SizedBox(height: 10),
+              GlassCard(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Column(
+                  children: [
+                    _Action(
+                      icon: Icons.shield_outlined,
+                      label: 'Privacy policy',
+                      onTap: () => context.push(Routes.privacy),
+                    ),
+                    _Action(
+                      icon: Icons.restart_alt_rounded,
+                      label: 'Reset data on this device',
+                      onTap: () async {
+                        if (await _confirm(
+                          context,
+                          title: 'Start over?',
+                          body:
+                              'This clears your profile, history, meals and alarms on this device. You stay signed in.',
+                          action: 'Reset',
+                        )) {
+                          await _clearLocal(ref);
                         }
-                      }
-                    },
-                  ),
-                ],
+                      },
+                    ),
+                    _Action(
+                      icon: Icons.person_remove_outlined,
+                      label: 'Delete account',
+                      danger: true,
+                      onTap: () async {
+                        if (!await _confirm(
+                          context,
+                          title: 'Delete your account?',
+                          body:
+                              'This permanently deletes your sign-in and clears all Fit Tracker data on this device. '
+                              'It can\'t be undone.',
+                          action: 'Delete',
+                        )) {
+                          return;
+                        }
+                        try {
+                          await ref.read(authProvider.notifier).deleteAccount();
+                          await _clearLocal(ref);
+                        } on AuthFailure catch (e) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+                          }
+                        }
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

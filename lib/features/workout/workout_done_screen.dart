@@ -108,6 +108,13 @@ class WorkoutDoneScreen extends StatelessWidget {
                       ).animate(delay: 500.ms).fadeIn(),
                       const Spacer(),
                       GradientButton(label: 'Back to Today', onPressed: () => context.go(Routes.home)),
+                      const SizedBox(height: 4),
+                      // The wake-up workout is a warm-up; offer a full session next.
+                      TextButton.icon(
+                        onPressed: () => context.go(Routes.training),
+                        icon: const Icon(Icons.fitness_center_rounded),
+                        label: const Text('Keep going: full workouts'),
+                      ),
                     ],
                   ),
                 ),

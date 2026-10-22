@@ -37,10 +37,10 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   static const _items = [
     (Icons.space_dashboard_outlined, Icons.space_dashboard_rounded, 'Today'),
+    (Icons.fitness_center_outlined, Icons.fitness_center_rounded, 'Workouts'),
     (Icons.view_timeline_outlined, Icons.view_timeline_rounded, 'My Day'),
     (Icons.alarm_outlined, Icons.alarm_rounded, 'Alarm'),
     (Icons.restaurant_outlined, Icons.restaurant_rounded, 'Diet'),
-    (Icons.person_outline_rounded, Icons.person_rounded, 'Me'),
   ];
 
   static const _seenKey = 'achievements.seen.v1';
@@ -75,6 +75,9 @@ class _AppShellState extends ConsumerState<AppShell> {
           ],
         ),
         action: SnackBarAction(label: 'View', onPressed: () => context.push(Routes.achievements)),
+        // Snackbars with an action stay until tapped by default; this one
+        // must not cover buttons such as a workout's Done.
+        persist: false,
       ),
     );
   }

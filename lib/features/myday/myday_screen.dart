@@ -106,6 +106,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
         SnackBar(
           content: Text('${b.name} removed'),
           action: SnackBarAction(label: 'Undo', onPressed: () => notifier.restore(b)),
+          persist: false,
         ),
       );
   }

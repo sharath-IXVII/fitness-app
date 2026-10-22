@@ -50,7 +50,7 @@ void main() {
       ),
     );
     await _wait(t, 3400);
-    await t.tap(find.text('Me').last);
+    await t.tap(find.byTooltip('Profile'));
     await _wait(t);
     expect(find.text('Stay fit'), findsOneWidget);
 

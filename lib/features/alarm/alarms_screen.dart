@@ -72,6 +72,7 @@ class _AlarmsScreenState extends ConsumerState<AlarmsScreen> with WidgetsBinding
         SnackBar(
           content: const Text('Alarm deleted'),
           action: SnackBarAction(label: 'Undo', onPressed: () => notifier.restore(a)),
+          persist: false,
         ),
       );
   }

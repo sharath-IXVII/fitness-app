@@ -32,9 +32,8 @@ jobs:
           info=$(ls -la; echo; tar -tzf model.tar.gz 2>&1 | head; echo; head -c 200 direct.tflite | xxd | head -3; echo; wc -l labels.csv; head -5 labels.csv)
           info="${info//'%'/'%25'}"; info="${info//$'\n'/'%0A'}"
           echo "::notice title=files::$info"
-          kw='biryani|dosa|idli|naan|roti|chapati|paratha|samosa|paneer|curry|dal|masala|tikka|pakora|jalebi|gulab|kheer|rice|khichdi|upma|poha|vada|pav|chole|rajma|raita|halwa|ladoo|thali|uttapam|bhaji|kofta|korma|tandoori|kebab|egg|omelet|sandwich|pizza|burger|noodle|pasta|salad|chicken|fish|dumpling|momo|fries|pancake|oat|banana|apple|mango'
-          for chunk in 0 1 2 3; do
-            m=$(grep -iE "$kw" labels.csv | sed -n "$((chunk*150+1)),$((chunk*150+150))p" | cut -d, -f2 | tr '\n' ';')
+          tr -d '\r' < labels.csv > l.csv
+          for chunk in 0 1 2 3 4; do
+            m=$(tail -n +2 l.csv | sed -n "$((chunk*420+1)),$((chunk*420+420))p" | cut -d, -f2- | tr '\n' ';')
             [ -n "$m" ] && echo "::notice title=labels $chunk::${m//'%'/'%25'}"
           done
-          echo "::notice title=total::$(grep -ciE "$kw" labels.csv) keyword matches of $(wc -l < labels.csv)"

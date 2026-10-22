@@ -44,7 +44,7 @@ An alarm that only stops when you've done your workout. The phone camera counts 
 | 3 | My Day routine maker and scheduled reminders | ✅ Built, needs device testing |
 | 4 | Dual step counter (sensor + GPS, vehicle filtering) and water reminders | ✅ Built, needs device testing |
 | 5 | Diet: calorie and macro targets, meal logging, daily meal plans per diet, weight goal with a deadline, explainers | ✅ Done |
-| 6 | Food camera scanner: photo → editable per-item estimate via a Cloud Function (Claude vision) | ✅ Built, needs Firebase + deploy |
+| 6 | Food camera scanner: on-device dish recognition (free, offline) → nutrition from the built-in food list | ✅ Built, needs device testing |
 | 7 | XP and levels, 12 achievements, weekly report, privacy policy, account deletion, release signing and Play checklist | ✅ Done |
 
 ## Tech
@@ -75,7 +75,7 @@ lib/
     steps/         step sensor + activity recognition + GPS walks
     water/         water log and reminders
     diet/          food list, meal log, meal-plan generator, weight goal, diet screen and sheets
-    scan/          food photo scanner (calls the scanFood Cloud Function)
+    scan/          on-device food recognition (TensorFlow Lite) and the scan screen
     progress/      XP, levels, achievements, weekly report
     shell/         bottom navigation
 test/              unit tests (targets, streaks) and full onboarding flow tests
@@ -91,7 +91,9 @@ test/              unit tests (targets, streaks) and full onboarding flow tests
 
 ## How the food scanner works
 
-Tap the camera on the Diet tab, take or choose a photo, and optionally say what it is. The photo goes to the `scanFood` Cloud Function in `backend/functions`, which returns each item it can see with a portion, an estimated weight and its macros. You can scale each item (½× to 3×), edit its numbers, remove items, and see a warning when something doesn't fit your diet. Then you log it to a meal. The AI key stays on the server. Until the backend is deployed, the screen explains the setup and offers manual entry. See `backend/README.md`.
+Tap the camera on the Diet tab and take or choose a photo. Google's free AIY Food V1 model (TensorFlow Lite, about 2,000 dishes including many Indian ones) runs on the phone, so scanning costs nothing, works offline, and the photo never leaves the device. The app shows its best guesses with a confidence score. The likely one is added for you, and tapping another adds it too. Nutrition comes from the app's food list. You set the portion (½× to 3× servings), because a single photo can't measure amounts reliably. Dishes the model knows but the food list doesn't open the search pre-filled.
+
+The model isn't stored in git: the APK build downloads it into `assets/models/` (see `assets/models/README.md`). Without it the scanner offers manual entry instead.
 
 ## XP, achievements and the weekly report
 

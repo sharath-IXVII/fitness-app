@@ -5,8 +5,7 @@ import 'package:fitalarm/app.dart';
 import 'package:fitalarm/core/storage.dart';
 import 'package:fitalarm/features/auth/auth_providers.dart';
 import 'package:fitalarm/features/auth/auth_service.dart';
-import 'package:fitalarm/features/scan/domain/scan_result.dart';
-import 'package:fitalarm/features/scan/food_scanner.dart';
+import 'package:fitalarm/features/scan/food_recognizer.dart';
 import 'package:fitalarm/features/scan/scan_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,56 +24,11 @@ final _png = base64Decode(
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
 );
 
-class _FakeScanner implements FoodScanner {
-  String? hint;
-
-  @override
-  Future<ScanResult> scan(Uint8List image, String mediaType, {String? hint}) async {
-    this.hint = hint;
-    await Future<void>.delayed(const Duration(milliseconds: 300));
-    return ScanResult.fromJson({
-      'is_food': true,
-      'items': [
-        {
-          'name': 'Rajma curry',
-          'portion': '1 katori',
-          'grams': 180,
-          'kcal': 240,
-          'protein_g': 11,
-          'carbs_g': 30,
-          'fat_g': 8,
-          'fiber_g': 9,
-          'veg': 'vegan',
-          'confidence': 'medium',
-        },
-        {
-          'name': 'Steamed rice',
-          'portion': '1 cup',
-          'grams': 160,
-          'kcal': 205,
-          'protein_g': 4,
-          'carbs_g': 45,
-          'fat_g': 0.4,
-          'fiber_g': 0.6,
-          'veg': 'vegan',
-          'confidence': 'high',
-        },
-        {
-          'name': 'Chicken tikka',
-          'portion': '4 pieces',
-          'grams': 120,
-          'kcal': 200,
-          'protein_g': 28,
-          'carbs_g': 4,
-          'fat_g': 8,
-          'fiber_g': 0,
-          'veg': 'non_veg',
-          'confidence': 'low',
-        },
-      ],
-      'note': 'Oil in the curry is hard to judge.',
-    });
-  }
+/// Stands in for the on-device model: a confident butter chicken, a less
+/// likely chicken curry, and a dish with no nutrition data.
+Future<List<(String, double)>> _fakeClassify(Uint8List image) async {
+  await Future<void>.delayed(const Duration(milliseconds: 300));
+  return const [('Butter chicken', 0.71), ('Chicken curry', 0.12), ('Chaudin', 0.05)];
 }
 
 Map<String, Object> _seed() => {
@@ -94,7 +48,7 @@ Map<String, Object> _seed() => {
   }),
 };
 
-Future<SharedPreferences> _pump(WidgetTester t, {FoodScanner? scanner, bool connected = true}) async {
+Future<SharedPreferences> _pump(WidgetTester t, {bool model = true}) async {
   t.view.physicalSize = const Size(390, 844) * 3;
   t.view.devicePixelRatio = 3;
   addTearDown(t.view.reset);
@@ -105,7 +59,7 @@ Future<SharedPreferences> _pump(WidgetTester t, {FoodScanner? scanner, bool conn
       overrides: [
         sharedPrefsProvider.overrideWithValue(prefs),
         authServiceProvider.overrideWithValue(DemoAuthService(prefs)),
-        foodScannerProvider.overrideWithValue(connected ? scanner : null),
+        foodClassifierProvider.overrideWith((ref) async => model ? _fakeClassify : null),
         pickImageProvider.overrideWithValue((_) async => (bytes: _png, mediaType: 'image/png')),
       ],
       child: const FitAlarmApp(),
@@ -122,49 +76,47 @@ Future<SharedPreferences> _pump(WidgetTester t, {FoodScanner? scanner, bool conn
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
-  testWidgets('scan a plate, adjust it and log it', (t) async {
-    final scanner = _FakeScanner();
-    final prefs = await _pump(t, scanner: scanner);
-    expect(find.text('Photograph your plate'), findsOneWidget);
+  testWidgets('recognise a dish on the phone, pick it, adjust the portion and log it', (t) async {
+    final prefs = await _pump(t);
+    expect(find.text('Photograph your food'), findsOneWidget);
 
-    await t.enterText(find.byType(TextField), 'rajma chawal');
     await t.tap(find.text('Lunch'));
     await _wait(t, 200);
     await t.tap(find.text('Take photo'));
     await _wait(t, 200);
-    expect(find.text('Reading your plate…'), findsOneWidget);
+    expect(find.text('Recognising your food…'), findsOneWidget);
     await _wait(t, 800);
-    expect(scanner.hint, 'rajma chawal');
 
-    expect(find.text('645 kcal'), findsOneWidget);
-    expect(find.text('Unsure'), findsOneWidget);
-    expect(find.textContaining('may not fit your diet'), findsOneWidget);
-    expect(find.text('Oil in the curry is hard to judge.'), findsOneWidget);
+    // The confident guess is added; the others are offered as chips.
+    expect(find.text('Looks like'), findsOneWidget);
+    expect(find.text('71%'), findsOneWidget);
+    expect(find.text('440 kcal'), findsWidgets);
 
-    // Drop the chicken, double the rice.
-    await t.tap(find.byTooltip('Remove Chicken tikka'));
+    // Add the second guess too, then remove it again.
+    await t.tap(find.text('Chicken curry'));
     await _wait(t, 300);
-    expect(find.textContaining('may not fit your diet'), findsNothing);
-    for (var i = 0; i < 2; i++) {
-      await t.tap(find.byIcon(Icons.add_rounded).hitTestable().at(1));
-      await _wait(t, 300);
-    }
-    expect(find.text('2×'), findsOneWidget);
-    expect(find.text('650 kcal'), findsOneWidget);
+    expect(find.text('740 kcal'), findsOneWidget);
+    await t.tap(find.text('Chicken curry').first);
+    await _wait(t, 300);
+    expect(find.text('440 kcal'), findsWidgets);
+
+    // One and a half servings.
+    await t.tap(find.byIcon(Icons.add_rounded).hitTestable().last);
+    await _wait(t, 300);
+    expect(find.text('660 kcal'), findsWidgets);
 
     await t.tap(find.text('Add to lunch'));
     await _wait(t);
     final key = prefs.getKeys().firstWhere((k) => k.startsWith('meals.v1.'));
     final saved = jsonDecode(prefs.getString(key)!) as List;
-    expect(saved.map((e) => e['name']), ['Rajma curry', 'Steamed rice']);
-    expect(saved.every((e) => e['meal'] == 'lunch' && e['source'] == 'scan'), isTrue);
-    expect(saved[1]['servings'], 2.0);
-    expect(find.text('Steamed rice'), findsOneWidget, reason: 'back on the diet screen');
+    expect(saved.single['name'], 'Butter chicken');
+    expect(saved.single['servings'], 1.5);
+    expect(saved.single['source'], 'scan');
   });
 
-  testWidgets('without a backend the scanner explains setup and offers manual entry', (t) async {
-    await _pump(t, connected: false);
-    expect(find.text('Scanner not connected'), findsOneWidget);
+  testWidgets('without the model the scanner offers manual entry', (t) async {
+    await _pump(t, model: false);
+    expect(find.text('Food recognition unavailable'), findsOneWidget);
     await t.tap(find.text('Add food manually'));
     await _wait(t);
     expect(find.text('Search foods'), findsOneWidget);

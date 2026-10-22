@@ -55,9 +55,10 @@ dependencies:
   pedometer_2: ^5.0.4
   geolocator: ^14.0.1
   flutter_activity_recognition: ^4.0.0
-  cloud_functions: ^7.0.0
   image_picker: ^1.2.4
   path_provider: ^2.1.6
+  tflite_flutter: ^0.12.1
+  image: ^4.12.0
 
 dev_dependencies:
   flutter_test:
@@ -79,6 +80,7 @@ flutter:
   assets:
     - assets/google_fonts/
     - assets/sounds/
+    - assets/models/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

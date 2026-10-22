@@ -6,7 +6,7 @@ This is a checklist for the first Play Store release. Items marked **(you)** nee
 
 - **(you) Name and package.** Pick the final app name, then set `applicationId` and `namespace` in `android/app/build.gradle.kts` (for example `com.yourname.fitalarm`). The package name can't change after the first upload. Update the Firebase Android app to match.
 - **(you) Contact email.** Replace `[your contact email]` in `lib/features/profile/privacy_policy.dart`, then regenerate or edit `docs/PRIVACY.md` to match.
-- **(you) Firebase.** Connect Firebase (root README, "Sign-in"), add your **release** SHA-1 and SHA-256 fingerprints to the Firebase Android app (Google sign-in fails without them), and deploy `backend/` (`backend/README.md`).
+- **(you) Firebase.** Connect Firebase (root README, "Sign-in"), add your **release** SHA-1 and SHA-256 fingerprints to the Firebase Android app (Google sign-in fails without them).
 - **Version.** Bump `version:` in `pubspec.yaml` (`1.0.0+1` is name+code) for every upload.
 
 ## 2. Signing key (once, keep it safe)
@@ -42,7 +42,7 @@ Before uploading, test the release build on a real phone (`flutter install --rel
 - Steps go up while walking and pause in a car or on a bike. A GPS walk records distance outdoors.
 - Water and My Day reminders arrive on time, and their action buttons work.
 - Phone OTP and Google sign-in work with the release key.
-- The food scan returns results, and "Delete account" works.
+- Food scanning recognises common dishes, and "Delete account" works.
 
 ## 4. Play Console
 
@@ -69,7 +69,7 @@ Before uploading, test the release build on a real phone (`flutter install --rel
 | Data type | Collected | Shared | Purpose | Notes |
 |---|---|---|---|---|
 | Phone number / email, name, user ID | Yes | No | Account management | Firebase Auth |
-| Photos (meal photos the user chooses) | Yes, not stored | Yes, with a service provider (AI model) for processing | App functionality | Processed ephemerally |
+| Photos (meal photos) | No, stays on device | No | — | Recognised on the phone; never uploaded |
 | Health & fitness (weight, steps, workouts, diet) | No, stays on device | No | — | Stored locally only |
 | Location | No, stays on device | No | — | Used only during GPS walks |
 | Camera video (workouts) | No, on-device | No | — | ML Kit on-device |
@@ -85,5 +85,3 @@ Answer these as well: data is encrypted in transit (yes), and users can request 
 ## 5. After launch
 
 - Watch Firebase Crashlytics. Adding it is a small next step.
-- Watch the Anthropic usage dashboard for the food scanner, and tune `DAILY_LIMIT`.
-- Turn on App Check and set `enforceAppCheck: true` in `backend/functions/src/index.ts`.

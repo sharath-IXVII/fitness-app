@@ -4,7 +4,7 @@ _Last updated: October 2026_
 
 ## Summary
 
-FitAlarm keeps your fitness data on your phone. We only send data off your device to sign you in and, if you use it, to analyse a meal photo. We don't sell data, show ads or use third-party analytics.
+FitAlarm keeps your fitness data on your phone. The only data that leaves your device is what's needed to sign you in. We don't sell data, show ads or use third-party analytics.
 
 ## Your account
 
@@ -20,7 +20,7 @@ The workout camera counts reps using on-device pose detection (Google ML Kit). V
 
 ## Food photos
 
-When you scan a meal, the photo and any note you type are sent once, over an encrypted connection, to our server (Google Cloud Functions) and to Anthropic, which provides the AI model that estimates nutrition. Only the estimate comes back. We don't store the photo: it is kept only on your phone, next to the meal you logged. Anthropic processes it under its commercial terms and does not use it to train its models. We keep a daily count of scans per account to limit use.
+Food scanning happens entirely on your phone using a built-in recognition model. Meal photos are never uploaded; they are kept only on your phone, next to the meal you logged.
 
 ## Steps, activity and location
 
@@ -32,7 +32,7 @@ Alarms and reminders are scheduled locally on your phone. No notification conten
 
 ## Deleting your data
 
-Use "Delete account" in the Me tab to permanently delete your sign-in and clear all data on the device. Your scan counters on our server are deleted with your account.
+Use "Delete account" in the Me tab to permanently delete your sign-in and clear all data on the device.
 
 ## Children
 

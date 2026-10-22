@@ -19,15 +19,16 @@ import '../diet/domain/meal_log.dart';
 import '../diet/widgets/food_search_sheet.dart';
 import '../diet/widgets/sheet_frame.dart';
 import '../profile/profile_providers.dart';
+import 'domain/recognition.dart';
 import 'domain/scan_result.dart';
-import 'food_scanner.dart';
+import 'food_recognizer.dart';
 
 typedef PickedImage = ({Uint8List bytes, String mediaType});
 
 /// Opens the camera or gallery and returns a downscaled JPEG. Overridden in tests.
 final pickImageProvider = Provider<Future<PickedImage?> Function(ImageSource)>(
   (ref) => (source) async {
-    final x = await ImagePicker().pickImage(source: source, maxWidth: 1280, maxHeight: 1280, imageQuality: 80);
+    final x = await ImagePicker().pickImage(source: source, maxWidth: 1280, maxHeight: 1280, imageQuality: 85);
     if (x == null) return null;
     final type = x.mimeType ?? (x.name.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg');
     return (bytes: await x.readAsBytes(), mediaType: type);
@@ -36,8 +37,9 @@ final pickImageProvider = Provider<Future<PickedImage?> Function(ImageSource)>(
 
 enum _Phase { pick, scanning, result }
 
-/// Phase 6: photograph a plate, get an editable estimate of each item's
-/// calories, protein, carbs, fat and fiber, then log it to a meal.
+/// Photograph a plate: the dish is recognised on the phone (free, offline,
+/// nothing uploaded), matched to the app's nutrition list, and the user
+/// confirms the dish and portion before logging it.
 class ScanFoodScreen extends ConsumerStatefulWidget {
   const ScanFoodScreen({super.key, this.meal = MealType.lunch});
 
@@ -49,23 +51,18 @@ class ScanFoodScreen extends ConsumerStatefulWidget {
 
 class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
   late MealType _meal = widget.meal;
-  final _hint = TextEditingController();
   _Phase _phase = _Phase.pick;
   PickedImage? _image;
-  ScanResult? _result;
+  List<FoodGuess> _guesses = [];
   List<ScannedItem> _items = [];
   String? _error;
-  bool _remember = false;
 
-  @override
-  void dispose() {
-    _hint.dispose();
-    super.dispose();
-  }
+  /// A guess is added automatically only when the model is fairly sure.
+  static const autoAddScore = 0.3;
 
   Future<void> _pick(ImageSource source) async {
-    final scanner = ref.read(foodScannerProvider);
-    if (scanner == null) return;
+    final classify = ref.read(foodClassifierProvider).value;
+    if (classify == null) return;
     PickedImage? img;
     try {
       img = await ref.read(pickImageProvider)(source);
@@ -80,18 +77,20 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
       _error = null;
     });
     try {
-      final r = await scanner.scan(img.bytes, img.mediaType, hint: _hint.text);
+      final guesses = await recognizeFood(ref, classify, img.bytes);
       if (!mounted) return;
       HapticFeedback.lightImpact();
+      final best = guesses.where((g) => g.food != null && g.score >= autoAddScore).take(1);
       setState(() {
-        _result = r;
-        _items = [...r.items];
+        _guesses = guesses;
+        _items = [for (final g in best) ScannedItem.fromFood(g.food!, g.score)];
         _phase = _Phase.result;
       });
-    } on ScanFailure catch (e) {
+    } catch (e) {
+      debugPrint('food recognition failed: $e');
       if (!mounted) return;
       setState(() {
-        _error = e.message;
+        _error = "Couldn't read that photo. Try again, or add the food manually.";
         _phase = _Phase.pick;
       });
     }
@@ -99,9 +98,27 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
 
   void _retake() => setState(() {
     _phase = _Phase.pick;
-    _result = null;
+    _guesses = [];
     _items = [];
   });
+
+  bool _isChosen(Food f) => _items.any((i) => i.name == f.name);
+
+  void _toggle(FoodGuess g) {
+    final f = g.food;
+    if (f == null) {
+      _manual(query: g.label);
+      return;
+    }
+    HapticFeedback.selectionClick();
+    setState(() {
+      if (_isChosen(f)) {
+        _items = [..._items.where((i) => i.name != f.name)];
+      } else {
+        _items = [..._items, ScannedItem.fromFood(f, g.score)];
+      }
+    });
+  }
 
   Future<void> _log() async {
     final base = MealLogNotifier.newId();
@@ -109,22 +126,6 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
     // It's written in the background so logging never waits on storage.
     final photo = _image != null && PhotoStore.supported ? '$base.jpg' : null;
     if (photo != null) unawaited(PhotoStore.save(photo, _image!.bytes));
-    if (_remember) {
-      for (final item in _items) {
-        await ref
-            .read(myFoodsProvider.notifier)
-            .add(
-              Food(
-                MyFoodsNotifier.newId(),
-                item.name,
-                item.portion.isEmpty ? '1 portion' : item.portion,
-                item.cls,
-                item.macros,
-                tags: const {'mine'},
-              ),
-            );
-      }
-    }
     await ref.read(mealLogProvider.notifier).addAll([
       for (final (i, item) in _items.indexed)
         MealEntry(
@@ -150,14 +151,14 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
     Navigator.of(context).pop();
   }
 
-  Future<void> _manual() async {
-    final added = await SheetFrame.show<MealEntry>(context, FoodSearchSheet(meal: _meal));
-    if (added != null && mounted) Navigator.of(context).pop();
+  Future<void> _manual({String? query}) async {
+    final added = await SheetFrame.show<MealEntry>(context, FoodSearchSheet(meal: _meal, initialQuery: query));
+    if (added != null && mounted && _items.isEmpty) Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    final scanner = ref.watch(foodScannerProvider);
+    final model = ref.watch(foodClassifierProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('Scan food'),
@@ -170,8 +171,12 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
         child: AnimatedSwitcher(
           duration: const Duration(milliseconds: 280),
           switchInCurve: Curves.easeOutCubic,
-          child: switch ((scanner, _phase)) {
-            (null, _) => _NotConfigured(key: const ValueKey('setup'), onManual: _manual),
+          child: switch ((model, _phase)) {
+            (AsyncLoading(), _) => const Center(key: ValueKey('loading'), child: CircularProgressIndicator()),
+            (AsyncData(value: null) || AsyncError(), _) => _NotConfigured(
+              key: const ValueKey('setup'),
+              onManual: () => _manual(),
+            ),
             (_, _Phase.pick) => _pickView(context),
             (_, _Phase.scanning) => _Scanning(key: const ValueKey('scanning'), image: _image!.bytes),
             (_, _Phase.result) => _resultView(context),
@@ -207,11 +212,11 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
                 child: const Icon(Icons.photo_camera_outlined, size: 34, color: AppColors.primary),
               ),
               const SizedBox(height: 16),
-              Text('Photograph your plate', style: text.titleLarge),
+              Text('Photograph your food', style: text.titleLarge),
               const SizedBox(height: 6),
               Text(
-                'Shoot from above in good light with the whole plate in view. You can adjust every value before '
-                'saving. Photos are kept only on this phone.',
+                'One dish at a time works best: fill the frame, from above, in good light. '
+                'Recognition happens on your phone — the photo is never uploaded.',
                 style: text.bodyMedium,
                 textAlign: TextAlign.center,
               ),
@@ -244,18 +249,10 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
             ),
           ).animate().fadeIn(duration: 250.ms),
         ],
-        FormSection(
-          title: 'What is it? (optional)',
-          child: TextField(
-            controller: _hint,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(hintText: 'e.g. homemade rajma chawal, less oil'),
-          ),
-        ),
         FormSection(title: 'Add to', child: _mealPills()),
         const SizedBox(height: 18),
         Center(
-          child: TextButton(onPressed: _manual, child: const Text('Search and add manually instead')),
+          child: TextButton(onPressed: () => _manual(), child: const Text('Search and add manually instead')),
         ),
       ],
     );
@@ -263,10 +260,10 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
 
   Widget _resultView(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final r = _result!;
     final total = _items.fold(const Macros(), (m, i) => m + i.scaled);
     final diet = ref.watch(profileProvider)?.diet;
     final offDiet = diet == null ? const <ScannedItem>[] : _items.where((i) => !i.cls.fits(diet)).toList();
+    final recognised = _guesses.isNotEmpty;
     return Column(
       key: const ValueKey('result'),
       children: [
@@ -285,12 +282,21 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(r.isFood ? '${total.kcal.round()} kcal' : 'No food found', style: text.headlineSmall),
                         Text(
-                          r.isFood
+                          _items.isNotEmpty
+                              ? '${total.kcal.round()} kcal'
+                              : recognised
+                              ? 'Pick the dish'
+                              : 'Not recognised',
+                          style: text.headlineSmall,
+                        ),
+                        Text(
+                          _items.isNotEmpty
                               ? '${total.protein.round()} g protein · ${total.carbs.round()} g carbs · '
                                     '${total.fiber.round()} g fiber'
-                              : 'Try another photo, closer and in better light.',
+                              : recognised
+                              ? 'Tap what\'s on your plate below.'
+                              : 'Try closer and in better light, or search for it.',
                           style: text.bodyMedium,
                         ),
                       ],
@@ -298,6 +304,19 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
                   ),
                 ],
               ),
+              if (recognised) ...[
+                const SizedBox(height: 18),
+                Text('Looks like', style: text.titleSmall),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final g in _guesses)
+                      _GuessChip(guess: g, selected: g.food != null && _isChosen(g.food!), onTap: () => _toggle(g)),
+                  ],
+                ),
+              ],
               const SizedBox(height: 16),
               for (final (i, item) in _items.indexed)
                 Padding(
@@ -312,27 +331,33 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
                     onRemove: () => setState(() => _items.removeAt(i)),
                   ).animate(delay: (i * 50).ms).fadeIn(duration: 250.ms).moveY(begin: 6, end: 0),
                 ),
+              OutlinedButton.icon(
+                onPressed: () => _manual(),
+                icon: const Icon(Icons.search_rounded, size: 18),
+                label: Text(recognised ? 'Something else? Search foods' : 'Search foods'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(48),
+                  side: const BorderSide(color: AppColors.stroke),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+              ),
+              const SizedBox(height: 8),
               if (offDiet.isNotEmpty)
                 _Notice(
                   icon: Icons.eco_outlined,
                   text: '${offDiet.map((e) => e.name).join(', ')} may not fit your diet. Remove it if that\'s wrong.',
                 ),
-              if (r.note.isNotEmpty) _Notice(icon: Icons.lightbulb_outline_rounded, text: r.note),
               const _Notice(
-                icon: Icons.info_outline_rounded,
-                text: 'Estimates from a photo. Hidden oil, sugar and portion depth can change the real numbers.',
+                icon: Icons.straighten_rounded,
+                text:
+                    'Check the portion: set how many servings you ate with − and +. A photo can\'t measure '
+                    'amounts exactly.',
               ),
-              if (_items.isNotEmpty) ...[
-                FormSection(title: 'Add to', child: _mealPills()),
-                const SizedBox(height: 8),
-                SettingToggle(
-                  icon: Icons.bookmark_outline_rounded,
-                  title: 'Save to My foods',
-                  subtitle: 'Log these again later without scanning',
-                  value: _remember,
-                  onChanged: (v) => setState(() => _remember = v),
-                ),
-              ],
+              const _Notice(
+                icon: Icons.lock_outline_rounded,
+                text: 'Recognised on your phone. The photo stays on this phone only.',
+              ),
+              if (_items.isNotEmpty) FormSection(title: 'Add to', child: _mealPills()),
             ],
           ),
         ),
@@ -350,6 +375,55 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+/// One model guess: name and confidence. Guesses without nutrition data
+/// open the food search instead.
+class _GuessChip extends StatelessWidget {
+  const _GuessChip({required this.guess, required this.selected, required this.onTap});
+
+  final FoodGuess guess;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final known = guess.food != null;
+    return Pressable(
+      onTap: onTap,
+      scale: 0.96,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? AppColors.primary : AppColors.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: selected ? AppColors.primary : AppColors.stroke),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              selected ? Icons.check_rounded : (known ? Icons.add_rounded : Icons.search_rounded),
+              size: 16,
+              color: selected ? Colors.white : AppColors.primary,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              known ? guess.food!.name : guess.label,
+              style: text.labelLarge?.copyWith(color: selected ? Colors.white : AppColors.textPrimary),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              '${guess.percent}%',
+              style: text.labelSmall?.copyWith(color: selected ? Colors.white70 : AppColors.textTertiary),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -396,9 +470,9 @@ class _Scanning extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Text('Reading your plate…', style: text.titleMedium),
+            Text('Recognising your food…', style: text.titleMedium),
             const SizedBox(height: 4),
-            Text('Usually takes a few seconds', style: text.bodySmall),
+            Text('On your phone — nothing is uploaded', style: text.bodySmall),
           ],
         ),
       ),
@@ -653,22 +727,15 @@ class _NotConfigured extends StatelessWidget {
                 width: 72,
                 height: 72,
                 decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(22)),
-                child: const Icon(Icons.cloud_off_outlined, size: 32, color: AppColors.primary),
+                child: const Icon(Icons.no_photography_outlined, size: 32, color: AppColors.primary),
               ),
               const SizedBox(height: 16),
-              Text('Scanner not connected', style: text.titleLarge),
+              Text('Food recognition unavailable', style: text.titleLarge),
               const SizedBox(height: 8),
               Text(
-                'Food scanning runs on a secure server so no API keys are stored in the app. '
-                'This build is in demo mode, so the scanner is off.',
+                "This version of the app doesn't include the food-recognition model. "
+                'You can still search and add foods.',
                 style: text.bodyMedium,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'To turn it on: connect the app to Firebase, then deploy backend/functions with an '
-                'ANTHROPIC_API_KEY secret (see backend/README.md).',
-                style: text.bodySmall,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),

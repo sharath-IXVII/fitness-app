@@ -2,7 +2,7 @@ import '../../diet/domain/food.dart';
 
 enum ScanConfidence { high, medium, low }
 
-/// One item the scanner found, with its estimate for the visible portion.
+/// One food on the plate, with nutrition per serving.
 /// [factor] lets the user scale the portion before logging.
 class ScannedItem {
   const ScannedItem({
@@ -35,50 +35,17 @@ class ScannedItem {
     factor: factor ?? this.factor,
   );
 
-  static double _n(Object? v) => (v as num?)?.toDouble() ?? 0;
-
-  factory ScannedItem.fromJson(Map<String, dynamic> j) => ScannedItem(
-    name: j['name'] as String? ?? 'Food',
-    portion: j['portion'] as String? ?? '',
-    grams: _n(j['grams']).round(),
-    macros: Macros(
-      kcal: _n(j['kcal']),
-      protein: _n(j['protein_g']),
-      carbs: _n(j['carbs_g']),
-      fat: _n(j['fat_g']),
-      fiber: _n(j['fiber_g']),
-    ),
-    cls: switch (j['veg']) {
-      'vegan' => FoodClass.vegan,
-      'egg' => FoodClass.egg,
-      'non_veg' => FoodClass.nonVeg,
-      _ => FoodClass.veg,
-    },
-    confidence: ScanConfidence.values.asNameMap()[j['confidence']] ?? ScanConfidence.low,
+  /// A food from the nutrition list, recognised with [score] (0–1).
+  factory ScannedItem.fromFood(Food f, double score) => ScannedItem(
+    name: f.name,
+    portion: f.serving,
+    grams: 0,
+    macros: f.macros,
+    cls: f.cls,
+    confidence: score >= 0.6
+        ? ScanConfidence.high
+        : score >= 0.3
+        ? ScanConfidence.medium
+        : ScanConfidence.low,
   );
-}
-
-class ScanResult {
-  const ScanResult({required this.isFood, required this.items, this.note = ''});
-
-  final bool isFood;
-  final List<ScannedItem> items;
-  final String note;
-
-  factory ScanResult.fromJson(Map<String, dynamic> j) => ScanResult(
-    isFood: j['is_food'] as bool? ?? false,
-    items: [
-      for (final i in (j['items'] as List? ?? const [])) ScannedItem.fromJson(Map<String, dynamic>.from(i as Map)),
-    ],
-    note: j['note'] as String? ?? '',
-  );
-}
-
-class ScanFailure implements Exception {
-  const ScanFailure(this.message);
-
-  final String message;
-
-  @override
-  String toString() => message;
 }

@@ -15,9 +15,12 @@ import 'sheet_frame.dart';
 /// Search the food list (filtered to the user's diet), pick servings and
 /// add to a meal. Also supports a custom food with typed-in macros.
 class FoodSearchSheet extends ConsumerStatefulWidget {
-  const FoodSearchSheet({super.key, required this.meal});
+  const FoodSearchSheet({super.key, required this.meal, this.initialQuery});
 
   final MealType meal;
+
+  /// Pre-filled search, e.g. a dish the camera recognised.
+  final String? initialQuery;
 
   @override
   ConsumerState<FoodSearchSheet> createState() => _FoodSearchSheetState();
@@ -27,7 +30,7 @@ enum _Filter { all, mine, recent, protein, snack }
 
 class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
   late MealType _meal = widget.meal;
-  final _query = TextEditingController();
+  late final _query = TextEditingController(text: widget.initialQuery);
   _Filter _filter = _Filter.all;
   Food? _picked;
   double _servings = 1;

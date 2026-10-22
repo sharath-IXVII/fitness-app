@@ -46,3 +46,7 @@ app.*.map.json
 
 # Widget Preview related
 .widget_preview/
+
+# Food model, downloaded by the build (see assets/models/README.md)
+assets/models/*.tflite
+assets/models/*.csv

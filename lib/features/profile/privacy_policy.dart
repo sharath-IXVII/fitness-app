@@ -5,7 +5,7 @@ const privacyUpdated = 'October 2026';
 const privacySections = <(String, String)>[
   (
     'Summary',
-    'FitAlarm keeps your fitness data on your phone. The only data that leaves your device is what\'s needed to '
+    'Fit Tracker keeps your fitness data on your phone. The only data that leaves your device is what\'s needed to '
         'sign you in. We don\'t sell data, show ads or use third-party analytics.',
   ),
   (
@@ -44,7 +44,7 @@ const privacySections = <(String, String)>[
     'Deleting your data',
     'Use "Delete account" in the Me tab to permanently delete your sign-in and clear all data on the device.',
   ),
-  ('Children', 'FitAlarm is not directed at children under 13.'),
+  ('Children', 'Fit Tracker is not directed at children under 13.'),
   (
     'Contact',
     'Questions or requests: [your contact email]. We\'ll update this page if anything changes and show the new '

@@ -13,12 +13,16 @@ class ProgressRing extends StatelessWidget {
     this.size = 64,
     this.stroke = 7,
     this.secondaryColor,
+    this.trackColor = AppColors.stroke,
     this.child,
   });
 
   final double progress;
   final Color color;
   final Color? secondaryColor;
+
+  /// The unfilled part of the ring (lighter on dark cards).
+  final Color trackColor;
   final double size;
   final double stroke;
   final Widget? child;
@@ -37,6 +41,7 @@ class ProgressRing extends StatelessWidget {
             color: color,
             secondary: secondaryColor ?? Color.lerp(color, Colors.white, 0.35)!,
             stroke: stroke,
+            track: trackColor,
           ),
           child: Center(child: child),
         ),
@@ -46,12 +51,19 @@ class ProgressRing extends StatelessWidget {
 }
 
 class _RingPainter extends CustomPainter {
-  _RingPainter({required this.value, required this.color, required this.secondary, required this.stroke});
+  _RingPainter({
+    required this.value,
+    required this.color,
+    required this.secondary,
+    required this.stroke,
+    this.track = AppColors.stroke,
+  });
 
   final double value;
   final Color color;
   final Color secondary;
   final double stroke;
+  final Color track;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -60,7 +72,7 @@ class _RingPainter extends CustomPainter {
     final track = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = stroke
-      ..color = AppColors.stroke;
+      ..color = this.track;
     canvas.drawArc(arcRect, 0, math.pi * 2, false, track);
 
     if (value <= 0) return;
@@ -91,5 +103,6 @@ class _RingPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_RingPainter old) => old.value != value || old.color != color || old.stroke != stroke;
+  bool shouldRepaint(_RingPainter old) =>
+      old.value != value || old.color != color || old.stroke != stroke || old.track != track;
 }

@@ -60,7 +60,7 @@ void main() {
           sharedPrefsProvider.overrideWithValue(prefs),
           authServiceProvider.overrideWithValue(DemoAuthService(prefs)),
         ],
-        child: const FitAlarmApp(),
+        child: const FitTrackerApp(),
       ),
     );
     await _wait(t, 3400);

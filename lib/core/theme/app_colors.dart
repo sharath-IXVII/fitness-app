@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// Brand palette: light cream, light brown and white only. Every accent is
-/// a shade of brown so the app stays calm and consistent; text uses a deep
-/// brown rather than black for readability.
+/// Brand palette: light cream, light brown and white, with a deep espresso
+/// and a warm caramel "energy" accent for the sporty hero moments. Every
+/// colour stays in the brown family; text uses a deep brown, not black.
 abstract final class AppColors {
   static const background = Color(0xFFFAF6EF); // light cream
   static const surface = Color(0xFFFFFFFF); // white
@@ -22,6 +22,17 @@ abstract final class AppColors {
   static const accent = Color(0xFFC49A74);
   static const gold = Color(0xFFC9A27E);
   static const amber = Color(0xFF8C6340);
+
+  // Fitness accents: dark hero cards and the energy gradient on rings/bars.
+  static const ink = Color(0xFF2B1F17); // espresso
+  static const inkSoft = Color(0xFF3D2E23);
+  static const energy = Color(0xFFD08A4E); // warm caramel
+  static const energyLight = Color(0xFFE9B37E);
+  static const energyGradient = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [energyLight, energy, primary],
+  );
 
   // Pillars are told apart by shade and icon, all within the brown family.
   static const workout = primary;

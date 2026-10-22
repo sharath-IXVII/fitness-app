@@ -7,8 +7,8 @@ import 'core/router.dart';
 import 'core/theme/app_theme.dart';
 import 'features/alarm/alarm_ring_listener.dart';
 
-class FitAlarmApp extends ConsumerWidget {
-  const FitAlarmApp({super.key});
+class FitTrackerApp extends ConsumerWidget {
+  const FitTrackerApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

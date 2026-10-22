@@ -91,8 +91,8 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
         backgroundColor: AppColors.surface,
         title: const Text('One more permission'),
         content: const Text(
-          'To bring the alarm back when someone leaves it, FitAlarm needs "Display over other apps". '
-          'On the next screen, find FitAlarm and turn it on.',
+          'To bring the alarm back when someone leaves it, Fit Tracker needs "Display over other apps". '
+          'On the next screen, find Fit Tracker and turn it on.',
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Later')),

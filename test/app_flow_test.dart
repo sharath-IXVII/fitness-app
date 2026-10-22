@@ -26,7 +26,7 @@ Widget _app(SharedPreferences prefs) => ProviderScope(
     sharedPrefsProvider.overrideWithValue(prefs),
     authServiceProvider.overrideWithValue(DemoAuthService(prefs)),
   ],
-  child: const FitAlarmApp(),
+  child: const FitTrackerApp(),
 );
 
 void main() {
@@ -75,7 +75,9 @@ void main() {
 
       await _tap(t, "Let's go");
       await _wait(t, 1500);
-      expect(find.text("Today's score"), findsOneWidget);
+      expect(find.text('Day streak'), findsOneWidget);
+      await t.scrollUntilVisible(find.text("TODAY'S SCORE"), 200, scrollable: find.byType(Scrollable).first);
+      expect(find.text("TODAY'S SCORE"), findsOneWidget);
       expect(prefs.getString('profile.v1'), contains('Sharath Kumar'));
 
       // A default alarm was created from the wake-up time.

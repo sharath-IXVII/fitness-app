@@ -46,7 +46,7 @@ Future<void> _start() async {
   // or depends on the network.
   GoogleFonts.config.allowRuntimeFetching = false;
   LicenseRegistry.addLicense(() async* {
-    for (final family in ['Inter']) {
+    for (final family in ['Inter', 'BarlowCondensed']) {
       final license = await rootBundle.loadString('assets/google_fonts/$family-OFL.txt');
       yield LicenseEntryWithLineBreaks([family], license);
     }
@@ -74,7 +74,7 @@ Future<void> _start() async {
   runApp(
     ProviderScope(
       overrides: [sharedPrefsProvider.overrideWithValue(prefs), authServiceProvider.overrideWithValue(auth)],
-      child: const FitAlarmApp(),
+      child: const FitTrackerApp(),
     ),
   );
 }

@@ -6,9 +6,9 @@ import '../../../core/widgets/animated_number.dart';
 import '../../../core/widgets/glass_card.dart';
 import '../../../core/widgets/progress_ring.dart';
 import '../domain/daily_log.dart';
-import 'activity_heatmap.dart';
+import 'month_heatmap.dart';
 
-/// Streak stats, this week at a glance, and the long-term heatmap.
+/// Streak stats, the month calendar, and this week at a glance.
 class ConsistencyCard extends StatelessWidget {
   const ConsistencyCard({super.key, required this.scores, required this.current, required this.longest});
 
@@ -19,10 +19,7 @@ class ConsistencyCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final today = dayOnly(DateTime.now());
-    final from = DateTime(today.year, today.month - 3);
-    final recent = scores.entries.where((e) => !e.key.isBefore(from));
-    final perfect = recent.where((e) => e.value.count == DayScore.total).length;
-    final active = recent.where((e) => e.value.keepsStreak).length;
+    final perfect = scores.values.where((s) => s.count == DayScore.total).length;
 
     return GlassCard(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
@@ -45,16 +42,8 @@ class ConsistencyCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: 18),
-          Row(
-            children: [
-              Text('Your streak calendar', style: Theme.of(context).textTheme.titleSmall),
-              const Spacer(),
-              Text('$active active days · 4 months', style: Theme.of(context).textTheme.bodySmall),
-            ],
-          ),
-          const SizedBox(height: 10),
-          ActivityHeatmap(scores: scores),
+          const SizedBox(height: 14),
+          MonthHeatmap(scores: scores),
           const SizedBox(height: 16),
           _WeekStrip(scores: scores, today: today),
         ],

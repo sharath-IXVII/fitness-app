@@ -145,22 +145,32 @@ class _ScoreCard extends StatelessWidget {
       _ => '${3 - score.count} more to keep your streak alive.',
     };
 
-    return GlassCard(
-      glow: AppColors.primary,
+    // Dark "energy" hero card: the sportiest moment on the page.
+    return Container(
       padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(22),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.inkSoft, AppColors.ink],
+        ),
+        boxShadow: AppColors.softShadow(),
+      ),
       child: Row(
         children: [
           ProgressRing(
             progress: score.count / DayScore.total,
-            color: AppColors.primary,
-            secondaryColor: AppColors.accent,
+            color: AppColors.energy,
+            secondaryColor: AppColors.energyLight,
+            trackColor: Colors.white12,
             size: 84,
             stroke: 9,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                AnimatedNumber(score.count, style: text.headlineSmall),
-                Text('of ${DayScore.total}', style: text.bodySmall),
+                AnimatedNumber(score.count, style: text.headlineMedium?.copyWith(color: Colors.white)),
+                Text('of ${DayScore.total}', style: text.bodySmall?.copyWith(color: Colors.white70)),
               ],
             ),
           ),
@@ -169,9 +179,15 @@ class _ScoreCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Today's score", style: text.titleMedium),
+                Row(
+                  children: [
+                    const Icon(Icons.bolt_rounded, color: AppColors.energyLight, size: 20),
+                    const SizedBox(width: 4),
+                    Text("TODAY'S SCORE", style: text.titleSmall?.copyWith(color: Colors.white, letterSpacing: 1.2)),
+                  ],
+                ),
                 const SizedBox(height: 4),
-                Text(message, style: text.bodyMedium?.copyWith(height: 1.4)),
+                Text(message, style: text.bodyMedium?.copyWith(height: 1.4, color: Colors.white70)),
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -183,7 +199,7 @@ class _ScoreCard extends StatelessWidget {
                         height: 6,
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(3),
-                          color: score.completed.contains(t) ? _taskColor(t) : AppColors.surfaceHigh,
+                          color: score.completed.contains(t) ? AppColors.energyLight : Colors.white12,
                         ),
                       ),
                   ],
@@ -196,14 +212,6 @@ class _ScoreCard extends StatelessWidget {
     );
   }
 }
-
-Color _taskColor(DailyTask t) => switch (t) {
-  DailyTask.workout => AppColors.workout,
-  DailyTask.water => AppColors.water,
-  DailyTask.steps => AppColors.steps,
-  DailyTask.diet => AppColors.diet,
-  DailyTask.protein => AppColors.protein,
-};
 
 class _NextAlarmCard extends ConsumerWidget {
   const _NextAlarmCard();

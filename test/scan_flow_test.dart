@@ -62,7 +62,7 @@ Future<SharedPreferences> _pump(WidgetTester t, {bool model = true}) async {
         foodClassifierProvider.overrideWith((ref) async => model ? _fakeClassify : null),
         pickImageProvider.overrideWithValue((_) async => (bytes: _png, mediaType: 'image/png')),
       ],
-      child: const FitAlarmApp(),
+      child: const FitTrackerApp(),
     ),
   );
   await _wait(t, 3400);

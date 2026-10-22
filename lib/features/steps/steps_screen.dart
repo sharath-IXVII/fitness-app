@@ -55,7 +55,7 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
     if (!await n.startWalk() && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Turn on location and allow FitAlarm to use it to record a GPS walk.'),
+          content: const Text('Turn on location and allow Fit Tracker to use it to record a GPS walk.'),
           action: SnackBarAction(label: 'Settings', onPressed: AppPermissions.openSettings),
         ),
       );
@@ -145,7 +145,7 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Allow "Physical activity" so FitAlarm can count steps and spot bike or car rides.',
+                        'Allow "Physical activity" so Fit Tracker can count steps and spot bike or car rides.',
                         style: text.bodySmall,
                       ),
                     ),

@@ -1,6 +1,6 @@
 {
-    "name": "fitalarm",
-    "short_name": "fitalarm",
+    "name": "Fit Tracker",
+    "short_name": "Fit Tracker",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

@@ -189,7 +189,7 @@ class ProfileScreen extends ConsumerWidget {
                         context,
                         title: 'Delete your account?',
                         body:
-                            'This permanently deletes your sign-in and clears all FitAlarm data on this device. '
+                            'This permanently deletes your sign-in and clears all Fit Tracker data on this device. '
                             'It can\'t be undone.',
                         action: 'Delete',
                       )) {

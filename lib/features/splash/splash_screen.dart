@@ -94,7 +94,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _Letters(text: AppInfo.name, progress: _seg(0.55, 0.85), style: text.headlineMedium),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: _Letters(
+                          text: AppInfo.name.toUpperCase(),
+                          progress: _seg(0.55, 0.85),
+                          style: text.displaySmall?.copyWith(letterSpacing: 4),
+                        ),
+                      ),
                       const SizedBox(height: 6),
                       Opacity(
                         opacity: _seg(0.75, 0.92),

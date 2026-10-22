@@ -32,15 +32,18 @@ abstract final class AppTheme {
     // matching bundled file is used rather than a synthesised bold.
     TextStyle t(TextStyle? b, FontWeight w, {double ls = 0, Color? color}) =>
         GoogleFonts.inter(textStyle: b, fontWeight: w, letterSpacing: ls, color: color);
+    // Athletic condensed face for big numbers and headings, like a scoreboard.
+    TextStyle sport(TextStyle? b, FontWeight w, {double ls = 0.2}) =>
+        GoogleFonts.barlowCondensed(textStyle: b, fontWeight: w, letterSpacing: ls, height: 1.05);
 
     return base.copyWith(
       textTheme: body.copyWith(
-        displayLarge: t(body.displayLarge, FontWeight.w600, ls: -1.5),
-        displayMedium: t(body.displayMedium, FontWeight.w600, ls: -1.2),
-        displaySmall: t(body.displaySmall, FontWeight.w600, ls: -1),
-        headlineLarge: t(body.headlineLarge, FontWeight.w600, ls: -0.8),
-        headlineMedium: t(body.headlineMedium, FontWeight.w600, ls: -0.6),
-        headlineSmall: t(body.headlineSmall, FontWeight.w600, ls: -0.4),
+        displayLarge: sport(body.displayLarge, FontWeight.w800, ls: -0.5),
+        displayMedium: sport(body.displayMedium, FontWeight.w800, ls: -0.3),
+        displaySmall: sport(body.displaySmall, FontWeight.w800),
+        headlineLarge: sport(body.headlineLarge, FontWeight.w800),
+        headlineMedium: sport(body.headlineMedium, FontWeight.w700),
+        headlineSmall: sport(body.headlineSmall, FontWeight.w700),
         titleLarge: t(body.titleLarge, FontWeight.w600, ls: -0.3),
         titleMedium: t(body.titleMedium, FontWeight.w600, ls: -0.1),
         titleSmall: t(body.titleSmall, FontWeight.w600),

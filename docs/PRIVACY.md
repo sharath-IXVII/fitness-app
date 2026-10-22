@@ -1,10 +1,10 @@
-# FitAlarm privacy policy
+# Fit Tracker privacy policy
 
 _Last updated: October 2026_
 
 ## Summary
 
-FitAlarm keeps your fitness data on your phone. The only data that leaves your device is what's needed to sign you in. We don't sell data, show ads or use third-party analytics.
+Fit Tracker keeps your fitness data on your phone. The only data that leaves your device is what's needed to sign you in. We don't sell data, show ads or use third-party analytics.
 
 ## Your account
 
@@ -36,7 +36,7 @@ Use "Delete account" in the Me tab to permanently delete your sign-in and clear 
 
 ## Children
 
-FitAlarm is not directed at children under 13.
+Fit Tracker is not directed at children under 13.
 
 ## Contact
 

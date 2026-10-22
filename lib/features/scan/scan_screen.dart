@@ -59,6 +59,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
 
   /// A guess is added automatically only when the model is fairly sure.
   static const autoAddScore = 0.3;
+  static const maxAutoAdd = 4;
 
   Future<void> _pick(ImageSource source) async {
     final classify = ref.read(foodClassifierProvider).value;
@@ -80,7 +81,11 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
       final guesses = await recognizeFood(ref, classify, img.bytes);
       if (!mounted) return;
       HapticFeedback.lightImpact();
-      final best = guesses.where((g) => g.food != null && g.score >= autoAddScore).take(1);
+      // Each confident dish on the plate, once (two labels can map to one food).
+      final seen = <String>{};
+      final best = guesses
+          .where((g) => g.food != null && g.score >= autoAddScore && seen.add(g.food!.id))
+          .take(maxAutoAdd);
       setState(() {
         _guesses = guesses;
         _items = [for (final g in best) ScannedItem.fromFood(g.food!, g.score)];
@@ -215,7 +220,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
               Text('Photograph your food', style: text.titleLarge),
               const SizedBox(height: 6),
               Text(
-                'One dish at a time works best: fill the frame, from above, in good light. '
+                'Shoot from above in good light with the whole plate in frame. '
                 'Recognition happens on your phone — the photo is never uploaded.',
                 style: text.bodyMedium,
                 textAlign: TextAlign.center,

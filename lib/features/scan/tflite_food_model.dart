@@ -38,17 +38,23 @@ class TfliteFoodRecognizer {
     }
   }
 
-  /// Top guesses as (label, probability).
+  /// Top guesses as (label, probability) for the whole photo and for five
+  /// zoomed regions (four corners and the centre), merged so that each dish
+  /// on a mixed plate gets a chance.
   Future<List<(String, double)>> classify(Uint8List image) async {
     final input = _interpreter.getInputTensor(0);
-    final output = _interpreter.getOutputTensor(0);
     final h = input.shape[1], w = input.shape[2];
-    final isFloat = input.type == TensorType.float32;
 
     // Decoding and resizing a photo is slow; do it off the UI thread.
-    final rgb = await Isolate.run(() => preprocess(image, w, h));
-    if (rgb == null) return const [];
+    final views = await Isolate.run(() => preprocess(image, w, h));
+    if (views.isEmpty) return const [];
+    return mergeViews([for (final rgb in views) _run(rgb, w, h)]);
+  }
 
+  List<(String, double)> _run(Uint8List rgb, int w, int h) {
+    final input = _interpreter.getInputTensor(0);
+    final output = _interpreter.getOutputTensor(0);
+    final isFloat = input.type == TensorType.float32;
     final pixels = List.generate(
       h,
       (y) => List.generate(w, (x) {
@@ -73,25 +79,36 @@ class TfliteFoodRecognizer {
     ];
   }
 
-  /// Decodes, fixes orientation, centre-crops to a square and resizes to the
-  /// model's input. Returns RGB bytes, or null if the image can't be read.
-  static Uint8List? preprocess(Uint8List bytes, int w, int h) {
+  /// Decodes and fixes orientation, then cuts the centre square (the whole
+  /// plate) plus five overlapping regions of it, each resized to the model's
+  /// input. Returns RGB bytes per view, whole plate first; empty if the image
+  /// can't be read.
+  static List<Uint8List> preprocess(Uint8List bytes, int w, int h) {
     final decoded = img.decodeImage(bytes);
-    if (decoded == null) return null;
+    if (decoded == null) return const [];
     final upright = img.bakeOrientation(decoded);
     final side = upright.width < upright.height ? upright.width : upright.height;
-    final square = img.copyCrop(
-      upright,
-      x: (upright.width - side) ~/ 2,
-      y: (upright.height - side) ~/ 2,
-      width: side,
-      height: side,
-    );
-    final small = img.copyResize(square, width: w, height: h, interpolation: img.Interpolation.average);
-    final out = Uint8List(w * h * 3);
+    final x0 = (upright.width - side) ~/ 2, y0 = (upright.height - side) ~/ 2;
+    final part = (side * 0.6).round(), far = side - part, mid = (side - part) ~/ 2;
+    final regions = [(0, 0, side), (0, 0, part), (far, 0, part), (0, far, part), (far, far, part), (mid, mid, part)];
+    return [
+      for (final (x, y, s) in regions)
+        _rgb(
+          img.copyResize(
+            img.copyCrop(upright, x: x0 + x, y: y0 + y, width: s, height: s),
+            width: w,
+            height: h,
+            interpolation: img.Interpolation.average,
+          ),
+        ),
+    ];
+  }
+
+  static Uint8List _rgb(img.Image small) {
+    final out = Uint8List(small.width * small.height * 3);
     var i = 0;
-    for (var y = 0; y < h; y++) {
-      for (var x = 0; x < w; x++) {
+    for (var y = 0; y < small.height; y++) {
+      for (var x = 0; x < small.width; x++) {
         final p = small.getPixel(x, y);
         out[i++] = p.r.toInt();
         out[i++] = p.g.toInt();

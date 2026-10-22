@@ -46,4 +46,15 @@ void main() {
       expect(matchFood(label, foodsById), isA<Food>(), reason: label);
     }
   });
+
+  test('mergeViews keeps the plate guess and adds confident side dishes', () {
+    final merged = mergeViews([
+      [('Biryani', 0.6), ('Pilaf', 0.2)],
+      [('Raita', 0.5), ('Salad', 0.1)], // a region: Salad is too unsure to list
+      [('Biryani', 0.9)],
+    ]);
+    expect(merged.map((g) => g.$1), ['Biryani', 'Raita', 'Pilaf']);
+    expect(merged.first.$2, closeTo(0.765, 1e-9)); // region score, weighted
+    expect(merged[1].$2, closeTo(0.425, 1e-9));
+  });
 }

@@ -55,6 +55,28 @@ List<(int, double)> topK(List<double> scores, {int k = 5, double minScore = 0.02
   ];
 }
 
+/// Merges guesses from the whole photo ([views] first) and zoomed-in
+/// regions of it, so a plate with several dishes yields each of them. A
+/// label keeps its best score; region guesses count a little less than the
+/// whole photo and must be fairly confident to be listed at all.
+List<(String, double)> mergeViews(
+  List<List<(String, double)>> views, {
+  double regionWeight = 0.85,
+  double minRegionScore = 0.3,
+  int k = 8,
+}) {
+  final best = <String, double>{};
+  for (final (v, guesses) in views.indexed) {
+    for (final (label, score) in guesses) {
+      if (v > 0 && score < minRegionScore) continue;
+      final s = v == 0 ? score : score * regionWeight;
+      if (s > (best[label] ?? 0)) best[label] = s;
+    }
+  }
+  final out = best.entries.map((e) => (e.key, e.value)).toList()..sort((a, b) => b.$2.compareTo(a.$2));
+  return out.take(k).toList();
+}
+
 /// Model label (lower-case) → food id in the nutrition list.
 const _exact = {
   'idli': 'idli',

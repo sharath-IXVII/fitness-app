@@ -59,6 +59,11 @@ android {
             // Falls back to debug keys so `flutter run --release` works before
             // a release keystore is set up. Play only accepts the release key.
             signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
+            // Code shrinking is off until the app has been verified on devices:
+            // R8 can strip classes that plugins (ML Kit, notifications) load
+            // by reflection, which only shows up as a crash at runtime.
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }

@@ -50,11 +50,11 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fitalarm/strict").setMethodCallHandler { call, result ->
             when (call.method) {
                 "engage" -> {
-                    engage()
+                    engageStrict()
                     result.success(null)
                 }
                 "release" -> {
-                    release()
+                    releaseStrict()
                     result.success(null)
                 }
                 "canDrawOverlays" -> result.success(Build.VERSION.SDK_INT < Build.VERSION_CODES.M || Settings.canDrawOverlays(this))
@@ -73,7 +73,7 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun engage() {
+    private fun engageStrict() {
         strict = true
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         try {
@@ -83,7 +83,7 @@ class MainActivity : FlutterActivity() {
         }
     }
 
-    private fun release() {
+    private fun releaseStrict() {
         strict = false
         handler.removeCallbacks(bringBack)
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)

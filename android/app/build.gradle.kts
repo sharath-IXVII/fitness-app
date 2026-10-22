@@ -15,7 +15,9 @@ val keystoreProperties = Properties().apply {
 
 android {
     namespace = "com.fitalarm.fitalarm"
-    compileSdk = flutter.compileSdkVersion
+    // 37: required by permission_handler. Only affects which APIs compile; minSdk
+    // still decides which phones can install the app.
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

@@ -10,6 +10,7 @@ import '../../core/widgets/pressable.dart';
 import 'domain/exercise.dart';
 import 'domain/routine.dart';
 import 'routine_providers.dart';
+import 'widgets/exercise_demo.dart';
 
 /// Create or edit a custom routine: any exercises, any reps.
 class RoutineEditorScreen extends ConsumerStatefulWidget {
@@ -147,12 +148,16 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                             Icon(s.exercise.icon, color: AppColors.primary),
                             const SizedBox(width: 12),
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(s.exercise.label, style: text.titleMedium),
-                                  Text(s.exercise.muscles, style: text.bodySmall),
-                                ],
+                              child: GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () => showExerciseHowTo(context, s.exercise),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(s.exercise.label, style: text.titleMedium),
+                                    Text('${s.exercise.muscles} · how to', style: text.bodySmall),
+                                  ],
+                                ),
                               ),
                             ),
                             _Round(icon: Icons.remove_rounded, onTap: () => _change(i, -1)),
@@ -259,7 +264,17 @@ class _ExercisePicker extends StatelessWidget {
                 ),
                 title: Text(e.label, style: text.titleSmall),
                 subtitle: Text('${e.muscles} · ${e.timed ? 'timed hold' : 'reps'}', style: text.bodySmall),
-                trailing: const Icon(Icons.add_rounded, color: AppColors.primary),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      tooltip: 'How to do ${e.label}',
+                      onPressed: () => showExerciseHowTo(context, e),
+                      icon: const Icon(Icons.play_circle_outline_rounded, color: AppColors.textSecondary),
+                    ),
+                    const Icon(Icons.add_rounded, color: AppColors.primary),
+                  ],
+                ),
                 onTap: () => Navigator.pop(context, e),
               ),
           ],

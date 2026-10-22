@@ -45,7 +45,12 @@ class Routine {
     id: 'beginner',
     name: 'Beginner',
     builtIn: true,
-    steps: [RoutineStep(Exercise.squat, 10), RoutineStep(Exercise.jumpingJack, 10), RoutineStep(Exercise.plank, 20)],
+    steps: [
+      RoutineStep(Exercise.squat, 10),
+      RoutineStep(Exercise.pushUp, 5),
+      RoutineStep(Exercise.jumpingJack, 10),
+      RoutineStep(Exercise.plank, 20),
+    ],
   );
 
   static const moderate = Routine(

@@ -213,14 +213,17 @@ class _FadingBranches extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         for (var i = 0; i < children.length; i++)
+          // The fade sits outside TickerMode: pausing a hidden tab's tickers
+          // must not freeze its own fade-out, or a half-faded page stays on
+          // top after quick tab switches.
           IgnorePointer(
             ignoring: i != index,
-            child: TickerMode(
-              enabled: i == index,
-              child: AnimatedOpacity(
-                opacity: i == index ? 1 : 0,
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeOut,
+            child: AnimatedOpacity(
+              opacity: i == index ? 1 : 0,
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              child: TickerMode(
+                enabled: i == index,
                 child: ExcludeSemantics(excluding: i != index, child: children[i]),
               ),
             ),

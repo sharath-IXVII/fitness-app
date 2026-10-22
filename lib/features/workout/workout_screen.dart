@@ -25,6 +25,7 @@ import 'domain/routine.dart';
 import 'domain/workout_session.dart';
 import 'pose_camera.dart';
 import 'routine_providers.dart';
+import 'widgets/exercise_demo.dart';
 import 'widgets/skeleton_painter.dart';
 import 'workout_done_screen.dart';
 
@@ -100,7 +101,8 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     _countdownTimer?.cancel();
     setState(() {
       _phase = _Phase.getReady;
-      _countdown = 5;
+      // More time before the first exercise to place the phone.
+      _countdown = _session.stepIndex == 0 ? 10 : 5;
     });
     _countdownTimer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (!mounted) return t.cancel();
@@ -424,35 +426,41 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
             _session.stepIndex == 0 ? 'Get ready' : 'Nice! Next up',
             style: text.titleMedium?.copyWith(color: Colors.white70),
           ),
-          const SizedBox(height: 8),
-          Text(step.exercise.label, style: text.displaySmall?.copyWith(color: Colors.white)),
+          const SizedBox(height: 6),
+          Text(step.exercise.label, style: text.headlineMedium?.copyWith(color: Colors.white)),
           Text(
             step.exercise.timed ? 'Hold for ${step.target} seconds' : '${step.target} reps',
-            style: text.titleLarge?.copyWith(color: AppColors.accent),
+            style: text.titleMedium?.copyWith(color: AppColors.accent),
           ),
-          const SizedBox(height: 28),
-          Text(
-            '$_countdown',
-            key: ValueKey(_countdown),
-            style: text.displayLarge?.copyWith(fontSize: 120, color: Colors.white),
-          ).animate().scaleXY(begin: 1.4, end: 1, duration: 350.ms).fadeIn(duration: 200.ms),
-          const SizedBox(height: 28),
+          const SizedBox(height: 18),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 14),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(18),
+              color: Colors.white.withValues(alpha: 0.10),
+              borderRadius: BorderRadius.circular(20),
             ),
-            child: Row(
+            child: Column(
               children: [
-                const Icon(Icons.phone_android_rounded, color: Colors.white),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(step.exercise.tip, style: text.bodyMedium?.copyWith(color: Colors.white)),
+                ExerciseDemo(exercise: step.exercise, height: 170, dark: true),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    const Icon(Icons.phone_android_rounded, color: Colors.white, size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(step.exercise.tip, style: text.bodyMedium?.copyWith(color: Colors.white)),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
+          const SizedBox(height: 18),
+          Text(
+            '$_countdown',
+            key: ValueKey(_countdown),
+            style: text.displayLarge?.copyWith(fontSize: 72, color: Colors.white),
+          ).animate().scaleXY(begin: 1.3, end: 1, duration: 350.ms).fadeIn(duration: 200.ms),
         ],
       ),
     ).animate().fadeIn(duration: 250.ms);

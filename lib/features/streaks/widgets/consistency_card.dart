@@ -131,7 +131,7 @@ class _WeekStrip extends StatelessWidget {
                         size: 34,
                         stroke: 3.5,
                         child: perfect
-                            ? const Icon(Icons.check_rounded, size: 16, color: AppColors.primary)
+                            ? Icon(Icons.check_rounded, size: 16, color: AppColors.primary)
                             : Text(
                                 '${day.day}',
                                 style: text.labelMedium?.copyWith(

@@ -13,7 +13,7 @@ class ProgressRing extends StatelessWidget {
     this.size = 64,
     this.stroke = 7,
     this.secondaryColor,
-    this.trackColor = AppColors.stroke,
+    this.trackColor,
     this.child,
   });
 
@@ -22,7 +22,7 @@ class ProgressRing extends StatelessWidget {
   final Color? secondaryColor;
 
   /// The unfilled part of the ring (lighter on dark cards).
-  final Color trackColor;
+  final Color? trackColor;
   final double size;
   final double stroke;
   final Widget? child;
@@ -41,7 +41,7 @@ class ProgressRing extends StatelessWidget {
             color: color,
             secondary: secondaryColor ?? Color.lerp(color, Colors.white, 0.35)!,
             stroke: stroke,
-            track: trackColor,
+            track: trackColor ?? AppColors.stroke,
           ),
           child: Center(child: child),
         ),
@@ -56,7 +56,7 @@ class _RingPainter extends CustomPainter {
     required this.color,
     required this.secondary,
     required this.stroke,
-    this.track = AppColors.stroke,
+    required this.track,
   });
 
   final double value;

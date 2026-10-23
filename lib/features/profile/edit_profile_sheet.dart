@@ -201,7 +201,7 @@ class _Stepper extends StatelessWidget {
       child: Container(
         width: 36,
         height: 36,
-        decoration: const BoxDecoration(color: AppColors.surfaceHigh, shape: BoxShape.circle),
+        decoration: BoxDecoration(color: AppColors.surfaceHigh, shape: BoxShape.circle),
         child: Icon(icon, size: 18, color: AppColors.textPrimary),
       ),
     );

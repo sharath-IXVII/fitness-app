@@ -113,7 +113,7 @@ class TrainingScreen extends ConsumerWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(14)),
-                child: const Icon(Icons.menu_book_rounded, color: AppColors.primary),
+                child: Icon(Icons.menu_book_rounded, color: AppColors.primary),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -128,7 +128,7 @@ class TrainingScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+              Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
             ],
           ),
         ),
@@ -142,7 +142,7 @@ class TrainingScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: 6),
             child: Row(
               children: [
-                const Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 20),
+                Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 20),
                 const SizedBox(width: 10),
                 Expanded(child: Text(h.title, style: text.bodyMedium)),
                 Text(

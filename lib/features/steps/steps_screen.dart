@@ -88,7 +88,7 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.verified_rounded, color: AppColors.primary, size: 20),
+                    Icon(Icons.verified_rounded, color: AppColors.primary, size: 20),
                     AnimatedNumber(day.verified, style: text.displaySmall),
                     Text('of ${NumberFormat.decimalPattern().format(goal)} verified', style: text.bodySmall),
                   ],
@@ -117,14 +117,14 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
                     hint: 'Hardware step counter',
                     value: day.sensor,
                   ),
-                  const Divider(height: 22, color: AppColors.stroke),
+                  Divider(height: 22, color: AppColors.stroke),
                   _Row(
                     icon: Icons.directions_car_outlined,
                     label: 'Removed',
                     hint: 'Counted while on a bike or in a vehicle',
                     value: day.removed == 0 ? 0 : -day.removed,
                   ),
-                  const Divider(height: 22, color: AppColors.stroke),
+                  Divider(height: 22, color: AppColors.stroke),
                   _Row(
                     icon: Icons.location_on_outlined,
                     label: 'GPS walks',

@@ -87,7 +87,7 @@ void showNutrientExplainer(BuildContext context, Nutrient n) {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.only(top: 2),
                       child: Icon(Icons.check_rounded, size: 16, color: AppColors.primary),
                     ),

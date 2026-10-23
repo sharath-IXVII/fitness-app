@@ -202,7 +202,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Widget _welcome() {
     final text = Theme.of(context).textTheme;
-    const features = [
+    final features = [
       (
         Icons.alarm_on_rounded,
         AppColors.workout,
@@ -392,7 +392,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _goalStep() => _step(
     title: "What's your main goal?",
     child: _options(
-      const [
+      [
         (
           FitnessGoal.loseWeight,
           'Lose weight',
@@ -424,7 +424,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     title: 'How active is your day?',
     subtitle: 'Outside of planned workouts.',
     child: _options(
-      const [
+      [
         (
           ActivityLevel.sedentary,
           'Mostly sitting',
@@ -505,7 +505,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     title: 'Your fitness level?',
     subtitle: 'Sets the difficulty of your alarm routine. You can change it anytime.',
     child: _options(
-      const [
+      [
         (
           FitnessLevel.beginner,
           'Beginner',
@@ -568,7 +568,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ],
                 ),
               ),
-              const Icon(Icons.edit_rounded, color: AppColors.textMuted, size: 20),
+              Icon(Icons.edit_rounded, color: AppColors.textMuted, size: 20),
             ],
           ),
         ),
@@ -628,7 +628,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ],
                   ),
                 ),
-                const Icon(Icons.local_fire_department_rounded, color: AppColors.primary, size: 44),
+                Icon(Icons.local_fire_department_rounded, color: AppColors.primary, size: 44),
               ],
             ),
           ).animate(delay: 200.ms).fadeIn(duration: 500.ms),

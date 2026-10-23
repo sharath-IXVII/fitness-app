@@ -150,7 +150,7 @@ class _ChallengePlanScreenState extends ConsumerState<ChallengePlanScreen> {
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Icon(Icons.check_rounded, size: 18, color: AppColors.primary),
+                                  Icon(Icons.check_rounded, size: 18, color: AppColors.primary),
                                   const SizedBox(width: 8),
                                   Expanded(child: Text(line, style: text.bodyMedium)),
                                 ],

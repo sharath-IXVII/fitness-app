@@ -1,60 +1,69 @@
 import 'package:flutter/material.dart';
 
-/// Brand palette: light cream, light brown and white, with a deep espresso
-/// and a warm caramel "energy" accent for the sporty hero moments. Every
-/// colour stays in the brown family; text uses a deep brown, not black.
+import 'palette.dart';
+
+/// The app's colours, read from the current seasonal [Palette]. The season
+/// (see SeasonArc) picks the palette by date, so the look changes by itself
+/// every three months.
 abstract final class AppColors {
-  static const background = Color(0xFFFAF6EF); // light cream
-  static const surface = Color(0xFFFFFFFF); // white
-  static const surfaceHigh = Color(0xFFF3ECE2); // deeper cream
-  static const stroke = Color(0xFFEAE0D3);
-  static const shadow = Color(0xFF5C4430);
+  static Palette _p = Palette.winter;
 
-  static const textPrimary = Color(0xFF3A2E25);
-  // Text greys are tuned for legibility on cream: secondary ≈ 5.9:1,
-  // tertiary ≈ 4.8:1 (small print), muted only for icons and placeholders.
-  static const textSecondary = Color(0xFF6E5C4B);
-  static const textTertiary = Color(0xFF7D6A58);
-  static const textMuted = Color(0xFFAE9D8B);
+  static Palette get palette => _p;
 
-  static const primary = Color(0xFFA47551); // light brown
-  static const primarySoft = Color(0xFFF2E7DA);
-  static const accent = Color(0xFFC49A74);
-  static const gold = Color(0xFFC9A27E);
-  static const amber = Color(0xFF8C6340);
+  /// Switches every colour. Rebuild the widget tree afterwards.
+  static void use(Palette p) => _p = p;
 
-  // Fitness accents: dark hero cards and the energy gradient on rings/bars.
-  static const ink = Color(0xFF2B1F17); // espresso
-  static const inkSoft = Color(0xFF3D2E23);
-  static const energy = Color(0xFFD08A4E); // warm caramel
-  static const energyLight = Color(0xFFE9B37E);
-  static const energyGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [energyLight, energy, primary],
-  );
+  static Color get background => _p.background;
+  static const surface = Color(0xFFFFFFFF);
+  static Color get surfaceHigh => _p.surfaceHigh;
+  static Color get stroke => _p.stroke;
+  static Color get shadow => _p.shadow;
 
-  // Pillars are told apart by shade and icon, all within the brown family.
-  static const workout = primary;
-  static const water = Color(0xFFB98D68);
-  static const steps = Color(0xFF8C6A4F);
-  static const diet = Color(0xFFC9A27E);
-  static const protein = Color(0xFF7A5A43);
+  static Color get textPrimary => _p.textPrimary;
+  static Color get textSecondary => _p.textSecondary;
+  static Color get textTertiary => _p.textTertiary;
+  static Color get textMuted => _p.textMuted;
+
+  static Color get primary => _p.primary;
+  static Color get primarySoft => _p.primarySoft;
+  static Color get accent => _p.accent;
+  static Color get gold => _p.gold;
+  static Color get amber => _p.amber;
+
+  // Hero cards and the energy gradient on rings and bars.
+  static Color get ink => _p.ink;
+  static Color get inkSoft => _p.inkSoft;
+  static Color get energy => _p.energy;
+  static Color get energyLight => _p.energyLight;
+  static LinearGradient get energyGradient =>
+      LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [energyLight, energy, primary]);
+
+  // Pillars are told apart by shade and icon.
+  static Color get workout => primary;
+  static Color get water => _p.water;
+  static Color get steps => _p.steps;
+  static Color get diet => _p.diet;
+  static Color get protein => _p.protein;
 
   static const danger = Color(0xFFA6523F);
 
   /// Barely-there gradient for primary buttons; reads as a solid colour.
-  static const brandGradient = LinearGradient(
-    colors: [Color(0xFF9E6F4B), Color(0xFFAA7C58)],
+  static LinearGradient get brandGradient => LinearGradient(
+    colors: [_p.primaryDeep, Color.lerp(_p.primaryDeep, _p.primary, 0.9)!],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  /// Heatmap levels: cream → light brown → brown.
-  static const heat = [Color(0xFFF0E8DC), Color(0xFFE6D3BD), Color(0xFFD2B190), Color(0xFFB98D68), Color(0xFF8C6340)];
+  /// Calendar levels: empty → full.
+  static List<Color> get heat => _p.heat;
 
-  static List<BoxShadow> softShadow([Color tint = shadow]) => [
-    BoxShadow(color: tint.withValues(alpha: 0.05), blurRadius: 16, offset: const Offset(0, 4), spreadRadius: -2),
-    BoxShadow(color: tint.withValues(alpha: 0.03), blurRadius: 2, offset: const Offset(0, 1)),
+  static List<BoxShadow> softShadow([Color? tint]) => [
+    BoxShadow(
+      color: (tint ?? shadow).withValues(alpha: 0.05),
+      blurRadius: 16,
+      offset: const Offset(0, 4),
+      spreadRadius: -2,
+    ),
+    BoxShadow(color: (tint ?? shadow).withValues(alpha: 0.03), blurRadius: 2, offset: const Offset(0, 1)),
   ];
 }

@@ -394,7 +394,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                     value: counter.motion,
                     minHeight: 8,
                     backgroundColor: AppColors.surfaceHigh,
-                    valueColor: const AlwaysStoppedAnimation(AppColors.accent),
+                    valueColor: AlwaysStoppedAnimation(AppColors.accent),
                   ),
                 ),
                 const SizedBox(height: 6),
@@ -474,7 +474,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.videocam_off_rounded, size: 56, color: AppColors.primary),
+          Icon(Icons.videocam_off_rounded, size: 56, color: AppColors.primary),
           const SizedBox(height: 16),
           Text('Camera needed', style: text.headlineSmall),
           const SizedBox(height: 8),

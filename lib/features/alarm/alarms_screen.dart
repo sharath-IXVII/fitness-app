@@ -231,10 +231,10 @@ class _AlarmCard extends StatelessWidget {
                         ],
                         if (alarm.strict) ...[
                           const SizedBox(width: 8),
-                          const Icon(Icons.lock_outline_rounded, size: 18, color: AppColors.amber),
+                          Icon(Icons.lock_outline_rounded, size: 18, color: AppColors.amber),
                         ] else if (alarm.hardMode) ...[
                           const SizedBox(width: 8),
-                          const Icon(Icons.local_fire_department_rounded, size: 18, color: AppColors.amber),
+                          Icon(Icons.local_fire_department_rounded, size: 18, color: AppColors.amber),
                         ],
                       ],
                     ),
@@ -266,7 +266,7 @@ class _AlarmCard extends StatelessWidget {
               children: [
                 Switch(value: on, onChanged: onToggle, activeTrackColor: AppColors.primary),
                 PopupMenuButton<_CardAction>(
-                  icon: const Icon(Icons.more_horiz_rounded, color: AppColors.textSecondary),
+                  icon: Icon(Icons.more_horiz_rounded, color: AppColors.textSecondary),
                   color: AppColors.surface,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   onSelected: onMenu,
@@ -292,25 +292,28 @@ class _AlarmCard extends StatelessWidget {
 }
 
 class _Tag extends StatelessWidget {
-  const _Tag({required this.icon, required this.label, this.color = AppColors.primary});
+  const _Tag({required this.icon, required this.label, this.color});
 
   final IconData icon;
   final String label;
-  final Color color;
+  final Color? color;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-    decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 13, color: color),
-        const SizedBox(width: 5),
-        Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: color)),
-      ],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final color = this.color ?? AppColors.primary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: color),
+          const SizedBox(width: 5),
+          Text(label, style: Theme.of(context).textTheme.labelMedium?.copyWith(color: color)),
+        ],
+      ),
+    );
+  }
 }
 
 /// "Next alarm in 7 h 12 min" hero with a live countdown.
@@ -354,7 +357,7 @@ class _NextUpBannerState extends State<_NextUpBanner> {
             width: 48,
             height: 48,
             decoration: const BoxDecoration(color: AppColors.surface, shape: BoxShape.circle),
-            child: const Icon(Icons.alarm_rounded, color: AppColors.primary),
+            child: Icon(Icons.alarm_rounded, color: AppColors.primary),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -415,7 +418,7 @@ class _RoutineCard extends StatelessWidget {
           if (onEdit != null)
             IconButton(
               onPressed: onEdit,
-              icon: const Icon(Icons.edit_outlined, color: AppColors.textSecondary),
+              icon: Icon(Icons.edit_outlined, color: AppColors.textSecondary),
             ),
           TextButton(onPressed: onTry, child: const Text('Try')),
         ],
@@ -437,7 +440,7 @@ class _PermissionBanner extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Row(
         children: [
-          const Icon(Icons.notifications_active_outlined, color: AppColors.steps),
+          Icon(Icons.notifications_active_outlined, color: AppColors.steps),
           const SizedBox(width: 12),
           Expanded(
             child: Text('Allow notifications, exact alarms and camera so alarms ring on time.', style: text.bodySmall),
@@ -467,7 +470,7 @@ class _EmptyAlarms extends StatelessWidget {
       padding: const EdgeInsets.all(28),
       child: Column(
         children: [
-          const Icon(Icons.alarm_add_rounded, size: 44, color: AppColors.primary),
+          Icon(Icons.alarm_add_rounded, size: 44, color: AppColors.primary),
           const SizedBox(height: 12),
           Text('No alarms yet', style: text.titleMedium),
           const SizedBox(height: 4),

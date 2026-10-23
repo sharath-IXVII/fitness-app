@@ -105,12 +105,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       4,
                       Row(
                         children: [
-                          const Expanded(child: Divider(color: AppColors.stroke)),
+                          Expanded(child: Divider(color: AppColors.stroke)),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 12),
                             child: Text(_signUp ? 'Already have an account?' : 'New here?', style: text.bodySmall),
                           ),
-                          const Expanded(child: Divider(color: AppColors.stroke)),
+                          Expanded(child: Divider(color: AppColors.stroke)),
                         ],
                       ),
                     ),
@@ -221,17 +221,14 @@ class _GoogleButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (busy)
-              const SizedBox.square(
-                dimension: 20,
-                child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
-              )
+              SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
             else
               Container(
                 width: 24,
                 height: 24,
                 alignment: Alignment.center,
-                decoration: const BoxDecoration(color: AppColors.primarySoft, shape: BoxShape.circle),
-                child: const Text(
+                decoration: BoxDecoration(color: AppColors.primarySoft, shape: BoxShape.circle),
+                child: Text(
                   'G',
                   style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary, fontSize: 14),
                 ),

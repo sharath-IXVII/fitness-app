@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../features/arcs/arc_providers.dart';
 import '../features/diet/diet_providers.dart';
 import '../features/myday/myday_providers.dart';
 import '../features/streaks/daily_log_providers.dart';
@@ -45,6 +46,8 @@ class _ResumeRefresherState extends ConsumerState<ResumeRefresher> with WidgetsB
     ref.invalidate(dailyLogsProvider);
     ref.invalidate(doneTodayProvider);
     ref.invalidate(mealLogProvider);
+    // A new day may start a new arc, and with it a new look.
+    ref.read(todayProvider.notifier).refresh();
   }
 
   @override

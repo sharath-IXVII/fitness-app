@@ -123,7 +123,7 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Column(
                         children: [
-                          const Icon(Icons.edit_outlined, color: AppColors.primary),
+                          Icon(Icons.edit_outlined, color: AppColors.primary),
                           const SizedBox(height: 6),
                           Text('Custom', style: text.titleSmall),
                           Text('Any ml', style: text.bodySmall),
@@ -246,7 +246,7 @@ class _GlassPainter extends CustomPainter {
       canvas.drawPath(
         water,
         Paint()
-          ..shader = const LinearGradient(
+          ..shader = LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [Color(0xFFD9BC9F), AppColors.primary],

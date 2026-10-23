@@ -478,7 +478,7 @@ class _Countdown extends StatelessWidget {
           size: 132,
           stroke: 10,
           child: paused
-              ? const Icon(Icons.play_arrow_rounded, size: 52, color: AppColors.energy)
+              ? Icon(Icons.play_arrow_rounded, size: 52, color: AppColors.energy)
               : Text('$left', style: text.displayMedium),
         ),
       ),

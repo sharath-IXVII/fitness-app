@@ -60,7 +60,7 @@ class DemoNote extends StatelessWidget {
     decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(12)),
     child: Row(
       children: [
-        const Icon(Icons.info_outline_rounded, size: 18, color: AppColors.amber),
+        Icon(Icons.info_outline_rounded, size: 18, color: AppColors.amber),
         const SizedBox(width: 10),
         Expanded(
           child: Text(

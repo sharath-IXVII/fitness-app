@@ -140,7 +140,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                           children: [
                             ReorderableDragStartListener(
                               index: i,
-                              child: const Padding(
+                              child: Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                                 child: Icon(Icons.drag_indicator_rounded, color: AppColors.textMuted, size: 20),
                               ),
@@ -208,7 +208,7 @@ class _Round extends StatelessWidget {
     child: Container(
       width: 34,
       height: 34,
-      decoration: const BoxDecoration(color: AppColors.surfaceHigh, shape: BoxShape.circle),
+      decoration: BoxDecoration(color: AppColors.surfaceHigh, shape: BoxShape.circle),
       child: Icon(icon, size: 18, color: AppColors.textPrimary),
     ),
   );
@@ -270,9 +270,9 @@ class _ExercisePicker extends StatelessWidget {
                     IconButton(
                       tooltip: 'How to do ${e.label}',
                       onPressed: () => showExerciseHowTo(context, e),
-                      icon: const Icon(Icons.play_circle_outline_rounded, color: AppColors.textSecondary),
+                      icon: Icon(Icons.play_circle_outline_rounded, color: AppColors.textSecondary),
                     ),
-                    const Icon(Icons.add_rounded, color: AppColors.primary),
+                    Icon(Icons.add_rounded, color: AppColors.primary),
                   ],
                 ),
                 onTap: () => Navigator.pop(context, e),

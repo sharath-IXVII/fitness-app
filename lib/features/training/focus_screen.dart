@@ -92,7 +92,7 @@ class _LevelCard extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.play_circle_fill_rounded, color: AppColors.primary, size: 34),
+            Icon(Icons.play_circle_fill_rounded, color: AppColors.primary, size: 34),
           ],
         ),
       ),

@@ -62,7 +62,7 @@ class MoveRow extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.help_outline_rounded, size: 20, color: AppColors.textMuted),
+            Icon(Icons.help_outline_rounded, size: 20, color: AppColors.textMuted),
           ],
         ),
       ),
@@ -110,7 +110,7 @@ Future<void> showMoveHowTo(BuildContext context, Move move, {WorkoutItem? item})
                       width: 24,
                       height: 24,
                       alignment: Alignment.center,
-                      decoration: const BoxDecoration(color: AppColors.primarySoft, shape: BoxShape.circle),
+                      decoration: BoxDecoration(color: AppColors.primarySoft, shape: BoxShape.circle),
                       child: Text('${i + 1}', style: text.labelMedium?.copyWith(color: AppColors.primary)),
                     ),
                     const SizedBox(width: 12),
@@ -176,7 +176,7 @@ class HeroWorkoutCard extends StatelessWidget {
     final card = Container(
       padding: const EdgeInsets.fromLTRB(18, 16, 8, 16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [AppColors.inkSoft, AppColors.ink],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -230,7 +230,7 @@ class EnergyBar extends StatelessWidget {
         Container(height: 6, color: Colors.white12),
         FractionallySizedBox(
           widthFactor: value.clamp(0, 1),
-          child: Container(height: 6, decoration: const BoxDecoration(gradient: AppColors.energyGradient)),
+          child: Container(height: 6, decoration: BoxDecoration(gradient: AppColors.energyGradient)),
         ),
       ],
     ),

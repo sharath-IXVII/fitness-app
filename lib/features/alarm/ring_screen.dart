@@ -186,7 +186,7 @@ class _RingScreenState extends ConsumerState<RingScreen> {
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.textPrimary,
                             backgroundColor: AppColors.surface,
-                            side: const BorderSide(color: AppColors.stroke),
+                            side: BorderSide(color: AppColors.stroke),
                             minimumSize: const Size.fromHeight(52),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                           ),
@@ -241,7 +241,7 @@ class _RingingIcon extends StatelessWidget {
           Container(
                 width: 72,
                 height: 72,
-                decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primarySoft),
+                decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.primarySoft),
               )
               .animate(onPlay: (c) => c.repeat(), delay: (i * 1000).ms)
               .scaleXY(begin: 1, end: 1.65, duration: 2000.ms, curve: Curves.easeOut)
@@ -249,7 +249,7 @@ class _RingingIcon extends StatelessWidget {
         Container(
           width: 72,
           height: 72,
-          decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.primary),
+          decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.primary),
           child: const Icon(Icons.alarm_rounded, size: 34, color: Colors.white),
         ),
       ],

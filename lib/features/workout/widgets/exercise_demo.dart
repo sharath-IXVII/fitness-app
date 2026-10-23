@@ -441,7 +441,7 @@ Future<void> showExerciseHowTo(BuildContext context, Exercise e) {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(Icons.phone_android_rounded, size: 20, color: AppColors.primary),
+                Icon(Icons.phone_android_rounded, size: 20, color: AppColors.primary),
                 const SizedBox(width: 10),
                 Expanded(child: Text(phonePlacement(e), style: text.titleSmall)),
               ],

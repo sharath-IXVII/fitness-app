@@ -17,6 +17,7 @@ import '../alarm/alarm_providers.dart';
 import '../profile/profile_providers.dart';
 import '../progress/progress_card.dart';
 import '../streaks/daily_log_providers.dart';
+import '../arcs/widgets/arc_widgets.dart';
 import '../streaks/domain/daily_log.dart';
 import '../streaks/widgets/consistency_card.dart';
 import '../workout/routine_providers.dart';
@@ -37,7 +38,10 @@ class HomeScreen extends ConsumerWidget {
 
     final sections = <Widget>[
       _Header(name: profile.name),
-      const SizedBox(height: 20),
+      const SizedBox(height: 18),
+      // The season's arc sets the tone for the whole app.
+      const ArcCard(),
+      const SizedBox(height: 14),
       // The streak calendar leads the page — it's the habit we want to build.
       ConsistencyCard(scores: scores, current: streak.current, longest: streak.longest),
       const SizedBox(height: 14),
@@ -149,7 +153,7 @@ class _ScoreCard extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [AppColors.inkSoft, AppColors.ink],
@@ -180,7 +184,7 @@ class _ScoreCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.bolt_rounded, color: AppColors.energyLight, size: 20),
+                    Icon(Icons.bolt_rounded, color: AppColors.energyLight, size: 20),
                     const SizedBox(width: 4),
                     Text("TODAY'S SCORE", style: text.titleSmall?.copyWith(color: Colors.white, letterSpacing: 1.2)),
                   ],
@@ -258,7 +262,7 @@ class _NextAlarmCard extends ConsumerWidget {
             if (next != null)
               Text(next.$1.time.format(context), style: text.titleLarge?.copyWith(color: AppColors.primary)),
             const SizedBox(width: 4),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+            Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
           ],
         ),
       ),
@@ -507,7 +511,7 @@ class _ProteinBar extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.egg_alt_rounded, color: AppColors.protein, size: 20),
+              Icon(Icons.egg_alt_rounded, color: AppColors.protein, size: 20),
               const SizedBox(width: 8),
               Text('Protein', style: text.titleMedium),
               const Spacer(),
@@ -531,7 +535,7 @@ class _ProteinBar extends StatelessWidget {
                     width: c.maxWidth * v,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(5),
-                      gradient: const LinearGradient(colors: [AppColors.protein, AppColors.diet]),
+                      gradient: LinearGradient(colors: [AppColors.protein, AppColors.diet]),
                     ),
                   ),
                 ),

@@ -68,7 +68,7 @@ class DietScreen extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(14)),
-              child: const Icon(Icons.photo_camera_outlined, color: AppColors.primary, semanticLabel: 'Scan food'),
+              child: Icon(Icons.photo_camera_outlined, color: AppColors.primary, semanticLabel: 'Scan food'),
             ),
           ),
           const SizedBox(width: 8),
@@ -248,7 +248,7 @@ class _MacroBar extends StatelessWidget {
                   child: Text(nutrient.label, style: text.labelMedium, overflow: TextOverflow.ellipsis),
                 ),
                 const SizedBox(width: 3),
-                const Icon(Icons.info_outline_rounded, size: 12, color: AppColors.textMuted),
+                Icon(Icons.info_outline_rounded, size: 12, color: AppColors.textMuted),
               ],
             ),
             const SizedBox(height: 6),
@@ -400,7 +400,7 @@ class _PlanCard extends ConsumerWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.restaurant_menu_rounded, color: AppColors.primary),
+              Icon(Icons.restaurant_menu_rounded, color: AppColors.primary),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -417,7 +417,7 @@ class _PlanCard extends ConsumerWidget {
                   HapticFeedback.selectionClick();
                   ref.read(planShuffleProvider.notifier).next();
                 },
-                icon: const Icon(Icons.shuffle_rounded, color: AppColors.textSecondary),
+                icon: Icon(Icons.shuffle_rounded, color: AppColors.textSecondary),
               ),
             ],
           ),
@@ -450,7 +450,7 @@ class _PlanCard extends ConsumerWidget {
                           ),
                         ),
                         logged.contains(m.meal)
-                            ? const Padding(
+                            ? Padding(
                                 padding: EdgeInsets.all(8),
                                 child: Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 22),
                               )
@@ -458,7 +458,7 @@ class _PlanCard extends ConsumerWidget {
                                 tooltip: 'Log ${m.meal.label.toLowerCase()}',
                                 visualDensity: VisualDensity.compact,
                                 onPressed: () => use(m),
-                                icon: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primary),
+                                icon: Icon(Icons.add_circle_outline_rounded, color: AppColors.primary),
                               ),
                       ],
                     ),
@@ -491,7 +491,7 @@ class _GoalCard extends ConsumerWidget {
         child: GlassCard(
           child: Row(
             children: [
-              const Icon(Icons.flag_outlined, color: AppColors.primary),
+              Icon(Icons.flag_outlined, color: AppColors.primary),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -502,7 +502,7 @@ class _GoalCard extends ConsumerWidget {
                   ],
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+              Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
             ],
           ),
         ),
@@ -522,7 +522,7 @@ class _GoalCard extends ConsumerWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.flag_rounded, color: AppColors.primary),
+                Icon(Icons.flag_rounded, color: AppColors.primary),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
@@ -586,7 +586,7 @@ class _WeightCard extends ConsumerWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.monitor_weight_outlined, color: AppColors.primary),
+              Icon(Icons.monitor_weight_outlined, color: AppColors.primary),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(

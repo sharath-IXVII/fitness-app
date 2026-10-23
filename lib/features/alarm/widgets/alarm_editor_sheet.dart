@@ -331,7 +331,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                           const SizedBox(height: 6),
                           Row(
                             children: [
-                              const Icon(Icons.volume_down_rounded, color: AppColors.textSecondary),
+                              Icon(Icons.volume_down_rounded, color: AppColors.textSecondary),
                               Expanded(
                                 child: Slider(
                                   value: _a.volume,
@@ -345,7 +345,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                                   },
                                 ),
                               ),
-                              const Icon(Icons.volume_up_rounded, color: AppColors.textSecondary),
+                              Icon(Icons.volume_up_rounded, color: AppColors.textSecondary),
                             ],
                           ),
                           SettingToggle(
@@ -524,7 +524,7 @@ class _SoundRow extends StatelessWidget {
             if (playing)
               const _Equalizer()
             else if (selected)
-              const Icon(Icons.check_rounded, color: AppColors.primary, size: 20),
+              Icon(Icons.check_rounded, color: AppColors.primary, size: 20),
           ],
         ),
       ),

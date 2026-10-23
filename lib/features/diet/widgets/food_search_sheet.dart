@@ -175,9 +175,9 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
                     style: text.bodySmall,
                   ),
                   leading: f.tags.contains('mine')
-                      ? const Icon(Icons.bookmark_rounded, color: AppColors.accent, size: 20)
+                      ? Icon(Icons.bookmark_rounded, color: AppColors.accent, size: 20)
                       : null,
-                  trailing: const Icon(Icons.add_circle_outline_rounded, color: AppColors.primary),
+                  trailing: Icon(Icons.add_circle_outline_rounded, color: AppColors.primary),
                   onTap: () => setState(() {
                     _picked = f;
                     _servings = 1;
@@ -199,7 +199,7 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
                 ),
               ListTile(
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                leading: const Icon(Icons.edit_note_rounded, color: AppColors.primary),
+                leading: Icon(Icons.edit_note_rounded, color: AppColors.primary),
                 title: Text('Add a custom food', style: text.titleSmall),
                 subtitle: Text('Type in the calories and macros from a label', style: text.bodySmall),
                 onTap: () => setState(() => _custom = true),

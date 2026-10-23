@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/alarm/alarm_scheduler.dart';
+import '../features/arcs/arc_screen.dart';
 import '../features/alarm/alarms_screen.dart';
 import '../features/alarm/ring_screen.dart';
 import '../features/auth/auth_providers.dart';
@@ -69,6 +70,7 @@ abstract final class Routes {
   static const privacy = '/privacy';
   static const challenge = '/challenge';
   static const trainingPlayer = '/train';
+  static const arc = '/arc';
   static const trainingDone = '/train-done';
 }
 
@@ -133,6 +135,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.report, builder: (_, _) => const WeeklyReportScreen()),
       GoRoute(path: Routes.privacy, builder: (_, _) => const PrivacyScreen()),
       GoRoute(path: Routes.profile, builder: (_, _) => const ProfileScreen()),
+      GoRoute(path: Routes.arc, builder: (_, _) => const ArcScreen()),
       GoRoute(
         path: Routes.trainingPlayer,
         redirect: (_, s) => s.extra is TrainingWorkout ? null : Routes.training,

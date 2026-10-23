@@ -99,7 +99,7 @@ class WorkoutDoneScreen extends StatelessWidget {
                                       style: text.titleSmall,
                                     ),
                                     const SizedBox(width: 8),
-                                    const Icon(Icons.check_circle_rounded, size: 18, color: AppColors.accent),
+                                    Icon(Icons.check_circle_rounded, size: 18, color: AppColors.accent),
                                   ],
                                 ),
                               ),

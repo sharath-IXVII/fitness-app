@@ -12,7 +12,7 @@ class ChoiceCard extends StatelessWidget {
     this.subtitle,
     this.icon,
     this.emoji,
-    this.color = AppColors.primary,
+    this.color,
     this.compact = false,
   });
 
@@ -22,11 +22,12 @@ class ChoiceCard extends StatelessWidget {
   final String? emoji;
   final bool selected;
   final VoidCallback onTap;
-  final Color color;
+  final Color? color;
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
+    final color = this.color ?? AppColors.primary;
     final text = Theme.of(context).textTheme;
     final leading = emoji != null
         ? Text(emoji!, style: const TextStyle(fontSize: 26))
@@ -88,13 +89,15 @@ class ChoiceCard extends StatelessWidget {
     );
   }
 
+  Color get _color => color ?? AppColors.primary;
+
   Widget _iconBox(Widget leading) => AnimatedContainer(
     duration: const Duration(milliseconds: 260),
     width: 48,
     height: 48,
     alignment: Alignment.center,
     decoration: BoxDecoration(
-      color: selected && emoji == null ? color : color.withValues(alpha: 0.12),
+      color: selected && emoji == null ? _color : _color.withValues(alpha: 0.12),
       borderRadius: BorderRadius.circular(15),
     ),
     child: leading,

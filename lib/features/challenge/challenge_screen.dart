@@ -188,7 +188,7 @@ class _Done extends StatelessWidget {
         Container(
           width: 88,
           height: 88,
-          decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.brandGradient),
+          decoration: BoxDecoration(shape: BoxShape.circle, gradient: AppColors.brandGradient),
           child: const Icon(Icons.check_rounded, size: 44, color: Colors.white),
         ).animate().scale(begin: const Offset(0.7, 0.7), duration: 400.ms, curve: Curves.easeOutBack),
         const SizedBox(height: 22),

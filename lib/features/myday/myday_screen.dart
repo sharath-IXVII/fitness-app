@@ -139,7 +139,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                       IconButton(
                         tooltip: 'Templates',
                         onPressed: _pickTemplate,
-                        icon: const Icon(Icons.auto_awesome_mosaic_outlined, color: AppColors.textSecondary),
+                        icon: Icon(Icons.auto_awesome_mosaic_outlined, color: AppColors.textSecondary),
                       ),
                       const SizedBox(width: 4),
                       Pressable(
@@ -490,7 +490,7 @@ class _TimelineRow extends StatelessWidget {
                               ),
                             )
                           else if (block.remind)
-                            const Icon(Icons.notifications_none_rounded, size: 18, color: AppColors.textMuted),
+                            Icon(Icons.notifications_none_rounded, size: 18, color: AppColors.textMuted),
                         ],
                       ),
                     ),
@@ -524,8 +524,8 @@ class _EmptyPlan extends StatelessWidget {
           Container(
             width: 64,
             height: 64,
-            decoration: const BoxDecoration(color: AppColors.primarySoft, shape: BoxShape.circle),
-            child: const Icon(Icons.view_timeline_rounded, color: AppColors.primary, size: 30),
+            decoration: BoxDecoration(color: AppColors.primarySoft, shape: BoxShape.circle),
+            child: Icon(Icons.view_timeline_rounded, color: AppColors.primary, size: 30),
           ),
           const SizedBox(height: 14),
           Text('Plan your day', style: text.titleLarge),

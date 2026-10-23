@@ -123,7 +123,7 @@ class _MonthHeatmapState extends State<MonthHeatmap> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(DateFormat.yMMMM().format(month), style: text.titleMedium),
-                            const Icon(Icons.expand_more_rounded, size: 20, color: AppColors.textSecondary),
+                            Icon(Icons.expand_more_rounded, size: 20, color: AppColors.textSecondary),
                           ],
                         ),
                       ),

@@ -134,7 +134,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
                       Text(_country.flag, style: const TextStyle(fontSize: 20)),
                       const SizedBox(width: 8),
                       Text(_country.dial, style: text.titleMedium),
-                      const Icon(Icons.expand_more_rounded, color: AppColors.textSecondary),
+                      Icon(Icons.expand_more_rounded, color: AppColors.textSecondary),
                     ],
                   ),
                 ),
@@ -161,7 +161,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
           const SizedBox(height: 14),
           Row(
             children: [
-              const Icon(Icons.lock_outline_rounded, size: 16, color: AppColors.textMuted),
+              Icon(Icons.lock_outline_rounded, size: 16, color: AppColors.textMuted),
               const SizedBox(width: 6),
               Text('Your number is only used to sign you in.', style: text.bodySmall),
             ],

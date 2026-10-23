@@ -14,7 +14,7 @@ class RulerPicker extends StatefulWidget {
     required this.unit,
     this.step = 1,
     this.decimals = 0,
-    this.color = AppColors.primary,
+    this.color,
   });
 
   final double min;
@@ -23,7 +23,7 @@ class RulerPicker extends StatefulWidget {
   final double step;
   final int decimals;
   final String unit;
-  final Color color;
+  final Color? color;
   final ValueChanged<double> onChanged;
 
   @override
@@ -47,6 +47,8 @@ class _RulerPickerState extends State<RulerPicker> {
     _controller.dispose();
     super.dispose();
   }
+
+  Color get _color => widget.color ?? AppColors.primary;
 
   @override
   Widget build(BuildContext context) {
@@ -76,7 +78,7 @@ class _RulerPickerState extends State<RulerPicker> {
                 ),
               ),
               const SizedBox(width: 8),
-              Text(widget.unit, style: text.titleLarge?.copyWith(color: widget.color)),
+              Text(widget.unit, style: text.titleLarge?.copyWith(color: _color)),
             ],
           ),
         ),
@@ -115,9 +117,9 @@ class _RulerPickerState extends State<RulerPicker> {
                   width: 4,
                   height: 72,
                   decoration: BoxDecoration(
-                    color: widget.color,
+                    color: _color,
                     borderRadius: BorderRadius.circular(4),
-                    boxShadow: [BoxShadow(color: widget.color.withValues(alpha: 0.6), blurRadius: 14)],
+                    boxShadow: [BoxShadow(color: _color.withValues(alpha: 0.6), blurRadius: 14)],
                   ),
                 ),
               ),
@@ -150,7 +152,7 @@ class _RulerPickerState extends State<RulerPicker> {
               maxWidth: 40,
               child: Text(
                 _valueAt(i).toStringAsFixed(0),
-                style: const TextStyle(fontSize: 11, color: AppColors.textTertiary),
+                style: TextStyle(fontSize: 11, color: AppColors.textTertiary),
               ),
             ),
           ),

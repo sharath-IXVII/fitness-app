@@ -100,7 +100,7 @@ class TrainingDoneScreen extends ConsumerWidget {
                       padding: const EdgeInsets.all(16),
                       child: Row(
                         children: [
-                          const Icon(Icons.flag_rounded, color: AppColors.energy),
+                          Icon(Icons.flag_rounded, color: AppColors.energy),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(

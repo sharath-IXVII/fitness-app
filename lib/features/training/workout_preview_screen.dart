@@ -70,7 +70,7 @@ class WorkoutPreviewScreen extends ConsumerWidget {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Icon(Icons.handyman_rounded, color: AppColors.primary, size: 20),
+                          Icon(Icons.handyman_rounded, color: AppColors.primary, size: 20),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Text(

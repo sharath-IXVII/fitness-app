@@ -10,6 +10,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/widgets/page_background.dart';
 import '../../core/widgets/glass_card.dart';
 import '../alarm/alarm_providers.dart';
+import '../arcs/widgets/arc_widgets.dart';
 import '../auth/auth_providers.dart';
 import '../diet/diet_providers.dart';
 import '../myday/myday_providers.dart';
@@ -70,7 +71,7 @@ class ProfileScreen extends ConsumerWidget {
                     width: 64,
                     height: 64,
                     alignment: Alignment.center,
-                    decoration: const BoxDecoration(shape: BoxShape.circle, gradient: AppColors.brandGradient),
+                    decoration: BoxDecoration(shape: BoxShape.circle, gradient: AppColors.brandGradient),
                     child: Text(
                       p.name.isEmpty ? '?' : p.name[0].toUpperCase(),
                       style: text.headlineSmall?.copyWith(color: Colors.white),
@@ -91,13 +92,15 @@ class ProfileScreen extends ConsumerWidget {
                     icon: const Icon(Icons.edit_outlined, size: 18),
                     label: const Text('Edit'),
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.stroke),
+                      side: BorderSide(color: AppColors.stroke),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     ),
                   ),
                 ],
               ).animate().fadeIn(duration: 300.ms),
-              const SizedBox(height: 24),
+              const SizedBox(height: 20),
+              const ArcBadgeShelf(),
+              const SizedBox(height: 22),
               Text('About you', style: text.titleMedium),
               const SizedBox(height: 10),
               GlassCard(
@@ -272,7 +275,7 @@ class _Action extends StatelessWidget {
       child: ListTile(
         leading: Icon(icon, color: danger ? AppColors.danger : AppColors.primary),
         title: Text(label, style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: color)),
-        trailing: const Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+        trailing: Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
         onTap: onTap,
       ),
     );

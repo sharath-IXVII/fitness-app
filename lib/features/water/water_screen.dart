@@ -249,7 +249,7 @@ class _GlassPainter extends CustomPainter {
           ..shader = LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFFD9BC9F), AppColors.primary],
+            colors: [AppColors.water.withValues(alpha: 0.55), AppColors.water],
           ).createShader(Offset.zero & size),
       );
     }

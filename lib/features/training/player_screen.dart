@@ -60,13 +60,22 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     super.initState();
     WakelockPlus.enable();
     _restartTicker();
+    // A call or switching apps pauses the workout instead of running on.
+    _lifecycle = AppLifecycleListener(
+      onInactive: () {
+        if (!_paused && !_finishing && mounted) _togglePause();
+      },
+    );
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => _say('Get ready. First up: ${_item.move.name}, ${_spoken(_item)}.'),
     );
   }
 
+  late final AppLifecycleListener _lifecycle;
+
   @override
   void dispose() {
+    _lifecycle.dispose();
     _ticker?.cancel();
     _coach.stop();
     WakelockPlus.disable();
@@ -127,6 +136,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
 
   /// Finishes the current exercise and rests before the next one.
   void _next() {
+    // A quick double tap on Done (the old button is still visible while the
+    // screen switches) mustn't skip the next exercise too.
+    if (_phase != _Phase.work) return;
     HapticFeedback.mediumImpact();
     if (_index + 1 >= _items.length) {
       _finish();

@@ -166,6 +166,8 @@ abstract final class AlarmScheduler {
     warningNotificationOnKill: Platform.isIOS,
     androidFullScreenIntent: true,
     androidStopAlarmOnTermination: false,
+    // Two alarms set for the same minute must both ring.
+    allowSameSecondScheduling: true,
     payload: info.toPayload(),
     // Strict mode: full volume from the first second, and the volume keys
     // can't turn it down (the plugin resets any change).

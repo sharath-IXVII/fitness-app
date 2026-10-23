@@ -85,5 +85,5 @@ class _Dashes extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_Dashes old) => false;
+  bool shouldRepaint(_Dashes old) => true; // colours follow the season
 }

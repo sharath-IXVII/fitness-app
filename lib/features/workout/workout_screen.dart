@@ -91,7 +91,11 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
       await AlarmScheduler.armWatchdog(ring);
       _lastWatchdogArm = _clock.elapsed;
     }
-    if (!await AppPermissions.camera()) {
+    // The permission dialog mustn't be covered by strict mode's bring-back,
+    // and a stuck dialog mustn't trap the user: fall back after 60 s.
+    final allowed = await StrictMode.whileAway(AppPermissions.camera)
+        .timeout(const Duration(seconds: 60), onTimeout: () => false);
+    if (!allowed) {
       if (mounted) setState(() => _phase = _Phase.noCamera);
       return;
     }
@@ -198,7 +202,15 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
         }
       }
     }
-    await ref.read(dailyLogsProvider.notifier).update((l) => l.copyWith(workoutDone: true));
+    // Practice mode allows skipping; only a workout that was actually done
+    // counts for today.
+    final completed = [
+      for (var i = 0; i < _routine.steps.length; i++)
+        if (i < _session.results.length && _session.results[i] >= _routine.steps[i].target) i,
+    ];
+    if (_alarmMode || completed.length == _routine.steps.length) {
+      await ref.read(dailyLogsProvider.notifier).update((l) => l.copyWith(workoutDone: true));
+    }
     if (!mounted) return;
     context.go(
       Routes.workoutDone,
@@ -525,7 +537,10 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
               await _start();
             },
           ),
-          TextButton(onPressed: AppPermissions.openSettings, child: const Text('Open settings')),
+          TextButton(
+            onPressed: () => StrictMode.whileAway(AppPermissions.openSettings),
+            child: const Text('Open settings'),
+          ),
           if (!_alarmMode) TextButton(onPressed: () => context.pop(), child: const Text('Back')),
           // Without a camera the alarm can still be turned off the hard way.
           if (_alarmMode)

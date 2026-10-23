@@ -67,13 +67,18 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
   /// Pushes the idle re-ring further out while the user is making progress.
   Future<void> _progress() async {
     final ring = _ring;
-    if (ring == null || _clock.elapsed - _lastArm < const Duration(seconds: 10)) return;
+    if (ring == null || _finished || _clock.elapsed - _lastArm < const Duration(seconds: 10)) return;
     _lastArm = _clock.elapsed;
     if (await AlarmScheduler.isRinging(AlarmScheduler.watchdogId)) {
       await AlarmScheduler.stop(AlarmScheduler.watchdogId);
     }
+    // The last answer may have finished everything while we waited; don't
+    // re-arm a watchdog that would ring again after "Alarm off".
+    if (_finished) return;
     await AlarmScheduler.armWatchdog(ring);
   }
+
+  bool _finished = false;
 
   Future<void> _gameDone() async {
     if (_index + 1 < _games.length) {
@@ -83,12 +88,15 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
       return;
     }
     HapticFeedback.heavyImpact();
+    _finished = true;
     final ring = _ring;
     if (ring != null) {
       await AlarmScheduler.stop(AlarmScheduler.watchdogId);
       await AlarmScheduler.silence(ring);
       await ref.read(alarmsProvider.notifier).handled(ring.alarmId);
       if (ring.strict) await StrictMode.release(ref.read(sharedPrefsProvider));
+      // In case a progress call was mid-flight, stop the watchdog once more.
+      await AlarmScheduler.stop(AlarmScheduler.watchdogId);
     }
     if (mounted) setState(() => _done = true);
   }

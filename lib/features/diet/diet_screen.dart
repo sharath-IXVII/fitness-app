@@ -658,7 +658,7 @@ class _TrendPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_TrendPainter old) => old.values != values;
+  bool shouldRepaint(_TrendPainter old) => true; // cheap, and colours follow the season
 }
 
 class _LearnRow extends StatelessWidget {

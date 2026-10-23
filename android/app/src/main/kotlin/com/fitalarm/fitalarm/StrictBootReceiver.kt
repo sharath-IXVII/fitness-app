@@ -41,7 +41,7 @@ class StrictBootReceiver : BroadcastReceiver() {
             .setOngoing(true)
             .build()
         try {
-            nm.notify(4242, n)
+            nm.notify(MainActivity.BOOT_NOTIFICATION_ID, n)
         } catch (_: SecurityException) {
         }
     }

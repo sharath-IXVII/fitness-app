@@ -55,6 +55,17 @@ abstract final class StrictMode {
     if (_android) await _call('openOverlaySettings');
   }
 
+  /// Runs [action] (a permission dialog, a settings page) without strict
+  /// mode pulling the app back on top of it.
+  static Future<T> whileAway<T>(Future<T> Function() action) async {
+    if (_android) await _call('suspend');
+    try {
+      return await action();
+    } finally {
+      if (_android) await _call('resume');
+    }
+  }
+
   static Future<T?> _call<T>(String method) async {
     try {
       return await _channel.invokeMethod<T>(method);

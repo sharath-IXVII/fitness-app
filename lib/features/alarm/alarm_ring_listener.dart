@@ -22,11 +22,15 @@ class AlarmRingListener extends ConsumerStatefulWidget {
 
 class _AlarmRingListenerState extends ConsumerState<AlarmRingListener> {
   StreamSubscription<List<RingInfo>>? _sub;
+  ChangeNotifier? _delegate;
 
   @override
   void initState() {
     super.initState();
     _sub = AlarmScheduler.ringing.listen(_onRinging);
+    // An alarm that starts while the user is mid-workout is held back; show
+    // it as soon as they leave that screen.
+    _delegate = ref.read(routerProvider).routerDelegate..addListener(_onRouteChanged);
     // Re-arm everything on launch (e.g. after a reboot or an app update), and
     // ring again if a strict alarm was interrupted before it was finished.
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -36,17 +40,33 @@ class _AlarmRingListenerState extends ConsumerState<AlarmRingListener> {
     });
   }
 
+  static const _busy = {Routes.splash, Routes.ring, Routes.workout, Routes.challenge};
+
   void _onRinging(List<RingInfo> ringing) {
     if (ringing.isEmpty) return;
     final router = ref.read(routerProvider);
     final path = router.routerDelegate.currentConfiguration.uri.path;
     // The splash routes to the ring screen itself once it's done.
-    if (path == Routes.splash || path == Routes.ring || path == Routes.workout || path == Routes.challenge) return;
+    if (_busy.contains(path)) return;
     router.go(Routes.ring, extra: ringing.first);
+  }
+
+  void _onRouteChanged() {
+    if (!mounted) return;
+    final router = ref.read(routerProvider);
+    final path = router.routerDelegate.currentConfiguration.uri.path;
+    if (_busy.contains(path) || path == Routes.workoutDone) return;
+    final ringing = AlarmScheduler.ringingNow;
+    if (ringing.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) router.go(Routes.ring, extra: ringing.first);
+      });
+    }
   }
 
   @override
   void dispose() {
+    _delegate?.removeListener(_onRouteChanged);
     _sub?.cancel();
     super.dispose();
   }

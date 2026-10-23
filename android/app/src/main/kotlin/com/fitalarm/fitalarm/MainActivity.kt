@@ -30,7 +30,14 @@ class MainActivity : FlutterActivity() {
     companion object {
         /** Survive the activity being recreated while the process lives. */
         @Volatile var strict = false
+
+        /** True while the app itself opens a permission dialog or settings
+         *  page, so strict mode doesn't pull the user straight back. */
+        @Volatile var suspended = false
         private var overlay: View? = null
+
+        /** The "Your alarm is still on" notification posted after a reboot. */
+        const val BOOT_NOTIFICATION_ID = 4242
     }
 
     private val handler = Handler(Looper.getMainLooper())
@@ -38,7 +45,7 @@ class MainActivity : FlutterActivity() {
 
     private val bringBack = object : Runnable {
         override fun run() {
-            if (!strict || inFront) return
+            if (!strict || inFront || suspended) return
             StrictState.bringBack(applicationContext)
             // Keep trying until we're back in front; the system can defer a
             // launch right after the home button.
@@ -56,6 +63,15 @@ class MainActivity : FlutterActivity() {
                 }
                 "release" -> {
                     releaseStrict()
+                    result.success(null)
+                }
+                "suspend" -> {
+                    suspended = true
+                    handler.removeCallbacks(bringBack)
+                    result.success(null)
+                }
+                "resume" -> {
+                    suspended = false
                     result.success(null)
                 }
                 "canDrawOverlays" -> result.success(Settings.canDrawOverlays(this))
@@ -87,6 +103,8 @@ class MainActivity : FlutterActivity() {
 
     private fun releaseStrict() {
         strict = false
+        suspended = false
+        cancelBootNotification()
         handler.removeCallbacks(bringBack)
         hideOverlay(applicationContext)
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -102,12 +120,20 @@ class MainActivity : FlutterActivity() {
         handler.removeCallbacks(bringBack)
         hideOverlay(applicationContext)
         if (strict) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        if (!strict && !StrictState.isActive(applicationContext)) cancelBootNotification()
+    }
+
+    private fun cancelBootNotification() {
+        try {
+            getSystemService(android.app.NotificationManager::class.java)?.cancel(BOOT_NOTIFICATION_ID)
+        } catch (_: Exception) {
+        }
     }
 
     override fun onPause() {
         super.onPause()
         inFront = false
-        if (strict) {
+        if (strict && !suspended) {
             showOverlay(applicationContext)
             handler.postDelayed(bringBack, 300)
         }
@@ -115,7 +141,7 @@ class MainActivity : FlutterActivity() {
 
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
-        if (strict) {
+        if (strict && !suspended) {
             showOverlay(applicationContext)
             handler.postDelayed(bringBack, 150)
         }

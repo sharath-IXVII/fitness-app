@@ -143,7 +143,7 @@ class _ChallengePlanScreenState extends ConsumerState<ChallengePlanScreen> {
                             '${Challenge.days} days, a little harder each day.',
                             'About ${c.workoutFor(1, _level)!.minutes}–${c.workoutFor(29, _level)!.minutes} minutes a day.',
                             'A rest day every fourth day.',
-                            'Do the days in order; skip a day and just carry on.',
+                            'Do the days in order; missed one? Just pick up where you left off.',
                           ])
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 3),

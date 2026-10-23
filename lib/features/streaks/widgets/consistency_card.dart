@@ -99,7 +99,7 @@ class _WeekStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final monday = today.subtract(Duration(days: today.weekday - 1));
+    final monday = addDays(today, -(today.weekday - 1));
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 6),
       decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(18)),
@@ -109,7 +109,7 @@ class _WeekStrip extends StatelessWidget {
             Expanded(
               child: Builder(
                 builder: (context) {
-                  final day = monday.add(Duration(days: i));
+                  final day = addDays(monday, i);
                   final future = day.isAfter(today);
                   final isToday = day == today;
                   final count = scores[day]?.count ?? 0;

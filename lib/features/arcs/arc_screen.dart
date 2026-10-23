@@ -9,6 +9,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/widgets/form_controls.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/page_background.dart';
+import '../streaks/domain/daily_log.dart';
 import 'arc_providers.dart';
 import 'domain/arc.dart';
 import 'widgets/arc_widgets.dart';
@@ -26,7 +27,7 @@ class ArcScreen extends ConsumerWidget {
     final today = ref.watch(todayProvider);
     final badges = ref.watch(arcBadgesProvider);
     final preview = ref.watch(arcPreviewProvider);
-    final day = today.difference(arc.start).inDays + 1;
+    final day = daysBetween(arc.start, today) + 1;
     final dates = DateFormat('d MMM');
     final lateStart = r.from.isAfter(arc.start);
 

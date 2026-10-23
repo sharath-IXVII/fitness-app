@@ -141,12 +141,13 @@ abstract final class Reminders {
       m += 24 * 60;
       dayShift = -1;
     }
-    var d = tz.TZDateTime(tz.local, now.year, now.month, now.day, m ~/ 60, m % 60);
     final target = ((weekday - 1 + dayShift) % 7) + 1;
-    while (d.weekday != target || !d.isAfter(now)) {
-      d = d.add(const Duration(days: 1));
+    // Step calendar days, rebuilding the wall-clock time each time, so a
+    // daylight-saving change can't shift the reminder by an hour.
+    for (var i = 0; ; i++) {
+      final d = tz.TZDateTime(tz.local, now.year, now.month, now.day + i, m ~/ 60, m % 60);
+      if (d.weekday == target && d.isAfter(now)) return d;
     }
-    return d;
   }
 
   /// Replaces all My Day reminders with weekly ones for [blocks].

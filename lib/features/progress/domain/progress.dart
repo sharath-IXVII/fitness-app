@@ -19,7 +19,7 @@ int totalXp(Map<DateTime, DayScore> scores) {
     final s = scores[d]!;
     xp += dayXp(s);
     if (s.keepsStreak) {
-      run = (prev != null && d.difference(prev).inDays == 1) ? run + 1 : 1;
+      run = (prev != null && daysBetween(prev, d) == 1) ? run + 1 : 1;
       prev = d;
       xp += math.min(run, 30);
     }
@@ -92,7 +92,7 @@ Map<Achievement, DateTime> earnedAchievements(Map<DateTime, DailyLog> logs, Heal
 
   final runs = <Achievement, int>{};
   int bump(Achievement b, bool hit, DateTime d, DateTime? prev) {
-    final consecutive = prev != null && d.difference(prev).inDays == 1;
+    final consecutive = prev != null && daysBetween(prev, d) == 1;
     final run = hit ? ((consecutive ? runs[b] ?? 0 : 0) + 1) : 0;
     runs[b] = run;
     return run;
@@ -120,7 +120,7 @@ Map<Achievement, DateTime> earnedAchievements(Map<DateTime, DailyLog> logs, Heal
     if (bump(Achievement.mealLogger, log.mealsLogged >= 3, d, prev) >= 7) earn(Achievement.mealLogger, d);
     if (bump(Achievement.perfectWeek, s.count == DayScore.total, d, prev) >= 7) earn(Achievement.perfectWeek, d);
 
-    final windowStart = d.subtract(const Duration(days: 29));
+    final windowStart = addDays(d, -29);
     final month = days.where((x) => !x.isBefore(windowStart) && !x.isAfter(d)).fold(0, (a, x) => a + logs[x]!.steps);
     if (month >= 250000) earn(Achievement.marathon, d);
     prev = d;

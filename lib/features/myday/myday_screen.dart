@@ -229,7 +229,7 @@ class _WeekdayPicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final today = DateTime.now();
-    final monday = today.subtract(Duration(days: today.weekday - 1));
+    final monday = DateTime(today.year, today.month, today.day - (today.weekday - 1));
     return Row(
       children: [
         for (var d = 1; d <= 7; d++)
@@ -249,7 +249,7 @@ class _WeekdayPicker extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      DateFormat.E().format(monday.add(Duration(days: d - 1))).substring(0, 1),
+                      DateFormat.E().format(DateTime(monday.year, monday.month, monday.day + d - 1)).substring(0, 1),
                       style: TextStyle(
                         fontSize: 12,
                         color: d == value ? Colors.white70 : AppColors.textMuted,
@@ -258,7 +258,7 @@ class _WeekdayPicker extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${monday.add(Duration(days: d - 1)).day}',
+                      '${DateTime(monday.year, monday.month, monday.day + d - 1).day}',
                       style: TextStyle(
                         fontWeight: FontWeight.w700,
                         color: d == value ? Colors.white : AppColors.textPrimary,

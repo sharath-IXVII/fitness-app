@@ -55,7 +55,11 @@ jobs:
         run: flutter analyze
 
       - name: Test
-        run: flutter test
+        run: |
+          flutter test
+          # Day maths must survive daylight-saving changes.
+          TZ=Europe/Berlin flutter test test/dst_test.dart test/arc_test.dart
+          TZ=America/New_York flutter test test/dst_test.dart
 
       - name: Build APK
         shell: bash

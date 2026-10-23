@@ -81,17 +81,25 @@ class DayScore {
 
 DateTime dayOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
+/// [d] moved by [n] calendar days. Safe across daylight-saving changes,
+/// unlike adding `Duration(days: n)` (which adds 24-hour periods).
+DateTime addDays(DateTime d, int n) => DateTime(d.year, d.month, d.day + n);
+
+/// Calendar days from [a] to [b], ignoring the time of day and DST.
+int daysBetween(DateTime a, DateTime b) =>
+    DateTime.utc(b.year, b.month, b.day).difference(DateTime.utc(a.year, a.month, a.day)).inDays;
+
 /// Consecutive streak days ending today (or yesterday, if today is still in
 /// progress and not yet qualifying).
 int currentStreak(Map<DateTime, DayScore> scores, DateTime today) {
   var day = dayOnly(today);
   if (!(scores[day]?.keepsStreak ?? false)) {
-    day = day.subtract(const Duration(days: 1));
+    day = addDays(day, -1);
   }
   var streak = 0;
   while (scores[day]?.keepsStreak ?? false) {
     streak++;
-    day = day.subtract(const Duration(days: 1));
+    day = addDays(day, -1);
   }
   return streak;
 }
@@ -101,7 +109,7 @@ int longestStreak(Map<DateTime, DayScore> scores) {
   var best = 0, run = 0;
   DateTime? prev;
   for (final d in days) {
-    run = (prev != null && d.difference(prev).inDays == 1) ? run + 1 : 1;
+    run = (prev != null && daysBetween(prev, d) == 1) ? run + 1 : 1;
     if (run > best) best = run;
     prev = d;
   }

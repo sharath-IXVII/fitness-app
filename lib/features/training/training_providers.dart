@@ -88,7 +88,7 @@ class TrainingState {
 
   /// Workouts and minutes since Monday.
   ({int workouts, int minutes, int kcal}) thisWeek(DateTime now) {
-    final monday = DateTime(now.year, now.month, now.day).subtract(Duration(days: now.weekday - 1));
+    final monday = DateTime(now.year, now.month, now.day - (now.weekday - 1));
     final week = history.where((h) => !h.at.isBefore(monday));
     return (
       workouts: week.length,

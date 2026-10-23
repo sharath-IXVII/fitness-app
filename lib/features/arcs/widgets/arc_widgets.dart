@@ -6,6 +6,7 @@ import '../../../core/router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/page_background.dart';
 import '../../../core/widgets/pressable.dart';
+import '../../streaks/domain/daily_log.dart';
 import '../arc_providers.dart';
 import '../domain/arc.dart';
 
@@ -81,7 +82,7 @@ class ArcCard extends ConsumerWidget {
     final arc = ref.watch(currentArcProvider);
     final r = ref.watch(currentArcResultProvider);
     final today = ref.watch(todayProvider);
-    final day = today.difference(arc.start).inDays + 1;
+    final day = daysBetween(arc.start, today) + 1;
     // While previewing another arc's look, the card wears it too.
     final look = ref.watch(themeSeasonProvider);
     final previewing = look != arc.season;

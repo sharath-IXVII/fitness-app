@@ -11,6 +11,7 @@ import '../progress/domain/progress.dart';
 import '../progress/progress_providers.dart';
 import '../alarm/app_permissions.dart';
 import '../arcs/arc_providers.dart';
+import '../friends/domain/friends.dart';
 import '../friends/friends_providers.dart';
 import '../myday/myday_providers.dart';
 import '../profile/profile_providers.dart';
@@ -182,6 +183,20 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
     ref.listen(trainingProvider.select((t) => t.challenges), (_, _) => _replan());
     ref.listen(todayProvider, (_, _) => _replan());
+    // A finished challenge whose friendship didn't get saved (offline, app
+    // closed): write it again. Safe to repeat.
+    ref.listen(challengesProvider, (_, next) {
+      final b = ref.read(friendsBackendProvider);
+      final friends = {for (final f in ref.read(friendsListProvider).value ?? const []) f.uid};
+      final uid = ref.read(friendsUidProvider);
+      if (b == null || uid == null) return;
+      for (final c in next.value ?? const <FriendChallenge>[]) {
+        final other = c.otherUid(uid);
+        if (c.status == ChallengeStatus.done && other != null && !friends.contains(other)) {
+          b.ensureFriendship(c).catchError((_) {});
+        }
+      }
+    });
     // Keep what friends see (name, badge, XP, streak) up to date.
     ref.listen(myPublicProfileProvider, (prev, next) {
       final b = ref.read(friendsBackendProvider);

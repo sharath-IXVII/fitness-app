@@ -3,85 +3,143 @@ rules_version = '2';
 // Fit Tracker: who can read and write what. Deploy with
 //   firebase deploy --only firestore:rules
 // or paste into Firebase console → Firestore → Rules.
+// Tested in firebase-tests/ (npm test runs them on the emulator).
 service cloud.firestore {
   match /databases/{database}/documents {
     function signedIn() { return request.auth != null; }
     function me() { return request.auth.uid; }
-    function changes() { return request.resource.data.diff(resource.data).affectedKeys(); }
+    function data() { return request.resource.data; }
+    function changes() { return data().diff(resource.data).affectedKeys(); }
+    function blockedEither(a, b) {
+      return exists(/databases/$(database)/documents/users/$(a)/blocked/$(b))
+        || exists(/databases/$(database)/documents/users/$(b)/blocked/$(a));
+    }
+    function shortText(v, max) { return v is string && v.size() > 0 && v.size() <= max; }
+    function optText(v, max) { return v == null || shortText(v, max); }
+    function smallInt(v, max) { return v is int && v >= 0 && v <= max; }
 
-    // Both sides of a friendship are written once their challenge is done.
+    // Both sides of a friendship are written once their challenge is done,
+    // and never while either has blocked the other.
     function challengeDoneBetween(id, a, b) {
       let c = get(/databases/$(database)/documents/challenges/$(id)).data;
       return c.status == 'done'
-        && ((c.fromUid == a && c.toUid == b) || (c.fromUid == b && c.toUid == a));
+        && ((c.fromUid == a && c.toUid == b) || (c.fromUid == b && c.toUid == a))
+        && !blockedEither(a, b);
     }
 
-    // Public profiles: name, badge title, XP, streak, arc progress.
+    // ---------------------------------------------------- public profiles
+    function validProfile() {
+      let d = data();
+      return d.keys().hasOnly(['name', 'title', 'titleTier', 'titleSeason', 'level', 'xp', 'streak', 'bestStreak',
+                               'arcLabel', 'arcActive', 'workoutsWeek', 'updatedAt'])
+        && shortText(d.name, 40)
+        && optText(d.get('title', null), 60)
+        && (d.get('titleTier', null) == null || smallInt(d.titleTier, 2))
+        && optText(d.get('titleSeason', null), 20)
+        && smallInt(d.level, 1000)
+        && smallInt(d.xp, 10000000)
+        && smallInt(d.streak, 100000)
+        && smallInt(d.bestStreak, 100000)
+        && d.arcLabel is string && d.arcLabel.size() <= 40
+        && smallInt(d.arcActive, 100)
+        && smallInt(d.workoutsWeek, 1000)
+        && d.updatedAt == request.time;
+    }
+
     match /users/{uid} {
-      allow read: if signedIn();
-      allow create, update: if me() == uid
-        && request.resource.data.name is string
-        && request.resource.data.name.size() > 0
-        && request.resource.data.name.size() <= 40
-        && request.resource.data.xp is int;
+      // Fetch one profile by id; no listing everyone.
+      allow get: if signedIn();
+      allow create: if me() == uid && validProfile() && data().xp <= 200000;
+      // XP is worked out on the phone; cap how fast it can grow (a real day
+      // earns well under 200) so the leaderboard can't be pumped.
+      allow update: if me() == uid && validProfile() && data().xp <= resource.data.xp + 2000;
       allow delete: if me() == uid;
 
       match /friends/{fid} {
         allow read: if me() == uid || me() == fid;
-        allow create: if (me() == uid || me() == fid)
-          && challengeDoneBetween(request.resource.data.via, uid, fid);
+        allow create, update: if (me() == uid || me() == fid)
+          && data().keys().hasOnly(['since', 'via'])
+          && challengeDoneBetween(data().via, uid, fid);
         allow delete: if me() == uid || me() == fid;
       }
 
       // You can see whether someone blocked you, nothing else.
       match /blocked/{other} {
-        allow read: if me() == uid || me() == other;
-        allow write: if me() == uid;
+        allow get: if me() == uid || me() == other;
+        allow list, write: if me() == uid;
       }
     }
 
-    match /challenges/{id} {
-      allow read: if signedIn()
-        && (resource.data.status == 'open' || resource.data.fromUid == me() || resource.data.toUid == me());
+    // -------------------------------------------------------- challenges
+    function validNewChallenge() {
+      let d = data();
+      return d.keys().hasOnly(['code', 'fromUid', 'fromName', 'fromTitle', 'toUid', 'toName', 'toTitle', 'exercise',
+                               'reps', 'arcLabel', 'status', 'fromDone', 'toDone', 'createdAt'])
+        && d.fromUid == me()
+        && d.code is string && d.code.matches('^[A-HJKMNP-Z2-9]{6}$')
+        && shortText(d.fromName, 40) && optText(d.fromTitle, 60)
+        && optText(d.toName, 40) && optText(d.toTitle, 60)
+        && d.exercise in ['pushUp', 'squat', 'sitUp', 'jumpingJack', 'lunge', 'burpee', 'plank', 'highKnees']
+        && d.reps is int && d.reps > 0 && d.reps <= 300
+        && d.arcLabel is string && d.arcLabel.size() <= 40
+        && d.createdAt is int
+        && d.fromDone == false && d.toDone == false;
+    }
 
-      allow create: if signedIn()
-        && request.resource.data.fromUid == me()
-        && request.resource.data.reps is int
-        && request.resource.data.reps > 0 && request.resource.data.reps <= 300
-        && request.resource.data.code is string && request.resource.data.code.size() == 6
-        && request.resource.data.fromDone == false && request.resource.data.toDone == false
-        && (
+    match /challenges/{id} {
+      function isParty() { return resource.data.fromUid == me() || resource.data.toUid == me(); }
+
+      // Open ones can be fetched by id (after a code lookup), never listed.
+      allow get: if signedIn() && (resource.data.status == 'open' || isParty());
+      allow list: if signedIn() && isParty();
+
+      allow create: if signedIn() && validNewChallenge() && (
           // Open, for anyone with the code.
-          (request.resource.data.status == 'open' && request.resource.data.toUid == null)
-          // Straight to a friend.
-          || (request.resource.data.status == 'accepted'
-              && exists(/databases/$(database)/documents/users/$(me())/friends/$(request.resource.data.toUid)))
+          (data().status == 'open' && data().toUid == null && data().toName == null)
+          // Straight to a friend who hasn't blocked you.
+          || (data().status == 'accepted' && data().toUid is string
+              && exists(/databases/$(database)/documents/users/$(me())/friends/$(data().toUid))
+              && !blockedEither(me(), data().toUid))
         );
 
       allow update: if signedIn() && (
-        // Join an open challenge (not your own).
+        // Join an open challenge (not your own, not someone who blocked you).
         (resource.data.status == 'open' && resource.data.toUid == null && resource.data.fromUid != me()
-          && request.resource.data.toUid == me() && request.resource.data.status == 'accepted'
-          && changes().hasOnly(['toUid', 'toName', 'toTitle', 'status']))
+          && !blockedEither(me(), resource.data.fromUid)
+          && changes().hasOnly(['toUid', 'toName', 'toTitle', 'status'])
+          && data().toUid == me() && data().status == 'accepted'
+          && shortText(data().toName, 40) && optText(data().toTitle, 60))
         // The challenger marks their part done.
         || (resource.data.fromUid == me() && resource.data.status == 'accepted'
-          && changes().hasOnly(['fromDone', 'status']) && request.resource.data.fromDone == true
-          && (request.resource.data.status == 'accepted'
-              || (request.resource.data.status == 'done' && resource.data.toDone == true)))
+          && changes().hasOnly(['fromDone', 'status']) && data().fromDone == true
+          && (data().status == 'accepted' || (data().status == 'done' && resource.data.toDone == true)))
         // The friend marks their part done.
         || (resource.data.toUid == me() && resource.data.status == 'accepted'
-          && changes().hasOnly(['toDone', 'status']) && request.resource.data.toDone == true
-          && (request.resource.data.status == 'accepted'
-              || (request.resource.data.status == 'done' && resource.data.fromDone == true)))
-        // Either side declines.
-        || ((resource.data.toUid == me() || resource.data.fromUid == me())
-          && changes().hasOnly(['status']) && request.resource.data.status == 'declined')
+          && changes().hasOnly(['toDone', 'status']) && data().toDone == true
+          && (data().status == 'accepted' || (data().status == 'done' && resource.data.fromDone == true)))
+        // Either side declines one that isn't finished.
+        || (isParty() && resource.data.status in ['open', 'accepted']
+          && changes().hasOnly(['status']) && data().status == 'declined')
       );
+
+      // Either side can delete (account deletion).
+      allow delete: if signedIn() && isParty();
+    }
+
+    // Share codes: looked up one at a time by the person given the code.
+    match /codes/{code} {
+      allow get: if signedIn();
+      allow create: if signedIn() && data().keys().hasOnly(['challengeId', 'fromUid'])
+        && data().fromUid == me()
+        && getAfter(/databases/$(database)/documents/challenges/$(data().challengeId)).data.fromUid == me()
+        && getAfter(/databases/$(database)/documents/challenges/$(data().challengeId)).data.code == code;
+      allow delete: if signedIn() && resource.data.fromUid == me();
     }
 
     // Reports of abuse: write-only, reviewed in the console.
     match /reports/{id} {
-      allow create: if signedIn() && request.resource.data.by == me();
+      allow create: if signedIn() && data().by == me() && data().about is string
+        && data().reason is string && data().reason.size() <= 500;
     }
   }
 }

@@ -57,19 +57,20 @@ class PublicProfile {
     'workoutsWeek': workoutsWeek,
   };
 
+  /// Tolerant of bad data: someone else wrote this document.
   factory PublicProfile.fromJson(String uid, Map<String, dynamic> j) => PublicProfile(
     uid: uid,
-    name: j['name'] as String? ?? 'Friend',
-    title: j['title'] as String?,
-    titleTier: j['titleTier'] as int?,
-    titleSeason: j['titleSeason'] as String?,
-    level: j['level'] as int? ?? 1,
-    xp: j['xp'] as int? ?? 0,
-    streak: j['streak'] as int? ?? 0,
-    bestStreak: j['bestStreak'] as int? ?? 0,
-    arcLabel: j['arcLabel'] as String? ?? '',
-    arcActive: j['arcActive'] as int? ?? 0,
-    workoutsWeek: j['workoutsWeek'] as int? ?? 0,
+    name: _str(j['name']) ?? 'Friend',
+    title: _str(j['title']),
+    titleTier: _int(j['titleTier']),
+    titleSeason: _str(j['titleSeason']),
+    level: _int(j['level']) ?? 1,
+    xp: _int(j['xp']) ?? 0,
+    streak: _int(j['streak']) ?? 0,
+    bestStreak: _int(j['bestStreak']) ?? 0,
+    arcLabel: _str(j['arcLabel']) ?? '',
+    arcActive: _int(j['arcActive']) ?? 0,
+    workoutsWeek: _int(j['workoutsWeek']) ?? 0,
   );
 
   @override
@@ -159,22 +160,23 @@ class FriendChallenge {
     'createdAt': createdAt.millisecondsSinceEpoch,
   };
 
+  /// Throws only if the challenge can't be identified (no code or sender).
   factory FriendChallenge.fromJson(String id, Map<String, dynamic> j) => FriendChallenge(
     id: id,
-    code: j['code'] as String,
-    fromUid: j['fromUid'] as String,
-    fromName: j['fromName'] as String? ?? 'Friend',
-    fromTitle: j['fromTitle'] as String?,
-    toUid: j['toUid'] as String?,
-    toName: j['toName'] as String?,
-    toTitle: j['toTitle'] as String?,
+    code: _str(j['code'])!,
+    fromUid: _str(j['fromUid'])!,
+    fromName: _str(j['fromName']) ?? 'Friend',
+    fromTitle: _str(j['fromTitle']),
+    toUid: _str(j['toUid']),
+    toName: _str(j['toName']),
+    toTitle: _str(j['toTitle']),
     exercise: Exercise.values.asNameMap()[j['exercise']] ?? Exercise.pushUp,
-    reps: j['reps'] as int? ?? 10,
-    arcLabel: j['arcLabel'] as String? ?? '',
+    reps: (_int(j['reps']) ?? 10).clamp(1, 300),
+    arcLabel: _str(j['arcLabel']) ?? '',
     status: ChallengeStatus.values.asNameMap()[j['status']] ?? ChallengeStatus.open,
-    fromDone: j['fromDone'] as bool? ?? false,
-    toDone: j['toDone'] as bool? ?? false,
-    createdAt: DateTime.fromMillisecondsSinceEpoch(j['createdAt'] as int? ?? 0),
+    fromDone: j['fromDone'] == true,
+    toDone: j['toDone'] == true,
+    createdAt: DateTime.fromMillisecondsSinceEpoch(_int(j['createdAt']) ?? 0),
   );
 }
 
@@ -201,3 +203,6 @@ String newChallengeCode([Random? random]) {
 
 /// Tidies what someone typed: "k7q 2mx" → "K7Q2MX".
 String normalizeCode(String typed) => typed.toUpperCase().replaceAll(RegExp('[^A-Z0-9]'), '');
+
+String? _str(Object? v) => v is String ? v : null;
+int? _int(Object? v) => v is num ? v.toInt() : null;

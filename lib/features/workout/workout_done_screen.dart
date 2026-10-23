@@ -11,7 +11,7 @@ import '../../core/widgets/gradient_button.dart';
 import 'domain/routine.dart';
 
 /// How a friend challenge went.
-enum ChallengeOutcome { done, notCounted }
+enum ChallengeOutcome { done, notCounted, notSaved }
 
 class WorkoutDoneArgs {
   const WorkoutDoneArgs({
@@ -75,6 +75,7 @@ class WorkoutDoneScreen extends StatelessWidget {
                         switch (args.challenge) {
                           ChallengeOutcome.done => 'Challenge done! 🔥',
                           ChallengeOutcome.notCounted => 'Not every rep counted',
+                          ChallengeOutcome.notSaved => 'Done, but not saved yet',
                           null => args.fromAlarm ? 'Alarm off. You earned it.' : 'Workout complete!',
                         },
                         style: text.headlineMedium,
@@ -86,6 +87,8 @@ class WorkoutDoneScreen extends StatelessWidget {
                           ChallengeOutcome.done => 'Saved. Once your friend finishes too, you become friends.',
                           ChallengeOutcome.notCounted =>
                             'The camera has to count every rep for a challenge. Try again from Friends.',
+                          ChallengeOutcome.notSaved =>
+                            "We couldn't reach Friends (check your internet). Open the challenge again to save it.",
                           null => "Today's workout square is lit up.",
                         },
                         style: text.bodyMedium,

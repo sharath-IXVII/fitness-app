@@ -68,3 +68,10 @@ final challengesToDoProvider = Provider<int>((ref) {
   final list = ref.watch(challengesProvider).value ?? const [];
   return list.where((c) => c.status == ChallengeStatus.accepted && !c.doneBy(uid)).length;
 });
+
+/// One person's public profile, live. Cached per id.
+final friendProfileProvider = StreamProvider.autoDispose.family<PublicProfile?, String>((ref, uid) {
+  final b = ref.watch(friendsBackendProvider);
+  if (b == null) return Stream.value(null);
+  return b.watchProfile(uid);
+});

@@ -176,7 +176,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
     // A friend challenge only counts if every rep was counted by the camera
     // (practice mode lets people skip).
     final challenge = widget.args.challenge;
-    var challengeDone = false;
+    ChallengeOutcome? outcome;
     if (challenge != null) {
       final counted = [
         for (var i = 0; i < _routine.steps.length; i++)
@@ -184,12 +184,17 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
       ];
       final backend = ref.read(friendsBackendProvider);
       final uid = ref.read(friendsUidProvider);
-      if (counted.every((ok) => ok) && backend != null && uid != null) {
+      if (!counted.every((ok) => ok)) {
+        outcome = ChallengeOutcome.notCounted;
+      } else if (backend == null || uid == null) {
+        outcome = ChallengeOutcome.notSaved;
+      } else {
         try {
-          await backend.markDone(challenge, uid);
-          challengeDone = true;
+          await backend.markDone(challenge, uid).timeout(const Duration(seconds: 15));
+          outcome = ChallengeOutcome.done;
         } catch (e) {
           debugPrint('challenge not saved: $e');
+          outcome = ChallengeOutcome.notSaved;
         }
       }
     }
@@ -202,7 +207,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
         results: _session.results,
         duration: _clock.elapsed,
         fromAlarm: _alarmMode,
-        challenge: challenge == null ? null : (challengeDone ? ChallengeOutcome.done : ChallengeOutcome.notCounted),
+        challenge: outcome,
       ),
     );
   }

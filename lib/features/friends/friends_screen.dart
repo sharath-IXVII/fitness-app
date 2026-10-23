@@ -601,13 +601,18 @@ class FriendProfileScreen extends ConsumerWidget {
         ),
       );
       if (ok != true) return;
-      switch (action) {
-        case 'remove':
-          await b.removeFriend(me.uid, p.uid);
-        case 'block':
-          await b.block(me.uid, p.uid);
-        default:
-          await b.report(me.uid, p.uid, 'reported from profile');
+      try {
+        await switch (action) {
+          'remove' => b.removeFriend(me.uid, p.uid),
+          'block' => b.block(me.uid, p.uid),
+          _ => b.report(me.uid, p.uid, 'reported from profile'),
+        }.timeout(const Duration(seconds: 15));
+      } catch (_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text("Couldn't do that. Check your internet and try again.")));
+        }
+        return;
       }
       if (context.mounted) {
         if (action != 'report') context.pop();
@@ -615,10 +620,10 @@ class FriendProfileScreen extends ConsumerWidget {
       }
     }
 
-    return StreamBuilder<PublicProfile?>(
-      stream: b.watchProfile(uid),
-      builder: (context, snap) {
-        final p = snap.data;
+    final async = ref.watch(friendProfileProvider(uid));
+    final p = async.value;
+    return Builder(
+      builder: (context) {
         return Scaffold(
           appBar: AppBar(
             title: Text(p?.name ?? 'Friend'),
@@ -636,7 +641,16 @@ class FriendProfileScreen extends ConsumerWidget {
           ),
           body: PageBackground(
             child: p == null
-                ? const Center(child: CircularProgressIndicator())
+                ? Center(
+                    child: async.isLoading
+                        ? const CircularProgressIndicator()
+                        : Text(
+                            async.hasError
+                                ? "Couldn't load this profile. Check your internet."
+                                : 'This person left Fit Tracker.',
+                            style: text.bodyMedium,
+                          ),
+                  )
                 : ListView(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
                     children: [

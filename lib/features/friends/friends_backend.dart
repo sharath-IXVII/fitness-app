@@ -31,10 +31,25 @@ class FriendsBackend {
   CollectionReference<Map<String, dynamic>> get _users => _db.collection('users');
   CollectionReference<Map<String, dynamic>> get _challenges => _db.collection('challenges');
 
+  /// codes/{code} → {challengeId, fromUid}. Looked up one at a time, so
+  /// open challenges can't be listed by strangers.
+  CollectionReference<Map<String, dynamic>> get _codes => _db.collection('codes');
+
   // ------------------------------------------------------------- profiles
 
-  Future<void> syncProfile(PublicProfile me) =>
-      _users.doc(me.uid).set({...me.toJson(), 'updatedAt': FieldValue.serverTimestamp()}, SetOptions(merge: true));
+  /// The rules cap how much XP can grow per write; after a long time
+  /// offline the shared XP catches up in steps instead of being refused.
+  static const maxXpStep = 2000;
+
+  Future<void> syncProfile(PublicProfile me) async {
+    final ref = _users.doc(me.uid);
+    final current = (await ref.get()).data();
+    final before = current?['xp'];
+    final json = me.toJson();
+    if (before is int && me.xp > before + maxXpStep) json['xp'] = before + maxXpStep;
+    if (before == null && me.xp > 200000) json['xp'] = 200000;
+    await ref.set({...json, 'updatedAt': FieldValue.serverTimestamp()});
+  }
 
   Future<PublicProfile?> profile(String uid) async {
     final d = await _users.doc(uid).get();
@@ -71,6 +86,12 @@ class FriendsBackend {
 
   Future<void> block(String me, String other) async {
     await removeFriend(me, other);
+    // Close anything still open between the two, so it can't re-friend them.
+    for (final c in await challenges(me).first) {
+      if (c.involves(other) && (c.status == ChallengeStatus.open || c.status == ChallengeStatus.accepted)) {
+        await decline(c);
+      }
+    }
     await _users.doc(me).collection('blocked').doc(other).set({'at': FieldValue.serverTimestamp()});
   }
 
@@ -89,6 +110,11 @@ class FriendsBackend {
     for (final b in (await me.collection('blocked').get()).docs) {
       await b.reference.delete();
     }
+    // Challenges carry names, so they go too.
+    for (final c in await challenges(uid).first) {
+      if (c.status == ChallengeStatus.open) await _codes.doc(c.code).delete();
+      await _challenges.doc(c.id).delete();
+    }
     await me.delete();
   }
 
@@ -106,9 +132,9 @@ class FriendsBackend {
     if (to != null && await _blocked(to.uid, from.uid)) {
       throw const FriendsFailure("You can't challenge this person.");
     }
-    // Codes are random; retry on the rare clash with an open one.
+    // Codes are random; retry on the rare clash.
     var code = newChallengeCode();
-    for (var i = 0; i < 5 && (await _openByCode(code)) != null; i++) {
+    for (var i = 0; i < 5 && (await _codes.doc(code).get()).exists; i++) {
       code = newChallengeCode();
     }
     final doc = _challenges.doc();
@@ -127,13 +153,34 @@ class FriendsBackend {
       status: to == null ? ChallengeStatus.open : ChallengeStatus.accepted,
       createdAt: DateTime.now(),
     );
-    await doc.set(c.toJson());
+    final batch = _db.batch()..set(doc, c.toJson());
+    if (to == null) batch.set(_codes.doc(code), {'challengeId': doc.id, 'fromUid': from.uid});
+    await batch.commit();
     return c;
   }
 
   Future<FriendChallenge?> _openByCode(String code) async {
-    final q = await _challenges.where('code', isEqualTo: code).where('status', isEqualTo: 'open').limit(1).get();
-    return q.docs.isEmpty ? null : FriendChallenge.fromJson(q.docs.first.id, q.docs.first.data());
+    final link = (await _codes.doc(code).get()).data();
+    final id = link?['challengeId'];
+    if (id is! String) return null;
+    try {
+      final snap = await _challenges.doc(id).get();
+      final c = _parseChallenge(snap.id, snap.data());
+      return c != null && c.status == ChallengeStatus.open && c.code == code ? c : null;
+    } on FirebaseException catch (e) {
+      // No longer open and not ours: the rules hide it.
+      if (e.code == 'permission-denied') return null;
+      rethrow;
+    }
+  }
+
+  static FriendChallenge? _parseChallenge(String id, Map<String, dynamic>? data) {
+    if (data == null) return null;
+    try {
+      return FriendChallenge.fromJson(id, data);
+    } catch (_) {
+      return null; // a malformed document never breaks the list
+    }
   }
 
   /// The open challenge for a code someone typed, or a friendly error.
@@ -152,6 +199,16 @@ class FriendsBackend {
   /// Joins an open challenge. Only the first person to accept gets it.
   Future<FriendChallenge> accept(FriendChallenge c, PublicProfile me) async {
     final ref = _challenges.doc(c.id);
+    try {
+      return await _accept(ref, c, me);
+    } on FirebaseException catch (e) {
+      // Losing the race: the challenge stopped being open, so it's hidden.
+      if (e.code == 'permission-denied') throw const FriendsFailure('Someone else already took this challenge.');
+      rethrow;
+    }
+  }
+
+  Future<FriendChallenge> _accept(DocumentReference<Map<String, dynamic>> ref, FriendChallenge c, PublicProfile me) {
     return _db.runTransaction((tx) async {
       final snap = await tx.get(ref);
       final current = FriendChallenge.fromJson(snap.id, snap.data()!);
@@ -171,6 +228,22 @@ class FriendsBackend {
 
   Future<void> decline(FriendChallenge c) => _challenges.doc(c.id).update({'status': 'declined'});
 
+  /// Writes both sides of the friendship for a finished challenge. Safe to
+  /// repeat, so a failed write is simply retried later.
+  Future<void> ensureFriendship(FriendChallenge c) async {
+    if (c.status != ChallengeStatus.done || c.toUid == null) return;
+    final batch = _db.batch()
+      ..set(_users.doc(c.fromUid).collection('friends').doc(c.toUid), {
+        'since': c.createdAt.millisecondsSinceEpoch,
+        'via': c.id,
+      })
+      ..set(_users.doc(c.toUid).collection('friends').doc(c.fromUid), {
+        'since': c.createdAt.millisecondsSinceEpoch,
+        'via': c.id,
+      });
+    await batch.commit();
+  }
+
   /// Records that [uid] did the challenge. When both have, it's done and
   /// the two become friends.
   Future<FriendChallenge> markDone(FriendChallenge c, String uid) async {
@@ -186,13 +259,7 @@ class FriendsBackend {
       tx.update(ref, {field: true, if (both) 'status': 'done'});
       return both ? FriendChallenge.fromJson(c.id, {...json, 'status': 'done'}) : current;
     });
-    if (updated.status == ChallengeStatus.done && updated.toUid != null) {
-      final since = FieldValue.serverTimestamp();
-      final batch = _db.batch()
-        ..set(_users.doc(updated.fromUid).collection('friends').doc(updated.toUid), {'since': since, 'via': c.id})
-        ..set(_users.doc(updated.toUid).collection('friends').doc(updated.fromUid), {'since': since, 'via': c.id});
-      await batch.commit();
-    }
+    if (updated.status == ChallengeStatus.done) await ensureFriendship(updated);
     return updated;
   }
 
@@ -210,7 +277,7 @@ class FriendsBackend {
     }
 
     List<FriendChallenge> parse(QuerySnapshot<Map<String, dynamic>> s) => [
-      for (final d in s.docs) FriendChallenge.fromJson(d.id, d.data()),
+      for (final d in s.docs) ?_parseChallenge(d.id, d.data()),
     ];
     final subs = [
       _challenges.where('fromUid', isEqualTo: uid).snapshots().listen((s) {

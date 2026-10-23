@@ -225,3 +225,26 @@ List<(ArcPeriod, ArcTier)> earnedBadges(Map<DateTime, DayScore> scores, DateTime
   }
   return out;
 }
+
+/// The first arc in the app.
+const firstArc = ArcPeriod(Season.winter, 2026);
+
+/// Five years of arcs, starting with [firstArc], oldest first.
+List<ArcPeriod> arcCatalog({int years = 5}) {
+  final out = <ArcPeriod>[];
+  var p = firstArc;
+  for (var i = 0; i < years * 4; i++) {
+    out.add(p);
+    p = ArcPeriod.of(p.end);
+  }
+  return out;
+}
+
+/// The badge to show next to someone's name: the highest tier, newest first.
+(ArcPeriod, ArcTier)? bestBadge(List<(ArcPeriod, ArcTier)> earned) {
+  (ArcPeriod, ArcTier)? best;
+  for (final b in earned) {
+    if (best == null || b.$2.index > best.$2.index) best = b;
+  }
+  return best;
+}

@@ -83,6 +83,7 @@ class ProfileScreen extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(p.name, style: text.titleLarge),
+                        const BadgeTitle(),
                         Text('${streak.current}-day streak · best ${streak.longest}', style: text.bodyMedium),
                       ],
                     ),

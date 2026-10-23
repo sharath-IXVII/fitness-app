@@ -73,4 +73,17 @@ void main() {
     expect(badges.single.$1.label, 'Winter Arc 2026');
     expect(badges.single.$2, ArcTier.master);
   });
+
+  test('five years of badges, and the best one is shown as a title', () {
+    final all = arcCatalog();
+    expect(all, hasLength(20));
+    expect(all.first.label, 'Winter Arc 2026');
+    expect(all[1].label, 'Rise of Revolution 2027');
+    expect(all.last.label, 'Monsoon Arc 2031');
+
+    final winter = ArcPeriod.of(DateTime(2026, 10, 1));
+    final revolution = ArcPeriod.of(DateTime(2027, 1, 1));
+    expect(bestBadge([]), isNull);
+    expect(bestBadge([(revolution, ArcTier.survivor), (winter, ArcTier.master)]), (winter, ArcTier.master));
+  });
 }

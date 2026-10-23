@@ -73,3 +73,6 @@ final currentArcResultProvider = Provider<ArcResult>(
 final arcBadgesProvider = Provider<List<(ArcPeriod, ArcTier)>>(
   (ref) => earnedBadges(ref.watch(dayScoresProvider), ref.watch(firstUseProvider), ref.watch(todayProvider)),
 );
+
+/// The badge shown as a title on the profile (and later to friends).
+final bestBadgeProvider = Provider<(ArcPeriod, ArcTier)?>((ref) => bestBadge(ref.watch(arcBadgesProvider)));

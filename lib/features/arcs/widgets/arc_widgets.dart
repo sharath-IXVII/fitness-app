@@ -166,7 +166,7 @@ class ArcBadgeShelf extends ConsumerWidget {
     final arc = ref.watch(currentArcProvider);
     final r = ref.watch(currentArcResultProvider);
     return Pressable(
-      onTap: () => context.push(Routes.arc),
+      onTap: () => context.push(Routes.arcBadges),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -204,6 +204,44 @@ class ArcBadgeShelf extends ConsumerWidget {
               ),
             ),
             Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// The best arc badge as a title under a name, e.g. "Master of Winter 2026".
+/// Shows nothing until a badge is earned.
+class BadgeTitle extends ConsumerWidget {
+  const BadgeTitle({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final best = ref.watch(bestBadgeProvider);
+    if (best == null) return const SizedBox.shrink();
+    final (period, tier) = best;
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(4, 3, 10, 3),
+        decoration: BoxDecoration(
+          color: tier.ring.withValues(alpha: 0.16),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: tier.ring.withValues(alpha: 0.6)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ArcMedal(season: period.season, tier: tier, size: 22),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                period.badgeName(tier),
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(color: AppColors.textPrimary),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
       ),

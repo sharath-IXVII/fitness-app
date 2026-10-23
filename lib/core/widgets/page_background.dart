@@ -24,6 +24,9 @@ class PageBackground extends ConsumerWidget {
         children: [
           Positioned.fill(child: ArcWeather(effect: effect)),
           child,
+          // A few particles drift in front of the content too, so the
+          // weather feels like it is falling over the whole screen.
+          Positioned.fill(child: ArcWeather(effect: effect, foreground: true, count: 9)),
         ],
       ),
     );
@@ -33,9 +36,12 @@ class PageBackground extends ConsumerWidget {
 /// Looping particles for [effect]. Still when the system asks for reduced
 /// motion.
 class ArcWeather extends StatefulWidget {
-  const ArcWeather({super.key, required this.effect, this.dark = false, this.count = 22});
+  const ArcWeather({super.key, required this.effect, this.dark = false, this.foreground = false, this.count = 22});
 
   final ArcEffect effect;
+
+  /// Drawn over the content: particles only, no glow or frost.
+  final bool foreground;
 
   /// Light particles for dark cards.
   final bool dark;
@@ -68,7 +74,13 @@ class _ArcWeatherState extends State<ArcWeather> with SingleTickerProviderStateM
   Widget build(BuildContext context) => IgnorePointer(
     child: RepaintBoundary(
       child: CustomPaint(
-        painter: _WeatherPainter(widget.effect, _c, dark: widget.dark, count: widget.count),
+        painter: _WeatherPainter(
+          widget.effect,
+          _c,
+          dark: widget.dark,
+          foreground: widget.foreground,
+          count: widget.count,
+        ),
         size: Size.infinite,
       ),
     ),
@@ -76,11 +88,13 @@ class _ArcWeatherState extends State<ArcWeather> with SingleTickerProviderStateM
 }
 
 class _WeatherPainter extends CustomPainter {
-  _WeatherPainter(this.effect, this.anim, {required this.dark, required this.count}) : super(repaint: anim);
+  _WeatherPainter(this.effect, this.anim, {required this.dark, required this.foreground, required this.count})
+    : super(repaint: anim);
 
   final ArcEffect effect;
   final Animation<double> anim;
   final bool dark;
+  final bool foreground;
   final int count;
 
   /// Stable pseudo-random value in 0–1 for particle [i], channel [k].
@@ -92,7 +106,9 @@ class _WeatherPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (size.isEmpty) return;
-    final t = anim.value;
+    // Foreground particles use their own offsets so they don't trail the
+    // ones behind.
+    final t = (anim.value + (foreground ? 0.37 : 0)) % 1.0;
     switch (effect) {
       case ArcEffect.snow:
         _snow(canvas, size, t);
@@ -109,7 +125,7 @@ class _WeatherPainter extends CustomPainter {
 
   void _snow(Canvas canvas, Size size, double t) {
     // A frosty glow along the top edge.
-    if (!dark) {
+    if (!dark && !foreground) {
       canvas.drawRect(
         Offset.zero & Size(size.width, 160),
         Paint()
@@ -126,7 +142,7 @@ class _WeatherPainter extends CustomPainter {
       final y = ((_r(i, 2) + t * speed * 2) % 1.0) * (size.height + 20) - 10;
       final sway = math.sin((t * 6 + _r(i, 3)) * math.pi * 2) * 10;
       final x = _r(i, 4) * size.width + sway;
-      final radius = 1.4 + _r(i, 5) * 2.4;
+      final radius = (foreground ? 2.0 : 1.4) + _r(i, 5) * 2.4;
       paint.color = _tint.withValues(alpha: dark ? 0.3 : 0.35 + _r(i, 6) * 0.2);
       canvas.drawCircle(Offset(x, y), radius, paint);
     }
@@ -146,6 +162,10 @@ class _WeatherPainter extends CustomPainter {
   }
 
   void _sun(Canvas canvas, Size size, double t) {
+    if (foreground) {
+      _motes(canvas, size, t);
+      return;
+    }
     final center = Offset(size.width * 0.95, -20);
     final pulse = 0.9 + 0.1 * math.sin(t * math.pi * 8);
     final r = size.width * 0.75 * pulse;
@@ -160,6 +180,11 @@ class _WeatherPainter extends CustomPainter {
           ],
         ).createShader(Rect.fromCircle(center: center, radius: r)),
     );
+    _motes(canvas, size, t);
+  }
+
+  /// Floating specks of sunlight.
+  void _motes(Canvas canvas, Size size, double t) {
     final paint = Paint();
     for (var i = 0; i < count ~/ 2; i++) {
       final p = (_r(i, 2) + t * (0.3 + _r(i, 1) * 0.4)) % 1.0;
@@ -185,5 +210,6 @@ class _WeatherPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_WeatherPainter old) => old.effect != effect || old.dark != dark || old.count != count;
+  bool shouldRepaint(_WeatherPainter old) =>
+      old.effect != effect || old.dark != dark || old.foreground != foreground || old.count != count;
 }

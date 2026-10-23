@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../features/alarm/alarm_scheduler.dart';
 import '../features/arcs/arc_screen.dart';
+import '../features/arcs/badge_collection_screen.dart';
 import '../features/alarm/alarms_screen.dart';
 import '../features/alarm/ring_screen.dart';
 import '../features/auth/auth_providers.dart';
@@ -71,6 +72,7 @@ abstract final class Routes {
   static const challenge = '/challenge';
   static const trainingPlayer = '/train';
   static const arc = '/arc';
+  static const arcBadges = '/arc-badges';
   static const trainingDone = '/train-done';
 }
 
@@ -136,6 +138,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.privacy, builder: (_, _) => const PrivacyScreen()),
       GoRoute(path: Routes.profile, builder: (_, _) => const ProfileScreen()),
       GoRoute(path: Routes.arc, builder: (_, _) => const ArcScreen()),
+      GoRoute(path: Routes.arcBadges, builder: (_, _) => const BadgeCollectionScreen()),
       GoRoute(
         path: Routes.trainingPlayer,
         redirect: (_, s) => s.extra is TrainingWorkout ? null : Routes.training,

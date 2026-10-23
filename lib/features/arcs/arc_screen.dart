@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+
+import '../../core/router.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/form_controls.dart';
@@ -128,7 +131,16 @@ class ArcScreen extends ConsumerWidget {
                     ),
                 ],
               ),
-            const SizedBox(height: 26),
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: () => context.push(Routes.arcBadges),
+                icon: const Icon(Icons.military_tech_rounded),
+                label: Text('See all ${arcCatalog().length * ArcTier.values.length} badges'),
+              ),
+            ),
+            const SizedBox(height: 18),
             Text('The year in arcs', style: text.titleLarge),
             const SizedBox(height: 10),
             GlassCard(

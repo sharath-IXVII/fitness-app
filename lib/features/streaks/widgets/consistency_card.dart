@@ -6,9 +6,9 @@ import '../../../core/widgets/animated_number.dart';
 import '../../../core/widgets/glass_card.dart';
 import '../../../core/widgets/progress_ring.dart';
 import '../domain/daily_log.dart';
-import 'month_heatmap.dart';
+import '../../arcs/widgets/arc_calendar.dart';
 
-/// Streak stats, the month calendar, and this week at a glance.
+/// Streak stats, the arc calendar, and this week at a glance.
 class ConsistencyCard extends StatelessWidget {
   const ConsistencyCard({super.key, required this.scores, required this.current, required this.longest});
 
@@ -43,7 +43,7 @@ class ConsistencyCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 14),
-          MonthHeatmap(scores: scores),
+          ArcCalendar(scores: scores),
           const SizedBox(height: 16),
           _WeekStrip(scores: scores, today: today),
         ],

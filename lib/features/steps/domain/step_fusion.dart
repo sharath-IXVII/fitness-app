@@ -6,7 +6,14 @@ enum Motion { still, walking, running, cycling, vehicle, unknown }
 /// One day's step bookkeeping. Everything needed to resume after the app
 /// restarts or the phone reboots is persisted.
 class StepDay {
-  const StepDay({this.sensor = 0, this.removed = 0, this.gpsMeters = 0, this.gpsSteps = 0, this.lastCumulative});
+  const StepDay({
+    this.sensor = 0,
+    this.removed = 0,
+    this.gpsMeters = 0,
+    this.gpsSteps = 0,
+    this.sensorWhileGps = 0,
+    this.lastCumulative,
+  });
 
   /// Steps the hardware counter recorded today.
   final int sensor;
@@ -14,21 +21,41 @@ class StepDay {
   /// Steps recorded while riding a bike or in a vehicle — not counted.
   final int removed;
 
-  /// Distance walked/run during GPS walks, and that distance as steps.
+  /// Distance walked/run while GPS was tracking, and that distance as steps.
   final double gpsMeters;
   final int gpsSteps;
+
+  /// Sensor steps (on foot) taken while GPS was tracking, so the two
+  /// sources can be merged without counting the same steps twice.
+  final int sensorWhileGps;
 
   /// Last raw reading of the since-boot counter, to compute deltas.
   final int? lastCumulative;
 
-  /// Steps that count: sensor steps minus those taken in a vehicle.
+  /// Sensor steps minus those taken in a vehicle.
   int get verified => math.max(0, sensor - removed);
 
-  StepDay copyWith({int? sensor, int? removed, double? gpsMeters, int? gpsSteps, int? lastCumulative}) => StepDay(
+  /// Today's steps. While GPS was tracking, the higher of the two sources
+  /// counts (GPS fills in steps the sensor missed); otherwise the sensor.
+  int get total => verified + math.max(0, gpsSteps - sensorWhileGps);
+
+  /// Today's distance: GPS where it was tracking, steps × stride elsewhere.
+  double distanceMeters(double strideM) =>
+      math.max(gpsMeters, sensorWhileGps * strideM) + math.max(0, verified - sensorWhileGps) * strideM;
+
+  StepDay copyWith({
+    int? sensor,
+    int? removed,
+    double? gpsMeters,
+    int? gpsSteps,
+    int? sensorWhileGps,
+    int? lastCumulative,
+  }) => StepDay(
     sensor: sensor ?? this.sensor,
     removed: removed ?? this.removed,
     gpsMeters: gpsMeters ?? this.gpsMeters,
     gpsSteps: gpsSteps ?? this.gpsSteps,
+    sensorWhileGps: sensorWhileGps ?? this.sensorWhileGps,
     lastCumulative: lastCumulative ?? this.lastCumulative,
   );
 
@@ -37,6 +64,7 @@ class StepDay {
     'removed': removed,
     'gpsM': gpsMeters,
     'gpsSteps': gpsSteps,
+    'sensorGps': sensorWhileGps,
     'last': ?lastCumulative,
   };
 
@@ -45,6 +73,7 @@ class StepDay {
     removed: j['removed'] as int? ?? 0,
     gpsMeters: (j['gpsM'] as num?)?.toDouble() ?? 0,
     gpsSteps: j['gpsSteps'] as int? ?? 0,
+    sensorWhileGps: j['sensorGps'] as int? ?? 0,
     lastCumulative: j['last'] as int?,
   );
 }
@@ -59,7 +88,16 @@ abstract final class StepFusion {
   ///
   /// The counter resets to 0 on reboot; a reading lower than the last one
   /// means a reboot, and the new value itself is the steps since then.
-  static StepDay onSensor(StepDay day, int cumulative, Motion motion) {
+  ///
+  /// [gpsTracking]: GPS is running, so on-foot steps are also tallied for
+  /// merging. [gpsVehicle]: GPS saw vehicle speed, so the steps are bumps.
+  static StepDay onSensor(
+    StepDay day,
+    int cumulative,
+    Motion motion, {
+    bool gpsTracking = false,
+    bool gpsVehicle = false,
+  }) {
     final last = day.lastCumulative;
     final int delta;
     if (last == null) {
@@ -70,10 +108,11 @@ abstract final class StepFusion {
       delta = cumulative - last;
     }
     if (delta <= 0 || delta > maxPlausibleDelta) return day.copyWith(lastCumulative: cumulative);
-    final inVehicle = motion == Motion.vehicle || motion == Motion.cycling;
+    final inVehicle = gpsVehicle || motion == Motion.vehicle || motion == Motion.cycling;
     return day.copyWith(
       sensor: day.sensor + delta,
       removed: inVehicle ? day.removed + delta : day.removed,
+      sensorWhileGps: gpsTracking && !inVehicle ? day.sensorWhileGps + delta : day.sensorWhileGps,
       lastCumulative: cumulative,
     );
   }
@@ -84,6 +123,9 @@ abstract final class StepFusion {
 
   /// Worst GPS accuracy (metres) a point may have to be used.
   static const maxAccuracy = 25.0;
+
+  /// Whether GPS speed says the user is in a vehicle or on a bike.
+  static bool isVehicleSpeed(double speed) => speed > maxFootSpeed;
 
   /// Adds a GPS segment of [meters] covered at [speed] m/s, converting it to
   /// steps with the user's [strideM]. Segments too fast (bike, car) or too

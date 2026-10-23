@@ -18,6 +18,7 @@ import '../profile/profile_providers.dart';
 import '../progress/progress_card.dart';
 import '../streaks/daily_log_providers.dart';
 import '../arcs/widgets/arc_widgets.dart';
+import '../steps/steps_providers.dart';
 import '../streaks/domain/daily_log.dart';
 import '../streaks/widgets/consistency_card.dart';
 import '../workout/routine_providers.dart';
@@ -326,9 +327,11 @@ class _TaskGrid extends ConsumerWidget {
                   color: AppColors.steps,
                   icon: Icons.directions_walk_rounded,
                   done: score.completed.contains(DailyTask.steps),
-                  caption: 'Verified',
+                  // Distance walked today, from GPS where it ran and steps × stride elsewhere.
+                  caption:
+                      '${(ref.watch(stepsProvider).day.distanceMeters(targets.strideM) / 1000).toStringAsFixed(1)} km today',
                   action: _QuickAction(
-                    label: 'GPS walk',
+                    label: 'Track walk',
                     color: AppColors.steps,
                     onTap: () => context.push(Routes.steps),
                   ),

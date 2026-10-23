@@ -55,4 +55,49 @@ void main() {
     const d = StepDay(sensor: 5, removed: 1, gpsMeters: 12.5, gpsSteps: 18, lastCumulative: 99);
     expect(StepDay.fromJson(d.toJson()).toJson(), d.toJson());
   });
+
+  group('merging GPS with the step sensor', () {
+    test('sensor only: steps and distance come from the sensor', () {
+      var d = StepFusion.onSensor(const StepDay(), 0, Motion.walking);
+      d = StepFusion.onSensor(d, 1000, Motion.walking);
+      expect(d.total, 1000);
+      expect(d.distanceMeters(0.7), closeTo(700, 0.01));
+    });
+
+    test('while GPS tracks, the higher count wins and nothing is counted twice', () {
+      var d = StepFusion.onSensor(const StepDay(), 0, Motion.walking);
+      d = StepFusion.onSensor(d, 2000, Motion.walking); // 2,000 without GPS
+      d = StepFusion.onSensor(d, 2500, Motion.walking, gpsTracking: true); // 500 with GPS on
+      // GPS measured 560 m = 800 steps at 0.7 m: the sensor missed 300.
+      d = StepFusion.onGpsSegment(d, meters: 560, speed: 1.4, strideM: 0.7);
+      expect(d.sensorWhileGps, 500);
+      expect(d.total, 2800);
+      expect(d.distanceMeters(0.7), closeTo(2000 * 0.7 + 560, 0.01));
+
+      // If the sensor saw more than GPS, the sensor count stands.
+      var e = StepFusion.onSensor(const StepDay(), 0, Motion.walking);
+      e = StepFusion.onSensor(e, 900, Motion.walking, gpsTracking: true);
+      e = StepFusion.onGpsSegment(e, meters: 350, speed: 1.4, strideM: 0.7); // 500 steps
+      expect(e.total, 900);
+      expect(e.distanceMeters(0.7), closeTo(900 * 0.7, 0.01));
+    });
+
+    test('vehicle speed seen by GPS removes the bumps the sensor counted', () {
+      var d = StepFusion.onSensor(const StepDay(), 0, Motion.unknown);
+      d = StepFusion.onSensor(d, 300, Motion.unknown, gpsTracking: true, gpsVehicle: true);
+      expect(d.total, 0);
+      expect(StepFusion.isVehicleSpeed(12), isTrue);
+      expect(StepFusion.isVehicleSpeed(1.5), isFalse);
+      // Driving segments add no distance or steps.
+      d = StepFusion.onGpsSegment(d, meters: 500, speed: 12, strideM: 0.7);
+      expect(d.gpsMeters, 0);
+    });
+
+    test('the merged day survives a restart', () {
+      final d = const StepDay(sensor: 10, gpsMeters: 5, gpsSteps: 7, sensorWhileGps: 3, lastCumulative: 42);
+      final back = StepDay.fromJson(d.toJson());
+      expect(back.sensorWhileGps, 3);
+      expect(back.total, d.total);
+    });
+  });
 }

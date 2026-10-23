@@ -71,7 +71,8 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
     final goal = targets?.steps ?? 8000;
     final stride = targets?.strideM ?? 0.72;
     final day = s.day;
-    final km = day.verified * stride / 1000;
+    final km = day.distanceMeters(stride) / 1000;
+    final gpsExtra = (day.total - day.verified).clamp(0, 1 << 30);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Steps')),
@@ -81,7 +82,7 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
           children: [
             Center(
               child: ProgressRing(
-                progress: day.verified / goal,
+                progress: day.total / goal,
                 color: AppColors.primary,
                 size: 200,
                 stroke: 16,
@@ -89,8 +90,8 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.verified_rounded, color: AppColors.primary, size: 20),
-                    AnimatedNumber(day.verified, style: text.displaySmall),
-                    Text('of ${NumberFormat.decimalPattern().format(goal)} verified', style: text.bodySmall),
+                    AnimatedNumber(day.total, style: text.displaySmall),
+                    Text('of ${NumberFormat.decimalPattern().format(goal)} steps', style: text.bodySmall),
                   ],
                 ),
               ),
@@ -100,9 +101,9 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
             const SizedBox(height: 18),
             Row(
               children: [
-                _Stat(label: 'Distance', value: '${km.toStringAsFixed(2)} km'),
+                _Stat(label: 'Distance today', value: '${km.toStringAsFixed(2)} km'),
                 const SizedBox(width: 10),
-                _Stat(label: 'Calories', value: '${(day.verified * 0.04).round()} kcal'),
+                _Stat(label: 'Calories', value: '${(day.total * 0.04).round()} kcal'),
                 const SizedBox(width: 10),
                 _Stat(label: 'Stride', value: '${stride.toStringAsFixed(2)} m'),
               ],
@@ -127,12 +128,29 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
                   Divider(height: 22, color: AppColors.stroke),
                   _Row(
                     icon: Icons.location_on_outlined,
-                    label: 'GPS walks',
-                    hint: '${(day.gpsMeters / 1000).toStringAsFixed(2)} km ÷ your stride',
-                    value: day.gpsSteps,
+                    label: 'Added by GPS',
+                    hint: s.useLocation
+                        ? 'Steps the sensor missed, from ${(day.gpsMeters / 1000).toStringAsFixed(2)} km of GPS'
+                        : 'Turn on location below to use GPS too',
+                    value: gpsExtra,
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 14),
+            _LocationCard(
+              on: s.useLocation,
+              tracking: s.gpsTracking,
+              onChanged: (v) async {
+                final ok = await ref.read(stepsProvider.notifier).setUseLocation(v);
+                if (!ok && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Location is off or not allowed, so steps use the phone sensor only.'),
+                    ),
+                  );
+                }
+              },
             ),
             const SizedBox(height: 14),
             _WalkCard(state: s, stride: stride, onToggle: _toggleWalk),
@@ -167,8 +185,9 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Verified steps come from your phone\'s step sensor. When the phone detects you\'re cycling or in a '
-              'vehicle, bumps aren\'t counted. GPS walks are measured separately for an accurate outdoor distance.',
+              'Steps come from your phone\'s step sensor, which counts all day. With location on, GPS also runs '
+              'while the app is open: it adds steps the sensor missed, measures real distance and spots car or bike '
+              'rides. Bumps in a vehicle or on a bike aren\'t counted.',
               style: text.bodySmall,
             ),
           ],
@@ -368,6 +387,46 @@ class _Live extends StatelessWidget {
         Text(value, style: text.titleLarge),
         Text(label, style: text.bodySmall),
       ],
+    );
+  }
+}
+
+/// Opt-in switch for merging GPS with the step sensor.
+class _LocationCard extends StatelessWidget {
+  const _LocationCard({required this.on, required this.tracking, required this.onChanged});
+
+  final bool on;
+  final bool tracking;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return GlassCard(
+      padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
+      child: Row(
+        children: [
+          Icon(on ? Icons.my_location_rounded : Icons.location_disabled_outlined, color: AppColors.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Use location for accuracy', style: text.titleSmall),
+                Text(
+                  !on
+                      ? 'Off: phone sensor only, best for battery'
+                      : tracking
+                      ? 'On: sensor + GPS combined right now'
+                      : 'On: GPS joins in while the app is open',
+                  style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
+                ),
+              ],
+            ),
+          ),
+          Switch(value: on, onChanged: onChanged),
+        ],
+      ),
     );
   }
 }

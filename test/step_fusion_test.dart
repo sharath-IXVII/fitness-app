@@ -100,4 +100,14 @@ void main() {
       expect(back.total, d.total);
     });
   });
+
+  test('Android\'s background record counts steps taken while the app was closed', () {
+    // App opened at noon: the live sensor saw nothing yet, Android recorded 6,000.
+    var d = StepFusion.onSensor(const StepDay(), 50000, Motion.walking).copyWith(recorded: 6000);
+    expect(d.total, 6000);
+    expect(d.distanceMeters(0.7), closeTo(4200, 0.01));
+    // Live counting takes over once it's ahead; nothing counted twice.
+    d = StepFusion.onSensor(d, 57000, Motion.walking);
+    expect(d.total, 7000);
+  });
 }

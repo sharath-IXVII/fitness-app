@@ -20,6 +20,13 @@ void main() {
     expect(slots, hasLength(10));
   });
 
+  test('late sleepers (bed after midnight) still get water reminders', () {
+    final slots = Reminders.waterSlots(const TimeOfDay(hour: 9, minute: 0), const TimeOfDay(hour: 1, minute: 0), 90);
+    expect(slots.first, 10 * 60);
+    expect(slots.last, lessThanOrEqualTo(24 * 60));
+    expect(slots.length, greaterThan(8));
+  });
+
   group('workout reminder text', () {
     final today = DateTime(2026, 10, 23);
 

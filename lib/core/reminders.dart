@@ -212,7 +212,7 @@ abstract final class Reminders {
     for (var d = skipToday ? 1 : 0; d < daysAhead; d++) {
       final day = DateTime(now.year, now.month, now.day + d);
       for (final (i, m) in slots.indexed) {
-        final at = tz.TZDateTime(tz.local, day.year, day.month, day.day, m ~/ 60, m % 60);
+        final at = tz.TZDateTime(tz.local, day.year, day.month, day.day + m ~/ 1440, (m % 1440) ~/ 60, m % 60);
         if (!at.isAfter(now)) continue;
         await _plugin.zonedSchedule(
           id: _waterBase + d * 100 + i,
@@ -269,10 +269,14 @@ abstract final class Reminders {
     }
   }
 
-  /// Minutes-after-midnight for each water reminder.
+  /// Minutes after the wake-up day's midnight for each water reminder (past
+  /// 1440 when bedtime is after midnight).
   static List<int> waterSlots(TimeOfDay from, TimeOfDay to, int everyMinutes) {
-    final start = from.hour * 60 + from.minute + 60; // first one an hour after waking
-    final end = to.hour * 60 + to.minute - 60; // none in the last hour before bed
+    final wake = from.hour * 60 + from.minute;
+    var bed = to.hour * 60 + to.minute;
+    if (bed <= wake) bed += 24 * 60; // bedtime after midnight
+    final start = wake + 60; // first one an hour after waking
+    final end = bed - 60; // none in the last hour before bed
     return [for (var m = start; m <= end && everyMinutes > 0; m += everyMinutes) m];
   }
 

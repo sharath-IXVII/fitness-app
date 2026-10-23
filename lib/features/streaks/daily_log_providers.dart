@@ -32,10 +32,23 @@ class DailyLogsNotifier extends Notifier<Map<DateTime, DailyLog>> {
     return state[d] ?? DailyLog(date: d);
   }
 
-  Future<void> update(DailyLog Function(DailyLog) change) async {
-    final next = change(today());
-    state = {...state, next.date: next};
-    await ref.read(sharedPrefsProvider).setString('$_prefix${_keyFormat.format(next.date)}', jsonEncode(next.toJson()));
+  /// Changes today's log (or [date]'s). Re-reads storage first: notification
+  /// buttons ("Yes, I had a glass") write from a background isolate, and
+  /// building on a stale copy would erase what they added.
+  Future<void> update(DailyLog Function(DailyLog) change, {DateTime? date}) async {
+    final d = dayOnly(date ?? DateTime.now());
+    final prefs = ref.read(sharedPrefsProvider);
+    final key = '$_prefix${_keyFormat.format(d)}';
+    try {
+      await prefs.reload();
+    } catch (_) {}
+    final raw = prefs.getString(key);
+    final current = raw == null
+        ? (state[d] ?? DailyLog(date: d))
+        : DailyLog.fromJson(d, jsonDecode(raw) as Map<String, dynamic>);
+    final next = change(current);
+    state = {...state, d: next};
+    await prefs.setString(key, jsonEncode(next.toJson()));
   }
 
   /// Adds (or, with a negative [ml], undoes) water; never drops below zero.

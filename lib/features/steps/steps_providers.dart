@@ -81,6 +81,8 @@ class StepsNotifier extends Notifier<StepsState> {
   DateTime? _lastGoodFix;
   DateTime _gpsVehicleUntil = DateTime.fromMillisecondsSinceEpoch(0);
   DateTime _lastStepAt = DateTime.fromMillisecondsSinceEpoch(0);
+  bool _gpsStarting = false;
+  Timer? _recordTimer;
 
   StreamSubscription<int>? _sensor;
   StreamSubscription<Activity>? _activity;
@@ -124,13 +126,37 @@ class StepsNotifier extends Notifier<StepsState> {
     // GPS only while the app is in the foreground (no background location).
     _lifecycle ??= AppLifecycleListener(
       onResume: () {
+        _rollDayIfNeeded();
+        _refreshRecorded();
         if (state.useLocation) _startGps();
       },
       onPause: () {
+        // Without background location, fixes stop: don't bridge the gap.
+        _lastFix = null;
         if (!state.walking) _stopGps();
+        _persist(force: true);
       },
     );
+    _refreshRecorded();
+    _recordTimer ??= Timer.periodic(const Duration(minutes: 5), (_) => _refreshRecorded());
     if (state.useLocation) await _startGps();
+  }
+
+  /// Reads today's steps from Android's background step record, so steps
+  /// taken while the app was closed count too. Ignored where unsupported.
+  Future<void> _refreshRecorded() async {
+    if (!supported || !Platform.isAndroid) return;
+    try {
+      final now = DateTime.now();
+      final n = await Pedometer().getStepCount(from: DateTime(now.year, now.month, now.day), to: now);
+      _rollDayIfNeeded();
+      if (n > state.day.recorded) {
+        state = state.copyWith(day: state.day.copyWith(recorded: n));
+        await _persist(force: true);
+      }
+    } catch (e) {
+      debugPrint('step record unavailable: $e');
+    }
   }
 
   /// Turns merging with GPS on or off. Returns false if location isn't
@@ -161,7 +187,18 @@ class StepsNotifier extends Notifier<StepsState> {
   }
 
   Future<void> _startGps() async {
-    if (_gps != null || !supported) return;
+    // Guard before the first await: resume and the permission flow can both
+    // call this at once, and a second stream would never be cancelled.
+    if (_gps != null || _gpsStarting || !supported) return;
+    _gpsStarting = true;
+    try {
+      await _openGps();
+    } finally {
+      _gpsStarting = false;
+    }
+  }
+
+  Future<void> _openGps() async {
     try {
       final p = await Geolocator.checkPermission();
       if (p != LocationPermission.whileInUse && p != LocationPermission.always) {
@@ -210,9 +247,15 @@ class StepsNotifier extends Notifier<StepsState> {
   void _rollDayIfNeeded() {
     final now = DateTime.now();
     if (now.day == _day.day && now.month == _day.month && now.year == _day.year) return;
-    // New day: keep the raw counter so the first reading tomorrow has a baseline.
-    final carry = state.day.lastCumulative;
+    // Finish yesterday: its last steps may not have been written yet.
+    final old = _day, oldDay = state.day;
+    final prefs = ref.read(sharedPrefsProvider);
+    prefs.setString(_key(old), jsonEncode(oldDay.toJson()));
+    ref.read(dailyLogsProvider.notifier).update((l) => l.copyWith(steps: oldDay.total), date: old);
+    // New day: keep the raw counter so the first reading has a baseline.
+    final carry = oldDay.lastCumulative;
     _day = now;
+    _lastFix = null;
     state = state.copyWith(day: _load(now).copyWith(lastCumulative: carry));
   }
 
@@ -257,6 +300,8 @@ class StepsNotifier extends Notifier<StepsState> {
     final last = _lastFix;
     _lastFix = fix;
     if (last == null) return;
+    // A long gap means GPS wasn't watching; the jump isn't a walk.
+    if (fix.timestamp.difference(last.timestamp).abs() > StepFusion.maxFixGap) return;
     final meters = StepFusion.distance(last.latitude, last.longitude, fix.latitude, fix.longitude);
     final seconds = fix.timestamp.difference(last.timestamp).inMilliseconds / 1000;
     final speed = fix.speed > 0 ? fix.speed : (seconds > 0 ? meters / seconds : 0.0);
@@ -299,6 +344,7 @@ class StepsNotifier extends Notifier<StepsState> {
     _activity?.cancel();
     _gps?.cancel();
     _lifecycle?.dispose();
+    _recordTimer?.cancel();
   }
 }
 

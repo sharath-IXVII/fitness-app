@@ -12,6 +12,7 @@ class StepDay {
     this.gpsMeters = 0,
     this.gpsSteps = 0,
     this.sensorWhileGps = 0,
+    this.recorded = 0,
     this.lastCumulative,
   });
 
@@ -29,6 +30,10 @@ class StepDay {
   /// sources can be merged without counting the same steps twice.
   final int sensorWhileGps;
 
+  /// Today's steps as recorded by Android in the background (Recording API),
+  /// including steps taken while the app was closed.
+  final int recorded;
+
   /// Last raw reading of the since-boot counter, to compute deltas.
   final int? lastCumulative;
 
@@ -37,11 +42,18 @@ class StepDay {
 
   /// Today's steps. While GPS was tracking, the higher of the two sources
   /// counts (GPS fills in steps the sensor missed); otherwise the sensor.
-  int get total => verified + math.max(0, gpsSteps - sensorWhileGps);
+  ///
+  /// The app only sees the live sensor while it's running, so Android's own
+  /// background record is a floor: steps before the app opened still count.
+  int get total => math.max(_merged, recorded);
+
+  int get _merged => verified + math.max(0, gpsSteps - sensorWhileGps);
 
   /// Today's distance: GPS where it was tracking, steps × stride elsewhere.
   double distanceMeters(double strideM) =>
-      math.max(gpsMeters, sensorWhileGps * strideM) + math.max(0, verified - sensorWhileGps) * strideM;
+      math.max(gpsMeters, sensorWhileGps * strideM) +
+      math.max(0, verified - sensorWhileGps) * strideM +
+      math.max(0, recorded - _merged) * strideM;
 
   StepDay copyWith({
     int? sensor,
@@ -49,6 +61,7 @@ class StepDay {
     double? gpsMeters,
     int? gpsSteps,
     int? sensorWhileGps,
+    int? recorded,
     int? lastCumulative,
   }) => StepDay(
     sensor: sensor ?? this.sensor,
@@ -56,6 +69,7 @@ class StepDay {
     gpsMeters: gpsMeters ?? this.gpsMeters,
     gpsSteps: gpsSteps ?? this.gpsSteps,
     sensorWhileGps: sensorWhileGps ?? this.sensorWhileGps,
+    recorded: recorded ?? this.recorded,
     lastCumulative: lastCumulative ?? this.lastCumulative,
   );
 
@@ -65,6 +79,7 @@ class StepDay {
     'gpsM': gpsMeters,
     'gpsSteps': gpsSteps,
     'sensorGps': sensorWhileGps,
+    'recorded': recorded,
     'last': ?lastCumulative,
   };
 
@@ -74,6 +89,7 @@ class StepDay {
     gpsMeters: (j['gpsM'] as num?)?.toDouble() ?? 0,
     gpsSteps: j['gpsSteps'] as int? ?? 0,
     sensorWhileGps: j['sensorGps'] as int? ?? 0,
+    recorded: j['recorded'] as int? ?? 0,
     lastCumulative: j['last'] as int?,
   );
 }
@@ -120,6 +136,10 @@ abstract final class StepFusion {
   /// Fastest speed that still counts as walking or running (≈ 14 km/h).
   static const maxFootSpeed = 3.9;
   static const minFootSpeed = 0.4;
+
+  /// Longest gap between two GPS fixes that still forms a segment. After a
+  /// longer gap (phone locked, tunnel) the distance is unknown, not walked.
+  static const maxFixGap = Duration(seconds: 30);
 
   /// Worst GPS accuracy (metres) a point may have to be used.
   static const maxAccuracy = 25.0;

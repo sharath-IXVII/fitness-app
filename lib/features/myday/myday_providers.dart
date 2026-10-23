@@ -81,7 +81,14 @@ class DoneTodayNotifier extends Notifier<Set<int>> {
   }
 
   Future<void> toggle(int id) async {
-    final next = {...state};
+    // "Done" from a notification is written by a background isolate; start
+    // from what's stored, not a stale copy.
+    final prefs = ref.read(sharedPrefsProvider);
+    try {
+      await prefs.reload();
+    } catch (_) {}
+    final raw = prefs.getString(_key);
+    final next = raw == null ? <int>{} : (jsonDecode(raw) as List).cast<int>().toSet();
     next.contains(id) ? next.remove(id) : next.add(id);
     state = next;
     await ref.read(sharedPrefsProvider).setString(_key, jsonEncode(next.toList()));

@@ -112,5 +112,10 @@ void main() {
     expect(find.text('Create your account'), findsOneWidget);
     expect(prefs.getString('profile.v1'), isNull);
     expect(prefs.getKeys().where((k) => k.startsWith('log.v1.')), isEmpty);
+    // Everything else stored is gone too. Only sign-in state and two
+    // bookkeeping keys the app rewrites at once (no personal data) remain.
+    const regenerated = {'app.firstUse.v1', 'achievements.seen.v1'};
+    expect(prefs.getKeys().where((k) => !k.startsWith('auth.') && !regenerated.contains(k)), isEmpty);
+    await _wait(t, 10500); // the wipe's clean-up timeout
   });
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/local_data.dart';
 import 'auth_service.dart';
 import 'domain/app_user.dart';
 
@@ -20,7 +21,11 @@ class AuthNotifier extends Notifier<AppUser?> {
   }
 
   /// Applies a sign-in result immediately rather than waiting for the stream.
-  void signedIn(AppUser user) => state = user;
+  /// If the phone holds another account's data, it's cleared first.
+  Future<void> signedIn(AppUser user) async {
+    await ref.read(localDataProvider).claimFor(user.uid);
+    state = user;
+  }
 
   Future<void> signOut() async {
     await ref.read(authServiceProvider).signOut();

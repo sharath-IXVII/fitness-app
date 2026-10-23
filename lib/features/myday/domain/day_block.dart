@@ -154,7 +154,7 @@ enum RoutineTemplate {
     return switch (this) {
       student => [
         wakeB(),
-        b(BlockKind.breakfast, w.hour + 1, 0, minutes: 20),
+        b(BlockKind.breakfast, (w.hour + 1) % 24, 0, minutes: 20),
         b(BlockKind.study, 9, 0, title: 'Classes', minutes: 240, days: _weekdays),
         b(BlockKind.water, 11, 0),
         b(BlockKind.lunch, 13, 15, minutes: 30),
@@ -190,7 +190,7 @@ enum RoutineTemplate {
       ],
       gymBeginner => [
         wakeB(),
-        b(BlockKind.breakfast, w.hour + 1, 0, title: 'High-protein breakfast', minutes: 20),
+        b(BlockKind.breakfast, (w.hour + 1) % 24, 0, title: 'High-protein breakfast', minutes: 20),
         b(BlockKind.snack, 11, 0),
         b(BlockKind.lunch, 13, 30, minutes: 30),
         b(BlockKind.snack, 16, 30, title: 'Pre-workout snack'),

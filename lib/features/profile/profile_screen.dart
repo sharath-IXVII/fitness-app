@@ -5,16 +5,14 @@ import 'package:go_router/go_router.dart';
 
 import 'package:intl/intl.dart';
 
+import '../../core/local_data.dart';
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/page_background.dart';
 import '../../core/widgets/glass_card.dart';
-import '../alarm/alarm_providers.dart';
 import '../arcs/widgets/arc_widgets.dart';
 import '../auth/auth_providers.dart';
-import '../diet/diet_providers.dart';
 import '../friends/friends_providers.dart';
-import '../myday/myday_providers.dart';
 import '../auth/domain/app_user.dart';
 import '../streaks/daily_log_providers.dart';
 import '../diet/widgets/sheet_frame.dart';
@@ -50,9 +48,13 @@ class ProfileScreen extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(vertical: 9),
       child: Row(
         children: [
-          Text(label, style: text.bodyMedium),
-          const Spacer(),
-          Text(value, style: text.titleSmall),
+          Expanded(
+            child: Text(label, style: text.bodyMedium, overflow: TextOverflow.ellipsis),
+          ),
+          const SizedBox(width: 12),
+          Flexible(
+            child: Text(value, style: text.titleSmall, textAlign: TextAlign.end),
+          ),
         ],
       ),
     );
@@ -187,7 +189,7 @@ class ProfileScreen extends ConsumerWidget {
                               'This clears your profile, history, meals and alarms on this device. You stay signed in.',
                           action: 'Reset',
                         )) {
-                          await _clearLocal(ref);
+                          await ref.read(localDataProvider).wipe();
                         }
                       },
                     ),
@@ -206,20 +208,48 @@ class ProfileScreen extends ConsumerWidget {
                         )) {
                           return;
                         }
-                        try {
-                          // Remove the public profile and friendships first,
-                          // while still signed in.
-                          final uid = ref.read(friendsUidProvider);
-                          if (uid != null) {
-                            await ref.read(friendsBackendProvider)?.deleteMe(uid).catchError((_) {});
-                          }
-                          await ref.read(authProvider.notifier).deleteAccount();
-                          await _clearLocal(ref);
-                        } on AuthFailure catch (e) {
+                        if (!context.mounted) return;
+                        // Capture everything now: once signed out, this screen
+                        // is gone, so its ref can't be used after the awaits.
+                        final auth = ref.read(authProvider.notifier);
+                        final service = ref.read(authServiceProvider);
+                        final local = ref.read(localDataProvider);
+                        final friends = ref.read(friendsBackendProvider);
+                        final uid = ref.read(friendsUidProvider);
+                        final messenger = ScaffoldMessenger.of(context);
+                        if (!service.recentlySignedIn) {
                           if (context.mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+                            await _confirm(
+                              context,
+                              title: 'Sign in again first',
+                              body:
+                                  'For your security, deleting an account needs a fresh sign-in. '
+                                  'Sign in again, then come back here and tap Delete account.',
+                              action: 'Sign out',
+                            ).then((go) async {
+                              if (go) await auth.signOut();
+                            });
                           }
+                          return;
                         }
+                        try {
+                          // Online data first, while still signed in.
+                          if (friends != null && uid != null) {
+                            await friends.deleteMe(uid).timeout(const Duration(seconds: 20));
+                          }
+                        } catch (_) {
+                          messenger.showSnackBar(
+                            const SnackBar(content: Text('Connect to the internet to delete your account.')),
+                          );
+                          return;
+                        }
+                        try {
+                          await auth.deleteAccount();
+                        } on AuthFailure catch (e) {
+                          messenger.showSnackBar(SnackBar(content: Text(e.message)));
+                          return;
+                        }
+                        await local.wipe();
                       },
                     ),
                   ],
@@ -255,17 +285,6 @@ Future<bool> _confirm(
       ),
     ) ??
     false;
-
-Future<void> _clearLocal(WidgetRef ref) async {
-  await ref.read(dailyLogsProvider.notifier).clearAll();
-  await ref.read(alarmsProvider.notifier).clearAll();
-  await ref.read(myDayProvider.notifier).clear();
-  await ref.read(mealLogProvider.notifier).clearAll();
-  await ref.read(myFoodsProvider.notifier).clearAll();
-  await ref.read(weightLogProvider.notifier).clearAll();
-  await ref.read(weightGoalProvider.notifier).set(null);
-  await ref.read(profileProvider.notifier).clear();
-}
 
 class _Action extends StatelessWidget {
   const _Action({required this.icon, required this.label, required this.onTap, this.danger = false});

@@ -127,10 +127,13 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             if (demo) _in(5, const DemoNote()),
             Padding(
               padding: const EdgeInsets.fromLTRB(32, 0, 32, 16),
-              child: Text(
-                'By continuing you agree to our Terms of Service and Privacy Policy.',
-                style: text.bodySmall,
-                textAlign: TextAlign.center,
+              child: TextButton(
+                onPressed: () => context.push(Routes.privacy),
+                child: Text(
+                  'By continuing you agree to our Privacy Policy',
+                  style: text.bodySmall?.copyWith(decoration: TextDecoration.underline),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ),
           ],

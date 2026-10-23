@@ -125,6 +125,15 @@ abstract final class Reminders {
     return await ios?.requestPermissions(alert: true, sound: true, badge: true) ?? false;
   }
 
+  /// Cancels every reminder (account deleted or data wiped).
+  static Future<void> cancelAll() async {
+    if (!supported) return;
+    try {
+      await init();
+      await _plugin.cancelAll();
+    } catch (_) {}
+  }
+
   static Future<void> _cancelRange(int from, int to) async {
     for (final p in await _plugin.pendingNotificationRequests()) {
       if (p.id >= from && p.id < to) await _plugin.cancel(id: p.id);

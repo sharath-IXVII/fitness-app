@@ -91,7 +91,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refresh,
     redirect: (context, state) {
       final loc = state.matchedLocation;
-      if (loc == Routes.splash) return null;
+      // The splash, and the privacy policy (linked from sign-in), are open to all.
+      if (loc == Routes.splash || loc == Routes.privacy) return null;
       // Signed out → auth flow. Signed in → onboarding until a profile exists.
       final inAuth = loc.startsWith(Routes.auth);
       if (ref.read(authProvider) == null) return inAuth ? null : Routes.auth;

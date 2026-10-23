@@ -26,10 +26,20 @@ abstract class AuthService {
   /// Permanently deletes the account. Throws [AuthFailure] if the user must
   /// sign in again first.
   Future<void> deleteAccount();
+
+  /// Deleting an account needs a recent sign-in; false means sign in again.
+  bool get recentlySignedIn;
 }
 
 class FirebaseAuthService implements AuthService {
   final _auth = FirebaseAuth.instance;
+
+  @override
+  bool get recentlySignedIn {
+    final at = _auth.currentUser?.metadata.lastSignInTime;
+    return at != null && DateTime.now().difference(at) < const Duration(minutes: 4);
+  }
+
   bool _googleReady = false;
 
   @override
@@ -144,6 +154,9 @@ class FirebaseAuthService implements AuthService {
 /// Works without any backend: the SMS code is always [demoCode] and Google
 /// returns a sample account. The session is remembered on the device.
 class DemoAuthService implements AuthService {
+  @override
+  bool get recentlySignedIn => true;
+
   DemoAuthService(this._prefs) {
     final raw = _prefs.getString(_key);
     if (raw != null) _user = AppUser.fromJson(jsonDecode(raw) as Map<String, dynamic>);

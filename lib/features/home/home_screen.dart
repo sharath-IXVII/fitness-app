@@ -18,6 +18,7 @@ import '../profile/profile_providers.dart';
 import '../progress/progress_card.dart';
 import '../streaks/daily_log_providers.dart';
 import '../arcs/widgets/arc_widgets.dart';
+import '../friends/friends_providers.dart';
 import '../steps/steps_providers.dart';
 import '../streaks/domain/daily_log.dart';
 import '../streaks/widgets/consistency_card.dart';
@@ -107,6 +108,8 @@ class _Header extends StatelessWidget {
             ],
           ),
         ),
+        const _FriendsButton(),
+        const SizedBox(width: 8),
         // The streak lives in the calendar card below; this opens the profile.
         Tooltip(
           message: 'Profile',
@@ -546,6 +549,37 @@ class _ProteinBar extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Opens Friends; a dot shows how many challenges are waiting on you.
+class _FriendsButton extends ConsumerWidget {
+  const _FriendsButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final waiting = ref.watch(challengesToDoProvider);
+    return Tooltip(
+      message: 'Friends',
+      child: Pressable(
+        onTap: () => context.push(Routes.friends),
+        child: Badge(
+          isLabelVisible: waiting > 0,
+          label: Text('$waiting'),
+          child: Container(
+            width: 44,
+            height: 44,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: AppColors.surface,
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.stroke),
+            ),
+            child: Icon(Icons.group_rounded, color: AppColors.primary, size: 22),
+          ),
+        ),
       ),
     );
   }

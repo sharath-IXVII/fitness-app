@@ -14,6 +14,7 @@ import '../features/auth/phone_screen.dart';
 import '../features/challenge/challenge_screen.dart';
 import '../features/diet/diet_screen.dart';
 import '../features/diet/domain/meal_log.dart';
+import '../features/friends/friends_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/myday/myday_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
@@ -73,6 +74,8 @@ abstract final class Routes {
   static const trainingPlayer = '/train';
   static const arc = '/arc';
   static const arcBadges = '/arc-badges';
+  static const friends = '/friends';
+  static const friendProfile = '/friend';
   static const trainingDone = '/train-done';
 }
 
@@ -139,6 +142,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.profile, builder: (_, _) => const ProfileScreen()),
       GoRoute(path: Routes.arc, builder: (_, _) => const ArcScreen()),
       GoRoute(path: Routes.arcBadges, builder: (_, _) => const BadgeCollectionScreen()),
+      GoRoute(path: Routes.friends, builder: (_, _) => const FriendsScreen()),
+      GoRoute(
+        path: Routes.friendProfile,
+        redirect: (_, s) => s.extra is String ? null : Routes.friends,
+        builder: (_, s) => FriendProfileScreen(uid: s.extra! as String),
+      ),
       GoRoute(
         path: Routes.trainingPlayer,
         redirect: (_, s) => s.extra is TrainingWorkout ? null : Routes.training,

@@ -20,6 +20,8 @@ import '../alarm/domain/challenge.dart';
 import '../alarm/strict_mode.dart';
 import '../challenge/challenge_screen.dart';
 import '../streaks/daily_log_providers.dart';
+import '../friends/domain/friends.dart';
+import '../friends/friends_providers.dart';
 import 'domain/rep_counter.dart';
 import 'domain/routine.dart';
 import 'domain/workout_session.dart';
@@ -30,9 +32,15 @@ import 'widgets/skeleton_painter.dart';
 import 'workout_done_screen.dart';
 
 class WorkoutArgs {
-  const WorkoutArgs({required this.routineId, this.ring});
+  const WorkoutArgs({this.routineId = '', this.ring, this.routine, this.challenge});
 
   final String routineId;
+
+  /// A one-off routine (a friend challenge) instead of a saved one.
+  final Routine? routine;
+
+  /// Set when this workout is a friend challenge; counted reps complete it.
+  final FriendChallenge? challenge;
 
   /// Set when the workout was started from a ringing alarm; null for practice.
   final RingInfo? ring;
@@ -50,7 +58,7 @@ class WorkoutScreen extends ConsumerStatefulWidget {
 }
 
 class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
-  late final Routine _routine = routineById(ref.read(routinesProvider), widget.args.routineId);
+  late final Routine _routine = widget.args.routine ?? routineById(ref.read(routinesProvider), widget.args.routineId);
   late final WorkoutSession _session = WorkoutSession(_routine);
   late final PoseCamera _camera = PoseCamera(onPose: _onPose);
   final _clock = Stopwatch()..start();
@@ -165,6 +173,26 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
       await ref.read(alarmsProvider.notifier).handled(ring.alarmId);
       if (ring.strict) await StrictMode.release(ref.read(sharedPrefsProvider));
     }
+    // A friend challenge only counts if every rep was counted by the camera
+    // (practice mode lets people skip).
+    final challenge = widget.args.challenge;
+    var challengeDone = false;
+    if (challenge != null) {
+      final counted = [
+        for (var i = 0; i < _routine.steps.length; i++)
+          i < _session.results.length && _session.results[i] >= _routine.steps[i].target,
+      ];
+      final backend = ref.read(friendsBackendProvider);
+      final uid = ref.read(friendsUidProvider);
+      if (counted.every((ok) => ok) && backend != null && uid != null) {
+        try {
+          await backend.markDone(challenge, uid);
+          challengeDone = true;
+        } catch (e) {
+          debugPrint('challenge not saved: $e');
+        }
+      }
+    }
     await ref.read(dailyLogsProvider.notifier).update((l) => l.copyWith(workoutDone: true));
     if (!mounted) return;
     context.go(
@@ -174,6 +202,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
         results: _session.results,
         duration: _clock.elapsed,
         fromAlarm: _alarmMode,
+        challenge: challenge == null ? null : (challengeDone ? ChallengeOutcome.done : ChallengeOutcome.notCounted),
       ),
     );
   }

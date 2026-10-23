@@ -10,13 +10,20 @@ import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/gradient_button.dart';
 import 'domain/routine.dart';
 
+/// How a friend challenge went.
+enum ChallengeOutcome { done, notCounted }
+
 class WorkoutDoneArgs {
   const WorkoutDoneArgs({
     required this.routine,
     required this.results,
     required this.duration,
     required this.fromAlarm,
+    this.challenge,
   });
+
+  /// Set when the workout was a friend challenge.
+  final ChallengeOutcome? challenge;
 
   final Routine routine;
   final List<int> results;
@@ -65,12 +72,25 @@ class WorkoutDoneScreen extends StatelessWidget {
                           .scaleXY(begin: 0.9, end: 1, duration: 400.ms, curve: Curves.easeOutCubic),
                       const SizedBox(height: 24),
                       Text(
-                        args.fromAlarm ? 'Alarm off. You earned it.' : 'Workout complete!',
+                        switch (args.challenge) {
+                          ChallengeOutcome.done => 'Challenge done! 🔥',
+                          ChallengeOutcome.notCounted => 'Not every rep counted',
+                          null => args.fromAlarm ? 'Alarm off. You earned it.' : 'Workout complete!',
+                        },
                         style: text.headlineMedium,
                         textAlign: TextAlign.center,
                       ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.2),
                       const SizedBox(height: 8),
-                      Text("Today's workout square is lit up.", style: text.bodyMedium).animate(delay: 300.ms).fadeIn(),
+                      Text(
+                        switch (args.challenge) {
+                          ChallengeOutcome.done => 'Saved. Once your friend finishes too, you become friends.',
+                          ChallengeOutcome.notCounted =>
+                            'The camera has to count every rep for a challenge. Try again from Friends.',
+                          null => "Today's workout square is lit up.",
+                        },
+                        style: text.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ).animate(delay: 300.ms).fadeIn(),
                       const SizedBox(height: 28),
                       Row(
                         children: [
@@ -107,7 +127,10 @@ class WorkoutDoneScreen extends StatelessWidget {
                         ),
                       ).animate(delay: 500.ms).fadeIn(),
                       const Spacer(),
-                      GradientButton(label: 'Back to Today', onPressed: () => context.go(Routes.home)),
+                      if (args.challenge != null)
+                        GradientButton(label: 'Back to Friends', onPressed: () => context.go(Routes.friends))
+                      else
+                        GradientButton(label: 'Back to Today', onPressed: () => context.go(Routes.home)),
                       const SizedBox(height: 4),
                       // The wake-up workout is a warm-up; offer a full session next.
                       TextButton.icon(

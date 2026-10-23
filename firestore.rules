@@ -1,0 +1,87 @@
+rules_version = '2';
+
+// Fit Tracker: who can read and write what. Deploy with
+//   firebase deploy --only firestore:rules
+// or paste into Firebase console → Firestore → Rules.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function me() { return request.auth.uid; }
+    function changes() { return request.resource.data.diff(resource.data).affectedKeys(); }
+
+    // Both sides of a friendship are written once their challenge is done.
+    function challengeDoneBetween(id, a, b) {
+      let c = get(/databases/$(database)/documents/challenges/$(id)).data;
+      return c.status == 'done'
+        && ((c.fromUid == a && c.toUid == b) || (c.fromUid == b && c.toUid == a));
+    }
+
+    // Public profiles: name, badge title, XP, streak, arc progress.
+    match /users/{uid} {
+      allow read: if signedIn();
+      allow create, update: if me() == uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 40
+        && request.resource.data.xp is int;
+      allow delete: if me() == uid;
+
+      match /friends/{fid} {
+        allow read: if me() == uid || me() == fid;
+        allow create: if (me() == uid || me() == fid)
+          && challengeDoneBetween(request.resource.data.via, uid, fid);
+        allow delete: if me() == uid || me() == fid;
+      }
+
+      // You can see whether someone blocked you, nothing else.
+      match /blocked/{other} {
+        allow read: if me() == uid || me() == other;
+        allow write: if me() == uid;
+      }
+    }
+
+    match /challenges/{id} {
+      allow read: if signedIn()
+        && (resource.data.status == 'open' || resource.data.fromUid == me() || resource.data.toUid == me());
+
+      allow create: if signedIn()
+        && request.resource.data.fromUid == me()
+        && request.resource.data.reps is int
+        && request.resource.data.reps > 0 && request.resource.data.reps <= 300
+        && request.resource.data.code is string && request.resource.data.code.size() == 6
+        && request.resource.data.fromDone == false && request.resource.data.toDone == false
+        && (
+          // Open, for anyone with the code.
+          (request.resource.data.status == 'open' && request.resource.data.toUid == null)
+          // Straight to a friend.
+          || (request.resource.data.status == 'accepted'
+              && exists(/databases/$(database)/documents/users/$(me())/friends/$(request.resource.data.toUid)))
+        );
+
+      allow update: if signedIn() && (
+        // Join an open challenge (not your own).
+        (resource.data.status == 'open' && resource.data.toUid == null && resource.data.fromUid != me()
+          && request.resource.data.toUid == me() && request.resource.data.status == 'accepted'
+          && changes().hasOnly(['toUid', 'toName', 'toTitle', 'status']))
+        // The challenger marks their part done.
+        || (resource.data.fromUid == me() && resource.data.status == 'accepted'
+          && changes().hasOnly(['fromDone', 'status']) && request.resource.data.fromDone == true
+          && (request.resource.data.status == 'accepted'
+              || (request.resource.data.status == 'done' && resource.data.toDone == true)))
+        // The friend marks their part done.
+        || (resource.data.toUid == me() && resource.data.status == 'accepted'
+          && changes().hasOnly(['toDone', 'status']) && request.resource.data.toDone == true
+          && (request.resource.data.status == 'accepted'
+              || (request.resource.data.status == 'done' && resource.data.fromDone == true)))
+        // Either side declines.
+        || ((resource.data.toUid == me() || resource.data.fromUid == me())
+          && changes().hasOnly(['status']) && request.resource.data.status == 'declined')
+      );
+    }
+
+    // Reports of abuse: write-only, reviewed in the console.
+    match /reports/{id} {
+      allow create: if signedIn() && request.resource.data.by == me();
+    }
+  }
+}

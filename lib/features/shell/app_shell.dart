@@ -11,6 +11,7 @@ import '../progress/domain/progress.dart';
 import '../progress/progress_providers.dart';
 import '../alarm/app_permissions.dart';
 import '../arcs/arc_providers.dart';
+import '../friends/friends_providers.dart';
 import '../myday/myday_providers.dart';
 import '../profile/profile_providers.dart';
 import '../steps/steps_providers.dart';
@@ -41,6 +42,8 @@ class _AppShellState extends ConsumerState<AppShell> {
       ref.read(stepsProvider.notifier).start();
       _replan();
       ref.read(myDayProvider.notifier).reschedule();
+      final me = ref.read(myPublicProfileProvider);
+      if (me != null) ref.read(friendsBackendProvider)?.syncProfile(me).catchError((_) {});
       _announce(ref.read(achievementsProvider));
     });
     _lifecycle = AppLifecycleListener(onResume: _replan);
@@ -179,6 +182,11 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
     ref.listen(trainingProvider.select((t) => t.challenges), (_, _) => _replan());
     ref.listen(todayProvider, (_, _) => _replan());
+    // Keep what friends see (name, badge, XP, streak) up to date.
+    ref.listen(myPublicProfileProvider, (prev, next) {
+      final b = ref.read(friendsBackendProvider);
+      if (b != null && next != null && next != prev) b.syncProfile(next).catchError((_) {});
+    });
     final index = shell.currentIndex;
     return Scaffold(
       body: shell,

@@ -50,3 +50,8 @@ app.*.map.json
 # Food model, downloaded by the build (see assets/models/README.md)
 assets/models/*.tflite
 assets/models/*.csv
+
+# Firestore rules tests (npm)
+firebase-tests/node_modules/
+firebase-debug.log
+firestore-debug.log

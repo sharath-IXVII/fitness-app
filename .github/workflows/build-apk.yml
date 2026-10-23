@@ -19,7 +19,9 @@ concurrency:
 jobs:
   apk:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
+    env:
+      KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
     steps:
       - uses: actions/checkout@v5
 
@@ -61,6 +63,26 @@ jobs:
           TZ=Europe/Berlin flutter test test/dst_test.dart test/arc_test.dart
           TZ=America/New_York flutter test test/dst_test.dart
 
+      # Release signing once the upload key is added as repository secrets
+      # (see docs/LAUNCH_CHECKLIST.md). Without them the build uses debug keys.
+      - name: Release signing
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
+        shell: bash
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          printf 'storeFile=%s\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
+            "$RUNNER_TEMP/upload.jks" "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > android/key.properties
+          # The fingerprints are public; Firebase needs them for Google sign-in.
+          fp=$(keytool -list -v -keystore "$RUNNER_TEMP/upload.jks" -alias "$KEY_ALIAS" -storepass "$KEYSTORE_PASSWORD" \
+            | grep -E "SHA1:|SHA256:" | tr -s ' ' | tr '\n' ' ')
+          echo "::notice title=Signing key fingerprints (add to Firebase)::$fp"
+
       - name: Build APK
         shell: bash
         run: |
@@ -78,11 +100,28 @@ jobs:
           msg="${msg//'%'/'%25'}"; msg="${msg//$'\n'/'%0A'}"; msg="${msg//$'\r'/'%0D'}"
           echo "::error title=APK build failed::$msg"
 
+      # The App Bundle is what Google Play needs (only useful once signed
+      # with the release key).
+      - name: Build App Bundle
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: flutter build appbundle --release
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: fitalarm-test-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload App Bundle
+        if: ${{ env.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: fit-tracker-play-bundle
+          path: build/app/outputs/bundle/release/app-release.aab
 
       - name: Publish "Test build" release
         uses: softprops/action-gh-release@v2

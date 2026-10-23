@@ -34,6 +34,17 @@ abstract final class Reminders {
   static const _blockBase = 100000;
   static const _waterBase = 200000;
   static const _snoozeBase = 300000;
+  static const _workoutBase = 400000;
+  static const _workoutEnd = 500000;
+
+  /// Days ahead that one-off reminders are scheduled for. They are
+  /// re-planned whenever the app opens, so this only matters if the app
+  /// isn't opened for a while.
+  static const daysAhead = 7;
+
+  /// Storage key for today's water goal, read by the background handler to
+  /// stop water reminders once the goal is reached.
+  static const waterGoalKey = 'water.goal.ml.v1';
 
   static bool get supported => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
@@ -57,9 +68,18 @@ abstract final class Reminders {
     importance: Importance.defaultImportance,
     icon: 'ic_stat_notify',
     actions: [
-      AndroidNotificationAction('water_250', '+250 ml', showsUserInterface: false),
+      AndroidNotificationAction('water_250', 'Yes, I had a glass ✓', showsUserInterface: false),
       AndroidNotificationAction('water_500', '+500 ml', showsUserInterface: false),
     ],
+  );
+
+  static const _workoutChannel = AndroidNotificationDetails(
+    'workout',
+    'Workout reminders',
+    channelDescription: 'A daily nudge for your workout or 30-day challenge',
+    importance: Importance.high,
+    priority: Priority.high,
+    icon: 'ic_stat_notify',
   );
 
   /// Called in the foreground isolate when a reminder or action is tapped.
@@ -171,31 +191,79 @@ abstract final class Reminders {
     };
   }
 
-  /// Daily water nudges every [everyMinutes] between [from] and [to].
+  static String _dayKey(DateTime d) => DateFormat('yyyy-MM-dd').format(d);
+
+  /// Water nudges every [everyMinutes] between [from] and [to] for the next
+  /// [daysAhead] days. [skipToday] when today's goal is already reached.
   static Future<void> scheduleWater({
     required TimeOfDay from,
     required TimeOfDay to,
     required int everyMinutes,
     required bool enabled,
+    bool skipToday = false,
   }) async {
     if (!supported) return;
     await init();
     await _cancelRange(_waterBase, _snoozeBase);
     if (!enabled) return;
     final slots = waterSlots(from, to, everyMinutes);
-    for (final (i, m) in slots.indexed) {
-      final now = tz.TZDateTime.now(tz.local);
-      var at = tz.TZDateTime(tz.local, now.year, now.month, now.day, m ~/ 60, m % 60);
-      if (!at.isAfter(now)) at = at.add(const Duration(days: 1));
+    final now = tz.TZDateTime.now(tz.local);
+    for (var d = skipToday ? 1 : 0; d < daysAhead; d++) {
+      final day = DateTime(now.year, now.month, now.day + d);
+      for (final (i, m) in slots.indexed) {
+        final at = tz.TZDateTime(tz.local, day.year, day.month, day.day, m ~/ 60, m % 60);
+        if (!at.isAfter(now)) continue;
+        await _plugin.zonedSchedule(
+          id: _waterBase + d * 100 + i,
+          title: 'Time for water 💧',
+          body: 'Had a glass? Tap "Yes" and it\'s logged.',
+          scheduledDate: at,
+          notificationDetails: const NotificationDetails(android: _waterChannel, iOS: DarwinNotificationDetails()),
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          payload: jsonEncode({'type': 'water', 'day': _dayKey(day)}),
+        );
+      }
+    }
+  }
+
+  /// Cancels the rest of today's water reminders (goal reached).
+  static Future<void> cancelWaterToday() async {
+    final today = _dayKey(DateTime.now());
+    for (final p in await _plugin.pendingNotificationRequests()) {
+      if (p.id < _waterBase || p.id >= _snoozeBase) continue;
+      try {
+        if ((jsonDecode(p.payload ?? '{}') as Map)['day'] == today) await _plugin.cancel(id: p.id);
+      } catch (_) {}
+    }
+  }
+
+  /// One workout reminder a day at [minuteOfDay] for the next [daysAhead]
+  /// days. [title] and [body] give the text per day; return null to skip a
+  /// day (already worked out, or a rest day).
+  static Future<void> scheduleWorkout({
+    required int minuteOfDay,
+    required bool enabled,
+    required (String, String)? Function(DateTime day) textFor,
+  }) async {
+    if (!supported) return;
+    await init();
+    await _cancelRange(_workoutBase, _workoutEnd);
+    if (!enabled) return;
+    final now = tz.TZDateTime.now(tz.local);
+    for (var d = 0; d < daysAhead; d++) {
+      final day = DateTime(now.year, now.month, now.day + d);
+      final at = tz.TZDateTime(tz.local, day.year, day.month, day.day, minuteOfDay ~/ 60, minuteOfDay % 60);
+      if (!at.isAfter(now)) continue;
+      final text = textFor(day);
+      if (text == null) continue;
       await _plugin.zonedSchedule(
-        id: _waterBase + i,
-        title: 'Time for water 💧',
-        body: 'Tap +250 ml when you\'ve had a glass.',
+        id: _workoutBase + d,
+        title: text.$1,
+        body: text.$2,
         scheduledDate: at,
-        notificationDetails: const NotificationDetails(android: _waterChannel, iOS: DarwinNotificationDetails()),
+        notificationDetails: const NotificationDetails(android: _workoutChannel, iOS: DarwinNotificationDetails()),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        matchDateTimeComponents: DateTimeComponents.time,
-        payload: jsonEncode({'type': 'water'}),
+        payload: jsonEncode({'type': 'workout'}),
       );
     }
   }
@@ -234,8 +302,15 @@ abstract final class Reminders {
       case 'water_250' || 'water_500':
         final key = ReminderKeys.log(today);
         final log = jsonDecode(prefs.getString(key) ?? '{}') as Map<String, dynamic>;
-        log['water'] = (log['water'] as int? ?? 0) + (action == 'water_250' ? 250 : 500);
+        final water = (log['water'] as int? ?? 0) + (action == 'water_250' ? 250 : 500);
+        log['water'] = water;
         await prefs.setString(key, jsonEncode(log));
+        // Goal reached: no more water nudges today.
+        final goal = prefs.getInt(waterGoalKey);
+        if (goal != null && water >= goal) {
+          await _ensureInBackground();
+          await cancelWaterToday();
+        }
     }
   }
 

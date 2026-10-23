@@ -31,15 +31,19 @@ class WaterSettingsNotifier extends Notifier<WaterSettings> {
     await reschedule();
   }
 
-  /// Water reminders run from wake-up to bedtime.
+  /// Water reminders run from wake-up to bedtime, and stop for the day once
+  /// the goal is reached.
   Future<void> reschedule() async {
     final profile = ref.read(profileProvider);
-    if (profile == null) return;
+    final targets = ref.read(targetsProvider);
+    if (profile == null || targets == null) return;
+    await ref.read(sharedPrefsProvider).setInt(Reminders.waterGoalKey, targets.waterMl);
     await Reminders.scheduleWater(
       from: profile.wakeTime,
       to: profile.sleepTime,
       everyMinutes: state.everyMinutes,
       enabled: state.reminders,
+      skipToday: ref.read(todayLogProvider).waterMl >= targets.waterMl,
     );
   }
 }

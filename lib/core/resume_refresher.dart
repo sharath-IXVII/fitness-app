@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -26,18 +28,38 @@ class _ResumeRefresherState extends ConsumerState<ResumeRefresher> with WidgetsB
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     Reminders.onChanged = _refresh;
+    _armMidnight();
+  }
+
+  Timer? _midnight;
+
+  /// Refreshes just after midnight even if the app stays open, so a new day
+  /// (and on the 1st of Jan, Apr, Jul and Oct, a new arc) starts on time.
+  void _armMidnight() {
+    _midnight?.cancel();
+    final now = DateTime.now();
+    final next = DateTime(now.year, now.month, now.day + 1, 0, 0, 5);
+    _midnight = Timer(next.difference(now), () {
+      if (!mounted) return;
+      _refresh();
+      _armMidnight();
+    });
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     Reminders.onChanged = null;
+    _midnight?.cancel();
     super.dispose();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) _refresh();
+    if (state == AppLifecycleState.resumed) {
+      _refresh();
+      _armMidnight(); // timers don't run while the phone sleeps
+    }
   }
 
   Future<void> _refresh() async {

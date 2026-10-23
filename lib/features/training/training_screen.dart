@@ -13,6 +13,7 @@ import '../workout/widgets/exercise_demo.dart';
 import 'domain/move.dart';
 import 'domain/plans.dart';
 import 'training_providers.dart';
+import 'workout_reminder.dart';
 import 'widgets/move_widgets.dart';
 
 /// The Workouts tab: 30-day challenges, workouts by body part, quick
@@ -30,7 +31,21 @@ class TrainingScreen extends ConsumerWidget {
       ..sort((a, b) => (state.challenges.containsKey(a.id) ? 0 : 1) - (state.challenges.containsKey(b.id) ? 0 : 1));
 
     final sections = <Widget>[
-      Text('Workouts', style: text.headlineMedium),
+      Row(
+        children: [
+          Expanded(child: Text('Workouts', style: text.headlineMedium)),
+          IconButton(
+            tooltip: 'Workout reminder',
+            onPressed: () => _reminderSheet(context, ref),
+            icon: Icon(
+              ref.watch(workoutReminderProvider).enabled
+                  ? Icons.notifications_active_outlined
+                  : Icons.notifications_off_outlined,
+              color: AppColors.primary,
+            ),
+          ),
+        ],
+      ),
       const SizedBox(height: 2),
       Text('Home workouts, no gym needed', style: text.bodyMedium?.copyWith(color: AppColors.textSecondary)),
       const SizedBox(height: 16),
@@ -294,3 +309,51 @@ class _QuickCard extends StatelessWidget {
     );
   }
 }
+
+Future<void> _reminderSheet(BuildContext context, WidgetRef ref) => showModalBottomSheet<void>(
+  context: context,
+  useRootNavigator: true,
+  backgroundColor: AppColors.surface,
+  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+  builder: (c) => Consumer(
+    builder: (c, ref, _) {
+      final text = Theme.of(c).textTheme;
+      final s = ref.watch(workoutReminderProvider);
+      final n = ref.read(workoutReminderProvider.notifier);
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Workout reminder', style: text.titleLarge),
+              const SizedBox(height: 4),
+              Text(
+                'A daily nudge that names your next challenge day. Quiet on days you have already worked out.',
+                style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 12),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Remind me'),
+                value: s.enabled,
+                onChanged: (v) => n.set(enabled: v),
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                enabled: s.enabled,
+                title: const Text('Time'),
+                trailing: Text(s.time.format(c), style: text.titleMedium?.copyWith(color: AppColors.primary)),
+                onTap: () async {
+                  final t = await showTimePicker(context: c, initialTime: s.time);
+                  if (t != null) await n.set(time: t);
+                },
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  ),
+);

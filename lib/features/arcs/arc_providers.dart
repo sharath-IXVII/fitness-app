@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/storage.dart';
@@ -12,10 +13,10 @@ const _firstUseKey = 'app.firstUse.v1';
 /// arc (and the whole look) switches on the first day of a new arc.
 class TodayNotifier extends Notifier<DateTime> {
   @override
-  DateTime build() => dayOnly(DateTime.now());
+  DateTime build() => dayOnly(clock.now());
 
   void refresh() {
-    final now = dayOnly(DateTime.now());
+    final now = dayOnly(clock.now());
     if (now != state) state = now;
   }
 }

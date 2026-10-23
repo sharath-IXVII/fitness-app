@@ -3,12 +3,20 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/reminders.dart';
 import '../../core/router.dart';
 import '../../core/storage.dart';
 import '../../core/theme/app_colors.dart';
 import '../progress/domain/progress.dart';
 import '../progress/progress_providers.dart';
+import '../alarm/app_permissions.dart';
+import '../arcs/arc_providers.dart';
+import '../myday/myday_providers.dart';
+import '../profile/profile_providers.dart';
 import '../steps/steps_providers.dart';
+import '../streaks/daily_log_providers.dart';
+import '../training/training_providers.dart';
+import '../training/workout_reminder.dart';
 import '../water/water_providers.dart';
 
 class AppShell extends ConsumerStatefulWidget {
@@ -28,11 +36,87 @@ class _AppShellState extends ConsumerState<AppShell> {
     super.initState();
     // The shell only exists once the user is signed in and onboarded, so this
     // is where background services start: step tracking and water reminders.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await _askPermissionsOnce();
       ref.read(stepsProvider.notifier).start();
-      ref.read(waterSettingsProvider.notifier).reschedule();
+      _replan();
+      ref.read(myDayProvider.notifier).reschedule();
       _announce(ref.read(achievementsProvider));
     });
+    _lifecycle = AppLifecycleListener(onResume: _replan);
+  }
+
+  late final AppLifecycleListener _lifecycle;
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  /// Water and workout reminders are planned a week ahead and skip what's
+  /// already done today, so they're re-planned whenever things change.
+  void _replan() {
+    ref.read(waterSettingsProvider.notifier).reschedule();
+    ref.read(workoutReminderProvider.notifier).reschedule();
+  }
+
+  static const _permIntroKey = 'perm.intro.v1';
+
+  /// Once, right after onboarding: explain and ask for notifications and
+  /// alarms, so the wake-up alarm and reminders work from day one.
+  Future<void> _askPermissionsOnce() async {
+    final prefs = ref.read(sharedPrefsProvider);
+    if (!Reminders.supported || prefs.getBool(_permIntroKey) == true || !mounted) return;
+    await prefs.setBool(_permIntroKey, true);
+    if (await AppPermissions.allGranted() || !mounted) return;
+    final text = Theme.of(context).textTheme;
+    final allow = await showModalBottomSheet<bool>(
+      context: context,
+      isDismissible: false,
+      backgroundColor: AppColors.surface,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
+      builder: (c) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.notifications_active_rounded, color: AppColors.primary, size: 36),
+              const SizedBox(height: 12),
+              Text('Never miss a beat', style: text.headlineSmall),
+              const SizedBox(height: 8),
+              for (final line in [
+                'Your wake-up alarm rings even when the app is closed',
+                'Reminders for your routine, workouts and water',
+                'The camera counts your reps; nothing is recorded or uploaded',
+              ])
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.check_rounded, size: 18, color: AppColors.primary),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text(line, style: text.bodyMedium)),
+                    ],
+                  ),
+                ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Allow')),
+              ),
+              Center(
+                child: TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Not now')),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (allow == true) await AppPermissions.requestAll();
   }
 
   static const _items = [
@@ -85,6 +169,16 @@ class _AppShellState extends ConsumerState<AppShell> {
   @override
   Widget build(BuildContext context) {
     ref.listen(achievementsProvider, (_, next) => _announce(next));
+    // Re-plan reminders when today's workout or water goal changes, a
+    // challenge moves on, or a new day starts.
+    ref.listen(
+      todayLogProvider.select((l) => (l.workoutDone, l.waterMl >= (ref.read(targetsProvider)?.waterMl ?? 0))),
+      (_, _) {
+        _replan();
+      },
+    );
+    ref.listen(trainingProvider.select((t) => t.challenges), (_, _) => _replan());
+    ref.listen(todayProvider, (_, _) => _replan());
     final index = shell.currentIndex;
     return Scaffold(
       body: shell,

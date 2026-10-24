@@ -10,6 +10,8 @@ import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/page_background.dart';
 import '../../core/widgets/pressable.dart';
 import '../../core/widgets/week_bars.dart';
+import '../arcs/arc_providers.dart';
+import '../arcs/domain/arc.dart';
 import '../profile/profile_providers.dart';
 import '../streaks/daily_log_providers.dart';
 import 'water_providers.dart';
@@ -59,9 +61,39 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
     if (ml != null && ml > 0 && ml <= 3000) await _add(ml);
   }
 
+  Future<void> _editGoal(int current) async {
+    final c = TextEditingController(text: '$current');
+    final result = await showDialog<int?>(
+      context: context,
+      builder: (d) => AlertDialog(
+        title: const Text('Daily water goal'),
+        content: TextField(
+          controller: c,
+          autofocus: true,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(hintText: 'Goal', suffixText: 'ml'),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(d), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(d, -1), child: const Text('Use automatic')),
+          TextButton(onPressed: () => Navigator.pop(d, int.tryParse(c.text.trim())), child: const Text('Save')),
+        ],
+      ),
+    );
+    if (result == null) return;
+    final goal = ref.read(waterGoalProvider.notifier);
+    if (result == -1) {
+      await goal.set(null);
+    } else if (result >= 500 && result <= 8000) {
+      await goal.set(result);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    final custom = ref.watch(waterGoalProvider);
+    final season = Season.forMonth(ref.watch(todayProvider).month);
     final log = ref.watch(todayLogProvider);
     final goal = ref.watch(targetsProvider)?.waterMl ?? 2500;
     final settings = ref.watch(waterSettingsProvider);
@@ -90,7 +122,15 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
                 style: text.bodyMedium,
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
+            Center(
+              child: TextButton.icon(
+                onPressed: () => _editGoal(goal),
+                icon: const Icon(Icons.tune_rounded, size: 18),
+                label: Text(custom == null ? 'Goal set for ${season.title} · change' : 'Your own goal · change'),
+              ),
+            ),
+            const SizedBox(height: 10),
             Row(
               children: [
                 for (final (ml, label, icon) in [
@@ -174,7 +214,13 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
               ),
             ),
             const SizedBox(height: 14),
-            Text('Your goal is about 35 ml per kg of body weight, plus extra on active days.', style: text.bodySmall),
+            Text(
+              custom == null
+                  ? 'Your goal is about 35 ml per kg of body weight, plus extra on active days and in hot months '
+                        '(${season.title}: +${season.waterBoostMl} ml). It changes by itself with the season.'
+                  : 'You set this goal yourself. Tap "change" to go back to the automatic one.',
+              style: text.bodySmall,
+            ),
           ],
         ),
       ),

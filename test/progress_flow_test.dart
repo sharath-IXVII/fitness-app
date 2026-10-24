@@ -86,9 +86,9 @@ void main() {
     await t.pageBack();
     await _wait(t);
 
-    await t.tap(find.text('8/12 badges'));
+    await t.tap(find.text('8/12 Starter badges'));
     await _wait(t);
-    expect(find.text('8 of 12 earned'), findsOneWidget);
+    expect(find.text('8 of 12 earned · +100 XP when all 12 are done'), findsOneWidget);
     expect(find.text('Perfect week'), findsOneWidget);
     await t.pageBack();
     await _wait(t);
@@ -99,6 +99,8 @@ void main() {
       -200,
       scrollable: find.byType(Scrollable).hitTestable().first,
     );
+    await t.drag(find.byType(Scrollable).hitTestable().first, const Offset(0, 300));
+    await _wait(t, 300);
     await t.tap(find.byTooltip('Profile'));
     await _wait(t);
     final me = find.byType(Scrollable).hitTestable().first;

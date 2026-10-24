@@ -45,6 +45,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       ref.read(myDayProvider.notifier).reschedule();
       final me = ref.read(myPublicProfileProvider);
       if (me != null) ref.read(friendsBackendProvider)?.syncProfile(me).catchError((_) {});
+      ref.read(badgeVaultProvider.notifier).merge(ref.read(computedBadgesProvider));
       _announce(ref.read(achievementsProvider));
     });
     _lifecycle = AppLifecycleListener(onResume: _replan);
@@ -135,15 +136,15 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   /// Shows a quiet notice for achievements earned since the last check. The
   /// first time, everything already earned is marked seen without a notice.
-  void _announce(Map<Achievement, DateTime> earned) {
+  void _announce(Map<BadgeKey, DateTime> earned) {
     final prefs = ref.read(sharedPrefsProvider);
     final seen = prefs.getStringList(_seenKey);
-    final names = earned.keys.map((a) => a.name).toList();
+    final names = earned.keys.map(badgeId).toList();
     if (seen == null) {
       prefs.setStringList(_seenKey, names);
       return;
     }
-    final fresh = earned.keys.where((a) => !seen.contains(a.name)).toList();
+    final fresh = earned.keys.where((a) => !seen.contains(badgeId(a))).toList();
     if (fresh.isEmpty) return;
     prefs.setStringList(_seenKey, {...seen, ...names}.toList());
     HapticFeedback.mediumImpact();
@@ -151,12 +152,12 @@ class _AppShellState extends ConsumerState<AppShell> {
       SnackBar(
         content: Row(
           children: [
-            Icon(fresh.first.icon, color: AppColors.primary, size: 20),
+            Icon(fresh.first.kind.icon, color: AppColors.primary, size: 20),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 fresh.length == 1
-                    ? 'Achievement unlocked: ${fresh.first.title}'
+                    ? 'Achievement unlocked: ${fresh.first.kind.info(fresh.first.set).title}'
                     : '${fresh.length} achievements unlocked',
               ),
             ),
@@ -172,6 +173,7 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(computedBadgesProvider, (_, next) => ref.read(badgeVaultProvider.notifier).merge(next));
     ref.listen(achievementsProvider, (_, next) => _announce(next));
     // Re-plan reminders when today's workout or water goal changes, a
     // challenge moves on, or a new day starts.

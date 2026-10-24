@@ -17,7 +17,10 @@ class ProgressCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final level = ref.watch(levelProvider);
-    final earned = ref.watch(achievementsProvider).length;
+    final all = ref.watch(achievementsProvider).keys;
+    final done = ref.watch(completedSetsProvider);
+    final set = (done + 1).clamp(1, badgeSets);
+    final inSet = all.where((k) => k.set == set).length;
     return GlassCard(
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 10),
       child: Column(
@@ -33,7 +36,7 @@ class ProgressCard extends ConsumerWidget {
                 child: TextButton.icon(
                   onPressed: () => context.push(Routes.achievements),
                   icon: const Icon(Icons.emoji_events_outlined, size: 18),
-                  label: Text('$earned/${Achievement.values.length} badges'),
+                  label: Text('$inSet/${Achievement.values.length} ${badgeSetNames[set - 1]} badges'),
                 ),
               ),
               Container(width: 1, height: 22, color: AppColors.stroke),

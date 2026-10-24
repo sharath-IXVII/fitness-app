@@ -13,6 +13,7 @@ class StepDay {
     this.gpsSteps = 0,
     this.sensorWhileGps = 0,
     this.recorded = 0,
+    this.motionSteps = 0,
     this.lastCumulative,
   });
 
@@ -34,6 +35,11 @@ class StepDay {
   /// including steps taken while the app was closed.
   final int recorded;
 
+  /// Steps detected from the accelerometer and gyroscope while the app is
+  /// open (on foot only). Another view of the same steps, so it is merged
+  /// by taking the highest count, never added.
+  final int motionSteps;
+
   /// Last raw reading of the since-boot counter, to compute deltas.
   final int? lastCumulative;
 
@@ -45,15 +51,19 @@ class StepDay {
   ///
   /// The app only sees the live sensor while it's running, so Android's own
   /// background record is a floor: steps before the app opened still count.
-  int get total => math.max(_merged, recorded);
+  int get total => math.max(math.max(_merged, recorded), motionSteps);
 
   int get _merged => verified + math.max(0, gpsSteps - sensorWhileGps);
 
   /// Today's distance: GPS where it was tracking, steps × stride elsewhere.
-  double distanceMeters(double strideM) =>
-      math.max(gpsMeters, sensorWhileGps * strideM) +
-      math.max(0, verified - sensorWhileGps) * strideM +
-      math.max(0, recorded - _merged) * strideM;
+  double distanceMeters(double strideM) {
+    final base =
+        math.max(gpsMeters, sensorWhileGps * strideM) +
+        math.max(0, verified - sensorWhileGps) * strideM +
+        math.max(0, recorded - _merged) * strideM;
+    final prior = math.max(_merged, recorded);
+    return motionSteps > prior ? base + (motionSteps - prior) * strideM : base;
+  }
 
   StepDay copyWith({
     int? sensor,
@@ -62,6 +72,7 @@ class StepDay {
     int? gpsSteps,
     int? sensorWhileGps,
     int? recorded,
+    int? motionSteps,
     int? lastCumulative,
   }) => StepDay(
     sensor: sensor ?? this.sensor,
@@ -70,6 +81,7 @@ class StepDay {
     gpsSteps: gpsSteps ?? this.gpsSteps,
     sensorWhileGps: sensorWhileGps ?? this.sensorWhileGps,
     recorded: recorded ?? this.recorded,
+    motionSteps: motionSteps ?? this.motionSteps,
     lastCumulative: lastCumulative ?? this.lastCumulative,
   );
 
@@ -80,6 +92,7 @@ class StepDay {
     'gpsSteps': gpsSteps,
     'sensorGps': sensorWhileGps,
     'recorded': recorded,
+    'motion': motionSteps,
     'last': ?lastCumulative,
   };
 
@@ -90,6 +103,7 @@ class StepDay {
     gpsSteps: j['gpsSteps'] as int? ?? 0,
     sensorWhileGps: j['sensorGps'] as int? ?? 0,
     recorded: j['recorded'] as int? ?? 0,
+    motionSteps: j['motion'] as int? ?? 0,
     lastCumulative: j['last'] as int?,
   );
 }

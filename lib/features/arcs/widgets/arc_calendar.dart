@@ -13,7 +13,7 @@ import '../domain/arc.dart';
 
 /// What locks a day until it is earned, and how it is broken.
 extension ArcLock on Season {
-  /// "break the ice", "break the chains", …
+  /// "break the ice", "break the ice", "let it bloom", …
   String get unlockVerb => switch (this) {
     Season.winter => 'break the ice',
     Season.spring => 'let it bloom',
@@ -30,7 +30,7 @@ extension ArcLock on Season {
 }
 
 /// The whole arc (three months) as a LeetCode-style grid: one column per
-/// week. Every day starts locked in the season's way (ice, chains, fire or
+/// week. Every day starts locked in the season's way (ice, buds, fire or
 /// dry soil) and breaks open, showing its date, once 3 of 5 goals are done.
 class ArcCalendar extends ConsumerStatefulWidget {
   const ArcCalendar({super.key, required this.scores});
@@ -278,7 +278,7 @@ class _Arrow extends StatelessWidget {
   );
 }
 
-/// One day of an arc. Locked (ice, chains, fire or dry soil) until 3 of 5
+/// One day of an arc. Locked (ice, buds, fire or dry soil) until 3 of 5
 /// goals are done; partial progress already shows (cracks, broken links,
 /// rising water, a sprout). Unlocking plays a short burst.
 class ArcDayCell extends StatelessWidget {
@@ -305,28 +305,29 @@ class ArcDayCell extends StatelessWidget {
   final bool today;
   final bool selected;
 
-  bool get unlocked => count >= 3;
+  /// Days that are still to come, or before the user joined, never open.
+  int get _goals => (future || !counted) ? 0 : count;
+
+  bool get unlocked => _goals >= 3;
 
   @override
   Widget build(BuildContext context) {
     final p = season.palette;
-    Widget body;
-    if (future || !counted) {
-      body = _Plain(day: day, faded: !counted && !future, palette: p);
-    } else {
-      body = AnimatedSwitcher(
-        duration: const Duration(milliseconds: 450),
-        transitionBuilder: (child, a) => ScaleTransition(
-          scale: Tween(begin: 1.35, end: 1.0).animate(CurvedAnimation(parent: a, curve: Curves.easeOutBack)),
-          child: FadeTransition(opacity: a, child: child),
-        ),
-        child: CustomPaint(
-          key: ValueKey(unlocked),
-          painter: _CellPainter(season, p, count: count, day: day),
-          size: Size.infinite,
-        ),
-      );
-    }
+    // Every day of the arc starts locked, numbers hidden; it breaks open
+    // (and shows its date) only once earned.
+    Widget body = AnimatedSwitcher(
+      duration: const Duration(milliseconds: 450),
+      transitionBuilder: (child, a) => ScaleTransition(
+        scale: Tween(begin: 1.35, end: 1.0).animate(CurvedAnimation(parent: a, curve: Curves.easeOutBack)),
+        child: FadeTransition(opacity: a, child: child),
+      ),
+      child: CustomPaint(
+        key: ValueKey(unlocked),
+        painter: _CellPainter(season, p, count: _goals, day: day),
+        size: Size.infinite,
+      ),
+    );
+    if (!counted && !future) body = Opacity(opacity: 0.55, child: body);
     return DecoratedBox(
       position: DecorationPosition.foreground,
       decoration: BoxDecoration(
@@ -338,33 +339,6 @@ class ArcDayCell extends StatelessWidget {
       child: body,
     );
   }
-}
-
-class _Plain extends StatelessWidget {
-  const _Plain({required this.day, required this.faded, required this.palette});
-
-  final int day;
-  final bool faded;
-  final Palette palette;
-
-  @override
-  Widget build(BuildContext context) => Container(
-    alignment: Alignment.center,
-    decoration: BoxDecoration(
-      color: faded ? palette.surfaceHigh.withValues(alpha: 0.5) : Colors.white,
-      borderRadius: BorderRadius.circular(5),
-      border: Border.all(color: palette.stroke),
-    ),
-    child: FittedBox(
-      child: Padding(
-        padding: const EdgeInsets.all(2),
-        child: Text(
-          '$day',
-          style: TextStyle(color: palette.textMuted, fontSize: 10, fontWeight: FontWeight.w600),
-        ),
-      ),
-    ),
-  );
 }
 
 class _CellPainter extends CustomPainter {

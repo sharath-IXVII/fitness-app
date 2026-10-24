@@ -110,4 +110,15 @@ void main() {
     d = StepFusion.onSensor(d, 57000, Motion.walking);
     expect(d.total, 7000);
   });
+
+  test('motion-sensor steps merge by taking the highest view, never adding', () {
+    var d = StepFusion.onSensor(const StepDay(), 0, Motion.walking);
+    d = StepFusion.onSensor(d, 1000, Motion.walking);
+    expect(d.copyWith(motionSteps: 900).total, 1000); // the step counter saw more
+    expect(d.copyWith(motionSteps: 1100).total, 1100); // the accelerometer saw more
+    // Distance follows the same steps.
+    expect(d.copyWith(motionSteps: 1100).distanceMeters(0.7), closeTo(1100 * 0.7, 0.01));
+    // And it survives being saved.
+    expect(StepDay.fromJson(d.copyWith(motionSteps: 1100).toJson()).motionSteps, 1100);
+  });
 }

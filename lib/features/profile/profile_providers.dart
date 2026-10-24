@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/storage.dart';
+import '../arcs/arc_providers.dart';
+import '../arcs/domain/arc.dart';
 import 'domain/health_targets.dart';
 import 'domain/user_profile.dart';
 
@@ -33,7 +35,27 @@ class ProfileNotifier extends Notifier<UserProfile?> {
 
 final profileProvider = NotifierProvider<ProfileNotifier, UserProfile?>(ProfileNotifier.new);
 
+const _waterGoalKey = 'water.goal.v1';
+
+/// A daily water goal the user typed in (ml), or null to follow the formula.
+class WaterGoalNotifier extends Notifier<int?> {
+  @override
+  int? build() => ref.read(sharedPrefsProvider).getInt(_waterGoalKey);
+
+  Future<void> set(int? ml) async {
+    final prefs = ref.read(sharedPrefsProvider);
+    ml == null ? await prefs.remove(_waterGoalKey) : await prefs.setInt(_waterGoalKey, ml);
+    state = ml;
+  }
+}
+
+final waterGoalProvider = NotifierProvider<WaterGoalNotifier, int?>(WaterGoalNotifier.new);
+
+/// Daily targets from the profile. Water follows the real season (hotter
+/// months need more) unless the user set their own goal.
 final targetsProvider = Provider<HealthTargets?>((ref) {
   final profile = ref.watch(profileProvider);
-  return profile == null ? null : HealthTargets.from(profile);
+  if (profile == null) return null;
+  final season = Season.forMonth(ref.watch(todayProvider).month);
+  return HealthTargets.from(profile, waterBoostMl: season.waterBoostMl, waterOverrideMl: ref.watch(waterGoalProvider));
 });

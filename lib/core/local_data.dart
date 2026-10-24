@@ -7,6 +7,7 @@ import '../features/arcs/arc_providers.dart';
 import '../features/diet/diet_providers.dart';
 import '../features/myday/myday_providers.dart';
 import '../features/profile/profile_providers.dart';
+import '../features/progress/progress_providers.dart';
 import '../features/steps/steps_providers.dart';
 import '../features/streaks/daily_log_providers.dart';
 import '../features/training/training_providers.dart';
@@ -64,6 +65,8 @@ class LocalData {
       workoutReminderProvider,
       arcPreviewProvider,
       stepsProvider,
+      badgeVaultProvider,
+      waterGoalProvider,
     ]) {
       _ref.invalidate(p);
     }

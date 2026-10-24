@@ -9,10 +9,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart' hide ActivityType;
 import 'package:intl/intl.dart';
 import 'package:pedometer_2/pedometer_2.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 
 import '../../core/storage.dart';
 import '../profile/profile_providers.dart';
 import '../streaks/daily_log_providers.dart';
+import 'domain/step_detector.dart';
 import 'domain/step_fusion.dart';
 
 class StepsState {
@@ -21,9 +23,6 @@ class StepsState {
     this.motion = Motion.unknown,
     this.sensorAvailable = false,
     this.permissionDenied = false,
-    this.walking = false,
-    this.walkStarted,
-    this.walkMeters = 0,
     this.useLocation = false,
     this.gpsTracking = false,
   });
@@ -32,11 +31,6 @@ class StepsState {
   final Motion motion;
   final bool sensorAvailable;
   final bool permissionDenied;
-
-  /// A GPS walk is being recorded.
-  final bool walking;
-  final DateTime? walkStarted;
-  final double walkMeters;
 
   /// The user chose to merge GPS with the step sensor.
   final bool useLocation;
@@ -49,9 +43,6 @@ class StepsState {
     Motion? motion,
     bool? sensorAvailable,
     bool? permissionDenied,
-    bool? walking,
-    DateTime? walkStarted,
-    double? walkMeters,
     bool? useLocation,
     bool? gpsTracking,
   }) => StepsState(
@@ -59,9 +50,6 @@ class StepsState {
     motion: motion ?? this.motion,
     sensorAvailable: sensorAvailable ?? this.sensorAvailable,
     permissionDenied: permissionDenied ?? this.permissionDenied,
-    walking: walking ?? this.walking,
-    walkStarted: walkStarted ?? this.walkStarted,
-    walkMeters: walkMeters ?? this.walkMeters,
     useLocation: useLocation ?? this.useLocation,
     gpsTracking: gpsTracking ?? this.gpsTracking,
   );
@@ -87,6 +75,9 @@ class StepsNotifier extends Notifier<StepsState> {
   StreamSubscription<int>? _sensor;
   StreamSubscription<Activity>? _activity;
   StreamSubscription<Position>? _gps;
+  StreamSubscription<AccelerometerEvent>? _accel;
+  StreamSubscription<GyroscopeEvent>? _gyro;
+  final _detector = StepDetector();
   Position? _lastFix;
   DateTime _day = DateTime.now();
   DateTime _lastLogWrite = DateTime.fromMillisecondsSinceEpoch(0);
@@ -110,6 +101,7 @@ class StepsNotifier extends Notifier<StepsState> {
   /// Starts sensor + activity tracking. Safe to call more than once.
   Future<void> start() async {
     if (!supported || _sensor != null) return;
+    _startMotionSensors();
     final activity = FlutterActivityRecognition.instance;
     var perm = await activity.checkPermission();
     if (perm != ActivityPermission.GRANTED) perm = await activity.requestPermission();
@@ -126,6 +118,7 @@ class StepsNotifier extends Notifier<StepsState> {
     // GPS only while the app is in the foreground (no background location).
     _lifecycle ??= AppLifecycleListener(
       onResume: () {
+        _startMotionSensors();
         _rollDayIfNeeded();
         _refreshRecorded();
         if (state.useLocation) _startGps();
@@ -133,13 +126,46 @@ class StepsNotifier extends Notifier<StepsState> {
       onPause: () {
         // Without background location, fixes stop: don't bridge the gap.
         _lastFix = null;
-        if (!state.walking) _stopGps();
+        _stopGps();
+        _stopMotionSensors();
         _persist(force: true);
       },
     );
     _refreshRecorded();
     _recordTimer ??= Timer.periodic(const Duration(minutes: 5), (_) => _refreshRecorded());
     if (state.useLocation) await _startGps();
+  }
+
+  /// Accelerometer and gyroscope: a second, independent way to count steps.
+  /// They need no permission and only run while the app is open.
+  void _startMotionSensors() {
+    if (_accel != null) return;
+    _detector.reset();
+    try {
+      _gyro = gyroscopeEventStream(samplingPeriod: SensorInterval.gameInterval)
+          .listen((e) => _detector.onGyro(e.x, e.y, e.z), onError: (_) {});
+      _accel = accelerometerEventStream(samplingPeriod: SensorInterval.gameInterval).listen(_onAccel, onError: (_) {});
+    } catch (e) {
+      debugPrint('motion sensors unavailable: $e');
+    }
+  }
+
+  void _stopMotionSensors() {
+    _accel?.cancel();
+    _gyro?.cancel();
+    _accel = null;
+    _gyro = null;
+  }
+
+  void _onAccel(AccelerometerEvent e) {
+    final n = _detector.onAccel(DateTime.now().millisecondsSinceEpoch, e.x, e.y, e.z);
+    if (n == 0) return;
+    // Bumps in a car or on a bike are not steps.
+    if (state.motion == Motion.vehicle || state.motion == Motion.cycling) return;
+    if (DateTime.now().isBefore(_gpsVehicleUntil)) return;
+    _rollDayIfNeeded();
+    state = state.copyWith(day: state.day.copyWith(motionSteps: state.day.motionSteps + n));
+    _persist();
   }
 
   /// Reads today's steps from Android's background step record, so steps
@@ -171,7 +197,7 @@ class StepsNotifier extends Notifier<StepsState> {
     }
     state = state.copyWith(useLocation: false);
     await ref.read(sharedPrefsProvider).setBool(_locationKey, false);
-    if (!state.walking) await _stopGps();
+    await _stopGps();
     return true;
   }
 
@@ -283,16 +309,6 @@ class StepsNotifier extends Notifier<StepsState> {
     await ref.read(dailyLogsProvider.notifier).update((l) => l.copyWith(steps: total));
   }
 
-  /// Starts recording a walk (time and distance). Returns false if location
-  /// isn't allowed.
-  Future<bool> startWalk() async {
-    if (!supported || !await _locationAllowed()) return false;
-    await _startGps();
-    if (_gps == null) return false;
-    state = state.copyWith(walking: true, walkStarted: DateTime.now(), walkMeters: 0);
-    return true;
-  }
-
   void _onFix(Position fix) {
     if (fix.accuracy > StepFusion.maxAccuracy) return;
     _rollDayIfNeeded();
@@ -317,30 +333,15 @@ class StepsNotifier extends Notifier<StepsState> {
         state.motion == Motion.running;
     if (!moving) return;
     final stride = ref.read(targetsProvider)?.strideM ?? 0.72;
-    final before = state.day.gpsMeters;
-    final day = StepFusion.onGpsSegment(state.day, meters: meters, speed: speed, strideM: stride);
     state = state.copyWith(
-      day: day,
-      walkMeters: state.walking ? state.walkMeters + (day.gpsMeters - before) : state.walkMeters,
+      day: StepFusion.onGpsSegment(state.day, meters: meters, speed: speed, strideM: stride),
     );
     _persist();
   }
 
-  Future<void> stopWalk() async {
-    if (!state.useLocation) await _stopGps();
-    state = StepsState(
-      day: state.day,
-      motion: state.motion,
-      sensorAvailable: state.sensorAvailable,
-      permissionDenied: state.permissionDenied,
-      useLocation: state.useLocation,
-      gpsTracking: state.gpsTracking,
-    );
-    await _persist(force: true);
-  }
-
   void _stopAll() {
     _sensor?.cancel();
+    _stopMotionSensors();
     _activity?.cancel();
     _gps?.cancel();
     _lifecycle?.dispose();

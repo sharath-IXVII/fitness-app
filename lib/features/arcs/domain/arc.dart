@@ -79,6 +79,14 @@ enum Season {
     _ => spring,
   };
 
+  /// Extra daily water for the weather: more in the hot months.
+  int get waterBoostMl => switch (this) {
+    winter => 0,
+    spring => 150,
+    summer => 500,
+    monsoon => 250,
+  };
+
   String tierName(ArcTier t) => switch (t) {
     ArcTier.survivor => tiers.$1,
     ArcTier.warrior => tiers.$2,

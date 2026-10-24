@@ -64,17 +64,19 @@ class LevelBar extends StatelessWidget {
 }
 
 class AchievementTile extends StatelessWidget {
-  const AchievementTile({super.key, required this.achievement, this.earnedOn});
+  const AchievementTile({super.key, required this.badge, this.earnedOn});
 
-  final Achievement achievement;
+  final BadgeKey badge;
   final DateTime? earnedOn;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final earned = earnedOn != null;
+    final info = badge.kind.info(badge.set);
+    final achievement = badge.kind;
     return Semantics(
-      label: '${achievement.title}, ${earned ? 'earned' : 'locked'}. ${achievement.description}',
+      label: '${info.title}, ${earned ? 'earned' : 'locked'}. ${info.description}',
       excludeSemantics: true,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
@@ -103,12 +105,12 @@ class AchievementTile extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              achievement.title,
+              info.title,
               style: text.titleSmall?.copyWith(color: earned ? AppColors.textPrimary : AppColors.textSecondary),
             ),
             const SizedBox(height: 2),
             Text(
-              earned ? 'Earned ${DateFormat.MMMd().format(earnedOn!)}' : achievement.description,
+              earned ? 'Earned ${DateFormat.MMMd().format(earnedOn!)}' : info.description,
               style: text.bodySmall,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,

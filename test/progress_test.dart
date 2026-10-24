@@ -29,13 +29,14 @@ void main() {
 
   group('levels', () {
     test('thresholds', () {
-      expect([for (var n = 1; n <= 5; n++) Level.threshold(n)], [0, 100, 300, 600, 1000]);
+      expect([for (var n = 1; n <= 5; n++) Level.threshold(n)], [0, 100, 400, 900, 1600]);
       expect(Level.of(0).number, 1);
       expect(Level.of(99).number, 1);
       expect(Level.of(100).number, 2);
-      expect(Level.of(450).number, 3);
-      expect(Level.of(450).progress, closeTo(0.5, 1e-9));
-      expect(Level.of(450).toNext, 150);
+      expect(Level.of(250).number, 2);
+      expect(Level.of(250).progress, closeTo(0.5, 1e-9));
+      expect(Level.of(250).toNext, 150);
+      expect(Level.of(400).number, 3);
     });
   });
 
@@ -51,15 +52,15 @@ void main() {
   test('achievements are earned on the right day', () {
     final logs = {for (var i = 0; i < 8; i++) day(i): perfect(day(i))};
     final a = earnedAchievements(logs, t);
-    expect(a[Achievement.firstWorkout], day(0));
-    expect(a[Achievement.perfectDay], day(0));
-    expect(a[Achievement.tenK], day(0));
-    expect(a[Achievement.proteinPro], day(4));
-    expect(a[Achievement.streak7], day(6));
-    expect(a[Achievement.hydrated], day(6));
-    expect(a[Achievement.perfectWeek], day(6));
-    expect(a.containsKey(Achievement.streak30), isFalse);
-    expect(a.containsKey(Achievement.tenWorkouts), isFalse);
+    expect(a[(kind: Achievement.firstWorkout, set: 1)], day(0));
+    expect(a[(kind: Achievement.perfectDay, set: 1)], day(0));
+    expect(a[(kind: Achievement.tenK, set: 1)], day(0));
+    expect(a[(kind: Achievement.proteinPro, set: 1)], day(4));
+    expect(a[(kind: Achievement.streak7, set: 1)], day(6));
+    expect(a[(kind: Achievement.hydrated, set: 1)], day(6));
+    expect(a[(kind: Achievement.perfectWeek, set: 1)], day(6));
+    expect(a.containsKey((kind: Achievement.streak30, set: 1)), isFalse);
+    expect(a.containsKey((kind: Achievement.tenWorkouts, set: 1)), isFalse);
   });
 
   test('a gap breaks runs', () {
@@ -67,7 +68,7 @@ void main() {
       for (var i = 0; i < 4; i++) day(i): perfect(day(i)),
       for (var i = 5; i < 8; i++) day(i): perfect(day(i)),
     };
-    expect(earnedAchievements(logs, t).containsKey(Achievement.streak7), isFalse);
+    expect(earnedAchievements(logs, t).containsKey((kind: Achievement.streak7, set: 1)), isFalse);
   });
 
   test('weekly report compares with the week before', () {
@@ -84,5 +85,41 @@ void main() {
     expect(r.steps, 3 * 10000 + 4 * 3000);
     expect(r.bestDay!.date, day(8));
     expect(r.completion, closeTo(15 / 35, 1e-9));
+  });
+
+  test('later badge sets are harder and earned on their own days', () {
+    final logs = {for (var i = 0; i < 15; i++) day(i): perfect(day(i))};
+    final a = earnedAchievements(logs, t);
+    expect(a[(kind: Achievement.streak7, set: 1)], day(6));
+    expect(a[(kind: Achievement.streak7, set: 2)], day(13)); // 14-day streak
+    expect(a.containsKey((kind: Achievement.streak7, set: 3)), isFalse); // needs 21
+    expect(a[(kind: Achievement.perfectDay, set: 2)], day(9)); // 10 perfect days
+  });
+
+  test('finishing all 12 badges of a set pays XP and opens the next set', () {
+    BadgeKey k(Achievement a, int set) => (kind: a, set: set);
+    final set1 = [for (final a in Achievement.values) k(a, 1)];
+    expect(completedSets(set1.take(11)), 0);
+    expect(completedSets(set1), 1);
+    expect(setBonusXp(1), 100);
+    // Set 2 counts only after set 1 is done.
+    final set2 = [for (final a in Achievement.values) k(a, 2)];
+    expect(completedSets(set2), 0);
+    expect(completedSets([...set1, ...set2]), 2);
+    expect(setBonusXp(2), 100 + 250);
+    expect(setBonusXp(badgeSets), 100 + 250 + 500 + 1000 + 2000);
+  });
+
+  test('every badge in every set has a title and description', () {
+    for (final a in Achievement.values) {
+      for (var set = 1; set <= badgeSets; set++) {
+        final i = a.info(set);
+        expect(i.title, isNotEmpty);
+        expect(i.description, isNotEmpty);
+        if (set > 1) expect(a.target(set), greaterThan(a.target(set - 1)));
+      }
+    }
+    expect(parseBadgeId(badgeId((kind: Achievement.tenK, set: 3))), (kind: Achievement.tenK, set: 3));
+    expect(parseBadgeId('nonsense'), isNull);
   });
 }

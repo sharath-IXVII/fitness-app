@@ -16,6 +16,9 @@ class HealthTargets {
     required this.fiberG,
     required this.waterMl,
     required this.steps,
+    required this.walkKm,
+    required this.walkKcal,
+    required this.kcalPerKm,
     required this.strideM,
     required this.bmi,
   });
@@ -28,7 +31,15 @@ class HealthTargets {
   final int fatG;
   final int fiberG;
   final int waterMl;
+
+  /// Daily walking target: steps, the distance they make, and the calories
+  /// that burns for this body weight.
   final int steps;
+  final double walkKm;
+  final int walkKcal;
+
+  /// Calories one km of walking burns for this person (≈ 0.5 per kg).
+  final double kcalPerKm;
   final double strideM;
   final double bmi;
 
@@ -42,7 +53,9 @@ class HealthTargets {
 
   static const _proteinPerKg = {FitnessGoal.loseWeight: 1.8, FitnessGoal.maintain: 1.4, FitnessGoal.buildMuscle: 2.0};
 
-  factory HealthTargets.from(UserProfile p) {
+  /// [waterBoostMl] is the season's extra water (hot months need more);
+  /// [waterOverrideMl] is a goal the user set themselves.
+  factory HealthTargets.from(UserProfile p, {int waterBoostMl = 0, int? waterOverrideMl}) {
     final genderOffset = switch (p.gender) {
       Gender.male => 5.0,
       Gender.female => -161.0,
@@ -63,10 +76,23 @@ class HealthTargets {
     final carbs = ((calories - protein * 4 - fat * 9) / 4).clamp(0, double.infinity);
 
     final active = p.activity.index >= ActivityLevel.active.index;
-    final water = _roundTo(p.weightKg * 35 + (active ? 500 : 0), 50);
+    final water = waterOverrideMl ?? _roundTo(p.weightKg * 35 + (active ? 500 : 0) + waterBoostMl, 50);
 
     final strideFactor = p.gender == Gender.female ? 0.413 : 0.415;
     final heightM = p.heightCm / 100;
+    final strideM = double.parse((p.heightCm * strideFactor / 100).toStringAsFixed(2));
+
+    // Walking goal: the calories a day of walking should burn for the goal,
+    // turned into distance with this person's weight, then into steps with
+    // their stride. Kept to a sensible 5,000–15,000 steps.
+    final walkKcal = switch (p.goal) {
+      FitnessGoal.loseWeight => 300.0,
+      FitnessGoal.maintain => 200.0,
+      FitnessGoal.buildMuscle => 150.0,
+    };
+    final kcalPerKm = 0.5 * p.weightKg;
+    final steps = _roundTo((walkKcal / kcalPerKm * 1000 / strideM).clamp(5000, 15000), 500);
+    final km = steps * strideM / 1000;
 
     return HealthTargets(
       bmr: bmr.round(),
@@ -77,11 +103,11 @@ class HealthTargets {
       fatG: fat.round(),
       fiberG: (calories / 1000 * 14).round(),
       waterMl: water,
-      steps: switch (p.goal) {
-        FitnessGoal.loseWeight => 10000,
-        _ => 8000,
-      },
-      strideM: double.parse((p.heightCm * strideFactor / 100).toStringAsFixed(2)),
+      steps: steps,
+      walkKm: double.parse(km.toStringAsFixed(1)),
+      walkKcal: (km * kcalPerKm).round(),
+      kcalPerKm: kcalPerKm,
+      strideM: strideM,
       bmi: double.parse((p.weightKg / (heightM * heightM)).toStringAsFixed(1)),
     );
   }

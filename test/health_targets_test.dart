@@ -63,6 +63,28 @@ void main() {
     expect(active.waterMl, 2950);
   });
 
+  test('walking goal comes from the goal, weight and height', () {
+    final lose = HealthTargets.from(_profile(goal: FitnessGoal.loseWeight));
+    final keep = HealthTargets.from(_profile());
+    final bulk = HealthTargets.from(_profile(goal: FitnessGoal.buildMuscle));
+    expect(lose.steps, greaterThan(keep.steps));
+    expect(keep.steps, greaterThan(bulk.steps));
+    expect(lose.steps, inInclusiveRange(5000, 15000));
+    expect(lose.kcalPerKm, 35); // 0.5 kcal per kg per km
+    // The distance is the steps times the stride.
+    expect(lose.walkKm, closeTo(lose.steps * lose.strideM / 1000, 0.06));
+    // A heavier person burns more per km, so needs less distance for the same burn.
+    final heavy = HealthTargets.from(_profile(goal: FitnessGoal.loseWeight, weight: 110));
+    expect(heavy.walkKm, lessThan(lose.walkKm));
+    expect(heavy.walkKcal, closeTo(lose.walkKcal, 40));
+  });
+
+  test('water goes up in hot seasons, and a custom goal wins', () {
+    final base = HealthTargets.from(_profile());
+    expect(HealthTargets.from(_profile(), waterBoostMl: 500).waterMl, base.waterMl + 500);
+    expect(HealthTargets.from(_profile(), waterBoostMl: 500, waterOverrideMl: 3000).waterMl, 3000);
+  });
+
   test('profile survives a JSON round-trip', () {
     final p = _profile();
     final back = UserProfile.fromJson(p.toJson());

@@ -5,7 +5,6 @@ This is a checklist for the first Play Store release. Items marked **(you)** nee
 ## 1. Before the first build
 
 - **(you) Name and package.** Pick the final app name, then set `applicationId` and `namespace` in `android/app/build.gradle.kts` (for example `com.yourname.fitalarm`). The package name can't change after the first upload. Update the Firebase Android app to match.
-- **(you) Contact email.** Replace `[your contact email]` in `lib/features/profile/privacy_policy.dart`, then regenerate or edit `docs/PRIVACY.md` to match.
 - **(you) Firebase.** Connect Firebase (root README, "Sign-in"), add your **release** SHA-1 and SHA-256 fingerprints to the Firebase Android app (Google sign-in fails without them).
 - **Version.** Bump `version:` in `pubspec.yaml` (`1.0.0+1` is name+code) for every upload.
 

@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/launcher_icon.dart';
 import '../../core/reminders.dart';
 import '../../core/router.dart';
 import '../../core/storage.dart';
@@ -43,8 +42,6 @@ class _AppShellState extends ConsumerState<AppShell> {
       await _askPermissionsOnce();
       ref.read(stepsProvider.notifier).start();
       _replan();
-      // The launcher icon follows the real arc (not a look being previewed).
-      LauncherIcon.sync(ref.read(sharedPrefsProvider), ref.read(currentArcProvider).season);
       ref.read(myDayProvider.notifier).reschedule();
       final me = ref.read(myPublicProfileProvider);
       if (me != null) ref.read(friendsBackendProvider)?.syncProfile(me).catchError((_) {});
@@ -186,7 +183,6 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
     ref.listen(trainingProvider.select((t) => t.challenges), (_, _) => _replan());
     ref.listen(todayProvider, (_, _) => _replan());
-    ref.listen(currentArcProvider, (_, next) => LauncherIcon.sync(ref.read(sharedPrefsProvider), next.season));
     // A finished challenge whose friendship didn't get saved (offline, app
     // closed): write it again. Safe to repeat.
     ref.listen(challengesProvider, (_, next) {

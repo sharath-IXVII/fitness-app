@@ -29,7 +29,7 @@
     <application
         android:label="FittiePi"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_fp_winter">
+        android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -49,58 +49,16 @@
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
               />
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+            </intent-filter>
             <!-- Lets the alarm plugin open this activity when an alarm rings. -->
             <intent-filter>
                 <action android:name="com.gdelataillade.alarm.action.RING"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
-        <!-- One launcher entry per arc; only the current arc's is enabled (see
-             MainActivity "fittiepi/icon"), so the app icon follows the season. -->
-        <activity-alias
-            android:name=".IconWinter"
-            android:targetActivity=".MainActivity"
-            android:exported="true"
-            android:enabled="true"
-            android:icon="@mipmap/ic_fp_winter">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".IconRevolution"
-            android:targetActivity=".MainActivity"
-            android:exported="true"
-            android:enabled="false"
-            android:icon="@mipmap/ic_fp_revolution">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".IconSummer"
-            android:targetActivity=".MainActivity"
-            android:exported="true"
-            android:enabled="false"
-            android:icon="@mipmap/ic_fp_summer">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity-alias>
-        <activity-alias
-            android:name=".IconMonsoon"
-            android:targetActivity=".MainActivity"
-            android:exported="true"
-            android:enabled="false"
-            android:icon="@mipmap/ic_fp_monsoon">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity-alias>
         <service android:name="com.gdelataillade.alarm.services.NotificationOnKillService"/>
         <!-- Strict mode: reopen the app after a reboot if a strict alarm was active. -->
         <receiver android:exported="false" android:name=".StrictBootReceiver">

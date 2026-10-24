@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A plain F under a rising arc for the Android 12+ system splash (240dp
-     canvas); the app then draws the full logo in its season colours. -->
+<!-- The FittiePi mark for the Android 12+ system splash; the app then plays the
+     opening animation in the colours of the current season. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="240dp"
     android:height="240dp"
     android:viewportWidth="240"
     android:viewportHeight="240">
-    <path android:pathData="M66,140 A54,54 0 0 1 174,140" android:strokeColor="#4A5D96" android:strokeWidth="11" android:strokeLineCap="round"/>
-    <path android:pathData="M102,112 L102,165" android:strokeColor="#4A5D96" android:strokeWidth="18" android:strokeLineCap="round"/>
-    <path android:pathData="M102,112 L144,112" android:strokeColor="#4A5D96" android:strokeWidth="18" android:strokeLineCap="round"/>
-    <path android:pathData="M102,138 L134,138" android:strokeColor="#4A5D96" android:strokeWidth="18" android:strokeLineCap="round"/>
+    <group android:scaleX="0.3" android:scaleY="0.3" android:translateX="-110.4" android:translateY="-36.45">
+        <path android:fillColor="#1B2430" android:pathData="M595,316 L863,316 L941,397 L675,397 L675,518 L595,433 Z"/>
+        <path android:fillColor="#1B2430" android:pathData="M703,467 L839,467 L839,545 L759,545 L759,727 L668,635 L668,527 L703,562 Z"/>
+        <path android:fillColor="#1B2430" android:pathData="M817,414 L885,414 L932,467 L932,560 L851,627 L851,467 Z"/>
+    </group>
 </vector>

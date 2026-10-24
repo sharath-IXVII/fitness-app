@@ -44,4 +44,4 @@ FittiePi is not directed at children under 13.
 
 ## Contact
 
-Questions or requests: [your contact email]. We'll update this page if anything changes and show the new date at the top.
+Questions or requests: fittiepi@gmail.com. We'll update this page if anything changes and show the new date at the top.

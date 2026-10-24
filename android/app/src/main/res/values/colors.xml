@@ -2,4 +2,5 @@
 <resources>
     <!-- Matches AppColors.background so launch blends into the splash. -->
     <color name="launch_cream">#F2F6FA</color>
+    <color name="ic_launcher_bg">#111111</color>
 </resources>

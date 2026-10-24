@@ -6,7 +6,6 @@ import 'package:intl/intl.dart';
 import '../../core/router.dart';
 
 import '../../core/theme/app_colors.dart';
-import '../../core/widgets/form_controls.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/page_background.dart';
 import '../streaks/domain/daily_log.dart';
@@ -26,7 +25,6 @@ class ArcScreen extends ConsumerWidget {
     final r = ref.watch(currentArcResultProvider);
     final today = ref.watch(todayProvider);
     final badges = ref.watch(arcBadgesProvider);
-    final preview = ref.watch(arcPreviewProvider);
     final day = daysBetween(arc.start, today) + 1;
     final dates = DateFormat('d MMM');
     final lateStart = r.from.isAfter(arc.start);
@@ -156,8 +154,16 @@ class ArcScreen extends ConsumerWidget {
                           Container(
                             width: 40,
                             height: 40,
-                            decoration: BoxDecoration(color: s.palette.primarySoft, shape: BoxShape.circle),
-                            child: Icon(s.icon, color: s.palette.primary, size: 22),
+                            // Only this season shows its look; the others stay a surprise.
+                            decoration: BoxDecoration(
+                              color: s == arc.season ? s.palette.primarySoft : AppColors.surfaceHigh,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              s == arc.season ? s.icon : Icons.calendar_month_rounded,
+                              color: s == arc.season ? s.palette.primary : AppColors.textMuted,
+                              size: 22,
+                            ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
@@ -183,31 +189,6 @@ class ArcScreen extends ConsumerWidget {
                     ),
                 ],
               ),
-            ),
-            const SizedBox(height: 26),
-            Text('Preview a look', style: text.titleLarge),
-            const SizedBox(height: 4),
-            Text(
-              'The look changes by itself with each arc. Try the others here.',
-              style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 10),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                ChoicePill(
-                  label: 'Automatic',
-                  selected: preview == null,
-                  onTap: () => ref.read(arcPreviewProvider.notifier).set(null),
-                ),
-                for (final s in Season.values)
-                  ChoicePill(
-                    label: s.title,
-                    selected: preview == s,
-                    onTap: () => ref.read(arcPreviewProvider.notifier).set(s),
-                  ),
-              ],
             ),
           ],
         ),

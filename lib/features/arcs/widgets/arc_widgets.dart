@@ -103,9 +103,7 @@ class ArcCard extends ConsumerWidget {
     final r = ref.watch(currentArcResultProvider);
     final today = ref.watch(todayProvider);
     final day = daysBetween(arc.start, today) + 1;
-    // While previewing another arc's look, the card wears it too.
-    final look = ref.watch(themeSeasonProvider);
-    final previewing = look != arc.season;
+    final look = arc.season;
     final target = r.target;
     final status = r.earned == ArcTier.master
         ? 'Master badge secured!'
@@ -137,7 +135,7 @@ class ArcCard extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            previewing ? 'PREVIEW · ${look.months.toUpperCase()}' : 'DAY $day OF ${arc.totalDays}',
+                            'DAY $day OF ${arc.totalDays}',
                             style: text.labelSmall?.copyWith(color: AppColors.energyLight, letterSpacing: 1.4),
                           ),
                           const SizedBox(height: 2),

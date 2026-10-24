@@ -6,7 +6,6 @@ import '../streaks/daily_log_providers.dart';
 import '../streaks/domain/daily_log.dart';
 import 'domain/arc.dart';
 
-const _previewKey = 'arc.preview.v1';
 const _firstUseKey = 'app.firstUse.v1';
 
 /// Today's date, re-read when the app comes back to the foreground so the
@@ -23,30 +22,12 @@ class TodayNotifier extends Notifier<DateTime> {
 
 final todayProvider = NotifierProvider<TodayNotifier, DateTime>(TodayNotifier.new);
 
-/// A season chosen to preview its look; null follows the date.
-class ArcPreviewNotifier extends Notifier<Season?> {
-  @override
-  Season? build() {
-    final raw = ref.read(sharedPrefsProvider).getString(_previewKey);
-    return raw == null ? null : Season.values.asNameMap()[raw];
-  }
-
-  Future<void> set(Season? s) async {
-    state = s;
-    final prefs = ref.read(sharedPrefsProvider);
-    s == null ? await prefs.remove(_previewKey) : await prefs.setString(_previewKey, s.name);
-  }
-}
-
-final arcPreviewProvider = NotifierProvider<ArcPreviewNotifier, Season?>(ArcPreviewNotifier.new);
-
 /// The arc happening now.
 final currentArcProvider = Provider<ArcPeriod>((ref) => ArcPeriod.of(ref.watch(todayProvider)));
 
-/// The season whose look the app shows.
-final themeSeasonProvider = Provider<Season>(
-  (ref) => ref.watch(arcPreviewProvider) ?? ref.watch(currentArcProvider).season,
-);
+/// The season whose look the app shows: always the arc happening now, so
+/// each new look is a surprise when its season begins.
+final themeSeasonProvider = Provider<Season>((ref) => ref.watch(currentArcProvider).season);
 
 /// When the user started using the app: the first visit, or their earliest
 /// log if that is older. Arc badges count from here.

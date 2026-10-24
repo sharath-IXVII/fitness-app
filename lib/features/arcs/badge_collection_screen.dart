@@ -67,15 +67,14 @@ class _ArcRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final s = period.season;
+    if (upcoming) return _Mystery(period: period);
     final status = isNow
         ? 'Happening now'
-        : upcoming
-        ? 'Starts ${DateFormat('d MMM yyyy').format(period.start)}'
         : tier == null
         ? 'Ended'
         : period.badgeName(tier!);
     return Opacity(
-      opacity: upcoming ? 0.7 : 1,
+      opacity: 1,
       child: GlassCard(
         padding: const EdgeInsets.all(14),
         glow: isNow ? s.palette.primary : null,
@@ -103,6 +102,62 @@ class _ArcRow extends StatelessWidget {
                         ArcMedal(season: s, tier: t, earned: tier != null && tier!.index >= t.index, size: 52),
                         const SizedBox(height: 4),
                         Text(s.tierName(t), style: text.labelSmall, textAlign: TextAlign.center, maxLines: 2),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// An arc that hasn't started: its look and badges stay a surprise until
+/// the season arrives.
+class _Mystery extends StatelessWidget {
+  const _Mystery({required this.period});
+
+  final ArcPeriod period;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Opacity(
+      opacity: 0.8,
+      child: GlassCard(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.lock_outline_rounded, size: 18, color: AppColors.textMuted),
+                const SizedBox(width: 8),
+                Expanded(child: Text('A new arc', style: text.titleSmall)),
+                Text(
+                  'Starts ${DateFormat('d MMM yyyy').format(period.start)}',
+                  style: text.labelMedium?.copyWith(color: AppColors.textTertiary),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                for (var i = 0; i < ArcTier.values.length; i++)
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 52,
+                          height: 52,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.surfaceHigh),
+                          child: Text('?', style: text.titleLarge?.copyWith(color: AppColors.textMuted)),
+                        ),
+                        const SizedBox(height: 4),
+                        Text('Surprise', style: text.labelSmall),
                       ],
                     ),
                   ),

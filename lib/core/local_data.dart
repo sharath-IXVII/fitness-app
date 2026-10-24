@@ -63,7 +63,6 @@ class LocalData {
       routinesProvider,
       waterSettingsProvider,
       workoutReminderProvider,
-      arcPreviewProvider,
       stepsProvider,
       badgeVaultProvider,
       waterGoalProvider,

@@ -120,8 +120,7 @@ class _ArcCalendarState extends ConsumerState<ArcCalendar> {
     final firstUse = ref.watch(firstUseProvider);
     final maxBack = _maxBack(now, firstUse);
     final period = _period(now);
-    // Previewing another arc's look shows its blocks on the current arc too.
-    final season = _back == 0 ? ref.watch(themeSeasonProvider) : period.season;
+    final season = period.season;
     final offset = period.start.weekday - 1;
     final cols = ((offset + period.totalDays) / 7).ceil();
     final result = ArcResult.of(period, widget.scores, firstUse, today);

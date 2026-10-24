@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:fitalarm/app.dart';
 import 'package:fitalarm/core/storage.dart';
 import 'package:fitalarm/core/theme/app_colors.dart';
-import 'package:fitalarm/core/theme/palette.dart';
-import 'package:fitalarm/features/arcs/arc_providers.dart';
 import 'package:fitalarm/features/arcs/domain/arc.dart';
 import 'package:fitalarm/features/auth/auth_providers.dart';
 import 'package:fitalarm/features/auth/auth_service.dart';
@@ -58,19 +56,12 @@ void main() {
     expect(identical(AppColors.palette, season.palette), isTrue);
     expect(find.text(season.title), findsWidgets); // the arc card on Today
 
-    await container.read(arcPreviewProvider.notifier).set(Season.monsoon);
-    await _wait(t);
-    expect(identical(AppColors.palette, Palette.monsoon), isTrue);
-    expect(find.text('Monsoon Arc'), findsOneWidget);
-    expect(prefs.getString('arc.preview.v1'), 'monsoon');
-
-    await t.tap(find.text('Monsoon Arc'));
+    // The look always follows the real season; there is no way to switch it.
+    await t.tap(find.text(season.title).first);
     await _wait(t);
     expect(find.text('Badges this arc'), findsOneWidget);
-    await t.scrollUntilVisible(find.text('Automatic'), 300, scrollable: find.byType(Scrollable).last);
-    await t.tap(find.text('Automatic'));
-    await _wait(t);
+    expect(find.text('Preview a look'), findsNothing);
+    expect(find.text('Automatic'), findsNothing);
     expect(identical(AppColors.palette, season.palette), isTrue);
-    expect(prefs.getString('arc.preview.v1'), isNull);
   });
 }

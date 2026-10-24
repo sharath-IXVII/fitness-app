@@ -74,14 +74,23 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          set -euo pipefail
-          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          set -uo pipefail
+          fail() { echo "::error title=Release signing setup::$1"; exit 1; }
+          # Tolerate spaces or line breaks that crept in when pasting the secret.
+          printf '%s' "$KEYSTORE_BASE64" | tr -d '[:space:]' | base64 -d > "$RUNNER_TEMP/upload.jks" 2>/dev/null \
+            || fail "KEYSTORE_BASE64 is not valid base64. Paste the whole contents of keystore-base64.txt again."
+          size=$(stat -c %s "$RUNNER_TEMP/upload.jks")
+          [ "$size" -gt 1000 ] || fail "KEYSTORE_BASE64 decoded to only $size bytes. It was probably cut off when pasting."
+          [ -n "${KEYSTORE_PASSWORD:-}" ] && [ -n "${KEY_ALIAS:-}" ] && [ -n "${KEY_PASSWORD:-}" ] \
+            || fail "One of KEYSTORE_PASSWORD, KEY_ALIAS or KEY_PASSWORD is missing."
+          if ! keytool -list -v -keystore "$RUNNER_TEMP/upload.jks" -alias "$KEY_ALIAS" -storepass "$KEYSTORE_PASSWORD" > "$RUNNER_TEMP/kt.txt" 2>&1; then
+            fail "keytool could not open the key: $(head -c 300 "$RUNNER_TEMP/kt.txt" | tr '\n' ' ')"
+          fi
           printf 'storeFile=%s\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
             "$RUNNER_TEMP/upload.jks" "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > android/key.properties
           # The fingerprints are public; Firebase needs them for Google sign-in.
-          fp=$(keytool -list -v -keystore "$RUNNER_TEMP/upload.jks" -alias "$KEY_ALIAS" -storepass "$KEYSTORE_PASSWORD" \
-            | grep -E "SHA1:|SHA256:" | tr -s ' ' | tr '\n' ' ')
-          echo "::notice title=Signing key fingerprints (add to Firebase)::$fp"
+          fp=$(grep -E "SHA1:|SHA256:" "$RUNNER_TEMP/kt.txt" | tr -s ' ' | tr '\n' ' ')
+          echo "::notice title=Signing key fingerprints::$fp"
 
       - name: Build APK
         shell: bash
@@ -95,6 +104,7 @@ jobs:
         if: failure()
         shell: bash
         run: |
+          [ -f build.log ] || { echo "::notice::The build did not start (an earlier step failed)."; exit 0; }
           msg=$(grep -n -A25 -E "What went wrong|FAILURE:|^e: |error:|Error:" build.log | head -120)
           [ -z "$msg" ] && msg=$(tail -60 build.log)
           msg="${msg//'%'/'%25'}"; msg="${msg//$'\n'/'%0A'}"; msg="${msg//$'\r'/'%0D'}"

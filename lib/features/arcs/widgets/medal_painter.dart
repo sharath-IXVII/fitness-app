@@ -4,6 +4,10 @@ import 'package:flutter/material.dart';
 
 import '../domain/arc.dart';
 
+/// Two looks for the same badge: a frosted [glass] disc (the default) or a
+/// metal-rimmed [hex].
+enum MedalStyle { glass, hex }
+
 /// Arc badges, drawn in code (vector, sharp at any size).
 ///
 /// One polished hexagon for every badge, in the style of fitness awards:
@@ -13,7 +17,15 @@ import '../domain/arc.dart';
 ///  - rank chevrons under the emblem count the tier (1, 2 or 3),
 ///  - gold badges get a rosette behind them and an animated glint.
 class MedalPainter extends CustomPainter {
-  MedalPainter({required this.season, required this.tier, this.earned = true, this.shine = 0});
+  MedalPainter({
+    required this.season,
+    required this.tier,
+    this.earned = true,
+    this.shine = 0,
+    this.style = MedalStyle.glass,
+  });
+
+  final MedalStyle style;
 
   final Season season;
   final ArcTier tier;
@@ -54,6 +66,7 @@ class MedalPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (style == MedalStyle.glass) return _paintGlass(canvas, size);
     final s = math.min(size.width, size.height);
     canvas.save();
     canvas.translate((size.width - s) / 2, (size.height - s) / 2);
@@ -122,6 +135,164 @@ class MedalPainter extends CustomPainter {
     canvas.restore();
   }
 
+  // ------------------------------------------------------------- glass
+
+  /// A frosted-glass disc tinted by the season, ringed by three segments
+  /// that light up in the tier's metal (one, two or three).
+  void _paintGlass(Canvas canvas, Size size) {
+    final s = math.min(size.width, size.height);
+    canvas.save();
+    canvas.translate((size.width - s) / 2, (size.height - s) / 2);
+    canvas.scale(s / 100);
+    const c = Offset(50, 50);
+    final m = _metal;
+    final body = Path()..addOval(Rect.fromCircle(center: c, radius: 36));
+    final bodyRect = Rect.fromCircle(center: c, radius: 36);
+
+    if (earned) {
+      canvas.drawCircle(
+        c + const Offset(0, 3.5),
+        36,
+        Paint()
+          ..color = _face[1].withValues(alpha: 0.38)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.5),
+      );
+    }
+    // The glass itself: translucent, lighter at the top.
+    canvas.drawPath(
+      body,
+      Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: earned
+              ? [_face[0].withValues(alpha: 0.80), _face[1].withValues(alpha: 0.92)]
+              : [Colors.white.withValues(alpha: 0.85), const Color(0xFFE3E6EC).withValues(alpha: 0.9)],
+        ).createShader(bodyRect),
+    );
+
+    canvas.save();
+    canvas.clipPath(body);
+    if (earned) {
+      canvas.drawCircle(
+        c + const Offset(0, -6),
+        28,
+        Paint()
+          ..shader = RadialGradient(colors: [_glow.withValues(alpha: 0.6), _glow.withValues(alpha: 0)])
+              .createShader(Rect.fromCircle(center: c + const Offset(0, -6), radius: 28)),
+      );
+      _decor(canvas, c);
+    }
+    _emblem(canvas, c + const Offset(0, -6), 0.78);
+    _chevrons(canvas, c + const Offset(0, 24), scale: 0.8);
+    if (earned) {
+      // Curved highlight on the upper glass, and a thin reflection below.
+      final hi = Path()..addOval(Rect.fromCenter(center: c + const Offset(0, -19), width: 62, height: 34));
+      canvas.drawPath(
+        hi,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.white.withValues(alpha: 0.5), Colors.white.withValues(alpha: 0.02)],
+          ).createShader(hi.getBounds()),
+      );
+      canvas.drawArc(
+        Rect.fromCircle(center: c, radius: 32),
+        math.pi * 0.2,
+        math.pi * 0.6,
+        false,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2
+          ..strokeCap = StrokeCap.round
+          ..color = Colors.white.withValues(alpha: 0.28),
+      );
+    }
+    canvas.restore();
+
+    // Glass edge: bright at the top-left, fading to the bottom-right.
+    canvas.drawCircle(
+      c,
+      36,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.3
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Colors.white.withValues(alpha: earned ? 0.95 : 0.9),
+            Colors.white.withValues(alpha: earned ? 0.12 : 0.3),
+          ],
+        ).createShader(bodyRect),
+    );
+
+    // Tier ring: three segments, lit in the tier's metal.
+    const gap = 0.26;
+    final seg = 2 * math.pi / 3 - gap;
+    final ringRect = Rect.fromCircle(center: c, radius: 43);
+    for (var i = 0; i < 3; i++) {
+      final lit = earned && i <= tier.index;
+      final paint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3.4
+        ..strokeCap = StrokeCap.round
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: lit ? [m[0], m[1], m[2]] : [const Color(0xFFD5D9E1), const Color(0xFFBFC5D0)],
+        ).createShader(ringRect);
+      canvas.drawArc(ringRect, -math.pi / 2 + i * 2 * math.pi / 3 + gap / 2, seg, false, paint);
+    }
+    if (earned && shine > 0) _glint(canvas, body);
+    canvas.restore();
+  }
+
+  /// Season detail inside the glass.
+  void _decor(Canvas canvas, Offset c) {
+    final p = Paint()..color = Colors.white.withValues(alpha: 0.5);
+    switch (season) {
+      case Season.winter:
+        for (final o in const [Offset(-24, -14), Offset(22, -22), Offset(24, 12), Offset(-20, 18)]) {
+          final q = c + o;
+          final line = Paint()
+            ..color = Colors.white.withValues(alpha: 0.65)
+            ..strokeWidth = 1
+            ..strokeCap = StrokeCap.round;
+          canvas.drawLine(q.translate(-2.5, 0), q.translate(2.5, 0), line);
+          canvas.drawLine(q.translate(0, -2.5), q.translate(0, 2.5), line);
+        }
+      case Season.spring:
+        for (final (o, a) in const [(Offset(-23, -16), 0.6), (Offset(24, 6), -0.5), (Offset(-14, 22), 1.0)]) {
+          canvas.save();
+          canvas.translate(c.dx + o.dx, c.dy + o.dy);
+          canvas.rotate(a);
+          canvas.drawOval(Rect.fromCenter(center: Offset.zero, width: 4, height: 6.5), p);
+          canvas.restore();
+        }
+      case Season.summer:
+        final ray = Paint()
+          ..color = Colors.white.withValues(alpha: 0.16)
+          ..strokeWidth = 2.2
+          ..strokeCap = StrokeCap.round;
+        for (var i = 0; i < 12; i++) {
+          final a = i * math.pi / 6;
+          final d = Offset(math.cos(a), math.sin(a));
+          canvas.drawLine(c + d * 20 + const Offset(0, -6), c + d * 34 + const Offset(0, -6), ray);
+        }
+      case Season.monsoon:
+        final rain = Paint()
+          ..color = Colors.white.withValues(alpha: 0.4)
+          ..strokeWidth = 1.1
+          ..strokeCap = StrokeCap.round;
+        for (final o in const [Offset(-26, -8), Offset(-18, 14), Offset(24, -14), Offset(20, 18), Offset(-6, 26)]) {
+          final q = c + o;
+          canvas.drawLine(q, q.translate(-2, 6), rain);
+        }
+    }
+  }
+
   // ------------------------------------------------------------ shapes
 
   /// A pointy-top hexagon of [r] with softly rounded corners.
@@ -178,20 +349,20 @@ class MedalPainter extends CustomPainter {
   }
 
   /// Rank chevrons: 1, 2 or 3 stacked "V"s.
-  void _chevrons(Canvas canvas, Offset c) {
+  void _chevrons(Canvas canvas, Offset c, {double scale = 1}) {
     final n = tier.index + 1;
     final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.6
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
-      ..color = earned ? _metal[0] : _metal[2];
+      ..color = earned ? (style == MedalStyle.glass ? Colors.white : _metal[0]) : _metal[2];
     for (var i = 0; i < n; i++) {
-      final y = c.dy + (i - (n - 1) / 2) * 4.6;
+      final y = c.dy + (i - (n - 1) / 2) * 4.6 * scale;
       final p = Path()
-        ..moveTo(c.dx - 6.5, y - 2.4)
-        ..lineTo(c.dx, y + 2.4)
-        ..lineTo(c.dx + 6.5, y - 2.4);
+        ..moveTo(c.dx - 6.5 * scale, y - 2.4 * scale)
+        ..lineTo(c.dx, y + 2.4 * scale)
+        ..lineTo(c.dx + 6.5 * scale, y - 2.4 * scale);
       canvas.drawPath(p, paint);
     }
   }
@@ -321,5 +492,5 @@ class MedalPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(MedalPainter old) =>
-      old.season != season || old.tier != tier || old.earned != earned || old.shine != shine;
+      old.season != season || old.tier != tier || old.earned != earned || old.shine != shine || old.style != style;
 }

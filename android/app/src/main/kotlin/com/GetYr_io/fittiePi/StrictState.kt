@@ -1,4 +1,4 @@
-package com.fittiepi.app
+package com.GetYr_io.fittiePi
 
 import android.content.Context
 import android.content.Intent

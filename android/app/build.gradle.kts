@@ -14,7 +14,7 @@ val keystoreProperties = Properties().apply {
 }
 
 android {
-    namespace = "com.fittiepi.app"
+    namespace = "com.GetYr_io.fittiePi"
     // 37: required by permission_handler. Only affects which APIs compile; minSdk
     // still decides which phones can install the app.
     compileSdk = 37
@@ -29,7 +29,7 @@ android {
 
     defaultConfig {
         // Final package name: choose it before the first Play upload; it can't change afterwards.
-        applicationId = "com.fittiepi.app"
+        applicationId = "com.GetYr_io.fittiePi"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         // Android 10+: the step counter (pedometer_2) needs API 29.

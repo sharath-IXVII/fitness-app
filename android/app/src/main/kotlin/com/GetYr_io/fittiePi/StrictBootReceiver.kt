@@ -1,4 +1,4 @@
-package com.fittiepi.app
+package com.GetYr_io.fittiePi
 
 import android.app.Notification
 import android.app.NotificationChannel

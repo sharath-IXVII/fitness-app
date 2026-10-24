@@ -124,7 +124,7 @@ class ArcScreen extends ConsumerWidget {
                       width: 96,
                       child: Column(
                         children: [
-                          ArcMedal(season: p.season, tier: t, size: 72),
+                          ArcMedal(season: p.season, tier: t, size: 72, animate: true),
                           const SizedBox(height: 6),
                           Text(p.badgeName(t), style: text.labelMedium, textAlign: TextAlign.center),
                         ],

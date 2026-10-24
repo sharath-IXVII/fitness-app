@@ -32,13 +32,18 @@ abstract final class AppTheme {
     // matching bundled file is used rather than a synthesised bold.
     TextStyle t(TextStyle? b, FontWeight w, {double ls = 0, Color? color}) =>
         GoogleFonts.inter(textStyle: b, fontWeight: w, letterSpacing: ls, color: color);
-    // Athletic condensed face for big numbers and headings, like a scoreboard.
-    TextStyle sport(TextStyle? b, FontWeight w, {double ls = 0.2}) =>
-        GoogleFonts.barlowCondensed(textStyle: b, fontWeight: w, letterSpacing: ls, height: 1.05);
+    // Squared, game-HUD face for big numbers and headings (Chakra Petch ships
+    // in SemiBold and Bold; heavier requests use Bold).
+    TextStyle sport(TextStyle? b, FontWeight w, {double ls = 0.2}) => GoogleFonts.chakraPetch(
+      textStyle: b,
+      fontWeight: w.value >= FontWeight.w700.value ? FontWeight.w700 : FontWeight.w600,
+      letterSpacing: ls,
+      height: 1.08,
+    );
 
     return base.copyWith(
       textTheme: body.copyWith(
-        displayLarge: sport(body.displayLarge, FontWeight.w800, ls: -0.5),
+        displayLarge: sport(body.displayLarge, FontWeight.w700, ls: -0.5),
         displayMedium: sport(body.displayMedium, FontWeight.w800, ls: -0.3),
         displaySmall: sport(body.displaySmall, FontWeight.w800),
         headlineLarge: sport(body.headlineLarge, FontWeight.w800),

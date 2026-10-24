@@ -46,7 +46,7 @@ Future<void> _start() async {
   // or depends on the network.
   GoogleFonts.config.allowRuntimeFetching = false;
   LicenseRegistry.addLicense(() async* {
-    for (final family in ['Inter', 'BarlowCondensed']) {
+    for (final family in ['Inter', 'ChakraPetch']) {
       final license = await rootBundle.loadString('assets/google_fonts/$family-OFL.txt');
       yield LicenseEntryWithLineBreaks([family], license);
     }

@@ -9,63 +9,83 @@ import '../../../core/widgets/pressable.dart';
 import '../../streaks/domain/daily_log.dart';
 import '../arc_providers.dart';
 import '../domain/arc.dart';
+import 'medal_painter.dart';
 
-/// A round medal for an arc badge: the season's colours and icon inside a
-/// bronze, silver or gold ring. Grey when [tier] isn't earned.
-class ArcMedal extends StatelessWidget {
-  const ArcMedal({super.key, required this.season, required this.tier, this.earned = true, this.size = 64});
+/// An arc badge: a hand-drawn medal with the season's emblem. Tiers differ
+/// in shape and metal (bronze coin, silver winged shield, gold crowned
+/// star-burst). Greyed out when [earned] is false. Gold medals can [animate]
+/// a light sweep.
+class ArcMedal extends StatefulWidget {
+  const ArcMedal({
+    super.key,
+    required this.season,
+    required this.tier,
+    this.earned = true,
+    this.size = 64,
+    this.animate = false,
+  });
 
   final Season season;
   final ArcTier tier;
   final bool earned;
   final double size;
+  final bool animate;
+
+  @override
+  State<ArcMedal> createState() => _ArcMedalState();
+}
+
+class _ArcMedalState extends State<ArcMedal> with SingleTickerProviderStateMixin {
+  AnimationController? _c;
+
+  bool get _shimmer => widget.animate && widget.earned && widget.tier == ArcTier.master;
+
+  @override
+  void initState() {
+    super.initState();
+    _sync();
+  }
+
+  @override
+  void didUpdateWidget(ArcMedal old) {
+    super.didUpdateWidget(old);
+    _sync();
+  }
+
+  void _sync() {
+    if (_shimmer && _c == null) {
+      _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 3200))..repeat();
+    } else if (!_shimmer && _c != null) {
+      _c!.dispose();
+      _c = null;
+    }
+  }
+
+  @override
+  void dispose() {
+    _c?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final p = season.palette;
-    final ring = earned ? tier.ring : AppColors.stroke;
-    return Container(
-      width: size,
-      height: size,
-      padding: EdgeInsets.all(size * 0.07),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: earned
-            ? LinearGradient(
-                colors: [Color.lerp(ring, Colors.white, 0.45)!, ring],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : null,
-        color: earned ? null : AppColors.surfaceHigh,
-        boxShadow: earned
-            ? [BoxShadow(color: ring.withValues(alpha: 0.45), blurRadius: size * 0.25, spreadRadius: -4)]
-            : null,
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: earned
-              ? LinearGradient(colors: [p.inkSoft, p.primary], begin: Alignment.topCenter, end: Alignment.bottomCenter)
-              : null,
-          color: earned ? null : AppColors.surface,
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            Icon(season.icon, size: size * 0.42, color: earned ? Colors.white : AppColors.textMuted),
-            Positioned(
-              bottom: size * 0.08,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (var i = 0; i <= tier.index; i++)
-                    Icon(Icons.star_rounded, size: size * 0.14, color: earned ? ring : AppColors.textMuted),
-                ],
+    final w = widget;
+    CustomPaint paint(double shine) => CustomPaint(
+      size: Size.square(w.size),
+      painter: MedalPainter(season: w.season, tier: w.tier, earned: w.earned, shine: shine),
+    );
+    return Semantics(
+      image: true,
+      label: '${w.season.tierName(w.tier)}${w.earned ? '' : ', not earned yet'}',
+      child: SizedBox.square(
+        dimension: w.size,
+        child: _c == null
+            ? paint(0)
+            : AnimatedBuilder(
+                animation: _c!,
+                // The sweep only passes during the first part of each cycle.
+                builder: (_, _) => paint(_c!.value < 0.45 ? _c!.value / 0.45 : 0),
               ),
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -427,7 +427,7 @@ class _Medal extends StatelessWidget {
   Widget build(BuildContext context) {
     final season = Season.values.asNameMap()[profile.titleSeason];
     final tier = profile.titleTier == null ? null : ArcTier.values[profile.titleTier!.clamp(0, 2)];
-    if (season != null && tier != null) return ArcMedal(season: season, tier: tier, size: size);
+    if (season != null && tier != null) return ArcMedal(season: season, tier: tier, size: size, animate: size >= 100);
     return Container(
       width: size,
       height: size,

@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 76dp logo tile centred in the 240dp Android 12 splash icon canvas. -->
-<inset xmlns:android="http://schemas.android.com/apk/res/android"
-    android:drawable="@drawable/launch_logo"
-    android:inset="82dp" />
+<!-- A plain F under a rising arc for the Android 12+ system splash (240dp
+     canvas); the app then draws the full logo in its season colours. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="240dp"
+    android:height="240dp"
+    android:viewportWidth="240"
+    android:viewportHeight="240">
+    <path android:pathData="M66,140 A54,54 0 0 1 174,140" android:strokeColor="#4A5D96" android:strokeWidth="11" android:strokeLineCap="round"/>
+    <path android:pathData="M102,112 L102,165" android:strokeColor="#4A5D96" android:strokeWidth="18" android:strokeLineCap="round"/>
+    <path android:pathData="M102,112 L144,112" android:strokeColor="#4A5D96" android:strokeWidth="18" android:strokeLineCap="round"/>
+    <path android:pathData="M102,138 L134,138" android:strokeColor="#4A5D96" android:strokeWidth="18" android:strokeLineCap="round"/>
+</vector>

@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Cream canvas with the brown logo tile; the app then draws the mark in. -->
+<!-- Plain canvas; the app then draws the logo in. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@color/launch_cream" />
-    <item>
-        <bitmap android:gravity="center" android:src="@drawable/launch_logo" />
-    </item>
 </layer-list>

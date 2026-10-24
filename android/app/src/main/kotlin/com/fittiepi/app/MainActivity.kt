@@ -1,7 +1,9 @@
 package com.fittiepi.app
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.Typeface
@@ -55,6 +57,14 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        // The launcher icon follows the arc: enable that arc's activity-alias.
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fittiepi/icon").setMethodCallHandler { call, result ->
+            if (call.method == "set") {
+                result.success(setLauncherIcon(call.arguments as? String ?: "winter"))
+            } else {
+                result.notImplemented()
+            }
+        }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fittiepi/strict").setMethodCallHandler { call, result ->
             when (call.method) {
                 "engage" -> {
@@ -81,6 +91,23 @@ class MainActivity : FlutterActivity() {
                 }
                 else -> result.notImplemented()
             }
+        }
+    }
+
+    private fun setLauncherIcon(season: String): Boolean {
+        val all = listOf("winter", "revolution", "summer", "monsoon")
+        if (season !in all) return false
+        return try {
+            val pm = packageManager
+            fun alias(s: String) = ComponentName(packageName, "$packageName.Icon${s.replaceFirstChar { it.uppercase() }}")
+            // Enable the new one first so there's never a moment with no icon.
+            pm.setComponentEnabledSetting(alias(season), PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP)
+            for (s in all.filter { it != season }) {
+                pm.setComponentEnabledSetting(alias(s), PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP)
+            }
+            true
+        } catch (_: Exception) {
+            false
         }
     }
 

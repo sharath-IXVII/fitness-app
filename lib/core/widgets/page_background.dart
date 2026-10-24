@@ -195,18 +195,100 @@ class _WeatherPainter extends CustomPainter {
     }
   }
 
+  /// Lightning: a flicker near 12 %, 55 % and 83 % of the cycle (about every
+  /// 8 seconds), each a quick double flash.
+  static double _flash(double t) {
+    double bump(double at, double w) {
+      final d = (t - at).abs();
+      return d >= w ? 0 : 1 - d / w;
+    }
+
+    return math.max(
+      math.max(bump(0.120, 0.006), bump(0.134, 0.004) * 0.7),
+      math.max(math.max(bump(0.550, 0.006), bump(0.563, 0.004) * 0.7), bump(0.830, 0.005)),
+    );
+  }
+
   void _rain(Canvas canvas, Size size, double t) {
+    final flash = _flash(t);
+    if (foreground) {
+      // A brief brightening over everything, like a flash behind the clouds.
+      if (flash > 0 && !dark) {
+        canvas.drawRect(Offset.zero & size, Paint()..color = const Color(0xFFEAF0FF).withValues(alpha: 0.30 * flash));
+      }
+    } else if (!dark) {
+      // Heavy cloud bank across the top.
+      final rect = Offset.zero & Size(size.width, 200);
+      canvas.drawRect(
+        rect,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [AppColors.primary.withValues(alpha: 0.22), AppColors.primary.withValues(alpha: 0)],
+          ).createShader(rect),
+      );
+      if (flash > 0.2) _bolt(canvas, size, flash);
+    }
     final paint = Paint()
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 1.4;
-    for (var i = 0; i < count + 8; i++) {
-      final speed = 3 + _r(i, 1) * 2;
+      ..strokeWidth = foreground ? 1.8 : 1.4;
+    final n = foreground ? count : count + 26;
+    for (var i = 0; i < n; i++) {
+      final speed = 3.5 + _r(i, 1) * 2.5;
       final y = ((_r(i, 2) + t * speed * 2) % 1.0) * (size.height + 40) - 20;
-      final x = _r(i, 4) * (size.width + 40) - (y / size.height) * 30;
-      final len = 10 + _r(i, 5) * 10;
-      paint.color = (dark ? Colors.white : AppColors.primary).withValues(alpha: dark ? 0.35 : 0.16);
-      canvas.drawLine(Offset(x, y), Offset(x - len * 0.25, y + len), paint);
+      final x = _r(i, 4) * (size.width + 60) - (y / size.height) * 36;
+      final len = 12 + _r(i, 5) * 12;
+      paint.color = (dark ? Colors.white : AppColors.primary).withValues(
+        alpha: dark ? 0.32 : (foreground ? 0.26 : 0.2),
+      );
+      canvas.drawLine(Offset(x, y), Offset(x - len * 0.3, y + len), paint);
     }
+    if (!foreground && !dark) {
+      // Ripples spreading on puddles along the bottom edge.
+      final ring = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2;
+      for (var i = 0; i < 6; i++) {
+        final p = (_r(i, 7) + t * (4 + i % 3)) % 1.0;
+        final cx = _r(i, 8) * size.width;
+        final cy = size.height - 10 - _r(i, 9) * 40;
+        ring.color = AppColors.primary.withValues(alpha: 0.25 * (1 - p));
+        canvas.drawOval(Rect.fromCenter(center: Offset(cx, cy), width: 8 + p * 46, height: 3 + p * 14), ring);
+      }
+    }
+  }
+
+  /// A jagged lightning bolt from the top of the screen.
+  void _bolt(Canvas canvas, Size size, double flash) {
+    final x0 = size.width * (0.2 + 0.6 * _r((flash * 10).floor(), 11));
+    final pts = <Offset>[Offset(x0, 0)];
+    var x = x0, y = 0.0;
+    for (var i = 0; i < 6; i++) {
+      x += (i.isEven ? 1 : -1) * (14 + _r(i, 12) * 22);
+      y += 24 + _r(i, 13) * 20;
+      pts.add(Offset(x, y));
+    }
+    final path = Path()..moveTo(pts.first.dx, pts.first.dy);
+    for (final p in pts.skip(1)) {
+      path.lineTo(p.dx, p.dy);
+    }
+    canvas.drawPath(
+      path,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 7
+        ..color = AppColors.energy.withValues(alpha: 0.35 * flash)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+    );
+    canvas.drawPath(
+      path,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.2
+        ..strokeJoin = StrokeJoin.round
+        ..color = Colors.white.withValues(alpha: 0.9 * flash),
+    );
   }
 
   @override

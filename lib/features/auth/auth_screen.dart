@@ -65,7 +65,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const AppLogo(size: 56),
+                    const AppLogo(size: 56, alive: true),
                     const SizedBox(height: 28),
                     _in(0, _ModeSwitch(signUp: _signUp, onChanged: (v) => setState(() => _signUp = v))),
                     const SizedBox(height: 28),

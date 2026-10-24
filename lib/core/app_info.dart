@@ -8,6 +8,9 @@ abstract final class AppInfo {
   /// Android application id. Keep in sync with android/app/build.gradle.kts.
   static const packageId = 'com.GetYr_io.fittiePi';
 
+  /// Where feedback, questions and requests go. Every email is read.
+  static const feedbackEmail = 'fittiepi@gmail.com';
+
   /// Where friends can get the app.
   static const storeUrl = 'https://play.google.com/store/apps/details?id=$packageId';
 }

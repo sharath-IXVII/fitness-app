@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 
 import '../../core/cloud_backup.dart';
 import '../../core/local_data.dart';
+import '../../core/app_info.dart';
+import '../../core/feedback.dart';
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/page_background.dart';
@@ -138,6 +140,28 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 22),
+              GlassCard(
+                child: Row(
+                  children: [
+                    Icon(Icons.favorite_rounded, color: AppColors.primary),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Your feedback comes first', style: text.titleSmall),
+                          Text(
+                            'Every message to ${AppInfo.feedbackEmail} is read, and it decides what we improve next.',
+                            style: text.bodySmall,
+                          ),
+                        ],
+                      ),
+                    ),
+                    TextButton(onPressed: () => sendFeedback(context), child: const Text('Write')),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
               Text('Account', style: text.titleMedium),
               const SizedBox(height: 10),
               GlassCard(
@@ -169,9 +193,19 @@ class ProfileScreen extends ConsumerWidget {
                 child: Column(
                   children: [
                     _Action(
+                      icon: Icons.mail_outline_rounded,
+                      label: 'Send feedback',
+                      onTap: () => sendFeedback(context),
+                    ),
+                    _Action(
                       icon: Icons.shield_outlined,
                       label: 'Privacy policy',
                       onTap: () => context.push(Routes.privacy),
+                    ),
+                    _Action(
+                      icon: Icons.description_outlined,
+                      label: 'Terms of use',
+                      onTap: () => context.push(Routes.terms),
                     ),
                     _Action(
                       icon: Icons.restart_alt_rounded,

@@ -40,6 +40,11 @@ const privacySections = <(String, String)>[
         'phone.',
   ),
   (
+    'Feedback emails',
+    'If you write to us from the app, your email app sends the message to fittiepi@gmail.com. We read it to '
+        'improve FittiePi and to reply to you; we don\'t share it.',
+  ),
+  (
     'Camera during workouts',
     'The workout camera counts reps using on-device pose detection (Google ML Kit). Video is processed in memory '
         'and is never recorded, stored or uploaded.',

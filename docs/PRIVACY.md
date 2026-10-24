@@ -22,6 +22,10 @@ If you use Friends, Cloud Firestore (Google) stores a public profile that your f
 
 Alarms, routines, your My Day plan, weigh-ins, weight goal, saved foods and meal photos are stored only on your device and are not backed up, so they are not restored on a new phone. Your progress backup (above) is kept in your account. Uninstalling the app or using "Reset data on this device" removes what is on the phone.
 
+## Feedback emails
+
+If you write to us from the app, your email app sends the message to fittiepi@gmail.com. We read it to improve FittiePi and to reply to you; we don't share it.
+
 ## Camera during workouts
 
 The workout camera counts reps using on-device pose detection (Google ML Kit). Video is processed in memory and is never recorded, stored or uploaded.

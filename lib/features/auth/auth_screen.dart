@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/app_info.dart';
+import '../../core/feedback.dart';
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_logo.dart';
@@ -27,6 +28,7 @@ class AuthScreen extends ConsumerStatefulWidget {
 class _AuthScreenState extends ConsumerState<AuthScreen> {
   bool _signUp = true;
   bool _googleBusy = false;
+  bool _agreed = false;
 
   Future<void> _google() async {
     setState(() => _googleBusy = true);
@@ -89,7 +91,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    _in(2, _GoogleButton(busy: _googleBusy, onTap: _google)),
+                    _in(2, _Agreement(agreed: _agreed, onChanged: (v) => setState(() => _agreed = v))),
+                    const SizedBox(height: 14),
+                    _in(3, _GoogleButton(busy: _googleBusy, onTap: _agreed ? _google : null)),
                     const SizedBox(height: 24),
                     _in(
                       4,
@@ -118,10 +122,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(32, 0, 32, 16),
               child: TextButton(
-                onPressed: () => context.push(Routes.privacy),
+                onPressed: () => sendFeedback(context),
                 child: Text(
-                  'By continuing you agree to our Privacy Policy',
-                  style: text.bodySmall?.copyWith(decoration: TextDecoration.underline),
+                  'Your feedback matters: ${AppInfo.feedbackEmail}',
+                  style: text.bodySmall,
                   textAlign: TextAlign.center,
                 ),
               ),
@@ -197,40 +201,94 @@ class _GoogleButton extends StatelessWidget {
   const _GoogleButton({required this.busy, required this.onTap});
 
   final bool busy;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Pressable(
-      onTap: busy ? null : onTap,
-      child: Container(
-        height: 60,
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.stroke),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (busy)
-              SizedBox.square(dimension: 20, child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary))
-            else
-              Container(
-                width: 24,
-                height: 24,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(color: AppColors.primarySoft, shape: BoxShape.circle),
-                child: Text(
-                  'G',
-                  style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary, fontSize: 14),
+    return Opacity(
+      opacity: onTap == null ? 0.45 : 1,
+      child: Pressable(
+        onTap: busy ? null : onTap,
+        child: Container(
+          height: 60,
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.stroke),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (busy)
+                SizedBox.square(
+                  dimension: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.primary),
+                )
+              else
+                Container(
+                  width: 24,
+                  height: 24,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(color: AppColors.primarySoft, shape: BoxShape.circle),
+                  child: Text(
+                    'G',
+                    style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.primary, fontSize: 14),
+                  ),
                 ),
-              ),
-            const SizedBox(width: 12),
-            Text('Continue with Google', style: Theme.of(context).textTheme.titleMedium),
-          ],
+              const SizedBox(width: 12),
+              Text('Continue with Google', style: Theme.of(context).textTheme.titleMedium),
+            ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+/// The agreement: signing in needs the box ticked, with the two documents one
+/// tap away.
+class _Agreement extends StatelessWidget {
+  const _Agreement({required this.agreed, required this.onChanged});
+
+  final bool agreed;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final link = text.bodySmall?.copyWith(color: AppColors.primary, decoration: TextDecoration.underline);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Checkbox(
+          value: agreed,
+          onChanged: (v) {
+            HapticFeedback.selectionClick();
+            onChanged(v ?? false);
+          },
+        ),
+        Expanded(
+          child: Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Wrap(
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text('I agree to the ', style: text.bodySmall),
+                GestureDetector(
+                  onTap: () => context.push(Routes.privacy),
+                  child: Text('Privacy Policy', style: link),
+                ),
+                Text(' and ', style: text.bodySmall),
+                GestureDetector(
+                  onTap: () => context.push(Routes.terms),
+                  child: Text('Terms of use', style: link),
+                ),
+                Text('.', style: text.bodySmall),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

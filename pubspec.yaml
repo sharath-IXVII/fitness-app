@@ -64,6 +64,7 @@ dependencies:
   cloud_firestore: 7.0.0
   share_plus: ^13.3.1
   sensors_plus: ^7.1.1
+  url_launcher: ^6.3.3
 
 dev_dependencies:
   flutter_test:

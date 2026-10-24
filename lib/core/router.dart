@@ -17,6 +17,7 @@ import '../features/home/home_screen.dart';
 import '../features/myday/myday_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/profile/privacy_screen.dart';
+import '../features/profile/terms_screen.dart';
 import '../features/profile/profile_providers.dart';
 import '../features/progress/achievements_screen.dart';
 import '../features/progress/weekly_report_screen.dart';
@@ -66,6 +67,7 @@ abstract final class Routes {
   static const achievements = '/achievements';
   static const report = '/report';
   static const privacy = '/privacy';
+  static const terms = '/terms';
   static const challenge = '/challenge';
   static const trainingPlayer = '/train';
   static const arc = '/arc';
@@ -87,8 +89,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     refreshListenable: refresh,
     redirect: (context, state) {
       final loc = state.matchedLocation;
-      // The splash, and the privacy policy (linked from sign-in), are open to all.
-      if (loc == Routes.splash || loc == Routes.privacy) return null;
+      // The splash, and the privacy policy and terms (linked from sign-in), are open to all.
+      if (loc == Routes.splash || loc == Routes.privacy || loc == Routes.terms) return null;
       // Signed out → auth flow. Signed in → onboarding until a profile exists.
       final inAuth = loc.startsWith(Routes.auth);
       if (ref.read(authProvider) == null) return inAuth ? null : Routes.auth;
@@ -125,6 +127,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.achievements, builder: (_, _) => const AchievementsScreen()),
       GoRoute(path: Routes.report, builder: (_, _) => const WeeklyReportScreen()),
       GoRoute(path: Routes.privacy, builder: (_, _) => const PrivacyScreen()),
+      GoRoute(path: Routes.terms, builder: (_, _) => const TermsScreen()),
       GoRoute(path: Routes.profile, builder: (_, _) => const ProfileScreen()),
       GoRoute(path: Routes.arc, builder: (_, _) => const ArcScreen()),
       GoRoute(path: Routes.arcBadges, builder: (_, _) => const BadgeCollectionScreen()),

@@ -46,6 +46,8 @@ void main() {
       // Sign up with Google (demo backend).
       expect(find.text('Create your account'), findsOneWidget);
       expect(find.textContaining('phone'), findsNothing); // no phone sign-in
+      await t.tap(find.byType(Checkbox));
+      await _wait(t, 200);
       await _tap(t, 'Continue with Google');
       await _wait(t, 2800); // success animation plays over the next screen
 
@@ -129,11 +131,46 @@ void main() {
 
     await _tap(t, 'Log in');
     expect(find.text('Welcome back'), findsOneWidget);
+    await t.tap(find.byType(Checkbox));
+    await _wait(t, 200);
     await _tap(t, 'Continue with Google');
     await _wait(t, 2800);
     expect(prefs.getString('auth.demo.v1'), contains('demo.user@gmail.com'));
     // Name is pre-filled from the Google account.
     await _tap(t, 'Get started');
     expect(find.text('Demo User'), findsOneWidget);
+  });
+
+  testWidgets('signing in needs the agreement; both documents open from it', (t) async {
+    t.view.physicalSize = const Size(412, 915) * 3;
+    t.view.devicePixelRatio = 3;
+    addTearDown(t.view.reset);
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    await t.pumpWidget(_app(prefs));
+    await _wait(t, 5600);
+
+    // Without the tick, the Google button does nothing.
+    await t.tap(find.text('Continue with Google').last);
+    await _wait(t, 1200);
+    expect(prefs.getString('auth.demo.v1'), isNull);
+
+    await t.tap(find.text('Terms of use'));
+    await _wait(t);
+    expect(find.text('Your health and safety'), findsOneWidget);
+    await t.pageBack();
+    await _wait(t);
+    await t.tap(find.text('Privacy Policy'));
+    await _wait(t);
+    expect(find.text('Progress backup'), findsOneWidget);
+    await t.pageBack();
+    await _wait(t);
+
+    await t.tap(find.byType(Checkbox));
+    await _wait(t, 200);
+    await t.tap(find.text('Continue with Google').last);
+    await _wait(t, 1200);
+    expect(prefs.getString('auth.demo.v1'), contains('demo.user@gmail.com'));
+    await _wait(t, 4000); // let the success animation finish
   });
 }

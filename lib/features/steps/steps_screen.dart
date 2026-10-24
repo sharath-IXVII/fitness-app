@@ -127,7 +127,7 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        'Allow "Physical activity" so FittiePi can count steps all day and spot bike or car rides.',
+                        'Allow "Physical activity" so FitArc can count steps all day and spot bike or car rides.',
                         style: text.bodySmall,
                       ),
                     ),

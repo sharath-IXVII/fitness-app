@@ -5,7 +5,7 @@ const privacyUpdated = 'October 2026';
 const privacySections = <(String, String)>[
   (
     'Summary',
-    'FittiePi keeps your fitness data on your phone and backs your progress up to your account, so you never lose '
+    'FitArc keeps your fitness data on your phone and backs your progress up to your account, so you never lose '
         'your levels and badges. Three things leave your device: what\'s needed to sign you in, that progress '
         'backup, and, if you use Friends, a small public profile and your challenges. We don\'t sell data, show ads '
         'or use third-party analytics.',
@@ -42,7 +42,7 @@ const privacySections = <(String, String)>[
   (
     'Feedback emails',
     'If you write to us from the app, your email app sends the message to fittiepi@gmail.com. We read it to '
-        'improve FittiePi and to reply to you; we don\'t share it.',
+        'improve FitArc and to reply to you; we don\'t share it.',
   ),
   (
     'Camera during workouts',
@@ -69,10 +69,10 @@ const privacySections = <(String, String)>[
   (
     'Deleting your data',
     'Use "Delete account" in your profile (tap your picture on Today) to permanently delete your sign-in, your '
-        'progress backup, your Friends profile, friend list and challenges, and all FittiePi data on the phone. You can also email us '
+        'progress backup, your Friends profile, friend list and challenges, and all FitArc data on the phone. You can also email us '
         'to have your account deleted.',
   ),
-  ('Children', 'FittiePi is not directed at children under 13.'),
+  ('Children', 'FitArc is not directed at children under 13.'),
   (
     'Contact',
     'Questions or requests: fittiepi@gmail.com. We\'ll update this page if anything changes and show the new '

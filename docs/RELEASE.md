@@ -1,4 +1,4 @@
-# Releasing FittiePi on Google Play
+# Releasing FitArc on Google Play
 
 This is a checklist for the first Play Store release. Items marked **(you)** need your accounts or decisions.
 

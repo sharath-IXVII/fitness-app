@@ -1,6 +1,6 @@
-# FittiePi terms of use
+# FitArc terms of use
 
-_Last updated: $termsUpdated_
+_Last updated: October 2026_
 
 ## $t
 

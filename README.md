@@ -1,4 +1,4 @@
-# FittiePi (working name)
+# FitArc
 
 An alarm that only stops when you've done your workout. The phone camera counts your reps. The app also includes a full daily-routine planner, verified step counting, diet planning, food scanning and a LeetCode-style streak heatmap.
 

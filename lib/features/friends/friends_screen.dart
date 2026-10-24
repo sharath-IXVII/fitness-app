@@ -647,7 +647,7 @@ class FriendProfileScreen extends ConsumerWidget {
                         : Text(
                             async.hasError
                                 ? "Couldn't load this profile. Check your internet."
-                                : 'This person left FittiePi.',
+                                : 'This person left FitArc.',
                             style: text.bodyMedium,
                           ),
                   )

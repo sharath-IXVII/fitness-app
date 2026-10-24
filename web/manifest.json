@@ -1,6 +1,6 @@
 {
-    "name": "FittiePi",
-    "short_name": "FittiePi",
+    "name": "FitArc",
+    "short_name": "FitArc",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

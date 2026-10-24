@@ -4,11 +4,15 @@ _Last updated: October 2026_
 
 ## Summary
 
-FittiePi keeps your fitness data on your phone. Only two things leave your device: what's needed to sign you in, and, if you use Friends, a small public profile and your challenges. We don't sell data, show ads or use third-party analytics.
+FittiePi keeps your fitness data on your phone and backs your progress up to your account, so you never lose your levels and badges. Three things leave your device: what's needed to sign you in, that progress backup, and, if you use Friends, a small public profile and your challenges. We don't sell data, show ads or use third-party analytics.
 
 ## Your account
 
-When you sign in with your phone number or Google, Firebase Authentication (Google) stores your phone number or email address, your name if Google provides it, and a user ID. This is used only to sign you in.
+You sign in with Google. Firebase Authentication (Google) stores your email address, your name if Google provides it, and a user ID. This is used only to sign you in.
+
+## Progress backup
+
+So that your hard-earned levels, badges and streaks survive a lost phone or a reinstall, Cloud Firestore (Google) stores, under your account only: your profile (name, age, gender, height, weight, goal, activity level, diet and wake and sleep times), one entry per day (workout done, water, steps, meals logged and protein), the badges you have earned, the date you started and your water goal. Only you can read it; it is used to restore your progress when you sign in on a new phone, and nothing else. It is deleted when you delete your account.
 
 ## Friends and challenges
 
@@ -16,7 +20,7 @@ If you use Friends, Cloud Firestore (Google) stores a public profile that your f
 
 ## Data stored on your phone
 
-Your profile (age, height, weight, goal, diet), daily logs (workouts, water, steps, meals, protein), alarms, routines, your My Day plan, weigh-ins, weight goal, saved foods and meal photos are stored only on your device. We don't keep a copy on any server, so signing in on a new phone starts fresh. Uninstalling the app or using "Reset data on this device" removes them.
+Alarms, routines, your My Day plan, weigh-ins, weight goal, saved foods and meal photos are stored only on your device and are not backed up, so they are not restored on a new phone. Your progress backup (above) is kept in your account. Uninstalling the app or using "Reset data on this device" removes what is on the phone.
 
 ## Camera during workouts
 
@@ -28,7 +32,7 @@ Food scanning happens entirely on your phone using a built-in recognition model.
 
 ## Steps, activity and location
 
-Step counts and activity recognition (walking, cycling, in a vehicle) come from your phone's sensors and stay on your device. Location is optional: if you turn on "Use location for accuracy" or record a walk, GPS is used while the app is open to measure distance and improve step counts. Positions are processed on the phone and are never stored or sent anywhere.
+Step counts and activity recognition (walking, cycling, in a vehicle) come from your phone's motion sensors (step counter, accelerometer, gyroscope) and stay on your device; only the daily step total is part of the progress backup. Location is optional: if you turn on "Use GPS for better distance", GPS is used while the app is open to measure distance and improve step counts. Positions are processed on the phone and are never stored or sent anywhere.
 
 ## Notifications and alarms
 
@@ -36,7 +40,7 @@ Alarms and reminders are scheduled locally on your phone. No notification conten
 
 ## Deleting your data
 
-Use "Delete account" in your profile (tap your picture on Today) to permanently delete your sign-in, your Friends profile, friend list and challenges, and all FittiePi data on the phone. You can also email us to have your account deleted.
+Use "Delete account" in your profile (tap your picture on Today) to permanently delete your sign-in, your progress backup, your Friends profile, friend list and challenges, and all FittiePi data on the phone. You can also email us to have your account deleted.
 
 ## Children
 

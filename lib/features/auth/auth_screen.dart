@@ -8,15 +8,14 @@ import '../../core/app_info.dart';
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_logo.dart';
-import '../../core/widgets/gradient_button.dart';
 import '../../core/widgets/pressable.dart';
 import 'auth_providers.dart';
 import 'domain/app_user.dart';
 import 'widgets/auth_scaffold.dart';
 import 'widgets/auth_success.dart';
 
-/// First screen for signed-out users: choose Sign up or Log in, then phone
-/// or Google. Both modes use the same methods — the first sign-in creates
+/// First screen for signed-out users: choose Sign up or Log in, then
+/// continue with Google. Both modes do the same — the first sign-in creates
 /// the account — but the copy matches what the user came to do.
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -90,16 +89,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       ),
                     ),
                     const SizedBox(height: 32),
-                    _in(
-                      2,
-                      GradientButton(
-                        label: 'Continue with phone',
-                        icon: Icons.phone_iphone_rounded,
-                        onPressed: () => context.push(Routes.authPhone, extra: _signUp),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _in(3, _GoogleButton(busy: _googleBusy, onTap: _google)),
+                    _in(2, _GoogleButton(busy: _googleBusy, onTap: _google)),
                     const SizedBox(height: 24),
                     _in(
                       4,

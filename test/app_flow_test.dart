@@ -43,15 +43,10 @@ void main() {
       await t.pumpWidget(_app(prefs));
       await _wait(t, 3400);
 
-      // Sign up with phone (demo backend: code 123456).
+      // Sign up with Google (demo backend).
       expect(find.text('Create your account'), findsOneWidget);
-      await _tap(t, 'Continue with phone');
-      await t.enterText(find.byType(TextField), '9876543210');
-      await _wait(t, 200);
-      await _tap(t, 'Send code');
-      await _wait(t, 1200);
-      expect(find.text('Enter the code'), findsOneWidget);
-      await t.enterText(find.byType(TextField), '123456');
+      expect(find.textContaining('phone'), findsNothing); // no phone sign-in
+      await _tap(t, 'Continue with Google');
       await _wait(t, 2800); // success animation plays over the next screen
 
       await _tap(t, 'Get started');
@@ -123,7 +118,7 @@ void main() {
     });
   }
 
-  testWidgets('a wrong code is rejected, Google sign-in works, sign-out returns to auth', (t) async {
+  testWidgets('Google sign-in works and the name is pre-filled', (t) async {
     t.view.physicalSize = const Size(412, 915) * 3;
     t.view.devicePixelRatio = 3;
     addTearDown(t.view.reset);
@@ -134,21 +129,6 @@ void main() {
 
     await _tap(t, 'Log in');
     expect(find.text('Welcome back'), findsOneWidget);
-    await _tap(t, 'Continue with phone');
-    await t.enterText(find.byType(TextField), '9876543210');
-    await _wait(t, 200);
-    await _tap(t, 'Send code');
-    await _wait(t, 1200);
-    await t.enterText(find.byType(TextField), '000000');
-    await _wait(t, 1200);
-    expect(find.textContaining('incorrect'), findsOneWidget);
-    expect(prefs.getString('auth.demo.v1'), isNull);
-
-    // Back to the start and use Google instead.
-    await t.pageBack();
-    await _wait(t);
-    await t.pageBack();
-    await _wait(t);
     await _tap(t, 'Continue with Google');
     await _wait(t, 2800);
     expect(prefs.getString('auth.demo.v1'), contains('demo.user@gmail.com'));

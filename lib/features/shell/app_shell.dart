@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/cloud_backup.dart';
 import '../../core/reminders.dart';
 import '../../core/router.dart';
 import '../../core/storage.dart';
@@ -47,8 +48,9 @@ class _AppShellState extends ConsumerState<AppShell> {
       if (me != null) ref.read(friendsBackendProvider)?.syncProfile(me).catchError((_) {});
       ref.read(badgeVaultProvider.notifier).merge(ref.read(computedBadgesProvider));
       _announce(ref.read(achievementsProvider));
+      ref.read(cloudBackupProvider).schedule(after: const Duration(seconds: 5));
     });
-    _lifecycle = AppLifecycleListener(onResume: _replan);
+    _lifecycle = AppLifecycleListener(onResume: _replan, onPause: () => ref.read(cloudBackupProvider).push());
   }
 
   late final AppLifecycleListener _lifecycle;
@@ -173,6 +175,12 @@ class _AppShellState extends ConsumerState<AppShell> {
 
   @override
   Widget build(BuildContext context) {
+    // Progress is backed up to the account shortly after it changes.
+    final backup = ref.read(cloudBackupProvider);
+    ref.listen(dailyLogsProvider, (_, _) => backup.schedule());
+    ref.listen(profileProvider, (_, _) => backup.schedule());
+    ref.listen(badgeVaultProvider, (_, _) => backup.schedule());
+    ref.listen(waterGoalProvider, (_, _) => backup.schedule());
     ref.listen(computedBadgesProvider, (_, next) => ref.read(badgeVaultProvider.notifier).merge(next));
     ref.listen(achievementsProvider, (_, next) => _announce(next));
     // Re-plan reminders when today's workout or water goal changes, a

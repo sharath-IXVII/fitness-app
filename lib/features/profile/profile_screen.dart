@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:intl/intl.dart';
 
+import '../../core/cloud_backup.dart';
 import '../../core/local_data.dart';
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
@@ -142,19 +143,13 @@ class ProfileScreen extends ConsumerWidget {
               GlassCard(
                 child: Row(
                   children: [
-                    Icon(
-                      account?.method == SignInMethod.google ? Icons.mail_outline_rounded : Icons.phone_iphone_rounded,
-                      color: AppColors.primary,
-                    ),
+                    Icon(Icons.mail_outline_rounded, color: AppColors.primary),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Signed in with ${account?.method == SignInMethod.google ? 'Google' : 'phone'}',
-                            style: text.bodySmall,
-                          ),
+                          Text('Signed in with Google', style: text.bodySmall),
                           Text(account?.handle ?? '—', style: text.titleSmall),
                         ],
                       ),
@@ -236,6 +231,7 @@ class ProfileScreen extends ConsumerWidget {
                           // Online data first, while still signed in.
                           if (friends != null && uid != null) {
                             await friends.deleteMe(uid).timeout(const Duration(seconds: 20));
+                            await ref.read(cloudStoreProvider)?.delete(uid).timeout(const Duration(seconds: 20));
                           }
                         } catch (_) {
                           messenger.showSnackBar(

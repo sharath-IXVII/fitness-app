@@ -55,6 +55,33 @@ service cloud.firestore {
       allow update: if me() == uid && validProfile() && data().xp <= resource.data.xp + 2000;
       allow delete: if me() == uid;
 
+      // Private progress backup (per day, plus profile and badges). Only the
+      // owner can read or write it; sizes are bounded.
+      match /days/{day} {
+        allow read, delete: if me() == uid;
+        allow create, update: if me() == uid
+          && day.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+          && data().keys().hasOnly(['workout', 'water', 'steps', 'meals', 'protein'])
+          && data().workout is bool
+          && smallInt(data().water, 20000)
+          && smallInt(data().steps, 200000)
+          && smallInt(data().meals, 50)
+          && smallInt(data().protein, 2000);
+      }
+
+      match /backup/{doc} {
+        allow read, delete: if me() == uid;
+        allow create, update: if me() == uid
+          && doc == 'state'
+          && data().keys().hasOnly(['profile', 'badges', 'firstUse', 'waterGoal', 'updatedAt'])
+          && data().profile is map
+          && data().badges is map
+          && data().badges.size() <= 100
+          && data().firstUse is string && data().firstUse.size() == 10
+          && (data().get('waterGoal', null) == null || (data().waterGoal is int && data().waterGoal >= 500 && data().waterGoal <= 8000))
+          && data().updatedAt == request.time;
+      }
+
       match /friends/{fid} {
         allow read: if me() == uid || me() == fid;
         allow create, update: if (me() == uid || me() == fid)

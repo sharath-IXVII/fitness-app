@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/cloud_backup.dart';
 import '../../core/local_data.dart';
 import 'auth_service.dart';
 import 'domain/app_user.dart';
@@ -24,6 +25,9 @@ class AuthNotifier extends Notifier<AppUser?> {
   /// If the phone holds another account's data, it's cleared first.
   Future<void> signedIn(AppUser user) async {
     await ref.read(localDataProvider).claimFor(user.uid);
+    // Bring back this account's progress (levels, badges, streaks…) before
+    // the app decides whether the user still needs to set up a profile.
+    await ref.read(cloudBackupProvider).restore(user.uid);
     state = user;
   }
 

@@ -138,3 +138,45 @@ test('reports, and deleting your challenges', async () => {
   await assertSucceeds(deleteDoc(doc(as('asha'), 'codes/K7Q2MX')));
   await assertSucceeds(deleteDoc(doc(as('asha'), 'challenges/c1')));
 });
+
+const day = (over = {}) => ({ workout: true, water: 2500, steps: 9000, meals: 3, protein: 80, ...over });
+const state = (over = {}) => ({
+  profile: { name: 'Asha', age: 28 }, badges: { 'streak7:1': '2026-10-09' }, firstUse: '2026-10-01', waterGoal: 2800,
+  updatedAt: serverTimestamp(), ...over,
+});
+
+test('progress backup: private to the owner, and the shape and sizes are checked', async () => {
+  const a = as('asha');
+  await assertSucceeds(setDoc(doc(a, 'users/asha/days/2026-10-02'), day()));
+  await assertSucceeds(getDoc(doc(a, 'users/asha/days/2026-10-02')));
+  await assertSucceeds(getDocs(collection(a, 'users/asha/days')));
+  // Nobody else can read it, list it or write it, and signed-out users can't either.
+  await assertFails(getDoc(doc(as('ravi'), 'users/asha/days/2026-10-02')));
+  await assertFails(getDocs(collection(as('ravi'), 'users/asha/days')));
+  await assertFails(setDoc(doc(as('ravi'), 'users/asha/days/2026-10-03'), day()));
+  await assertFails(getDoc(doc(anon(), 'users/asha/days/2026-10-02')));
+  // Bad ids, extra fields and silly numbers are refused.
+  await assertFails(setDoc(doc(a, 'users/asha/days/yesterday'), day()));
+  await assertFails(setDoc(doc(a, 'users/asha/days/2026-10-04'), day({ evil: 1 })));
+  await assertFails(setDoc(doc(a, 'users/asha/days/2026-10-04'), day({ steps: 9999999 })));
+  await assertFails(setDoc(doc(a, 'users/asha/days/2026-10-04'), day({ workout: 'yes' })));
+  // The owner can delete it (account deletion).
+  await assertSucceeds(deleteDoc(doc(a, 'users/asha/days/2026-10-02')));
+});
+
+test('progress backup: the state document', async () => {
+  const a = as('asha');
+  await assertSucceeds(setDoc(doc(a, 'users/asha/backup/state'), state()));
+  const noGoal = state();
+  delete noGoal.waterGoal; // the water goal is optional
+  await assertSucceeds(setDoc(doc(a, 'users/asha/backup/state'), noGoal));
+  await assertFails(getDoc(doc(as('ravi'), 'users/asha/backup/state')));
+  await assertFails(setDoc(doc(as('ravi'), 'users/asha/backup/state'), state()));
+  await assertFails(setDoc(doc(a, 'users/asha/backup/other'), state()));
+  await assertFails(setDoc(doc(a, 'users/asha/backup/state'), state({ waterGoal: 99999 })));
+  await assertFails(setDoc(doc(a, 'users/asha/backup/state'), state({ firstUse: 'long ago' })));
+  await assertFails(setDoc(doc(a, 'users/asha/backup/state'), state({ extra: 'x' })));
+  await assertFails(setDoc(doc(a, 'users/asha/backup/state'), state({ badges: 'all of them' })));
+  await assertFails(setDoc(doc(a, 'users/asha/backup/state'), state({ updatedAt: 5 })));
+  await assertSucceeds(deleteDoc(doc(a, 'users/asha/backup/state')));
+});

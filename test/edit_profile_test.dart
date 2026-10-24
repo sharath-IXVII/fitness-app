@@ -49,7 +49,7 @@ void main() {
         child: const FitTrackerApp(),
       ),
     );
-    await _wait(t, 3400);
+    await _wait(t, 5600);
     await t.tap(find.byTooltip('Profile'));
     await _wait(t);
     expect(find.text('Stay fit'), findsOneWidget);

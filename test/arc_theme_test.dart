@@ -52,7 +52,7 @@ void main() {
     );
     addTearDown(container.dispose);
     await t.pumpWidget(UncontrolledProviderScope(container: container, child: const FitTrackerApp()));
-    await _wait(t, 3400);
+    await _wait(t, 5600);
 
     final season = ArcPeriod.of(DateTime.now()).season;
     expect(identical(AppColors.palette, season.palette), isTrue);

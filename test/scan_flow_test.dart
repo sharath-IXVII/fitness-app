@@ -65,7 +65,7 @@ Future<SharedPreferences> _pump(WidgetTester t, {bool model = true}) async {
       child: const FitTrackerApp(),
     ),
   );
-  await _wait(t, 3400);
+  await _wait(t, 5600);
   await t.tap(find.text('Diet').last);
   await _wait(t);
   await t.tap(find.bySemanticsLabel('Scan food'));

@@ -51,7 +51,7 @@ void main() {
         child: const FitTrackerApp(),
       ),
     );
-    await _wait(t, 3400);
+    await _wait(t, 5600);
 
     await t.tap(find.text('Diet').last);
     await _wait(t);

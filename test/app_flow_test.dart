@@ -41,7 +41,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
       await t.pumpWidget(_app(prefs));
-      await _wait(t, 3400);
+      await _wait(t, 5600);
 
       // Sign up with Google (demo backend).
       expect(find.text('Create your account'), findsOneWidget);
@@ -125,7 +125,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     await t.pumpWidget(_app(prefs));
-    await _wait(t, 3400);
+    await _wait(t, 5600);
 
     await _tap(t, 'Log in');
     expect(find.text('Welcome back'), findsOneWidget);

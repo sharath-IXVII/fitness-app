@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Android 12+ system splash: cream background with the logo tile, so
+    <!-- Android 12+ system splash: black background with the lime logo, so
          the hand-off to the in-app opening animation is seamless. -->
     <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
-        <item name="android:windowSplashScreenBackground">@color/launch_cream</item>
+        <item name="android:windowSplashScreenBackground">@color/launch_bg</item>
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
         <item name="android:windowBackground">@drawable/launch_background</item>
     </style>
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
-        <item name="android:windowBackground">@color/launch_cream</item>
+        <item name="android:windowBackground">@color/launch_bg</item>
     </style>
 </resources>

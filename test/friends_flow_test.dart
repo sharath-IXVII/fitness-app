@@ -55,7 +55,7 @@ Future<FriendsBackend?> _open(WidgetTester t, {bool online = true}) async {
       child: const FitTrackerApp(),
     ),
   );
-  await _wait(t, 3400);
+  await _wait(t, 5600);
   return backend;
 }
 

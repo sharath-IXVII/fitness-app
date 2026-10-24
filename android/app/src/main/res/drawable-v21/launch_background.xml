@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Plain canvas; the app then draws the logo in. -->
+<!-- Plain canvas in the logo black; the app then plays the opening animation. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@color/launch_cream" />
+    <item android:drawable="@color/launch_bg" />
 </layer-list>

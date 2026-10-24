@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Matches AppColors.background so launch blends into the splash. -->
-    <color name="launch_cream">#F2F6FA</color>
+    <!-- The logo black, so the launch screen continues into the opening animation. -->
+    <color name="launch_bg">#111111</color>
     <color name="ic_launcher_bg">#111111</color>
 </resources>

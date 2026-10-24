@@ -58,7 +58,7 @@ Future<(SharedPreferences, _SilentCoach)> _open(WidgetTester t) async {
       child: const FitTrackerApp(),
     ),
   );
-  await _wait(t, 3400);
+  await _wait(t, 5600);
   await t.tap(find.text('Workouts').last);
   await _wait(t);
   return (prefs, coach);

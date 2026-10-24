@@ -63,7 +63,7 @@ void main() {
         child: const FitTrackerApp(),
       ),
     );
-    await _wait(t, 3400);
+    await _wait(t, 5600);
 
     expect(find.text('8 achievements unlocked'), findsOneWidget);
     expect(prefs.getStringList('achievements.seen.v1'), hasLength(8));

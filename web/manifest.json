@@ -1,6 +1,6 @@
 {
-    "name": "Fit Tracker",
-    "short_name": "Fit Tracker",
+    "name": "FittiePi",
+    "short_name": "FittiePi",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

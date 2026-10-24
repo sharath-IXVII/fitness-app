@@ -1,4 +1,4 @@
-package com.fitalarm.fitalarm
+package com.fittiepi.app
 
 import android.content.Context
 import android.content.Intent

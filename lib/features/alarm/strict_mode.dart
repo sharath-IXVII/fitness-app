@@ -20,7 +20,7 @@ import 'alarm_scheduler.dart';
 /// What no app can do: block the power button or a forced restart. Those are
 /// reserved to the system, so strict mode makes the alarm come back instead.
 abstract final class StrictMode {
-  static const _channel = MethodChannel('fitalarm/strict');
+  static const _channel = MethodChannel('fittiepi/strict');
 
   /// Saved while a strict alarm is unresolved. Read natively after a reboot
   /// (see StrictBootReceiver.kt), so keep the key in sync.

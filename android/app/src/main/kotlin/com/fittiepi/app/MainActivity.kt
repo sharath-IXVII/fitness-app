@@ -1,4 +1,4 @@
-package com.fitalarm.fitalarm
+package com.fittiepi.app
 
 import android.content.Context
 import android.content.Intent
@@ -24,7 +24,7 @@ import io.flutter.plugin.common.MethodChannel
  * app, a full-screen "Your alarm is still on" panel covers other apps and the
  * app brings itself back. Showing the panel is also what lets Android 15+
  * allow the app to reopen itself. The Dart side drives this over the
- * "fitalarm/strict" channel.
+ * "fittiepi/strict" channel.
  */
 class MainActivity : FlutterActivity() {
     companion object {
@@ -55,7 +55,7 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fitalarm/strict").setMethodCallHandler { call, result ->
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fittiepi/strict").setMethodCallHandler { call, result ->
             when (call.method) {
                 "engage" -> {
                     engageStrict()

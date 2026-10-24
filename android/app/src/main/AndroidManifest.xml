@@ -27,7 +27,7 @@
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" tools:node="remove"/>
 
     <application
-        android:label="Fit Tracker"
+        android:label="FittiePi"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

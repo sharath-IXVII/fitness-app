@@ -1,4 +1,4 @@
-# Fit Tracker launch: what you need to do
+# FittiePi launch: what you need to do
 
 These steps need your accounts or decisions; nothing here can be done from code. Do them in this order. Each says how long it takes.
 
@@ -14,10 +14,10 @@ Suggestion: `com.sharath.fittracker` (it has to be unique on Play, so a personal
 
 Friends, challenges and real sign-in need this. It's free at your size (the Spark plan).
 
-1. Go to https://console.firebase.google.com, then **Add project**. Name it "Fit Tracker". Google Analytics: off is fine.
+1. Go to https://console.firebase.google.com, then **Add project**. Name it "FittiePi". Google Analytics: off is fine.
 2. Click the **Android** icon to add an app.
    - **Package name:** the one from step 1, exactly.
-   - **App nickname:** Fit Tracker.
+   - **App nickname:** FittiePi.
    - **SHA-1:** leave it empty for now; I'll get you the value (step 3).
 3. Download **google-services.json** and send it to me. It is meant to ship inside the app; it isn't a password.
 4. Left menu: **Build → Authentication → Get started.**

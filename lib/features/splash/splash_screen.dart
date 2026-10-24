@@ -111,6 +111,28 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                   ),
                 ),
               ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 28,
+                child: SafeArea(
+                  top: false,
+                  child: Opacity(
+                    opacity: _seg(0.8, 1.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'SPONSORED BY',
+                          style: text.labelSmall?.copyWith(color: AppColors.textTertiary, letterSpacing: 2.4),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(AppInfo.sponsor, style: text.titleMedium?.copyWith(color: AppColors.primary)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ],
           );
         },

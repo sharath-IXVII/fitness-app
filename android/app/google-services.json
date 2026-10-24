@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "508660609438",
+    "project_id": "fittiepi",
+    "storage_bucket": "fittiepi.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:508660609438:android:9023c0b4f3efca34fae68f",
+        "android_client_info": {
+          "package_name": "com.fittiepi.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "508660609438-3akn2jojukoc97k26iplom6qnabjfhfi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fittiepi.app",
+            "certificate_hash": "dde0acf208046c301bc27b999af36f715622e289"
+          }
+        },
+        {
+          "client_id": "508660609438-3ik4u68b6rhlnh935vlevrraoi42qfgi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB21pbhjJ6asb6W73WHafMk3M2Vnc8OB-c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "508660609438-3ik4u68b6rhlnh935vlevrraoi42qfgi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

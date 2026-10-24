@@ -5,7 +5,7 @@ const privacyUpdated = 'October 2026';
 const privacySections = <(String, String)>[
   (
     'Summary',
-    'Fit Tracker keeps your fitness data on your phone. Only two things leave your device: what\'s needed to sign '
+    'FittiePi keeps your fitness data on your phone. Only two things leave your device: what\'s needed to sign '
         'you in, and, if you use Friends, a small public profile and your challenges. We don\'t sell data, show ads '
         'or use third-party analytics.',
   ),
@@ -53,10 +53,10 @@ const privacySections = <(String, String)>[
   (
     'Deleting your data',
     'Use "Delete account" in your profile (tap your picture on Today) to permanently delete your sign-in, your '
-        'Friends profile, friend list and challenges, and all Fit Tracker data on the phone. You can also email us '
+        'Friends profile, friend list and challenges, and all FittiePi data on the phone. You can also email us '
         'to have your account deleted.',
   ),
-  ('Children', 'Fit Tracker is not directed at children under 13.'),
+  ('Children', 'FittiePi is not directed at children under 13.'),
   (
     'Contact',
     'Questions or requests: [your contact email]. We\'ll update this page if anything changes and show the new '

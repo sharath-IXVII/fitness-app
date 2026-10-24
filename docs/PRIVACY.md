@@ -1,10 +1,10 @@
-# Fit Tracker privacy policy
+# FittiePi privacy policy
 
 _Last updated: October 2026_
 
 ## Summary
 
-Fit Tracker keeps your fitness data on your phone. Only two things leave your device: what's needed to sign you in, and, if you use Friends, a small public profile and your challenges. We don't sell data, show ads or use third-party analytics.
+FittiePi keeps your fitness data on your phone. Only two things leave your device: what's needed to sign you in, and, if you use Friends, a small public profile and your challenges. We don't sell data, show ads or use third-party analytics.
 
 ## Your account
 
@@ -36,11 +36,11 @@ Alarms and reminders are scheduled locally on your phone. No notification conten
 
 ## Deleting your data
 
-Use "Delete account" in your profile (tap your picture on Today) to permanently delete your sign-in, your Friends profile, friend list and challenges, and all Fit Tracker data on the phone. You can also email us to have your account deleted.
+Use "Delete account" in your profile (tap your picture on Today) to permanently delete your sign-in, your Friends profile, friend list and challenges, and all FittiePi data on the phone. You can also email us to have your account deleted.
 
 ## Children
 
-Fit Tracker is not directed at children under 13.
+FittiePi is not directed at children under 13.
 
 ## Contact
 

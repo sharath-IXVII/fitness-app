@@ -1,4 +1,4 @@
-package com.fitalarm.fitalarm
+package com.fittiepi.app
 
 import android.app.Notification
 import android.app.NotificationChannel

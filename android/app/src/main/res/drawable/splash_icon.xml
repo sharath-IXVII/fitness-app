@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The FittiePi mark for the Android 12+ system splash; the app then plays the
-     opening animation in the colours of the current season. -->
+<!-- Android 12+ shows a launch icon by default. This one is empty on purpose:
+     the launch screen is just the light background, and the app then plays
+     its own opening (the season's weather, then the logo). -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="240dp"
-    android:height="240dp"
-    android:viewportWidth="240"
-    android:viewportHeight="240">
-    <group android:scaleX="0.3" android:scaleY="0.3" android:translateX="-110.4" android:translateY="-36.45">
-        <path android:fillColor="#B4FF0A" android:pathData="M595,316 L863,316 L941,397 L675,397 L675,518 L595,433 Z"/>
-        <path android:fillColor="#B4FF0A" android:pathData="M703,467 L839,467 L839,545 L759,545 L759,727 L668,635 L668,527 L703,562 Z"/>
-        <path android:fillColor="#B4FF0A" android:pathData="M817,414 L885,414 L932,467 L932,560 L851,627 L851,467 Z"/>
-    </group>
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path android:pathData="M0,0h1v1h-1z" android:fillColor="#00000000"/>
 </vector>

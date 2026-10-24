@@ -4,11 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/app_info.dart';
 import '../../core/router.dart';
-import '../../core/theme/app_colors.dart';
-import '../../core/widgets/app_logo.dart';
 import '../alarm/alarm_scheduler.dart';
+import '../arcs/arc_providers.dart';
 import '../auth/auth_providers.dart';
 import '../profile/profile_providers.dart';
+import 'season_weather.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -17,14 +17,13 @@ class SplashScreen extends ConsumerStatefulWidget {
   ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-/// Opening sequence. It continues straight from the Android launch screen
-/// (the lime logo on black), so nothing jumps:
-///   1. the lime logo holds where the launch screen drew it,
-///   2. it turns into the logo of the current season, which assembles with
-///      that season's weather,
-///   3. the app name rises in letter by letter, then the tagline,
-///   4. "Sponsored by GetYr_io" fades in and stays for a moment,
-///   5. the logo flies (Hero) to its place on the next screen.
+/// Opening sequence, on a light background that continues from the Android
+/// launch screen:
+///   1. the season's weather arrives across the whole screen (snowfall in
+///      Winter, petals, golden light or rain),
+///   2. the logo assembles in the season's colours,
+///   3. "FITTIEPI" and "The Rise of Arcs" appear,
+///   4. "Sponsored by GetYr_io" fades in at the bottom and stays a moment.
 class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerProviderStateMixin {
   static const _total = Duration(milliseconds: 5200);
   late final _c = AnimationController(vsync: this, duration: _total);
@@ -65,44 +64,55 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    const bg = Color(0xFF111111);
+    final season = ref.watch(themeSeasonProvider);
+    final look = SeasonLook.of(season);
+    const ink = Color(0xFF14233F);
+    const slate = Color(0xFF5C6B86);
     return Scaffold(
-      backgroundColor: bg,
+      backgroundColor: SeasonLook.launch,
       body: AnimatedBuilder(
         animation: _c,
         builder: (context, _) {
-          // 0–0.14 the lime logo holds; 0.14–0.2 it hands over to the season's logo.
-          final handOver = _seg(0.14, 0.22, Curves.easeInOut);
-          final draw = _seg(0.16, 0.5, Curves.linear);
-          final lift = _seg(0.5, 0.68);
+          final seconds = _c.value * _total.inMilliseconds / 1000;
+          // The launch colour melts into the season's own light gradient.
+          final tint = _seg(0.0, 0.14, Curves.easeOut);
+          final weather = _seg(0.02, 0.3, Curves.easeOut);
+          final mark = _seg(0.28, 0.58, Curves.linear);
+          final shine = _seg(0.56, 0.74, Curves.easeInOut);
+          final rise = _seg(0.5, 0.66);
           return Stack(
             fit: StackFit.expand,
-            alignment: Alignment.center,
             children: [
+              Opacity(
+                opacity: tint,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [look.top, look.bottom],
+                    ),
+                  ),
+                ),
+              ),
+              CustomPaint(
+                painter: SeasonWeatherPainter(season: season, seconds: seconds, intensity: weather),
+              ),
               Center(
                 child: Transform.translate(
-                  offset: Offset(0, -56 * lift),
-                  child: SizedBox.square(
-                    dimension: 132,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Opacity(
-                          opacity: 1 - handOver,
-                          child: Transform.scale(
-                            scale: 1 - 0.15 * handOver,
-                            child: const SizedBox.square(dimension: 132, child: CustomPaint(painter: _LimeMark())),
-                          ),
-                        ),
-                        if (handOver > 0) AppLogo(size: 132, progress: draw, alive: true),
-                      ],
+                  offset: Offset(0, -34 * rise),
+                  child: SizedBox(
+                    width: 150,
+                    height: 150,
+                    child: CustomPaint(
+                      painter: BrandMarkPainter(look: look, progress: mark, shine: shine),
                     ),
                   ),
                 ),
               ),
               Center(
                 child: Transform.translate(
-                  offset: const Offset(0, 62),
+                  offset: const Offset(0, 84),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -110,14 +120,21 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                         fit: BoxFit.scaleDown,
                         child: _Letters(
                           text: AppInfo.name.toUpperCase(),
-                          progress: _seg(0.5, 0.74),
-                          style: text.displaySmall?.copyWith(letterSpacing: 4, color: Colors.white),
+                          progress: _seg(0.56, 0.78),
+                          style: text.displaySmall?.copyWith(letterSpacing: 5, color: ink),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       Opacity(
-                        opacity: _seg(0.66, 0.8),
-                        child: Text(AppInfo.tagline, style: text.bodyMedium?.copyWith(color: Colors.white70)),
+                        opacity: _seg(0.7, 0.84),
+                        child: Text(
+                          AppInfo.tagline,
+                          style: text.titleSmall?.copyWith(
+                            color: slate,
+                            letterSpacing: 1.6,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -126,24 +143,42 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
               Positioned(
                 left: 0,
                 right: 0,
-                bottom: 36,
+                bottom: 40,
                 child: SafeArea(
                   top: false,
                   child: Opacity(
-                    opacity: _seg(0.74, 0.86),
+                    opacity: _seg(0.76, 0.9),
                     child: Transform.translate(
-                      offset: Offset(0, 8 * (1 - _seg(0.74, 0.86))),
+                      offset: Offset(0, 10 * (1 - _seg(0.76, 0.9))),
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          Container(
+                            width: 120 * _seg(0.78, 0.92),
+                            height: 1.2,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  look.markLight.withValues(alpha: 0),
+                                  look.markDeep,
+                                  look.markLight.withValues(alpha: 0),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
                           Text(
                             'SPONSORED BY',
-                            style: text.labelSmall?.copyWith(color: Colors.white54, letterSpacing: 2.8),
+                            style: text.labelSmall?.copyWith(color: const Color(0xFF7C8AA3), letterSpacing: 3.2),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             AppInfo.sponsor,
-                            style: text.titleLarge?.copyWith(color: AppColors.energyLight, letterSpacing: 1.2),
+                            style: text.titleLarge?.copyWith(
+                              color: ink,
+                              letterSpacing: 1.4,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ],
                       ),
@@ -157,44 +192,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
       ),
     );
   }
-}
-
-/// The lime logo exactly as the Android launch screen draws it (traced from
-/// the master artwork, same 346×411 shape).
-class _LimeMark extends CustomPainter {
-  const _LimeMark();
-
-  static const _blocks = <List<Offset>>[
-    [Offset(595, 316), Offset(863, 316), Offset(941, 397), Offset(675, 397), Offset(675, 518), Offset(595, 433)],
-    [
-      Offset(703, 467),
-      Offset(839, 467),
-      Offset(839, 545),
-      Offset(759, 545),
-      Offset(759, 727),
-      Offset(668, 635),
-      Offset(668, 527),
-      Offset(703, 562),
-    ],
-    [Offset(817, 414), Offset(885, 414), Offset(932, 467), Offset(932, 560), Offset(851, 627), Offset(851, 467)],
-  ];
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Same placement as splash_icon.xml: the mark is 0.3 of a 240 box.
-    canvas.save();
-    canvas.translate(size.width / 2, size.height / 2);
-    canvas.scale(size.width / 240 * 0.3);
-    canvas.translate(-768, -521.5);
-    final paint = Paint()..color = const Color(0xFFB4FF0A);
-    for (final b in _blocks) {
-      canvas.drawPath(Path()..addPolygon(b, true), paint);
-    }
-    canvas.restore();
-  }
-
-  @override
-  bool shouldRepaint(_LimeMark old) => false;
 }
 
 /// Reveals [text] one letter at a time, each fading in as it rises.

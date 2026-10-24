@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Android 12+ system splash: black background with the lime logo, so
+    <!-- Android 12+ system splash: light background, so
          the hand-off to the in-app opening animation is seamless. -->
     <style name="LaunchTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowSplashScreenBackground">@color/launch_bg</item>

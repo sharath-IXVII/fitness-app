@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- The logo black, so the launch screen continues into the opening animation. -->
-    <color name="launch_bg">#111111</color>
-    <color name="ic_launcher_bg">#111111</color>
+    <!-- Light, so the launch screen flows into the opening animation. -->
+    <color name="launch_bg">#F4F8FD</color>
 </resources>

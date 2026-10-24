@@ -14,48 +14,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "508660609438-1m2ohimq179teb8rd812moreq23eff3p.apps.googleusercontent.com",
+          "client_id": "508660609438-cdeutesf1t4op29f9q34jhsp5q86t6cc.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.GetYr_io.fittiePi",
-            "certificate_hash": "dde0acf208046c301bc27b999af36f715622e289"
-          }
-        },
-        {
-          "client_id": "508660609438-3ik4u68b6rhlnh935vlevrraoi42qfgi.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyB21pbhjJ6asb6W73WHafMk3M2Vnc8OB-c"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "508660609438-3ik4u68b6rhlnh935vlevrraoi42qfgi.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:508660609438:android:9023c0b4f3efca34fae68f",
-        "android_client_info": {
-          "package_name": "com.fittiepi.app"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "508660609438-3akn2jojukoc97k26iplom6qnabjfhfi.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.fittiepi.app",
-            "certificate_hash": "dde0acf208046c301bc27b999af36f715622e289"
+            "certificate_hash": "944cf420b3ee30667bf44c982131492272f817e0"
           }
         },
         {

@@ -58,6 +58,22 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
   String? _error;
 
   /// A guess is added automatically only when the model is fairly sure.
+  /// Everyday dishes offered when the model can't tell, one tap each.
+  static const _commonDishes = [
+    'roti',
+    'rice',
+    'dal',
+    'rajma',
+    'chole',
+    'paratha',
+    'idli',
+    'dosa',
+    'boiled_egg',
+    'chicken_curry',
+    'aloo_gobi',
+    'salad',
+  ];
+
   static const autoAddScore = 0.3;
   static const maxAutoAdd = 4;
 
@@ -291,17 +307,17 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
                           _items.isNotEmpty
                               ? '${total.kcal.round()} kcal'
                               : recognised
-                              ? 'Pick the dish'
-                              : 'Not recognised',
+                              ? 'What\'s on your plate?'
+                              : 'Couldn\'t tell what this is',
                           style: text.headlineSmall,
                         ),
                         Text(
                           _items.isNotEmpty
                               ? '${total.protein.round()} g protein · ${total.carbs.round()} g carbs · '
-                                    '${total.fiber.round()} g fiber'
+                                    '${total.fat.round()} g fat'
                               : recognised
-                              ? 'Tap what\'s on your plate below.'
-                              : 'Try closer and in better light, or search for it.',
+                              ? 'Tap the dish that matches. You\'ll see its calories, protein, carbs and fat.'
+                              : 'Pick it from the common dishes below, or search for it.',
                           style: text.bodyMedium,
                         ),
                       ],
@@ -311,7 +327,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
               ),
               if (recognised) ...[
                 const SizedBox(height: 18),
-                Text('Looks like', style: text.titleSmall),
+                Text('Could be', style: text.titleSmall),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -322,6 +338,23 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
                   ],
                 ),
               ],
+              const SizedBox(height: 16),
+              Text(recognised ? 'Not there? Common dishes' : 'Common dishes', style: text.titleSmall),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  for (final id in _commonDishes)
+                    if (ref.watch(allFoodsByIdProvider)[id] case final food?)
+                      _GuessChip(
+                        guess: FoodGuess(label: food.name, score: 1, food: food),
+                        selected: _isChosen(food),
+                        showPercent: false,
+                        onTap: () => _toggle(FoodGuess(label: food.name, score: 1, food: food)),
+                      ),
+                ],
+              ),
               const SizedBox(height: 16),
               for (final (i, item) in _items.indexed)
                 Padding(
@@ -387,9 +420,10 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
 /// One model guess: name and confidence. Guesses without nutrition data
 /// open the food search instead.
 class _GuessChip extends StatelessWidget {
-  const _GuessChip({required this.guess, required this.selected, required this.onTap});
+  const _GuessChip({required this.guess, required this.selected, required this.onTap, this.showPercent = true});
 
   final FoodGuess guess;
+  final bool showPercent;
   final bool selected;
   final VoidCallback onTap;
 
@@ -397,6 +431,7 @@ class _GuessChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final known = guess.food != null;
+    final m = guess.food?.macros ?? const Macros();
     return Pressable(
       onTap: onTap,
       scale: 0.96,
@@ -417,14 +452,32 @@ class _GuessChip extends StatelessWidget {
               color: selected ? Colors.white : AppColors.primary,
             ),
             const SizedBox(width: 6),
-            Text(
-              known ? guess.food!.name : guess.label,
-              style: text.labelLarge?.copyWith(color: selected ? Colors.white : AppColors.textPrimary),
-            ),
-            const SizedBox(width: 6),
-            Text(
-              '${guess.percent}%',
-              style: text.labelSmall?.copyWith(color: selected ? Colors.white70 : AppColors.textTertiary),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      known ? guess.food!.name : guess.label,
+                      style: text.labelLarge?.copyWith(color: selected ? Colors.white : AppColors.textPrimary),
+                    ),
+                    if (showPercent) ...[
+                      const SizedBox(width: 6),
+                      Text(
+                        '${guess.percent}%',
+                        style: text.labelSmall?.copyWith(color: selected ? Colors.white70 : AppColors.textTertiary),
+                      ),
+                    ],
+                  ],
+                ),
+                if (known)
+                  Text(
+                    '${m.kcal.round()} kcal · P ${m.protein.round()} · C ${m.carbs.round()} · F ${m.fat.round()}',
+                    style: text.labelSmall?.copyWith(color: selected ? Colors.white70 : AppColors.textSecondary),
+                  ),
+              ],
             ),
           ],
         ),

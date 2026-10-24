@@ -57,4 +57,14 @@ void main() {
     expect(merged.first.$2, closeTo(0.765, 1e-9)); // region score, weighted
     expect(merged[1].$2, closeTo(0.425, 1e-9));
   });
+
+  test('breads and plain rice labels find their foods', () {
+    final byId = {for (final f in foods) f.id: f};
+    for (final l in ['Chapati', 'flatbread', 'Naan', 'tortilla', 'Phulka']) {
+      expect(matchFood(l, byId)?.id, 'roti', reason: l);
+    }
+    expect(matchFood('boiled rice', byId)?.id, 'rice');
+    expect(matchFood('Fish curry', byId)?.id, 'fish_curry'); // exact rules still win
+    expect(matchFood('veg biryani', byId)?.id, 'veg_biryani');
+  });
 }

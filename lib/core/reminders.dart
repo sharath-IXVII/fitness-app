@@ -181,12 +181,22 @@ abstract final class Reminders {
     }
   }
 
+  /// Friendly, varied water nudges; the action button logs a glass.
+  static const _waterTexts = <(String, String)>[
+    ('Water break 💧', 'Your body will thank you. Tap "Yes" if you just had a glass.'),
+    ('Sip sip hooray! 🥤', 'A glass now keeps your energy up. Tap "Yes" to log it.'),
+    ('Hydration check 💦', 'Small sips, big wins. Had a glass?'),
+    ('Quick water stop 🌊', 'Future you says thanks. Tap "Yes" and it\'s logged.'),
+    ('Glass o\'clock 🥛', 'You\'re doing great today. Had some water?'),
+    ('Stay topped up 💧', 'Your goal is closer than you think. Had a glass?'),
+  ];
+
   static String _title(DayBlock b) => switch (b.kind) {
-    BlockKind.wake => 'Good morning ☀️',
-    BlockKind.water => 'Time for water 💧',
-    BlockKind.sleep => 'Wind down for bed 🌙',
+    BlockKind.wake => 'Rise and shine ☀️',
+    BlockKind.water => 'Water break 💧',
+    BlockKind.sleep => 'Time to wind down 🌙',
     _ when b.kind.isMeal => '${b.name} time 🍽️',
-    BlockKind.workout => 'Workout time 💪',
+    BlockKind.workout => 'Let\'s move! 💪',
     _ => b.name,
   };
 
@@ -194,9 +204,10 @@ abstract final class Reminders {
     final at = '${b.time.hour.toString().padLeft(2, '0')}:${b.time.minute.toString().padLeft(2, '0')}';
     if (b.leadMinutes > 0) return '${b.name} starts in ${b.leadMinutes} min ($at)';
     return switch (b.kind) {
+      BlockKind.wake => 'A new day, a new chance. Let\'s make it count!',
       BlockKind.water => 'A glass now keeps you on track for today.',
-      _ when b.kind.isMeal => 'Log what you eat to hit your protein target.',
-      BlockKind.sleep => 'A good night makes tomorrow\'s alarm easier.',
+      _ when b.kind.isMeal => 'Fuel up, and log it to hit your protein target.',
+      BlockKind.sleep => 'A good night\'s sleep makes tomorrow\'s alarm so much easier.',
       _ => b.minutes > 0 ? '$at · ${b.minutes} min' : at,
     };
   }
@@ -225,8 +236,8 @@ abstract final class Reminders {
         if (!at.isAfter(now)) continue;
         await _plugin.zonedSchedule(
           id: _waterBase + d * 100 + i,
-          title: 'Time for water 💧',
-          body: 'Had a glass? Tap "Yes" and it\'s logged.',
+          title: _waterTexts[(d * 5 + i) % _waterTexts.length].$1,
+          body: _waterTexts[(d * 5 + i) % _waterTexts.length].$2,
           scheduledDate: at,
           notificationDetails: const NotificationDetails(android: _waterChannel, iOS: DarwinNotificationDetails()),
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,

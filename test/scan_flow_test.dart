@@ -88,12 +88,14 @@ void main() {
     await _wait(t, 800);
 
     // The confident guess is added; the others are offered as chips.
-    expect(find.text('Looks like'), findsOneWidget);
+    expect(find.text('Could be'), findsOneWidget);
+    expect(find.text('Common dishes'), findsNothing); // the heading says "Not there? Common dishes"
+    expect(find.text('Not there? Common dishes'), findsOneWidget);
     expect(find.text('71%'), findsOneWidget);
     expect(find.text('440 kcal'), findsWidgets);
 
     // Add the second guess too, then remove it again.
-    await t.tap(find.text('Chicken curry'));
+    await t.tap(find.text('Chicken curry').first);
     await _wait(t, 300);
     expect(find.text('740 kcal'), findsOneWidget);
     await t.tap(find.text('Chicken curry').first);
@@ -101,7 +103,15 @@ void main() {
     expect(find.text('440 kcal'), findsWidgets);
 
     // One and a half servings.
+    await t.scrollUntilVisible(
+      find.byTooltip('Edit Butter chicken'),
+      200,
+      scrollable: find.byType(Scrollable).hitTestable().first,
+    );
+    await _wait(t, 300);
     await t.tap(find.byIcon(Icons.add_rounded).hitTestable().last);
+    await _wait(t, 300);
+    await t.drag(find.byType(Scrollable).hitTestable().first, const Offset(0, 2000)); // back to the top
     await _wait(t, 300);
     expect(find.text('660 kcal'), findsWidgets);
 

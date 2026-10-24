@@ -165,6 +165,20 @@ const _contains = [
   ('omelette', 'omelette'),
   ('pancake', 'pancake'),
   ('paratha', 'paratha'),
+  // Breads the model often calls by another name.
+  ('chapati', 'roti'),
+  ('phulka', 'roti'),
+  ('flatbread', 'roti'),
+  ('naan', 'roti'),
+  ('tortilla', 'roti'),
+  ('pita', 'roti'),
+  ('puri', 'paratha'),
+  ('bhatura', 'chole_bhature'),
+  ('lentil', 'dal'),
+  ('egg', 'boiled_egg'),
+  ('curd', 'curd'),
+  ('yogurt', 'curd'),
+  ('rice', 'rice'),
 ];
 
 /// The food in [byId] that best matches a model [label], or null.

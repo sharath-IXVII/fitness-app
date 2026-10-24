@@ -208,7 +208,7 @@ abstract final class AlarmScheduler {
           id: a.id,
           at: a.nextOccurrence(now),
           info: RingInfo.forAlarm(a, routine.id),
-          body: 'Finish your ${routine.name.toLowerCase()} routine to stop the alarm',
+          body: 'Rise and move! Finish your ${routine.name.toLowerCase()} routine to stop the alarm 💪',
         ),
       );
     }
@@ -230,7 +230,7 @@ abstract final class AlarmScheduler {
         id: recoveryId,
         at: DateTime.now().add(const Duration(seconds: 3)),
         info: info,
-        body: 'Your alarm is still on — finish it to turn it off',
+        body: 'Your alarm is still on. Finish your workout to switch it off, you\'ve got this!',
       ),
     );
   }
@@ -243,7 +243,7 @@ abstract final class AlarmScheduler {
         id: watchdogId,
         at: DateTime.now().add(idleTimeout),
         info: info,
-        body: "You stopped moving — finish your workout to silence this",
+        body: "You stopped moving. Keep going, you're almost there! 🔥",
       ),
     );
   }
@@ -258,7 +258,7 @@ abstract final class AlarmScheduler {
         id: snoozeIdFor(info.alarmId),
         at: DateTime.now().add(Duration(minutes: info.snoozeMinutes)),
         info: info.copyWith(snoozesLeft: info.snoozesLeft - 1),
-        body: 'Snooze is over — time to move',
+        body: 'Snooze is over. Let\'s go, you\'ve got this! 💪',
       ),
     );
   }

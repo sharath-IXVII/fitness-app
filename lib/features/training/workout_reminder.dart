@@ -86,5 +86,12 @@ final workoutReminderProvider = NotifierProvider<WorkoutReminderNotifier, Workou
     }
     return ('Day $next is ready 💪', '${c.title}: about ${c.workoutFor(next, e.value.level)!.minutes} minutes.');
   }
-  return ('Workout time 💪', 'A quick session keeps your $arcName streak alive.');
+  // A little variety, but the same text for the same date.
+  final texts = [
+    ('Your arc is calling 💪', 'A quick session keeps your $arcName streak alive.'),
+    ('Let\'s move! 🔥', 'Even 10 minutes counts toward your $arcName.'),
+    ('Ready when you are 🏋️', 'Small wins add up. Your $arcName streak is counting on you.'),
+    ('Time to shine ✨', 'One workout makes the whole day better.'),
+  ];
+  return texts[(day.day + day.month) % texts.length];
 }

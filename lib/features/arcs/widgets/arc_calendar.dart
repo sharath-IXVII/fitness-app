@@ -16,14 +16,14 @@ extension ArcLock on Season {
   /// "break the ice", "break the chains", …
   String get unlockVerb => switch (this) {
     Season.winter => 'break the ice',
-    Season.revolution => 'break the chains',
+    Season.spring => 'let it bloom',
     Season.summer => 'put out the fire',
     Season.monsoon => 'make it bloom',
   };
 
   String get lockedLabel => switch (this) {
     Season.winter => 'Frozen',
-    Season.revolution => 'Chained',
+    Season.spring => 'Budding',
     Season.summer => 'On fire',
     Season.monsoon => 'Dry',
   };
@@ -389,8 +389,8 @@ class _CellPainter extends CustomPainter {
       switch (season) {
         case Season.winter:
           _ice(canvas, size);
-        case Season.revolution:
-          _chains(canvas, size);
+        case Season.spring:
+          _buds(canvas, size);
         case Season.summer:
           _fire(canvas, size);
         case Season.monsoon:
@@ -476,7 +476,7 @@ class _CellPainter extends CustomPainter {
     }
   }
 
-  void _chains(Canvas canvas, Size size) {
+  void _buds(Canvas canvas, Size size) {
     final rect = Offset.zero & size;
     canvas.drawRect(
       rect,
@@ -487,25 +487,20 @@ class _CellPainter extends CustomPainter {
           end: Alignment.bottomRight,
         ).createShader(rect),
     );
-    // Three links across the cell; each goal done breaks one.
+    // Three buds across the cell; each goal done opens one into a blossom.
     final w = size.width, h = size.height;
-    final link = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = math.max(1.2, w * 0.09)
-      ..color = const Color(0xFFB9A39C);
-    final broken = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = math.max(1.2, w * 0.09)
-      ..color = p.energy;
+    final bud = Paint()..color = const Color(0xFF8E6A79);
+    final bloom = Paint()..color = p.energyLight;
     for (var i = 0; i < 3; i++) {
-      final cx = w * (0.22 + i * 0.28);
-      final r = Rect.fromCenter(center: Offset(cx, h * 0.5), width: w * 0.36, height: h * 0.26);
+      final c = Offset(w * (0.2 + i * 0.3), h * 0.5);
       if (i < count) {
-        // Snapped: two open halves.
-        canvas.drawArc(r.translate(-w * 0.03, -h * 0.04), math.pi * 0.6, math.pi * 0.9, false, broken);
-        canvas.drawArc(r.translate(w * 0.03, h * 0.04), -math.pi * 0.4, math.pi * 0.9, false, broken);
+        for (var k = 0; k < 5; k++) {
+          final a = k * 2 * math.pi / 5;
+          canvas.drawCircle(c + Offset(math.cos(a), math.sin(a)) * w * 0.07, w * 0.065, bloom);
+        }
+        canvas.drawCircle(c, w * 0.04, Paint()..color = p.energy);
       } else {
-        canvas.drawOval(r, link);
+        canvas.drawOval(Rect.fromCenter(center: c, width: w * 0.13, height: h * 0.2), bud);
       }
     }
   }

@@ -4,7 +4,7 @@ import '../../../core/theme/palette.dart';
 import '../../streaks/domain/daily_log.dart';
 
 /// Falling or rising particles drawn behind every page.
-enum ArcEffect { snow, embers, sun, rain }
+enum ArcEffect { snow, petals, sun, rain }
 
 /// The four three-month arcs of the year. The app's look follows the arc
 /// for today's date, so it changes by itself without an update.
@@ -19,15 +19,15 @@ enum Season {
     effect: ArcEffect.snow,
     tiers: ('Winter Survivor', 'Winter Warrior', 'Master of Winter'),
   ),
-  revolution(
-    title: 'Rise of Revolution',
+  spring(
+    title: 'Spring Arc',
     months: 'Jan – Mar',
     firstMonth: 1,
-    tagline: 'New year. New you. Start the revolution.',
-    palette: Palette.revolution,
-    icon: Icons.local_fire_department_rounded,
-    effect: ArcEffect.embers,
-    tiers: ('Rebel', 'Revolutionary', 'Leader of the Revolution'),
+    tagline: 'Bloom while the year is young.',
+    palette: Palette.spring,
+    icon: Icons.local_florist_rounded,
+    effect: ArcEffect.petals,
+    tiers: ('Spring Sprout', 'Spring Bloomer', 'Master of Spring'),
   ),
   summer(
     title: 'Summer Arc',
@@ -76,7 +76,7 @@ enum Season {
     >= 10 => winter,
     >= 7 => monsoon,
     >= 4 => summer,
-    _ => revolution,
+    _ => spring,
   };
 
   String tierName(ArcTier t) => switch (t) {

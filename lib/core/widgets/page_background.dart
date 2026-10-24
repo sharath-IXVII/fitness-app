@@ -8,7 +8,7 @@ import '../../features/arcs/domain/arc.dart';
 import '../theme/app_colors.dart';
 
 /// Page canvas shared by every screen, with the current arc's weather
-/// drifting behind the content: snow, embers, sunlight or rain.
+/// drifting behind the content: snow, petals, sunlight or rain.
 class PageBackground extends ConsumerWidget {
   const PageBackground({super.key, required this.child});
 
@@ -112,8 +112,8 @@ class _WeatherPainter extends CustomPainter {
     switch (effect) {
       case ArcEffect.snow:
         _snow(canvas, size, t);
-      case ArcEffect.embers:
-        _embers(canvas, size, t);
+      case ArcEffect.petals:
+        _petals(canvas, size, t);
       case ArcEffect.sun:
         _sun(canvas, size, t);
       case ArcEffect.rain:
@@ -148,16 +148,20 @@ class _WeatherPainter extends CustomPainter {
     }
   }
 
-  void _embers(Canvas canvas, Size size, double t) {
-    final paint = Paint()..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5);
+  void _petals(Canvas canvas, Size size, double t) {
+    final paint = Paint();
     for (var i = 0; i < count; i++) {
-      final speed = 0.5 + _r(i, 1) * 0.9;
+      final speed = 0.4 + _r(i, 1) * 0.7;
       final p = (_r(i, 2) + t * speed * 2) % 1.0;
-      final y = size.height + 10 - p * (size.height + 20);
-      final x = _r(i, 4) * size.width + math.sin((t * 5 + _r(i, 3)) * math.pi * 2) * 14;
+      final y = -10 + p * (size.height + 20);
+      final x = _r(i, 4) * size.width + math.sin((t * 4 + _r(i, 3)) * math.pi * 2) * 18;
       final fade = math.sin(p * math.pi);
-      paint.color = Color.lerp(AppColors.energy, AppColors.primary, _r(i, 5))!.withValues(alpha: 0.45 * fade);
-      canvas.drawCircle(Offset(x, y), 1.2 + _r(i, 6) * 2, paint);
+      paint.color = Color.lerp(AppColors.energyLight, AppColors.energy, _r(i, 5))!.withValues(alpha: 0.5 * fade);
+      canvas.save();
+      canvas.translate(x, y);
+      canvas.rotate((t * 6 + _r(i, 6)) * math.pi * 2);
+      canvas.drawOval(Rect.fromCenter(center: Offset.zero, width: 3 + _r(i, 6) * 3, height: 5 + _r(i, 6) * 3), paint);
+      canvas.restore();
     }
   }
 

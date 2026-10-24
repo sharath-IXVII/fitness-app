@@ -148,7 +148,7 @@ class ArcScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Column(
                 children: [
-                  for (final s in [Season.winter, Season.revolution, Season.summer, Season.monsoon])
+                  for (final s in [Season.winter, Season.spring, Season.summer, Season.monsoon])
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Row(

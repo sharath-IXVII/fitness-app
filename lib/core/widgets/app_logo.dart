@@ -7,7 +7,7 @@ import '../../features/arcs/arc_providers.dart';
 import '../../features/arcs/domain/arc.dart';
 
 /// The FittiePi logo in the look of the current season: ice and snow in
-/// Winter, leaves in the Jan–Mar arc, a sun in Summer, rain and storm in
+/// Winter, cherry blossom in Spring, a sun in Summer, rain and storm in
 /// Monsoon (artwork in `assets/logos`). The plain lime-on-black version is the
 /// launcher and Play Store icon; this is what the app shows when it opens.
 ///
@@ -105,7 +105,7 @@ class _AppLogoState extends ConsumerState<AppLogo> with SingleTickerProviderStat
 extension on Season {
   Color get logoGlow => switch (this) {
     Season.winter => const Color(0xFF5FB2E6),
-    Season.revolution => const Color(0xFF7CCB2E),
+    Season.spring => const Color(0xFFF06292),
     Season.summer => const Color(0xFFF2A51F),
     Season.monsoon => const Color(0xFF3FA0EA),
   };
@@ -159,14 +159,14 @@ class _LogoEffects extends CustomPainter {
             dot..color = Colors.white.withValues(alpha: 0.7 * e),
           );
         }
-      case Season.revolution:
+      case Season.spring:
         for (var i = 0; i < 10; i++) {
           final x = ((i * 0.31 + 0.07) % 1) * w;
           final rise = (life * (1 + (i % 3) * 0.4) + i * 0.17) % 1;
           canvas.drawCircle(
             Offset(x, w * (1 - rise)),
             w * 0.008 * (1 - rise),
-            dot..color = const Color(0xFFC3F27D).withValues(alpha: 0.9 * (1 - rise) * e),
+            dot..color = const Color(0xFFFFB3CC).withValues(alpha: 0.9 * (1 - rise) * e),
           );
         }
       case Season.summer:

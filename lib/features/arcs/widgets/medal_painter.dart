@@ -40,14 +40,14 @@ class MedalPainter extends CustomPainter {
       ? const [Color(0xFFF7F8FA), Color(0xFFE6E9EE)]
       : switch (season) {
           Season.winter => const [Color(0xFF3F86C8), Color(0xFF0B2342)],
-          Season.revolution => const [Color(0xFFDB4A2B), Color(0xFF3F0C08)],
+          Season.spring => const [Color(0xFFE8588F), Color(0xFF4A0F2A)],
           Season.summer => const [Color(0xFFF7A12A), Color(0xFF7A2A05)],
           Season.monsoon => const [Color(0xFF5A6FBA), Color(0xFF0E1431)],
         };
 
   Color get _glow => switch (season) {
     Season.winter => const Color(0xFF8AD0FF),
-    Season.revolution => const Color(0xFFFF8A4C),
+    Season.spring => const Color(0xFFFF8FB8),
     Season.summer => const Color(0xFFFFD36A),
     Season.monsoon => const Color(0xFF9DB1FF),
   };
@@ -234,8 +234,8 @@ class MedalPainter extends CustomPainter {
     switch (season) {
       case Season.winter:
         _snowflake(canvas, color);
-      case Season.revolution:
-        _flame(canvas, color);
+      case Season.spring:
+        _blossom(canvas, color);
       case Season.summer:
         _sun(canvas, color);
       case Season.monsoon:
@@ -266,25 +266,22 @@ class MedalPainter extends CustomPainter {
     canvas.drawCircle(Offset.zero, 2.6, Paint()..color = color);
   }
 
-  void _flame(Canvas canvas, Color color) {
-    final outer = Path()
-      ..moveTo(2, -24)
-      ..cubicTo(4, -14, 16, -8, 16, 6)
-      ..cubicTo(16, 16, 9, 23, 0, 23)
-      ..cubicTo(-9, 23, -16, 16, -16, 7)
-      ..cubicTo(-16, -1, -11, -6, -9, -13)
-      ..cubicTo(-5, -9, -3, -6, -2, -2)
-      ..cubicTo(0, -10, -1, -17, 2, -24)
-      ..close();
-    canvas.drawPath(outer, Paint()..color = color);
-    final inner = Path()
-      ..moveTo(1, 2)
-      ..cubicTo(5, 7, 9, 10, 8, 15)
-      ..cubicTo(7, 19, 4, 20, 0, 20)
-      ..cubicTo(-4, 20, -8, 17, -7, 12)
-      ..cubicTo(-6, 8, -1, 6, 1, 2)
-      ..close();
-    canvas.drawPath(inner, Paint()..color = earned ? _glow.withValues(alpha: 0.95) : const Color(0xFF9AA2B2));
+  void _blossom(Canvas canvas, Color color) {
+    final line = _line(color);
+    for (var i = 0; i < 5; i++) {
+      canvas.save();
+      canvas.rotate(i * 2 * math.pi / 5);
+      // A cherry petal with a notch at its tip.
+      final petal = Path()
+        ..moveTo(0, -4)
+        ..cubicTo(-10, -10, -9, -21, -3, -23)
+        ..lineTo(0, -20)
+        ..lineTo(3, -23)
+        ..cubicTo(9, -21, 10, -10, 0, -4);
+      canvas.drawPath(petal, line);
+      canvas.restore();
+    }
+    canvas.drawCircle(Offset.zero, 3, Paint()..color = color);
   }
 
   void _sun(Canvas canvas, Color color) {

@@ -20,14 +20,14 @@ enum Season {
     tiers: ('Winter Survivor', 'Winter Warrior', 'Master of Winter'),
   ),
   spring(
-    title: 'Spring Arc',
+    title: 'Rise of Revolution',
     months: 'Jan – Mar',
     firstMonth: 1,
-    tagline: 'Bloom while the year is young.',
+    tagline: 'New year. New you. Start the revolution.',
     palette: Palette.spring,
     icon: Icons.local_florist_rounded,
     effect: ArcEffect.petals,
-    tiers: ('Spring Sprout', 'Spring Bloomer', 'Master of Spring'),
+    tiers: ('Rebel', 'Revolutionary', 'Leader of the Revolution'),
   ),
   summer(
     title: 'Summer Arc',
@@ -40,14 +40,14 @@ enum Season {
     tiers: ('Summer Survivor', 'Summer Warrior', 'Master of Summer'),
   ),
   monsoon(
-    title: 'Monsoon Arc',
+    title: 'Thunder Arc',
     months: 'Jul – Sep',
     firstMonth: 7,
     tagline: 'Train through the storm.',
     palette: Palette.monsoon,
     icon: Icons.thunderstorm_rounded,
     effect: ArcEffect.rain,
-    tiers: ('Monsoon Survivor', 'Monsoon Warrior', 'Master of the Monsoon'),
+    tiers: ('Thunder Survivor', 'Thunder Warrior', 'Master of Thunder'),
   );
 
   const Season({

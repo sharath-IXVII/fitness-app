@@ -7,8 +7,8 @@ import '../../features/arcs/arc_providers.dart';
 import '../../features/arcs/domain/arc.dart';
 
 /// The FittiePi logo in the look of the current season: ice and snow in
-/// Winter, cherry blossom in Spring, a sun in Summer, rain and storm in
-/// Monsoon (artwork in `assets/logos`). The plain lime-on-black version is the
+/// Winter, cherry blossom in Rise of Revolution, a sun in Summer, rain and storm in
+/// Thunder Arc (artwork in `assets/logos`). The plain lime-on-black version is the
 /// launcher and Play Store icon; this is what the app shows when it opens.
 ///
 /// [progress] plays the opening (the logo rises in, then a light sweeps over

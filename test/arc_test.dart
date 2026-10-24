@@ -13,7 +13,7 @@ void main() {
   test('the arc follows the calendar, three months each', () {
     expect(ArcPeriod.of(DateTime(2026, 10, 23)).label, 'Winter Arc 2026');
     expect(ArcPeriod.of(DateTime(2026, 12, 31)).season, Season.winter);
-    expect(ArcPeriod.of(DateTime(2027, 1, 1)).label, 'Spring Arc 2027');
+    expect(ArcPeriod.of(DateTime(2027, 1, 1)).label, 'Rise of Revolution 2027');
     expect(ArcPeriod.of(DateTime(2027, 5, 10)).season, Season.summer);
     expect(ArcPeriod.of(DateTime(2027, 9, 30)).season, Season.monsoon);
 
@@ -78,8 +78,8 @@ void main() {
     final all = arcCatalog();
     expect(all, hasLength(20));
     expect(all.first.label, 'Winter Arc 2026');
-    expect(all[1].label, 'Spring Arc 2027');
-    expect(all.last.label, 'Monsoon Arc 2031');
+    expect(all[1].label, 'Rise of Revolution 2027');
+    expect(all.last.label, 'Thunder Arc 2031');
 
     final winter = ArcPeriod.of(DateTime(2026, 10, 1));
     final spring = ArcPeriod.of(DateTime(2027, 1, 1));

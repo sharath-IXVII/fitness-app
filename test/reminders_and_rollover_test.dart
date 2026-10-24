@@ -78,9 +78,9 @@ void main() {
         today: today,
         doneToday: false,
         challenges: const {},
-        arcName: 'Spring Arc',
+        arcName: 'Rise of Revolution',
       )!;
-      expect(t.$2, contains('Spring Arc'));
+      expect(t.$2, contains('Rise of Revolution'));
     });
   });
 
@@ -96,13 +96,13 @@ void main() {
 
       now = DateTime(2027, 1, 1, 0, 0, 5); // the midnight refresh fires
       c.read(todayProvider.notifier).refresh();
-      expect(c.read(currentArcProvider).label, 'Spring Arc 2027');
+      expect(c.read(currentArcProvider).label, 'Rise of Revolution 2027');
       expect(c.read(themeSeasonProvider), Season.spring);
 
       // And on through the year.
       for (final (date, name) in [
         (DateTime(2027, 4, 1), 'Summer Arc 2027'),
-        (DateTime(2027, 7, 1), 'Monsoon Arc 2027'),
+        (DateTime(2027, 7, 1), 'Thunder Arc 2027'),
         (DateTime(2027, 10, 1), 'Winter Arc 2027'),
       ]) {
         now = date;

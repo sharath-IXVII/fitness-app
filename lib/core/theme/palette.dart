@@ -111,7 +111,7 @@ class Palette {
     heat: [Color(0xFFE6EEF6), Color(0xFFC8DBEE), Color(0xFF98BEE2), Color(0xFF639ACF), Color(0xFF2F6AA4)],
   );
 
-  /// Spring Arc: cherry-blossom pink on warm white.
+  /// Rise of Revolution (Jan–Mar): cherry-blossom pink on warm white.
   static const spring = Palette(
     background: Color(0xFFFFF5F8),
     surfaceHigh: Color(0xFFFBE6EE),
@@ -165,7 +165,7 @@ class Palette {
     heat: [Color(0xFFFAEEDC), Color(0xFFF9D9AE), Color(0xFFF4B66E), Color(0xFFE88B35), Color(0xFFC55F12)],
   );
 
-  /// Monsoon Arc: heavy storm clouds, slate-indigo rain and lightning yellow.
+  /// Thunder Arc (Jul–Sep): heavy storm clouds, slate-indigo rain and lightning yellow.
   static const monsoon = Palette(
     background: Color(0xFFE8ECF3),
     surfaceHigh: Color(0xFFD9DFEA),

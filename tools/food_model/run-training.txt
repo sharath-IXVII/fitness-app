@@ -1,0 +1,1 @@
+Change this file to start the food-model training workflow (needs the Kaggle secrets).

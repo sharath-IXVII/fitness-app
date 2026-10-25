@@ -4,7 +4,12 @@ name: Train food model
 # a downloadable artifact. Run it by hand: Actions -> "Train food model" -> Run workflow.
 # Needs two repository secrets from a free Kaggle account (Settings -> Create New API Token):
 #   KAGGLE_USERNAME and KAGGLE_KEY
+# It also runs when tools/food_model/run-training.txt changes on this branch,
+# so it can be started without merging (workflow_dispatch needs the main branch).
 on:
+  push:
+    branches: [claude/phase-1-foundation]
+    paths: [tools/food_model/run-training.txt]
   workflow_dispatch:
     inputs:
       dataset:
@@ -34,20 +39,20 @@ jobs:
           KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
         run: |
           test -n "$KAGGLE_USERNAME" && test -n "$KAGGLE_KEY" || { echo "::error::Add KAGGLE_USERNAME and KAGGLE_KEY as repository secrets."; exit 1; }
-          kaggle datasets download -d "${{ inputs.dataset }}" -p data --unzip
+          kaggle datasets download -d "${{ inputs.dataset || 'iamsouravbanerjee/indian-food-images-dataset' }}" -p data --unzip
           echo "FOOD_DIR=$(python tools/food_model/find_class_folder.py data)" >> "$GITHUB_ENV"
       - name: Train and export
         env:
           OUT_DIR: out
           IMG_SIZE: "192"
-          EPOCHS_HEAD: ${{ inputs.epochs_head }}
-          EPOCHS_FINE: ${{ inputs.epochs_fine }}
+          EPOCHS_HEAD: ${{ inputs.epochs_head || '6' }}
+          EPOCHS_FINE: ${{ inputs.epochs_fine || '4' }}
         run: python tools/food_model/train_indian_food_model.py 2>&1 | tee train.log
       - name: Summary
         run: |
           ls -la out
           grep -E "dishes:|Final validation" train.log | tail -3 | tee -a "$GITHUB_STEP_SUMMARY"
-          echo "Dataset: ${{ inputs.dataset }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Dataset: ${{ inputs.dataset || 'iamsouravbanerjee/indian-food-images-dataset' }}" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v5
         with:
           name: food-model

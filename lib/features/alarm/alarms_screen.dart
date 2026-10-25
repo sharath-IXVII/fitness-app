@@ -15,6 +15,7 @@ import '../workout/domain/routine.dart';
 import '../workout/routine_providers.dart';
 import '../workout/workout_screen.dart';
 import 'alarm_providers.dart';
+import 'sleep_screens.dart';
 import 'app_permissions.dart';
 import 'domain/workout_alarm.dart';
 import 'widgets/alarm_editor_sheet.dart';
@@ -229,7 +230,10 @@ class _AlarmCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(parts[1], style: text.titleMedium?.copyWith(color: AppColors.textSecondary)),
                         ],
-                        if (alarm.strict) ...[
+                        if (alarm.isSleep) ...[
+                          const SizedBox(width: 8),
+                          Icon(Icons.bedtime_rounded, size: 18, color: AppColors.primary),
+                        ] else if (alarm.strict) ...[
                           const SizedBox(width: 8),
                           Icon(Icons.lock_outline_rounded, size: 18, color: AppColors.amber),
                         ] else if (alarm.hardMode) ...[
@@ -244,11 +248,14 @@ class _AlarmCard extends StatelessWidget {
                       spacing: 6,
                       runSpacing: 6,
                       children: [
-                        if (alarm.challenge.isGame)
+                        if (alarm.isSleep)
+                          _Tag(icon: Icons.nightlight_round, label: sleepWindowLabel(alarm))
+                        else if (alarm.challenge.isGame)
                           _Tag(icon: alarm.challenge.icon, label: '${alarm.challenge.label} · ${alarm.level.label}')
                         else
                           _Tag(icon: Icons.fitness_center_rounded, label: '${routine.name} routine'),
-                        if (alarm.strict) const _Tag(icon: Icons.lock_outline_rounded, label: 'Strict'),
+                        if (alarm.strict)
+                          _Tag(icon: Icons.lock_outline_rounded, label: alarm.isSleep ? 'Blocks other apps' : 'Strict'),
                         _Tag(icon: Icons.music_note_rounded, label: alarm.sound.label),
                         if (skipping && on)
                           _Tag(

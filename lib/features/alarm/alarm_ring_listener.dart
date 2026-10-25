@@ -7,6 +7,8 @@ import '../../core/router.dart';
 import '../../core/storage.dart';
 import 'alarm_providers.dart';
 import 'alarm_scheduler.dart';
+import 'sleep_mode.dart';
+import 'sleep_screens.dart';
 import 'strict_mode.dart';
 
 /// Opens the ring screen whenever an alarm starts ringing, unless the user
@@ -37,10 +39,21 @@ class _AlarmRingListenerState extends ConsumerState<AlarmRingListener> {
       await ref.read(alarmsProvider.notifier).resync();
       final pending = StrictMode.pending(ref.read(sharedPrefsProvider));
       if (pending != null && AlarmScheduler.ringingNow.isEmpty) await AlarmScheduler.ringSoon(pending);
+      // Sleep mode that is still in force (the app was reopened mid-night).
+      // A phone restart or the end time has already released it.
+      final sleep = await SleepMode.reconcile(ref.read(sharedPrefsProvider));
+      if (sleep != null && mounted && AlarmScheduler.ringingNow.isEmpty) {
+        ref
+            .read(routerProvider)
+            .go(
+              Routes.sleep,
+              extra: SleepArgs(end: sleep.end, block: sleep.block),
+            );
+      }
     });
   }
 
-  static const _busy = {Routes.splash, Routes.ring, Routes.workout, Routes.challenge};
+  static const _busy = {Routes.splash, Routes.ring, Routes.workout, Routes.challenge, Routes.sleep};
 
   void _onRinging(List<RingInfo> ringing) {
     if (ringing.isEmpty) return;

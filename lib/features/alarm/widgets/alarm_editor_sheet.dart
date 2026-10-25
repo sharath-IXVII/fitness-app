@@ -43,6 +43,26 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
 
   void _update(WorkoutAlarm a) => setState(() => _a = a);
 
+  /// Switching a new alarm between wake-up and bedtime starts from that
+  /// kind's own defaults.
+  void _setKind(AlarmKind k) {
+    if (k == _a.kind) return;
+    final fresh = k == AlarmKind.sleep
+        ? ref.read(alarmsProvider.notifier).sleepDraft()
+        : ref.read(alarmsProvider.notifier).draft();
+    _label.text = fresh.label;
+    _update(fresh.copyWith(id: _a.id));
+  }
+
+  Future<void> _pickSleepEnd() async {
+    final t = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: _a.sleepEnd ~/ 60, minute: _a.sleepEnd % 60),
+      helpText: 'Sleep mode ends at',
+    );
+    if (t != null) _update(_a.copyWith(sleepEnd: t.hour * 60 + t.minute));
+  }
+
   Future<void> _preview(AlarmSound s) async {
     _update(_a.copyWith(sound: s));
     setState(() => _previewing = s);
@@ -70,7 +90,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
     unawaited(_quiet());
     final notifier = ref.read(alarmsProvider.notifier);
     final saved = _a.copyWith(
-      label: _label.text.trim().isEmpty ? 'Workout alarm' : _label.text.trim(),
+      label: _label.text.trim().isEmpty ? (_a.isSleep ? 'Bedtime' : 'Workout alarm') : _label.text.trim(),
       enabled: true,
       clearSkip: true,
     );
@@ -90,9 +110,12 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
       builder: (c) => AlertDialog(
         backgroundColor: AppColors.surface,
         title: const Text('One more permission'),
-        content: const Text(
-          'To bring the alarm back when someone leaves it, Fittarc needs "Display over other apps". '
-          'On the next screen, find Fittarc and turn it on.',
+        content: Text(
+          _a.isSleep
+              ? 'To keep other apps blocked while you sleep, Fittarc needs "Display over other apps". '
+                    'On the next screen, find Fittarc and turn it on.'
+              : 'To bring the alarm back when someone leaves it, Fittarc needs "Display over other apps". '
+                    'On the next screen, find Fittarc and turn it on.',
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Later')),
@@ -137,7 +160,12 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
               padding: const EdgeInsets.fromLTRB(20, 8, 8, 0),
               child: Row(
                 children: [
-                  Expanded(child: Text(widget.isNew ? 'New alarm' : 'Edit alarm', style: text.titleLarge)),
+                  Expanded(
+                    child: Text(
+                      widget.isNew ? 'New alarm' : (_a.isSleep ? 'Edit bedtime alarm' : 'Edit alarm'),
+                      style: text.titleLarge,
+                    ),
+                  ),
                   if (!widget.isNew)
                     IconButton(
                       tooltip: 'Delete',
@@ -156,6 +184,14 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (widget.isNew) ...[
+                      SegmentedPills(
+                        options: const ['Wake-up', 'Bedtime'],
+                        index: _a.kind.index,
+                        onChanged: (i) => _setKind(AlarmKind.values[i]),
+                      ),
+                      const SizedBox(height: 8),
+                    ],
                     SizedBox(
                       height: 170,
                       child: Row(
@@ -238,83 +274,128 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                         ],
                       ),
                     ),
-                    FormSection(
-                      title: 'Turn it off by',
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          LayoutBuilder(
-                            builder: (_, box) => Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: [
-                                for (final c in AlarmChallenge.values)
-                                  SizedBox(
-                                    width: (box.maxWidth - 8) / 2,
-                                    child: _ChoiceTile(
-                                      icon: c.icon,
-                                      title: c.label,
-                                      selected: _a.challenge == c,
-                                      onTap: () => _update(_a.copyWith(challenge: c)),
-                                    ),
-                                  ),
-                              ],
+                    if (_a.isSleep)
+                      FormSection(
+                        title: 'Sleep mode',
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'When this rings, tap "Start sleep mode" and your phone settles into a calm night screen.',
+                              style: text.bodySmall,
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(_a.challenge.description, style: text.bodySmall),
-                          const SizedBox(height: 10),
-                          AnimatedSize(
-                            duration: const Duration(milliseconds: 250),
-                            alignment: Alignment.topCenter,
-                            child: _a.challenge.isGame
-                                ? Row(
-                                    children: [
-                                      Expanded(
-                                        child: SegmentedPills(
-                                          options: [for (final l in ChallengeLevel.values) l.label],
-                                          index: _a.level.index,
-                                          onChanged: (i) => _update(_a.copyWith(level: ChallengeLevel.values[i])),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      TextButton(
-                                        onPressed: () => context.push(
-                                          Routes.challenge,
-                                          extra: ChallengeArgs(challenge: _a.challenge, level: _a.level),
-                                        ),
-                                        child: const Text('Try it'),
-                                      ),
-                                    ],
-                                  )
-                                : Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Wrap(
-                                        spacing: 8,
-                                        runSpacing: 8,
-                                        children: [
-                                          for (final r in routines)
-                                            ChoicePill(
-                                              label: r.name,
-                                              selected: _a.routineId == r.id,
-                                              onTap: () => _update(_a.copyWith(routineId: r.id)),
-                                            ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 6),
-                                      Text(routineById(routines, _a.routineId).summary, style: text.bodySmall),
-                                    ],
-                                  ),
-                          ),
-                        ],
+                            const SizedBox(height: 10),
+                            Pressable(
+                              onTap: _pickSleepEnd,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(color: AppColors.stroke),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(Icons.nightlight_round, color: AppColors.primary),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: Text('Sleep mode ends at', style: text.titleSmall)),
+                                    Text(
+                                      TimeOfDay(hour: _a.sleepEnd ~/ 60, minute: _a.sleepEnd % 60).format(context),
+                                      style: text.titleSmall?.copyWith(color: AppColors.primary),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            SettingToggle(
+                              icon: Icons.lock_outline_rounded,
+                              title: 'Block other apps',
+                              subtitle:
+                                  'Only phone calls work until it ends. In an emergency you can call, or restart your '
+                                  'phone to unlock everything.',
+                              value: _a.strict,
+                              onChanged: _setStrict,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                    if (!_a.isSleep)
+                      FormSection(
+                        title: 'Turn it off by',
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            LayoutBuilder(
+                              builder: (_, box) => Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  for (final c in AlarmChallenge.values)
+                                    SizedBox(
+                                      width: (box.maxWidth - 8) / 2,
+                                      child: _ChoiceTile(
+                                        icon: c.icon,
+                                        title: c.label,
+                                        selected: _a.challenge == c,
+                                        onTap: () => _update(_a.copyWith(challenge: c)),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(_a.challenge.description, style: text.bodySmall),
+                            const SizedBox(height: 10),
+                            AnimatedSize(
+                              duration: const Duration(milliseconds: 250),
+                              alignment: Alignment.topCenter,
+                              child: _a.challenge.isGame
+                                  ? Row(
+                                      children: [
+                                        Expanded(
+                                          child: SegmentedPills(
+                                            options: [for (final l in ChallengeLevel.values) l.label],
+                                            index: _a.level.index,
+                                            onChanged: (i) => _update(_a.copyWith(level: ChallengeLevel.values[i])),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        TextButton(
+                                          onPressed: () => context.push(
+                                            Routes.challenge,
+                                            extra: ChallengeArgs(challenge: _a.challenge, level: _a.level),
+                                          ),
+                                          child: const Text('Try it'),
+                                        ),
+                                      ],
+                                    )
+                                  : Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Wrap(
+                                          spacing: 8,
+                                          runSpacing: 8,
+                                          children: [
+                                            for (final r in routines)
+                                              ChoicePill(
+                                                label: r.name,
+                                                selected: _a.routineId == r.id,
+                                                onTap: () => _update(_a.copyWith(routineId: r.id)),
+                                              ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(routineById(routines, _a.routineId).summary, style: text.bodySmall),
+                                      ],
+                                    ),
+                            ),
+                          ],
+                        ),
+                      ),
                     FormSection(
                       title: 'Label',
                       child: TextField(
                         controller: _label,
-                        decoration: const InputDecoration(hintText: 'Wake-up workout'),
+                        decoration: InputDecoration(hintText: _a.isSleep ? 'Bedtime' : 'Wake-up workout'),
                       ),
                     ),
                     FormSection(
@@ -401,29 +482,30 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                         ),
                       ),
                     ),
-                    FormSection(
-                      title: 'How strict',
-                      child: Column(
-                        children: [
-                          SettingToggle(
-                            icon: Icons.snooze_rounded,
-                            title: 'No snooze or emergency stop',
-                            subtitle: 'Finishing the task is the only way to turn it off',
-                            value: _a.noEscape,
-                            onChanged: _a.strict ? null : (v) => _update(_a.copyWith(hardMode: v)),
-                          ),
-                          SettingToggle(
-                            icon: Icons.lock_outline_rounded,
-                            title: 'Strict mode',
-                            subtitle:
-                                'Rings at full volume that the buttons can\'t lower, keeps your phone on the alarm '
-                                'until you finish, and rings again if the phone is restarted',
-                            value: _a.strict,
-                            onChanged: _setStrict,
-                          ),
-                        ],
+                    if (!_a.isSleep)
+                      FormSection(
+                        title: 'How strict',
+                        child: Column(
+                          children: [
+                            SettingToggle(
+                              icon: Icons.snooze_rounded,
+                              title: 'No snooze or emergency stop',
+                              subtitle: 'Finishing the task is the only way to turn it off',
+                              value: _a.noEscape,
+                              onChanged: _a.strict ? null : (v) => _update(_a.copyWith(hardMode: v)),
+                            ),
+                            SettingToggle(
+                              icon: Icons.lock_outline_rounded,
+                              title: 'Strict mode',
+                              subtitle:
+                                  'Rings at full volume that the buttons can\'t lower, keeps your phone on the alarm '
+                                  'until you finish, and rings again if the phone is restarted',
+                              value: _a.strict,
+                              onChanged: _setStrict,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),

@@ -18,6 +18,7 @@ import '../features/myday/myday_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/profile/privacy_screen.dart';
 import '../features/profile/terms_screen.dart';
+import '../features/alarm/sleep_screens.dart';
 import '../features/profile/profile_providers.dart';
 import '../features/progress/achievements_screen.dart';
 import '../features/progress/weekly_report_screen.dart';
@@ -68,6 +69,7 @@ abstract final class Routes {
   static const report = '/report';
   static const privacy = '/privacy';
   static const terms = '/terms';
+  static const sleep = '/sleep';
   static const challenge = '/challenge';
   static const trainingPlayer = '/train';
   static const arc = '/arc';
@@ -128,6 +130,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.report, builder: (_, _) => const WeeklyReportScreen()),
       GoRoute(path: Routes.privacy, builder: (_, _) => const PrivacyScreen()),
       GoRoute(path: Routes.terms, builder: (_, _) => const TermsScreen()),
+      GoRoute(
+        path: Routes.sleep,
+        redirect: (_, s) => s.extra is SleepArgs ? null : Routes.home,
+        pageBuilder: (_, s) => _fade(s, SleepModeScreen(args: s.extra! as SleepArgs)),
+      ),
       GoRoute(path: Routes.profile, builder: (_, _) => const ProfileScreen()),
       GoRoute(path: Routes.arc, builder: (_, _) => const ArcScreen()),
       GoRoute(path: Routes.arcBadges, builder: (_, _) => const BadgeCollectionScreen()),

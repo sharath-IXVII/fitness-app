@@ -19,6 +19,8 @@ import '../workout/routine_providers.dart';
 import '../workout/workout_screen.dart';
 import 'alarm_providers.dart';
 import 'alarm_scheduler.dart';
+import 'sleep_mode.dart';
+import 'sleep_screens.dart';
 import 'strict_mode.dart';
 
 /// Full-screen view while an alarm rings. There is no dismiss button — the
@@ -50,7 +52,11 @@ class _RingScreenState extends ConsumerState<RingScreen> {
   void initState() {
     super.initState();
     _clock = Timer.periodic(const Duration(seconds: 1), (_) => setState(() => _now = DateTime.now()));
-    if (widget.info.strict) StrictMode.engage(ref.read(sharedPrefsProvider), widget.info);
+    if (!widget.info.isSleep) {
+      // A wake-up alarm ends any Sleep mode still in force.
+      unawaited(SleepMode.release(ref.read(sharedPrefsProvider)));
+      if (widget.info.strict) StrictMode.engage(ref.read(sharedPrefsProvider), widget.info);
+    }
   }
 
   void _start(Routine routine) {
@@ -100,6 +106,7 @@ class _RingScreenState extends ConsumerState<RingScreen> {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final info = widget.info;
+    if (info.isSleep) return SleepRing(info: info);
     final routine = routineById(ref.watch(routinesProvider), info.routineId);
     final canSnooze = !info.hardMode && info.snoozesLeft > 0;
 

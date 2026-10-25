@@ -18,7 +18,19 @@ enum AlarmSound {
   String get assetPath => 'assets/sounds/$file.wav';
 }
 
-/// A user alarm that rings until the linked routine is completed.
+/// The next time after [start] that the clock reads [minutes] after midnight.
+DateTime clockTimeAfter(DateTime start, int minutes) {
+  var end = DateTime(start.year, start.month, start.day, minutes ~/ 60, minutes % 60);
+  if (!end.isAfter(start)) end = DateTime(start.year, start.month, start.day + 1, minutes ~/ 60, minutes % 60);
+  return end;
+}
+
+/// A wake-up alarm rings until its workout or game is done. A bedtime alarm
+/// is a gentle reminder to sleep that can start Sleep mode.
+enum AlarmKind { wake, sleep }
+
+/// A user alarm that rings until the linked routine is completed (wake-up),
+/// or reminds you to sleep (bedtime).
 class WorkoutAlarm {
   const WorkoutAlarm({
     required this.id,
@@ -38,6 +50,8 @@ class WorkoutAlarm {
     this.challenge = AlarmChallenge.workout,
     this.level = ChallengeLevel.medium,
     this.skipDate,
+    this.kind = AlarmKind.wake,
+    this.sleepEnd = defaultSleepEnd,
   });
 
   /// Also the id used with the native alarm scheduler (1..[maxUserId]).
@@ -73,10 +87,25 @@ class WorkoutAlarm {
   /// A single day on which a repeating alarm stays silent.
   final DateTime? skipDate;
 
+  /// Wake-up or bedtime.
+  final AlarmKind kind;
+
+  /// Bedtime alarms: when Sleep mode ends, in minutes after midnight
+  /// (3:00 AM by default). For a bedtime alarm, [strict] means "block other
+  /// apps" during Sleep mode, not "no escape from the ring".
+  final int sleepEnd;
+
+  static const defaultSleepEnd = 3 * 60;
   static const maxUserId = 9000;
 
+  bool get isSleep => kind == AlarmKind.sleep;
+
+  /// The moment Sleep mode ends for a bedtime that begins at [start]: the
+  /// next [sleepEnd] clock time after it.
+  DateTime sleepEndAfter(DateTime start) => clockTimeAfter(start, sleepEnd);
+
   bool get repeats => days.isNotEmpty;
-  bool get noEscape => hardMode || strict;
+  bool get noEscape => !isSleep && (hardMode || strict);
   int get allowedSnoozes => noEscape ? 0 : maxSnoozes;
 
   /// The next moment this alarm should ring, strictly after [now].
@@ -123,6 +152,8 @@ class WorkoutAlarm {
     AlarmChallenge? challenge,
     ChallengeLevel? level,
     DateTime? skipDate,
+    AlarmKind? kind,
+    int? sleepEnd,
     bool clearSkip = false,
   }) => WorkoutAlarm(
     id: id ?? this.id,
@@ -142,6 +173,8 @@ class WorkoutAlarm {
     challenge: challenge ?? this.challenge,
     level: level ?? this.level,
     skipDate: clearSkip ? null : (skipDate ?? this.skipDate),
+    kind: kind ?? this.kind,
+    sleepEnd: sleepEnd ?? this.sleepEnd,
   );
 
   Map<String, dynamic> toJson() => {
@@ -162,6 +195,8 @@ class WorkoutAlarm {
     'challenge': challenge.name,
     'level': level.name,
     if (skipDate != null) 'skip': skipDate!.toIso8601String(),
+    'kind': kind.name,
+    'sleepEnd': sleepEnd,
   };
 
   factory WorkoutAlarm.fromJson(Map<String, dynamic> j) {
@@ -184,6 +219,8 @@ class WorkoutAlarm {
       challenge: AlarmChallenge.values.asNameMap()[j['challenge']] ?? AlarmChallenge.workout,
       level: ChallengeLevel.values.asNameMap()[j['level']] ?? ChallengeLevel.medium,
       skipDate: j['skip'] == null ? null : DateTime.parse(j['skip'] as String),
+      kind: AlarmKind.values.asNameMap()[j['kind']] ?? AlarmKind.wake,
+      sleepEnd: j['sleepEnd'] as int? ?? defaultSleepEnd,
     );
   }
 }

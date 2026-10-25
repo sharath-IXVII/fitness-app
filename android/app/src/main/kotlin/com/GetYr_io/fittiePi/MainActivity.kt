@@ -6,9 +6,11 @@ import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
 import android.provider.Settings
 import android.view.Gravity
 import android.view.View
@@ -25,6 +27,11 @@ import io.flutter.plugin.common.MethodChannel
  * app brings itself back. Showing the panel is also what lets Android 15+
  * allow the app to reopen itself. The Dart side drives this over the
  * "fittiepi/strict" channel.
+ *
+ * Sleep mode is the same idea for bedtime: other apps are blocked until the
+ * chosen end time, but the phone app stays available. Calls (ringing or in
+ * progress) and the dialer are never covered. There is no exit button; a
+ * restart releases it (see SleepMode in Dart).
  */
 class MainActivity : FlutterActivity() {
     companion object {
@@ -36,6 +43,13 @@ class MainActivity : FlutterActivity() {
         @Volatile var suspended = false
         private var overlay: View? = null
 
+        /** Sleep mode: other apps are blocked until [sleepEndMs]. */
+        @Volatile var sleepLock = false
+        @Volatile var sleepEndMs = 0L
+
+        /** The dialer was opened from the app; don't pull the user back for a while. */
+        @Volatile var dialerUntil = 0L
+
         /** The "Your alarm is still on" notification posted after a reboot. */
         const val BOOT_NOTIFICATION_ID = 4242
     }
@@ -43,9 +57,39 @@ class MainActivity : FlutterActivity() {
     private val handler = Handler(Looper.getMainLooper())
     private var inFront = false
 
+    private fun locked() = strict || sleepLock
+
+    private fun callActive(): Boolean {
+        val mode = (getSystemService(Context.AUDIO_SERVICE) as? AudioManager)?.mode ?: AudioManager.MODE_NORMAL
+        return mode == AudioManager.MODE_RINGTONE || mode == AudioManager.MODE_IN_CALL ||
+            mode == AudioManager.MODE_IN_COMMUNICATION
+    }
+
+    private fun dialerActive() = System.currentTimeMillis() < dialerUntil
+
     private val bringBack = object : Runnable {
         override fun run() {
-            if (!strict || inFront || suspended) return
+            if (sleepLock && System.currentTimeMillis() >= sleepEndMs) {
+                releaseSleep()
+                return
+            }
+            if (!locked() || inFront || suspended) return
+            if (sleepLock) {
+                // A sleeping phone's screen stays off: don't wake it to pull
+                // the app back. Wait until the screen is on again.
+                val pm = getSystemService(Context.POWER_SERVICE) as? PowerManager
+                if (pm != null && !pm.isInteractive) {
+                    handler.postDelayed(this, 3000)
+                    return
+                }
+                // Never cover a call or the dialer; wait until they are over.
+                if (callActive() || dialerActive()) {
+                    hideOverlay(applicationContext)
+                    handler.postDelayed(this, 1500)
+                    return
+                }
+                showOverlay(applicationContext)
+            }
             StrictState.bringBack(applicationContext)
             // Keep trying until we're back in front; the system can defer a
             // launch right after the home button.
@@ -74,6 +118,23 @@ class MainActivity : FlutterActivity() {
                     suspended = false
                     result.success(null)
                 }
+                "engageSleep" -> {
+                    sleepEndMs = (call.arguments as? Number)?.toLong() ?: 0L
+                    sleepLock = true
+                    result.success(null)
+                }
+                "releaseSleep" -> {
+                    releaseSleep()
+                    result.success(null)
+                }
+                "openDialer" -> {
+                    val number = call.arguments as? String
+                    dialerUntil = System.currentTimeMillis() + 180_000
+                    hideOverlay(applicationContext)
+                    open(Intent(Intent.ACTION_DIAL, if (number == null) Uri.parse("tel:") else Uri.parse("tel:$number")))
+                    result.success(null)
+                }
+                "bootCount" -> result.success(Settings.Global.getInt(contentResolver, "boot_count", 0))
                 "canDrawOverlays" -> result.success(Settings.canDrawOverlays(this))
                 "openOverlaySettings" -> {
                     open(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
@@ -101,6 +162,13 @@ class MainActivity : FlutterActivity() {
         }
     }
 
+    private fun releaseSleep() {
+        sleepLock = false
+        dialerUntil = 0L
+        handler.removeCallbacks(bringBack)
+        hideOverlay(applicationContext)
+    }
+
     private fun releaseStrict() {
         strict = false
         suspended = false
@@ -119,6 +187,7 @@ class MainActivity : FlutterActivity() {
         inFront = true
         handler.removeCallbacks(bringBack)
         hideOverlay(applicationContext)
+        if (sleepLock && System.currentTimeMillis() >= sleepEndMs) releaseSleep()
         if (strict) window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if (!strict && !StrictState.isActive(applicationContext)) cancelBootNotification()
     }
@@ -136,6 +205,9 @@ class MainActivity : FlutterActivity() {
         if (strict && !suspended) {
             showOverlay(applicationContext)
             handler.postDelayed(bringBack, 300)
+        } else if (sleepLock && !suspended) {
+            // Wait a moment first: a call or the dialer must not be covered.
+            handler.postDelayed(bringBack, 1200)
         }
     }
 
@@ -144,6 +216,8 @@ class MainActivity : FlutterActivity() {
         if (strict && !suspended) {
             showOverlay(applicationContext)
             handler.postDelayed(bringBack, 150)
+        } else if (sleepLock && !suspended) {
+            handler.postDelayed(bringBack, 1200)
         }
     }
 
@@ -158,21 +232,21 @@ class MainActivity : FlutterActivity() {
             setBackgroundColor(Color.parseColor("#FAF6EF"))
             setPadding((32 * dp).toInt(), 0, (32 * dp).toInt(), 0)
             addView(TextView(context).apply {
-                text = "Your alarm is still on"
+                text = if (sleepLock) "Sleep mode is on" else "Your alarm is still on"
                 textSize = 24f
                 typeface = Typeface.DEFAULT_BOLD
                 setTextColor(Color.parseColor("#3A2E25"))
                 gravity = Gravity.CENTER
             })
             addView(TextView(context).apply {
-                text = "Finish your workout or challenge to unlock your phone."
+                text = if (sleepLock) "Time to rest. Calls still work. In an emergency, restart your phone to unlock it." else "Finish your workout or challenge to unlock your phone."
                 textSize = 15f
                 setTextColor(Color.parseColor("#6E5C4B"))
                 gravity = Gravity.CENTER
                 setPadding(0, (10 * dp).toInt(), 0, (28 * dp).toInt())
             })
             addView(TextView(context).apply {
-                text = "Back to alarm"
+                text = if (sleepLock) "Back to Fittarc" else "Back to alarm"
                 textSize = 16f
                 typeface = Typeface.DEFAULT_BOLD
                 setTextColor(Color.WHITE)

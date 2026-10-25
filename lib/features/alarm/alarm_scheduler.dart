@@ -26,6 +26,8 @@ class RingInfo {
     this.volume = 0.9,
     this.fadeIn = true,
     this.vibrate = true,
+    this.kind = AlarmKind.wake,
+    this.sleepEnd = WorkoutAlarm.defaultSleepEnd,
   });
 
   factory RingInfo.forAlarm(WorkoutAlarm a, String routineId) => RingInfo(
@@ -42,6 +44,8 @@ class RingInfo {
     volume: a.volume,
     fadeIn: a.fadeIn,
     vibrate: a.vibrate,
+    kind: a.kind,
+    sleepEnd: a.sleepEnd,
   );
 
   /// The user alarm this ring belongs to.
@@ -61,6 +65,10 @@ class RingInfo {
   final double volume;
   final bool fadeIn;
   final bool vibrate;
+  final AlarmKind kind;
+  final int sleepEnd;
+
+  bool get isSleep => kind == AlarmKind.sleep;
 
   RingInfo copyWith({int? snoozesLeft}) => RingInfo(
     alarmId: alarmId,
@@ -77,6 +85,8 @@ class RingInfo {
     volume: volume,
     fadeIn: fadeIn,
     vibrate: vibrate,
+    kind: kind,
+    sleepEnd: sleepEnd,
   );
 
   String toPayload() => jsonEncode({
@@ -93,6 +103,8 @@ class RingInfo {
     'volume': volume,
     'fade': fadeIn,
     'vibrate': vibrate,
+    'kind': kind.name,
+    'sleepEnd': sleepEnd,
   });
 
   static RingInfo fromSettings(AlarmSettings s) =>
@@ -117,6 +129,8 @@ class RingInfo {
         volume: (j['volume'] as num?)?.toDouble() ?? 0.9,
         fadeIn: j['fade'] as bool? ?? true,
         vibrate: j['vibrate'] as bool? ?? true,
+        kind: AlarmKind.values.asNameMap()[j['kind']] ?? AlarmKind.wake,
+        sleepEnd: j['sleepEnd'] as int? ?? WorkoutAlarm.defaultSleepEnd,
       );
     } catch (_) {
       return null;
@@ -208,7 +222,9 @@ abstract final class AlarmScheduler {
           id: a.id,
           at: a.nextOccurrence(now),
           info: RingInfo.forAlarm(a, routine.id),
-          body: 'Rise and move! Finish your ${routine.name.toLowerCase()} routine to stop the alarm 💪',
+          body: a.isSleep
+              ? 'Time to wind down. Put the day away and get some sleep 🌙'
+              : 'Rise and move! Finish your ${routine.name.toLowerCase()} routine to stop the alarm 💪',
         ),
       );
     }

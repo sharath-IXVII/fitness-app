@@ -36,6 +36,21 @@ class AlarmsNotifier extends Notifier<List<WorkoutAlarm>> {
     routineId: Routine.beginner.id,
   );
 
+  /// A new bedtime alarm: gentle bells, one 10-minute snooze, Sleep mode
+  /// until 3:00 AM.
+  WorkoutAlarm sleepDraft() => WorkoutAlarm(
+    id: _nextId,
+    time: const TimeOfDay(hour: 22, minute: 30),
+    days: const {1, 2, 3, 4, 5, 6, 7},
+    routineId: Routine.beginner.id,
+    label: 'Bedtime',
+    sound: AlarmSound.bells,
+    volume: 0.5,
+    maxSnoozes: 1,
+    snoozeMinutes: 10,
+    kind: AlarmKind.sleep,
+  );
+
   Future<void> save(WorkoutAlarm alarm) async {
     final exists = state.any((a) => a.id == alarm.id);
     await _set(exists ? [for (final a in state) a.id == alarm.id ? alarm : a] : [...state, alarm]);

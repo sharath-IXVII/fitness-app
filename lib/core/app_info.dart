@@ -6,7 +6,7 @@ abstract final class AppInfo {
   static const sponsor = 'GetYr_io';
 
   /// Android application id. Keep in sync with android/app/build.gradle.kts.
-  static const packageId = 'com.GetYr_io.fittiePi';
+  static const packageId = 'com.GetYr_io.FittArc';
 
   /// Where feedback, questions and requests go. Every email is read.
   static const feedbackEmail = 'support@fittarc.in';

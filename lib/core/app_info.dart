@@ -9,7 +9,7 @@ abstract final class AppInfo {
   static const packageId = 'com.GetYr_io.fittiePi';
 
   /// Where feedback, questions and requests go. Every email is read.
-  static const feedbackEmail = 'fittiepi@gmail.com';
+  static const feedbackEmail = 'support@fittarc.in';
 
   /// Where friends can get the app.
   static const storeUrl = 'https://play.google.com/store/apps/details?id=$packageId';

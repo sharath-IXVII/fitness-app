@@ -46,7 +46,7 @@ const termsSections = <(String, String)>[
   (
     'Feedback',
     'Your feedback matters a great deal to us. Tell us what works, what doesn\'t and what you\'d love next at '
-        'fittiepi@gmail.com. Every message is read, and feedback decides what we improve first.',
+        'support@fittarc.in. Every message is read, and feedback decides what we improve first.',
   ),
-  ('Contact', 'Questions or requests: fittiepi@gmail.com.'),
+  ('Contact', 'Questions or requests: support@fittarc.in.'),
 ];

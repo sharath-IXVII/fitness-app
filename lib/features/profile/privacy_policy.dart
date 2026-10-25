@@ -41,7 +41,7 @@ const privacySections = <(String, String)>[
   ),
   (
     'Feedback emails',
-    'If you write to us from the app, your email app sends the message to fittiepi@gmail.com. We read it to '
+    'If you write to us from the app, your email app sends the message to support@fittarc.in. We read it to '
         'improve Fittarc and to reply to you; we don\'t share it.',
   ),
   (
@@ -75,7 +75,7 @@ const privacySections = <(String, String)>[
   ('Children', 'Fittarc is not directed at children under 13.'),
   (
     'Contact',
-    'Questions or requests: fittiepi@gmail.com. We\'ll update this page if anything changes and show the new '
+    'Questions or requests: support@fittarc.in. We\'ll update this page if anything changes and show the new '
         'date at the top.',
   ),
 ];

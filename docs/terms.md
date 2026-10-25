@@ -37,8 +37,8 @@ We keep improving Fittarc and may change or remove features, or these terms. We'
 
 ## Feedback
 
-Your feedback matters a great deal to us. Tell us what works, what doesn't and what you'd love next at fittiepi@gmail.com. Every message is read, and feedback decides what we improve first.
+Your feedback matters a great deal to us. Tell us what works, what doesn't and what you'd love next at support@fittarc.in. Every message is read, and feedback decides what we improve first.
 
 ## Contact
 
-Questions or requests: fittiepi@gmail.com.
+Questions or requests: support@fittarc.in.

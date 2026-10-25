@@ -21,10 +21,10 @@ import tensorflow as tf
 
 DATA = pathlib.Path(os.environ.get("FOOD_DIR", "/content/food"))
 OUT = pathlib.Path(os.environ.get("OUT_DIR", "/content/out"))
-SIZE = 224
+SIZE = int(os.environ.get("IMG_SIZE", "224"))
 BATCH = 32
-EPOCHS_HEAD = 8
-EPOCHS_FINE = 10
+EPOCHS_HEAD = int(os.environ.get("EPOCHS_HEAD", "8"))
+EPOCHS_FINE = int(os.environ.get("EPOCHS_FINE", "10"))
 
 OUT.mkdir(parents=True, exist_ok=True)
 

@@ -1,0 +1,57 @@
+name: Train food model
+
+# Trains a phone-sized Indian-food model on GitHub's servers and publishes it as
+# a downloadable artifact. Run it by hand: Actions -> "Train food model" -> Run workflow.
+# Needs two repository secrets from a free Kaggle account (Settings -> Create New API Token):
+#   KAGGLE_USERNAME and KAGGLE_KEY
+on:
+  workflow_dispatch:
+    inputs:
+      dataset:
+        description: "Kaggle dataset (owner/name). Check its licence allows commercial use."
+        default: "iamsouravbanerjee/indian-food-images-dataset"
+      epochs_head:
+        description: "Epochs with the backbone frozen"
+        default: "6"
+      epochs_fine:
+        description: "Epochs fine-tuning the top of the backbone"
+        default: "4"
+
+jobs:
+  train:
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: pip install tensorflow-cpu kaggle
+      - name: Download photos
+        env:
+          KAGGLE_USERNAME: ${{ secrets.KAGGLE_USERNAME }}
+          KAGGLE_KEY: ${{ secrets.KAGGLE_KEY }}
+        run: |
+          test -n "$KAGGLE_USERNAME" && test -n "$KAGGLE_KEY" || { echo "::error::Add KAGGLE_USERNAME and KAGGLE_KEY as repository secrets."; exit 1; }
+          kaggle datasets download -d "${{ inputs.dataset }}" -p data --unzip
+          echo "FOOD_DIR=$(python tools/food_model/find_class_folder.py data)" >> "$GITHUB_ENV"
+      - name: Train and export
+        env:
+          OUT_DIR: out
+          IMG_SIZE: "192"
+          EPOCHS_HEAD: ${{ inputs.epochs_head }}
+          EPOCHS_FINE: ${{ inputs.epochs_fine }}
+        run: python tools/food_model/train_indian_food_model.py 2>&1 | tee train.log
+      - name: Summary
+        run: |
+          ls -la out
+          grep -E "dishes:|Final validation" train.log | tail -3 | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "Dataset: ${{ inputs.dataset }}" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v5
+        with:
+          name: food-model
+          path: |
+            out/food_indian.tflite
+            out/food_indian_labels.csv
+            train.log

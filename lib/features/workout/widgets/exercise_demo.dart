@@ -293,7 +293,6 @@ class _DemoPainter extends CustomPainter {
     canvas.scale(scale);
 
     final ink = dark ? Colors.white : AppColors.primary;
-    final faint = dark ? Colors.white54 : AppColors.accent.withValues(alpha: 0.55);
     final line = dark ? Colors.white38 : AppColors.stroke;
 
     // Ground and props.
@@ -318,45 +317,123 @@ class _DemoPainter extends CustomPainter {
 
     if (phone) _phone(canvas, ink, line);
 
-    final near = Paint()
-      ..color = ink
-      ..strokeWidth = 3.4
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..style = PaintingStyle.stroke;
+    // A shaded mannequin: tapered, rounded limbs and a real torso and head,
+    // lit from the top-left in the season's colours (white over the camera).
+    final bounds = Rect.fromLTWH(0, 0, boxW, 100);
+    final lightC = dark ? Colors.white : AppColors.accent;
+    final deepC = dark ? Colors.white70 : AppColors.primary;
+    final bodyShader = LinearGradient(
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+      colors: [lightC, deepC],
+    ).createShader(bounds);
+    final near = Paint()..shader = bodyShader;
     final far = Paint()
-      ..color = faint
-      ..strokeWidth = 3.4
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
+      ..shader = LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [lightC.withValues(alpha: 0.55), deepC.withValues(alpha: 0.5)],
+      ).createShader(bounds);
 
-    void limb(List<String> keys, Paint p) {
-      final path = Path()..moveTo(pose[keys.first]!.dx, pose[keys.first]!.dy);
-      for (final k in keys.skip(1)) {
-        path.lineTo(pose[k]!.dx, pose[k]!.dy);
+    // Soft shadow on the floor under the figure.
+    final xsNow = [
+      for (final e in pose.entries)
+        if (e.key != 'gnd') e.value.dx,
+    ];
+    final mid = (xsNow.reduce(math.min) + xsNow.reduce(math.max)) / 2;
+    final span = xsNow.reduce(math.max) - xsNow.reduce(math.min);
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(mid, ground + 0.5), width: math.max(26, span * 0.9), height: 4),
+      Paint()
+        ..color = (dark ? Colors.white : AppColors.shadow).withValues(alpha: dark ? 0.12 : 0.14)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+    );
+
+    // A limb: tapered segments joined by rounded joints.
+    void limb(List<String> keys, List<double> widths, Paint p) {
+      for (var i = 0; i < keys.length - 1; i++) {
+        _segment(canvas, pose[keys[i]]!, pose[keys[i + 1]]!, widths[i], widths[i + 1], p);
       }
-      canvas.drawPath(path, p);
     }
 
     if (demo.view == DemoView.front) {
-      limb(['shL', 'elL', 'wrL'], near);
-      limb(['shR', 'elR', 'wrR'], near);
-      limb(['hipL', 'knL', 'anL'], near);
-      limb(['hipR', 'knR', 'anR'], near);
-      limb(['shL', 'shR'], near);
-      limb(['hipL', 'hipR'], near);
-      final midSh = (pose['shL']! + pose['shR']!) / 2, midHip = (pose['hipL']! + pose['hipR']!) / 2;
-      canvas.drawLine(midSh, midHip, near);
-      canvas.drawLine(pose['neck']!, midSh, near);
+      // Legs and arms first, torso over their tops.
+      for (final side in ['L', 'R']) {
+        limb(['hip$side', 'kn$side', 'an$side'], [7.2, 5.4, 3.8], near);
+        _foot(canvas, pose['an$side']!, side == 'L' ? -1 : 1, near);
+      }
+      final shL = pose['shL']!, shR = pose['shR']!, hipL = pose['hipL']!, hipR = pose['hipR']!;
+      final torso = Path()
+        ..moveTo(shL.dx + 0.4, shL.dy - 0.5)
+        ..lineTo(shR.dx - 0.4, shR.dy - 0.5)
+        ..lineTo(hipR.dx + 0.2, hipR.dy + 2)
+        ..lineTo(hipL.dx - 0.2, hipL.dy + 2)
+        ..close();
+      canvas.drawPath(torso, near);
+      canvas.drawPath(
+        torso,
+        Paint()
+          ..shader = bodyShader
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4
+          ..strokeJoin = StrokeJoin.round,
+      );
+      for (final side in ['L', 'R']) {
+        limb(['sh$side', 'el$side', 'wr$side'], [5.4, 4.2, 3.2], near);
+        canvas.drawCircle(pose['wr$side']!, 2.5, near);
+      }
+      _segment(canvas, pose['neck']!, (shL + shR) / 2, 2.8, 3.4, near);
     } else {
-      limb(['sh', 'elf', 'wrf'], far);
-      limb(['hip', 'knf', 'anf'], far);
-      limb(['hip', 'sh', 'neck'], near);
-      limb(['hip', 'kn', 'an'], near);
-      limb(['sh', 'el', 'wr'], near);
+      limb(['sh', 'elf', 'wrf'], [4.6, 3.6, 2.9], far);
+      canvas.drawCircle(pose['wrf']!, 2.4, far);
+      limb(['hip', 'knf', 'anf'], [6.2, 4.6, 3.3], far);
+      _foot(canvas, pose['anf']!, 1, far);
+      limb(['hip', 'sh', 'neck'], [8.4, 9.6, 3.2], near);
+      limb(['hip', 'kn', 'an'], [6.6, 4.9, 3.5], near);
+      _foot(canvas, pose['an']!, 1, near);
+      limb(['sh', 'el', 'wr'], [5.0, 3.9, 3.1], near);
+      canvas.drawCircle(pose['wr']!, 2.6, near);
     }
-    canvas.drawCircle(pose['head']!, 5.2, Paint()..color = ink);
+    final head = pose['head']!;
+    canvas.drawCircle(head, 5.6, near);
+    // A touch of light on the head.
+    canvas.drawCircle(
+      head.translate(-1.8, -2),
+      1.7,
+      Paint()..color = Colors.white.withValues(alpha: dark ? 0.35 : 0.45),
+    );
     canvas.restore();
+  }
+
+  /// A tapered, rounded bar from [a] (width [wa]) to [b] (width [wb]).
+  void _segment(Canvas canvas, Offset a, Offset b, double wa, double wb, Paint p) {
+    final d = b - a;
+    final len = d.distance;
+    if (len < 0.01) {
+      canvas.drawCircle(a, wa / 2, p);
+      return;
+    }
+    final n = Offset(-d.dy, d.dx) / len;
+    final path = Path()
+      ..moveTo(a.dx + n.dx * wa / 2, a.dy + n.dy * wa / 2)
+      ..lineTo(b.dx + n.dx * wb / 2, b.dy + n.dy * wb / 2)
+      ..lineTo(b.dx - n.dx * wb / 2, b.dy - n.dy * wb / 2)
+      ..lineTo(a.dx - n.dx * wa / 2, a.dy - n.dy * wa / 2)
+      ..close();
+    canvas.drawPath(path, p);
+    canvas.drawCircle(a, wa / 2, p);
+    canvas.drawCircle(b, wb / 2, p);
+  }
+
+  /// A small rounded foot at [ankle], pointing [dir] (-1 left, 1 right).
+  void _foot(Canvas canvas, Offset ankle, int dir, Paint p) {
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(dir > 0 ? ankle.dx - 1.5 : ankle.dx - 5.5, ankle.dy - 1.4, 7, 3.4),
+        const Radius.circular(1.7),
+      ),
+      p,
+    );
   }
 
   /// Phone placement: standing in front for front-view exercises, lying on

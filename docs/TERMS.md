@@ -1,4 +1,4 @@
-# FitArc terms of use
+# Fittarc terms of use
 
 _Last updated: October 2026_
 

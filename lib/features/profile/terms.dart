@@ -3,13 +3,13 @@ const termsUpdated = 'October 2026';
 
 const termsSections = <(String, String)>[
   (
-    'Using FitArc',
-    'By creating an account or using FitArc you agree to these terms and to our Privacy Policy. If you don\'t '
+    'Using Fittarc',
+    'By creating an account or using Fittarc you agree to these terms and to our Privacy Policy. If you don\'t '
         'agree, please don\'t use the app. You must be at least 13 years old.',
   ),
   (
     'Your health and safety',
-    'FitArc is a fitness and habit app. It is not medical advice and does not replace a doctor, dietitian or '
+    'Fittarc is a fitness and habit app. It is not medical advice and does not replace a doctor, dietitian or '
         'physiotherapist. Talk to a doctor before starting a new exercise or diet plan, especially if you have a '
         'health condition, are pregnant, or are recovering from an injury. Exercise at your own risk and at your '
         'own pace: stop if you feel pain, dizziness or breathlessness. Never use the phone while driving, and '
@@ -23,7 +23,7 @@ const termsSections = <(String, String)>[
   (
     'Alarms and strict mode',
     'Alarms depend on your phone\'s settings, battery saver and permissions, and on the phone being on. Don\'t '
-        'rely on FitArc as your only alarm for anything important (a flight, medication, an exam). Strict mode is '
+        'rely on Fittarc as your only alarm for anything important (a flight, medication, an exam). Strict mode is '
         'your own choice and can be turned off in the app.',
   ),
   (
@@ -39,7 +39,7 @@ const termsSections = <(String, String)>[
   ),
   (
     'Changes and availability',
-    'We keep improving FitArc and may change or remove features, or these terms. We\'ll update the date above '
+    'We keep improving Fittarc and may change or remove features, or these terms. We\'ll update the date above '
         'when that happens. The app is provided "as is", without guarantees, and we are not liable for losses '
         'that result from using it, to the extent the law allows.',
   ),

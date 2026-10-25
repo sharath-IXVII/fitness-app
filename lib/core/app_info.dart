@@ -1,5 +1,5 @@
 abstract final class AppInfo {
-  static const name = 'FitArc';
+  static const name = 'Fittarc';
   static const tagline = 'The Rise of Arcs';
 
   /// Shown on the opening screen every time the app starts.

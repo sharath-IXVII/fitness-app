@@ -1,4 +1,4 @@
-# Releasing FitArc on Google Play
+# Releasing Fittarc on Google Play
 
 This is a checklist for the first Play Store release. Items marked **(you)** need your accounts or decisions.
 

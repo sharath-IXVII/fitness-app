@@ -1,10 +1,10 @@
-# FitArc privacy policy
+# Fittarc privacy policy
 
 _Last updated: October 2026_
 
 ## Summary
 
-FitArc keeps your fitness data on your phone and backs your progress up to your account, so you never lose your levels and badges. Three things leave your device: what's needed to sign you in, that progress backup, and, if you use Friends, a small public profile and your challenges. We don't sell data, show ads or use third-party analytics.
+Fittarc keeps your fitness data on your phone and backs your progress up to your account, so you never lose your levels and badges. Three things leave your device: what's needed to sign you in, that progress backup, and, if you use Friends, a small public profile and your challenges. We don't sell data, show ads or use third-party analytics.
 
 ## Your account
 
@@ -24,7 +24,7 @@ Alarms, routines, your My Day plan, weigh-ins, weight goal, saved foods and meal
 
 ## Feedback emails
 
-If you write to us from the app, your email app sends the message to fittiepi@gmail.com. We read it to improve FitArc and to reply to you; we don't share it.
+If you write to us from the app, your email app sends the message to fittiepi@gmail.com. We read it to improve Fittarc and to reply to you; we don't share it.
 
 ## Camera during workouts
 
@@ -44,11 +44,11 @@ Alarms and reminders are scheduled locally on your phone. No notification conten
 
 ## Deleting your data
 
-Use "Delete account" in your profile (tap your picture on Today) to permanently delete your sign-in, your progress backup, your Friends profile, friend list and challenges, and all FitArc data on the phone. You can also email us to have your account deleted.
+Use "Delete account" in your profile (tap your picture on Today) to permanently delete your sign-in, your progress backup, your Friends profile, friend list and challenges, and all Fittarc data on the phone. You can also email us to have your account deleted.
 
 ## Children
 
-FitArc is not directed at children under 13.
+Fittarc is not directed at children under 13.
 
 ## Contact
 

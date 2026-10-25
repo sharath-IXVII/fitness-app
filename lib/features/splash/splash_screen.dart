@@ -22,7 +22,7 @@ class SplashScreen extends ConsumerStatefulWidget {
 ///   1. the season's weather arrives across the whole screen (snowfall in
 ///      Winter, petals, golden light or rain),
 ///   2. the logo assembles in the season's colours,
-///   3. "FITARC" and "The Rise of Arcs" appear,
+///   3. "FITTARC" and "The Rise of Arcs" appear,
 ///   4. "Sponsored by GetYr_io" fades in at the bottom and stays a moment.
 class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerProviderStateMixin {
   static const _total = Duration(milliseconds: 5200);

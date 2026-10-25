@@ -18,7 +18,7 @@ import 'photo_store.dart';
 import 'reminders.dart';
 import 'storage.dart';
 
-/// Everything FitArc keeps on the phone, and wiping it.
+/// Everything Fittarc keeps on the phone, and wiping it.
 ///
 /// Lives in a (never disposed) provider so a wipe can finish even after the
 /// screen that started it is gone, e.g. once sign-out sends the user back

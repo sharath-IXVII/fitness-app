@@ -51,7 +51,7 @@ Before uploading, test the release build on a real phone (`flutter install --rel
 
 | Form | What to declare |
 |---|---|
-| Privacy policy | Host `docs/PRIVACY.md` at a public URL (GitHub Pages on this repo works) and paste the link |
+| Privacy policy | Host `docs/privacy.md` at a public URL (GitHub Pages on this repo: Settings → Pages → branch, folder `/docs`) and paste the link |
 | Ads | No ads |
 | App access | Give reviewers a way in: a test phone number and code from Firebase Auth → *Phone numbers for testing* |
 | Content rating | Questionnaire: health & fitness, no user-generated content shared with others |

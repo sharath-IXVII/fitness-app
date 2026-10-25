@@ -103,7 +103,7 @@ The model isn't stored in git: the APK build downloads it into `assets/models/` 
 
 ## Release
 
-See `docs/RELEASE.md` for signing, the Play Console forms (including data safety) and the device test checklist. The privacy policy is in `docs/PRIVACY.md` and in the app under Me → Privacy policy.
+See `docs/RELEASE.md` for signing, the Play Console forms (including data safety) and the device test checklist. The privacy policy is in `docs/privacy.md` and in the app under Me → Privacy policy.
 
 ## Strict mode and brain games
 

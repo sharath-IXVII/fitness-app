@@ -1,4 +1,4 @@
-/// Terms of use shown in the app. Keep in sync with docs/TERMS.md.
+/// Terms of use shown in the app. Keep in sync with docs/terms.md.
 const termsUpdated = 'October 2026';
 
 const termsSections = <(String, String)>[

@@ -1,3 +1,8 @@
+---
+title: Fittarc privacy policy
+permalink: /privacy/
+---
+
 # Fittarc privacy policy
 
 _Last updated: October 2026_

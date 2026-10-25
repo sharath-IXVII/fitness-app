@@ -1,4 +1,4 @@
-/// The privacy policy shown in the app. Keep in sync with docs/PRIVACY.md,
+/// The privacy policy shown in the app. Keep in sync with docs/privacy.md,
 /// which is the version to host publicly for the Play Store listing.
 const privacyUpdated = 'October 2026';
 

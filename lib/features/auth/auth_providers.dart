@@ -24,11 +24,15 @@ class AuthNotifier extends Notifier<AppUser?> {
   /// Applies a sign-in result immediately rather than waiting for the stream.
   /// If the phone holds another account's data, it's cleared first.
   Future<void> signedIn(AppUser user) async {
-    await ref.read(localDataProvider).claimFor(user.uid);
-    // Bring back this account's progress (levels, badges, streaks…) before
-    // the app decides whether the user still needs to set up a profile.
-    await ref.read(cloudBackupProvider).restore(user.uid);
-    state = user;
+    try {
+      await ref.read(localDataProvider).claimFor(user.uid);
+      // Bring back this account's progress (levels, badges, streaks…) before
+      // the app decides whether the user still needs to set up a profile.
+      await ref.read(cloudBackupProvider).restore(user.uid);
+    } finally {
+      // Signing in must finish even if tidying up the phone's data fails.
+      state = user;
+    }
   }
 
   Future<void> signOut() async {

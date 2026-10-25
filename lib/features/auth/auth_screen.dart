@@ -36,10 +36,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       final user = await ref.read(authServiceProvider).signInWithGoogle();
       if (user != null) {
         if (mounted) showAuthSuccess(context, name: user.name);
-        ref.read(authProvider.notifier).signedIn(user);
+        await ref.read(authProvider.notifier).signedIn(user);
       }
     } on AuthFailure catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Sign-in problem: $e')));
     } finally {
       if (mounted) setState(() => _googleBusy = false);
     }

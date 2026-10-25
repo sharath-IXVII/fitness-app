@@ -66,9 +66,14 @@ class FirebaseAuthService implements AuthService {
       return _map(result.user);
     } on GoogleSignInException catch (e) {
       if (e.code == GoogleSignInExceptionCode.canceled) return null;
-      throw AuthFailure('Google sign-in failed (${e.code.name}).');
+      final why = (e.description ?? '').trim();
+      throw AuthFailure('Google sign-in failed (${e.code.name}${why.isEmpty ? '' : ': $why'}).');
     } on FirebaseAuthException catch (e) {
-      throw _failure(e);
+      throw AuthFailure('${_failure(e).message} [${e.code}]');
+    } on AuthFailure {
+      rethrow;
+    } catch (e) {
+      throw AuthFailure('Sign-in problem: $e');
     }
   }
 

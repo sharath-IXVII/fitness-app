@@ -22,6 +22,9 @@ on:
         description: "Epochs fine-tuning the top of the backbone"
         default: "4"
 
+permissions:
+  contents: write
+
 jobs:
   train:
     runs-on: ubuntu-latest
@@ -53,6 +56,14 @@ jobs:
           ls -la out
           grep -E "dishes:|Final validation" train.log | tail -3 | tee -a "$GITHUB_STEP_SUMMARY"
           echo "Dataset: ${{ inputs.dataset || 'iamsouravbanerjee/indian-food-images-dataset' }}" >> "$GITHUB_STEP_SUMMARY"
+      - name: Publish to a release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="Experiment, not for release until the photo licence is clear. $(grep -E 'dishes:|Final validation' train.log | tail -3 | tr '\n' ' ')"
+          gh release delete food-model-experiment --yes --cleanup-tag || true
+          gh release create food-model-experiment out/food_indian.tflite out/food_indian_labels.csv train.log \
+            --prerelease --title "Food model (experiment)" --notes "$notes" --target "$GITHUB_SHA"
       - uses: actions/upload-artifact@v5
         with:
           name: food-model

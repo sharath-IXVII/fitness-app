@@ -125,6 +125,12 @@ class FriendChallenge {
   final bool toDone;
   final DateTime createdAt;
 
+  /// How long a challenge waits for someone to join before it lapses.
+  static const openFor = Duration(hours: 48);
+
+  /// Nobody joined in time. Challenges someone has taken never expire.
+  bool expiredAt(DateTime now) => status == ChallengeStatus.open && now.difference(createdAt) > openFor;
+
   bool isMine(String uid) => fromUid == uid;
   bool involves(String uid) => fromUid == uid || toUid == uid;
   bool doneBy(String uid) => uid == fromUid ? fromDone : (uid == toUid && toDone);

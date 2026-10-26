@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../workout/domain/exercise.dart';
@@ -151,7 +152,7 @@ class FriendsBackend {
       reps: reps,
       arcLabel: arcLabel,
       status: to == null ? ChallengeStatus.open : ChallengeStatus.accepted,
-      createdAt: DateTime.now(),
+      createdAt: clock.now(),
     );
     final batch = _db.batch()..set(doc, c.toJson());
     if (to == null) batch.set(_codes.doc(code), {'challengeId': doc.id, 'fromUid': from.uid});
@@ -166,7 +167,7 @@ class FriendsBackend {
     try {
       final snap = await _challenges.doc(id).get();
       final c = _parseChallenge(snap.id, snap.data());
-      return c != null && c.status == ChallengeStatus.open && c.code == code ? c : null;
+      return c != null && c.status == ChallengeStatus.open && c.code == code && !c.expiredAt(clock.now()) ? c : null;
     } on FirebaseException catch (e) {
       // No longer open and not ours: the rules hide it.
       if (e.code == 'permission-denied') return null;
@@ -212,6 +213,9 @@ class FriendsBackend {
     return _db.runTransaction((tx) async {
       final snap = await tx.get(ref);
       final current = FriendChallenge.fromJson(snap.id, snap.data()!);
+      if (current.expiredAt(clock.now())) {
+        throw const FriendsFailure('This challenge has expired. Ask for a new one.');
+      }
       if (current.status != ChallengeStatus.open || current.toUid != null) {
         throw const FriendsFailure('Someone else already took this challenge.');
       }
@@ -263,6 +267,15 @@ class FriendsBackend {
     return updated;
   }
 
+  /// Deletes a lapsed open challenge and its code. Best effort: if it fails
+  /// (offline), it's hidden anyway and tried again next time.
+  Future<void> _discard(FriendChallenge c) async {
+    try {
+      await _codes.doc(c.code).delete();
+      await _challenges.doc(c.id).delete();
+    } catch (_) {}
+  }
+
   /// Every challenge [uid] sent or received, newest first.
   Stream<List<FriendChallenge>> challenges(String uid) {
     final controller = StreamController<List<FriendChallenge>>();
@@ -270,9 +283,17 @@ class FriendsBackend {
     void emit() {
       // Wait for both queries, so the list never flashes up half-empty.
       if (sent == null || got == null) return;
-      final all = {
+      final every = {
         for (final c in [...sent!, ...got!]) c.id: c,
       }.values.toList()..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+      // Open challenges nobody joined in time vanish, and the sender's are
+      // tidied away (the challenge and its share code).
+      final now = clock.now();
+      final lapsed = every.where((c) => c.expiredAt(now)).toList();
+      for (final c in lapsed.where((c) => c.fromUid == uid)) {
+        unawaited(_discard(c));
+      }
+      final all = every.where((c) => !c.expiredAt(now)).toList();
       if (!controller.isClosed) controller.add(all);
     }
 

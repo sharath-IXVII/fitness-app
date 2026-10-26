@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:fitalarm/features/friends/domain/friends.dart';
 import 'package:fitalarm/features/friends/friends_backend.dart';
@@ -52,6 +53,40 @@ void main() {
 
     final list = await b.challenges('asha').first;
     expect(list.single.status, ChallengeStatus.done);
+  });
+
+  test('an open challenge nobody joins expires after 48 hours and disappears', () async {
+    final start = DateTime(2026, 3, 1, 9);
+    final c = await withClock(Clock.fixed(start), () {
+      return b.createChallenge(from: _asha, exercise: Exercise.pushUp, reps: 10, arcLabel: 'Winter Arc 2026');
+    });
+
+    // A day later it's still there and can be joined.
+    await withClock(Clock.fixed(start.add(const Duration(hours: 24))), () async {
+      expect((await b.challenges('asha').first).single.id, c.id);
+      expect((await b.findByCode(c.code, me: 'ravi')).id, c.id);
+    });
+
+    // After 48 hours it's gone from the list and the code no longer works.
+    await withClock(Clock.fixed(start.add(const Duration(hours: 49))), () async {
+      expect(await b.challenges('asha').first, isEmpty);
+      await expectLater(b.findByCode(c.code, me: 'ravi'), throwsA(isA<FriendsFailure>()));
+    });
+
+    // The sender's copy is cleaned up for good.
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+    expect((await db.collection('challenges').get()).docs, isEmpty);
+  });
+
+  test('a challenge someone has taken never expires', () async {
+    final start = DateTime(2026, 3, 1, 9);
+    final c = await withClock(Clock.fixed(start), () {
+      return b.createChallenge(from: _asha, exercise: Exercise.squat, reps: 15, arcLabel: 'Winter Arc 2026');
+    });
+    await withClock(Clock.fixed(start.add(const Duration(hours: 5))), () => b.accept(c, _ravi));
+    await withClock(Clock.fixed(start.add(const Duration(days: 10))), () async {
+      expect((await b.challenges('ravi').first).single.status, ChallengeStatus.accepted);
+    });
   });
 
   test('bad codes and your own code give friendly errors', () async {

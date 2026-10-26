@@ -1,3 +1,4 @@
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -83,7 +84,11 @@ class FriendsScreen extends ConsumerWidget {
               ),
               error: (e, _) => Text("Couldn't load challenges. Check your internet.", style: text.bodyMedium),
               data: (list) {
-                final shown = list.where((c) => c.status != ChallengeStatus.declined).take(20).toList();
+                final now = clock.now();
+                final shown = list
+                    .where((c) => c.status != ChallengeStatus.declined && !c.expiredAt(now))
+                    .take(20)
+                    .toList();
                 if (shown.isEmpty) {
                   return Text(
                     'No challenges yet. Tap Challenge, pick an exercise and send the code to a friend.',
@@ -457,7 +462,7 @@ class _ChallengeCard extends StatelessWidget {
     final (status, color) = switch (c.status) {
       ChallengeStatus.done => ('Done together · friends ✓', AppColors.primary),
       ChallengeStatus.declined => ('Declined', AppColors.textMuted),
-      ChallengeStatus.open => ('Waiting for someone to join · code ${c.code}', AppColors.amber),
+      ChallengeStatus.open => ('Waiting for someone to join · code ${c.code} · ${_timeLeft(c)}', AppColors.amber),
       ChallengeStatus.accepted when !iDid => ('Your turn!', AppColors.energy),
       ChallengeStatus.accepted => ('Waiting for ${other ?? 'your friend'}', AppColors.textTertiary),
     };
@@ -719,4 +724,12 @@ class _Stat extends StatelessWidget {
       ),
     );
   }
+}
+
+/// "expires in 36h" / "expires in 40 min" for an open challenge.
+String _timeLeft(FriendChallenge c) {
+  final left = FriendChallenge.openFor - clock.now().difference(c.createdAt);
+  if (left.inMinutes <= 0) return 'expiring';
+  if (left.inHours >= 1) return 'expires in ${left.inHours}h';
+  return 'expires in ${left.inMinutes} min';
 }

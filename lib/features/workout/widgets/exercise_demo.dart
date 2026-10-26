@@ -6,7 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../domain/exercise.dart';
 import 'move_demos.dart';
 
-/// A looping stick-figure animation of how to do [exercise], with the phone
+/// A looping animation of a person showing how to do [exercise], with the phone
 /// drawn where it should be placed (in front, or on the floor to the side).
 class ExerciseDemo extends StatefulWidget {
   ExerciseDemo({super.key, required Exercise exercise, this.height = 170, this.dark = false})
@@ -317,23 +317,31 @@ class _DemoPainter extends CustomPainter {
 
     if (phone) _phone(canvas, ink, line);
 
-    // A shaded mannequin: tapered, rounded limbs and a real torso and head,
-    // lit from the top-left in the season's colours (white over the camera).
+    // A person in everyday gym clothes: skin, a short-sleeved T-shirt,
+    // trousers and trainers, lit from the top-left. The far side is a little
+    // darker so the limbs read in front of one another.
     final bounds = Rect.fromLTWH(0, 0, boxW, 100);
-    final lightC = dark ? Colors.white : AppColors.accent;
-    final deepC = dark ? Colors.white70 : AppColors.primary;
-    final bodyShader = LinearGradient(
-      begin: Alignment.topLeft,
-      end: Alignment.bottomRight,
-      colors: [lightC, deepC],
-    ).createShader(bounds);
-    final near = Paint()..shader = bodyShader;
-    final far = Paint()
-      ..shader = LinearGradient(
-        begin: Alignment.topLeft,
-        end: Alignment.bottomRight,
-        colors: [lightC.withValues(alpha: 0.55), deepC.withValues(alpha: 0.5)],
-      ).createShader(bounds);
+    Paint lit(Color light, Color deep, {double dim = 0}) {
+      Color d(Color c) => Color.lerp(c, Colors.black, dim)!;
+      return Paint()
+        ..shader = LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [d(light), d(deep)],
+        ).createShader(bounds);
+    }
+
+    const skinLight = Color(0xFFF2C9A5), skinDeep = Color(0xFFD39A74);
+    final shirtLight = dark ? const Color(0xFFFFFFFF) : AppColors.accent;
+    final shirtDeep = dark ? const Color(0xFFD7DEE8) : AppColors.primary;
+    const pantsLight = Color(0xFF55627F), pantsDeep = Color(0xFF2F3A55);
+    final skin = lit(skinLight, skinDeep), skinFar = lit(skinLight, skinDeep, dim: 0.14);
+    final shirt = lit(shirtLight, shirtDeep), shirtFar = lit(shirtLight, shirtDeep, dim: 0.16);
+    final pants = lit(pantsLight, pantsDeep), pantsFar = lit(pantsLight, pantsDeep, dim: 0.18);
+    final shoe = Paint()..color = const Color(0xFFF4F6FA);
+    final shoeFar = Paint()..color = const Color(0xFFD5DAE3);
+    final sole = Paint()..color = const Color(0xFF3A4254);
+    final hair = Paint()..color = const Color(0xFF3B2A22);
 
     // Soft shadow on the floor under the figure.
     final xsNow = [
@@ -356,51 +364,93 @@ class _DemoPainter extends CustomPainter {
       }
     }
 
+    // An arm: bare to the wrist, with the T-shirt sleeve over the top half of
+    // the upper arm, and a hand.
+    void arm(String sh, String el, String wr, List<double> w, Paint skinP, Paint sleeveP) {
+      limb([sh, el, wr], w, skinP);
+      final from = pose[sh]!, to = pose[el]!;
+      _segment(canvas, from, Offset.lerp(from, to, 0.55)!, w[0] + 0.5, (w[0] + w[1]) / 2 + 0.5, sleeveP);
+      canvas.drawCircle(pose[wr]!, 2.5, skinP);
+    }
+
+    // A leg in trousers ending in a trainer.
+    void leg(String hip, String kn, String an, List<double> w, Paint pantsP, Paint shoeP, int dir) {
+      limb([hip, kn, an], w, pantsP);
+      _foot(canvas, pose[an]!, dir, shoeP, sole);
+    }
+
     if (demo.view == DemoView.front) {
-      // Legs and arms first, torso over their tops.
+      // Legs first, then the shirt over their tops.
       for (final side in ['L', 'R']) {
-        limb(['hip$side', 'kn$side', 'an$side'], [7.2, 5.4, 3.8], near);
-        _foot(canvas, pose['an$side']!, side == 'L' ? -1 : 1, near);
+        leg('hip$side', 'kn$side', 'an$side', [7.2, 5.4, 3.8], pants, shoe, side == 'L' ? -1 : 1);
       }
       final shL = pose['shL']!, shR = pose['shR']!, hipL = pose['hipL']!, hipR = pose['hipR']!;
+      // Neck under the collar.
+      _segment(canvas, pose['neck']!, (shL + shR) / 2, 2.8, 3.4, skin);
+      // Trousers' waist, then the T-shirt (hanging a little over it).
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromPoints(Offset(hipL.dx - 1.2, hipL.dy - 1), Offset(hipR.dx + 1.2, hipR.dy + 3.5)),
+          const Radius.circular(1.6),
+        ),
+        pants,
+      );
       final torso = Path()
         ..moveTo(shL.dx + 0.4, shL.dy - 0.5)
         ..lineTo(shR.dx - 0.4, shR.dy - 0.5)
-        ..lineTo(hipR.dx + 0.2, hipR.dy + 2)
-        ..lineTo(hipL.dx - 0.2, hipL.dy + 2)
+        ..lineTo(hipR.dx + 0.8, hipR.dy + 0.5)
+        ..lineTo(hipL.dx - 0.8, hipL.dy + 0.5)
         ..close();
-      canvas.drawPath(torso, near);
+      canvas.drawPath(torso, shirt);
       canvas.drawPath(
         torso,
         Paint()
-          ..shader = bodyShader
+          ..shader = shirt.shader
           ..style = PaintingStyle.stroke
           ..strokeWidth = 4
           ..strokeJoin = StrokeJoin.round,
       );
+      // Round neckline.
+      canvas.drawArc(
+        Rect.fromCenter(center: Offset((shL.dx + shR.dx) / 2, shL.dy - 0.8), width: 6.4, height: 4.6),
+        0,
+        math.pi,
+        false,
+        Paint()
+          ..color = const Color(0xFFD39A74)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.1,
+      );
       for (final side in ['L', 'R']) {
-        limb(['sh$side', 'el$side', 'wr$side'], [5.4, 4.2, 3.2], near);
-        canvas.drawCircle(pose['wr$side']!, 2.5, near);
+        arm('sh$side', 'el$side', 'wr$side', [5.4, 4.2, 3.2], skin, shirt);
       }
-      _segment(canvas, pose['neck']!, (shL + shR) / 2, 2.8, 3.4, near);
     } else {
-      limb(['sh', 'elf', 'wrf'], [4.6, 3.6, 2.9], far);
-      canvas.drawCircle(pose['wrf']!, 2.4, far);
-      limb(['hip', 'knf', 'anf'], [6.2, 4.6, 3.3], far);
-      _foot(canvas, pose['anf']!, 1, far);
-      limb(['hip', 'sh', 'neck'], [8.4, 9.6, 3.2], near);
-      limb(['hip', 'kn', 'an'], [6.6, 4.9, 3.5], near);
-      _foot(canvas, pose['an']!, 1, near);
-      limb(['sh', 'el', 'wr'], [5.0, 3.9, 3.1], near);
-      canvas.drawCircle(pose['wr']!, 2.6, near);
+      // Far side first.
+      arm('sh', 'elf', 'wrf', [4.6, 3.6, 2.9], skinFar, shirtFar);
+      leg('hip', 'knf', 'anf', [6.2, 4.6, 3.3], pantsFar, shoeFar, 1);
+      // Neck, then trousers at the hip and the shirt up to the shoulder.
+      _segment(canvas, pose['sh']!, pose['neck']!, 3.4, 3.0, skin);
+      limb(['hip', 'kn', 'an'], [6.6, 4.9, 3.5], pants);
+      _foot(canvas, pose['an']!, 1, shoe, sole);
+      final hipP = pose['hip']!, shP = pose['sh']!;
+      _segment(canvas, hipP, shP, 8.4, 9.6, shirt);
+      // The trousers' waistband peeks out below the shirt.
+      _segment(canvas, hipP, Offset.lerp(hipP, shP, 0.14)!, 8.6, 8.6, pants);
+      arm('sh', 'el', 'wr', [5.0, 3.9, 3.1], skin, shirt);
     }
     final head = pose['head']!;
-    canvas.drawCircle(head, 5.6, near);
+    canvas.drawCircle(head, 5.6, skin);
+    // Hair: a cap over the top of the head (front), or sweeping back (side).
+    if (demo.view == DemoView.front) {
+      canvas.drawArc(Rect.fromCircle(center: head, radius: 5.9), math.pi * 1.04, math.pi * 0.92, true, hair);
+    } else {
+      canvas.drawArc(Rect.fromCircle(center: head, radius: 5.9), math.pi * 0.9, math.pi * 1.25, true, hair);
+    }
     // A touch of light on the head.
     canvas.drawCircle(
       head.translate(-1.8, -2),
-      1.7,
-      Paint()..color = Colors.white.withValues(alpha: dark ? 0.35 : 0.45),
+      1.5,
+      Paint()..color = Colors.white.withValues(alpha: 0.28),
     );
     canvas.restore();
   }
@@ -425,14 +475,16 @@ class _DemoPainter extends CustomPainter {
     canvas.drawCircle(b, wb / 2, p);
   }
 
-  /// A small rounded foot at [ankle], pointing [dir] (-1 left, 1 right).
-  void _foot(Canvas canvas, Offset ankle, int dir, Paint p) {
+  /// A trainer at [ankle], pointing [dir] (-1 left, 1 right), with a darker sole.
+  void _foot(Canvas canvas, Offset ankle, int dir, Paint upper, Paint sole) {
+    final left = dir > 0 ? ankle.dx - 1.8 : ankle.dx - 6.4;
     canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(dir > 0 ? ankle.dx - 1.5 : ankle.dx - 5.5, ankle.dy - 1.4, 7, 3.4),
-        const Radius.circular(1.7),
-      ),
-      p,
+      RRect.fromRectAndRadius(Rect.fromLTWH(left, ankle.dy - 1.6, 8.2, 3.2), const Radius.circular(1.6)),
+      upper,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(left, ankle.dy + 0.9, 8.2, 1.3), const Radius.circular(0.65)),
+      sole,
     );
   }
 

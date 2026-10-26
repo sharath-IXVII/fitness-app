@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/page_background.dart';
@@ -15,6 +17,7 @@ import 'domain/health.dart';
 import 'domain/report.dart';
 import 'health_providers.dart';
 import 'widgets/add_reading_sheet.dart';
+import 'widgets/guide_card.dart';
 import 'widgets/health_widgets.dart';
 
 /// Health: blood pressure, blood sugar, pulse and oxygen from real devices,
@@ -52,6 +55,15 @@ class HealthScreen extends ConsumerWidget {
       const SizedBox(height: 14),
       const _HonestNote(),
       const SizedBox(height: 16),
+      const GuideCard(
+        id: 'health',
+        title: 'Start here: 3 taps',
+        steps: [
+          'Tap a tile under "Add a reading", for example Blood pressure.',
+          'Type exactly what your monitor shows, then tap Save reading.',
+          'For blood pressure, do it morning and evening for 7 days. The card below then shows your reliable average.',
+        ],
+      ),
       const _HomeBpCard(),
       const SizedBox(height: 22),
       Text('Add a reading', style: text.titleLarge),
@@ -67,6 +79,8 @@ class HealthScreen extends ConsumerWidget {
           for (final k in ReadingKind.values) _AddTile(kind: k, onTap: () => _add(context, k)),
         ],
       ),
+      const SizedBox(height: 22),
+      const _FoodGuideCard(),
       const SizedBox(height: 22),
       for (final k in ReadingKind.values) ...[_KindCard(kind: k), const SizedBox(height: 12)],
       if (all.isNotEmpty) ...[
@@ -95,6 +109,46 @@ class HealthScreen extends ConsumerWidget {
           children: [
             for (final (i, s) in sections.indexed)
               s.animate(delay: (i < 8 ? i * 30 : 0).ms).fadeIn(duration: 300.ms).moveY(begin: 8, end: 0),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Opens the per-100 g food guide.
+class _FoodGuideCard extends StatelessWidget {
+  const _FoodGuideCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Pressable(
+      onTap: () => context.push(Routes.foodGuide),
+      child: GlassCard(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(14)),
+              child: Icon(Icons.restaurant_menu_rounded, color: AppColors.primary),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Food guide', style: text.titleMedium),
+                  Text(
+                    'Which foods are rich in carbs, protein, fibre, vitamins and water, per 100 g.',
+                    style: text.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
           ],
         ),
       ),

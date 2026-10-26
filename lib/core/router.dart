@@ -10,6 +10,7 @@ import '../features/auth/auth_providers.dart';
 import '../features/auth/auth_screen.dart';
 import '../features/challenge/challenge_screen.dart';
 import '../features/diet/diet_screen.dart';
+import '../features/health/food_guide_screen.dart';
 import '../features/health/health_screen.dart';
 import '../features/diet/domain/meal_log.dart';
 import '../features/friends/friends_screen.dart';
@@ -56,6 +57,7 @@ abstract final class Routes {
   static const alarms = '/alarms';
   static const health = '/health';
   static const diet = '/diet';
+  static const foodGuide = '/food-guide';
   static const profile = '/profile';
 
   // Full-screen flows outside the tab shell.
@@ -168,6 +170,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           body: const DietScreen(),
         ),
       ),
+      GoRoute(path: Routes.foodGuide, builder: (_, _) => const FoodGuideScreen()),
       GoRoute(
         path: Routes.scan,
         builder: (_, s) => ScanFoodScreen(meal: s.extra is MealType ? s.extra! as MealType : MealType.lunch),

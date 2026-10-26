@@ -111,6 +111,23 @@ class DietScreen extends ConsumerWidget {
       const SizedBox(height: 14),
       const _WeightCard(),
       const SizedBox(height: 26),
+      Pressable(
+        onTap: () => context.push(Routes.foodGuide),
+        child: GlassCard(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Icon(Icons.restaurant_menu_rounded, color: AppColors.primary),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text('Food guide: what is in 100 g of common foods', style: text.titleSmall),
+              ),
+              Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+            ],
+          ),
+        ),
+      ),
+      const SizedBox(height: 18),
       Text('Learn the basics', style: text.titleMedium),
       const SizedBox(height: 10),
       const _LearnRow(),

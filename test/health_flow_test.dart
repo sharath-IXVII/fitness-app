@@ -4,6 +4,7 @@ import 'package:fitalarm/app.dart';
 import 'package:fitalarm/core/storage.dart';
 import 'package:fitalarm/features/auth/auth_providers.dart';
 import 'package:fitalarm/features/auth/auth_service.dart';
+import 'package:fitalarm/features/health/health_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -58,17 +59,25 @@ void main() {
     expect(find.textContaining('does not measure these itself'), findsOneWidget);
 
     // A normal reading.
-    await t.tap(find.text('Blood pressure').first);
+    await t.tap(find.descendant(of: find.byType(GridView), matching: find.text('Blood pressure')));
     await _wait(t);
     await t.enterText(find.byType(TextField).at(0), '118');
     await t.enterText(find.byType(TextField).at(1), '76');
     await t.tap(find.text('Save reading'));
     await _wait(t);
     expect(find.textContaining('Saved: 118/76'), findsOneWidget);
+    final list = find.descendant(of: find.byType(HealthScreen), matching: find.byType(Scrollable)).first;
+    await t.scrollUntilVisible(find.text('Normal'), 200, scrollable: list);
     expect(find.text('Normal'), findsWidgets);
+    // Back up to the tiles.
+    await t.scrollUntilVisible(
+      find.descendant(of: find.byType(GridView), matching: find.text('Blood pressure')),
+      -300,
+      scrollable: list,
+    );
 
     // Numbers that cannot be right are refused.
-    await t.tap(find.text('Blood pressure').first);
+    await t.tap(find.descendant(of: find.byType(GridView), matching: find.text('Blood pressure')));
     await _wait(t);
     await t.enterText(find.byType(TextField).at(0), '80');
     await t.enterText(find.byType(TextField).at(1), '90');

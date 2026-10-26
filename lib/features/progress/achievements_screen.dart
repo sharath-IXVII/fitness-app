@@ -15,7 +15,7 @@ import 'widgets.dart';
 class AchievementsScreen extends ConsumerWidget {
   const AchievementsScreen({super.key});
 
-  void _levels(BuildContext context, Level now, int openSets) {
+  void _levels(BuildContext context, Level now) {
     final text = Theme.of(context).textTheme;
     final f = NumberFormat.decimalPattern();
     showModalBottomSheet<void>(
@@ -59,7 +59,7 @@ class AchievementsScreen extends ConsumerWidget {
             const SizedBox(height: 4),
             Text('Finish all 12 badges of a set for bonus XP and to open the next set.', style: text.bodySmall),
             const SizedBox(height: 8),
-            for (var i = 0; i < openSets && i < badgeSets; i++)
+            for (var i = 0; i < badgeSets; i++)
               ListTile(
                 dense: true,
                 contentPadding: EdgeInsets.zero,
@@ -94,7 +94,7 @@ class AchievementsScreen extends ConsumerWidget {
                   Align(
                     alignment: Alignment.centerLeft,
                     child: TextButton.icon(
-                      onPressed: () => _levels(context, level, done + 1),
+                      onPressed: () => _levels(context, level),
                       icon: const Icon(Icons.format_list_numbered_rounded, size: 18),
                       label: const Text('All levels and XP'),
                     ),
@@ -108,57 +108,48 @@ class AchievementsScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            // Later sets and badges you haven't earned yet stay hidden, so
-            // each new one is a surprise when it appears.
-            for (var set = 1; set <= badgeSets && set <= done + 1; set++) ...[
+            for (var set = 1; set <= badgeSets; set++) ...[
               SliverPadding(
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 10),
                 sliver: SliverToBoxAdapter(
                   child: _SetHeader(
                     set: set,
                     earned: earned.keys.where((k) => k.set == set).length,
+                    open: set <= done + 1,
                     finished: set <= done,
                     bonus: f.format(badgeSetBonusXp[set - 1]),
                   ),
                 ),
               ),
-              Builder(
-                builder: (_) {
-                  // Most recent first.
-                  final mine = [
-                    for (final k in earned.keys)
-                      if (k.set == set) k,
-                  ]..sort((a, b) => earned[b]!.compareTo(earned[a]!));
-                  if (mine.isEmpty) {
-                    return SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      sliver: SliverToBoxAdapter(
-                        child: Text(
-                          'Your next badge is a surprise. Keep hitting your goals and it will appear here.',
-                          style: text.bodySmall,
-                        ),
-                      ),
-                    );
-                  }
-                  return SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    sliver: SliverGrid.builder(
-                      itemCount: mine.length,
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 10,
-                        crossAxisSpacing: 10,
-                        mainAxisExtent: 142,
-                      ),
-                      itemBuilder: (_, i) =>
-                          AchievementTile(badge: mine[i], earnedOn: earned[mine[i]])
-                              .animate(delay: (i * 25).ms)
-                              .fadeIn(duration: 250.ms)
-                              .moveY(begin: 6, end: 0, curve: Curves.easeOutCubic),
+              if (set <= done + 1)
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  sliver: SliverGrid.builder(
+                    itemCount: Achievement.values.length,
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 10,
+                      mainAxisExtent: 142,
                     ),
-                  );
-                },
-              ),
+                    itemBuilder: (_, i) {
+                      // Earned first (most recent first), then the rest in order.
+                      final order = [...Achievement.values]
+                        ..sort((a, b) {
+                          final ea = earned[(kind: a, set: set)], eb = earned[(kind: b, set: set)];
+                          if (ea != null && eb != null) return eb.compareTo(ea);
+                          if (ea != null) return -1;
+                          if (eb != null) return 1;
+                          return a.index.compareTo(b.index);
+                        });
+                      final key = (kind: order[i], set: set);
+                      return AchievementTile(badge: key, earnedOn: earned[key])
+                          .animate(delay: (i * 25).ms)
+                          .fadeIn(duration: 250.ms)
+                          .moveY(begin: 6, end: 0, curve: Curves.easeOutCubic);
+                    },
+                  ),
+                ),
             ],
             const SliverToBoxAdapter(child: SizedBox(height: 32)),
           ],
@@ -172,12 +163,14 @@ class _SetHeader extends StatelessWidget {
   const _SetHeader({
     required this.set,
     required this.earned,
+    required this.open,
     required this.finished,
     required this.bonus,
   });
 
   final int set;
   final int earned;
+  final bool open;
   final bool finished;
   final String bonus;
 
@@ -186,7 +179,14 @@ class _SetHeader extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     return Row(
       children: [
-        Icon(finished ? Icons.verified_rounded : Icons.emoji_events_outlined, color: AppColors.primary),
+        Icon(
+          finished
+              ? Icons.verified_rounded
+              : open
+              ? Icons.emoji_events_outlined
+              : Icons.lock_outline_rounded,
+          color: open ? AppColors.primary : AppColors.textMuted,
+        ),
         const SizedBox(width: 10),
         Expanded(
           child: Column(
@@ -194,7 +194,9 @@ class _SetHeader extends StatelessWidget {
             children: [
               Text('Set $set · ${badgeSetNames[set - 1]}', style: text.titleMedium),
               Text(
-                finished
+                !open
+                    ? 'Finish set ${set - 1} to unlock · +$bonus XP'
+                    : finished
                     ? 'Complete · +$bonus XP earned'
                     : '$earned of ${Achievement.values.length} earned · +$bonus XP when all 12 are done',
                 style: text.bodySmall,

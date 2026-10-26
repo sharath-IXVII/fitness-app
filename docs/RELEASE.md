@@ -40,7 +40,7 @@ Before uploading, test the release build on a real phone (`flutter install --rel
 - The camera counts reps for each exercise in normal room light.
 - Steps go up while walking and pause in a car or on a bike. A GPS walk records distance outdoors.
 - Water and My Day reminders arrive on time, and their action buttons work.
-- Phone OTP and Google sign-in work with the release key.
+- Google sign-in works with the release key (the key's SHA-1 and SHA-256 are added to the Firebase app).
 - Food scanning recognises common dishes, and "Delete account" works.
 
 ## 4. Play Console
@@ -53,7 +53,7 @@ Before uploading, test the release build on a real phone (`flutter install --rel
 |---|---|
 | Privacy policy | Host `docs/privacy.md` at a public URL (GitHub Pages on this repo: Settings → Pages → branch, folder `/docs`). Once the domain is connected, the link is https://fittarc.in/privacy/ |
 | Ads | No ads |
-| App access | Give reviewers a way in: a test phone number and code from Firebase Auth → *Phone numbers for testing* |
+| App access | Give reviewers a way in: the email and password of a throwaway Google account made for review (sign-in is Google only) |
 | Content rating | Questionnaire: health & fitness, no user-generated content shared with others |
 | Target audience | 13+ (or 18+) |
 | Health apps | Category: fitness / activity tracking, nutrition. Not a medical device |
@@ -67,9 +67,9 @@ Before uploading, test the release build on a real phone (`flutter install --rel
 
 | Data type | Collected | Shared | Purpose | Notes |
 |---|---|---|---|---|
-| Phone number / email, name, user ID | Yes | No | Account management | Firebase Auth |
+| Email, name, user ID | Yes | No | Account management | Firebase Auth (Google sign-in) |
 | Photos (meal photos) | No, stays on device | No | — | Recognised on the phone; never uploaded |
-| Health & fitness (weight, steps, workouts, diet) | No, stays on device | No | — | Stored locally only |
+| Health & fitness (steps, workouts, water, meals, protein, profile such as weight) | Yes | No | App functionality: backup and restore of progress | Cloud Firestore, per account, deleted with the account |
 | Location | No, stays on device | No | — | Used only during GPS walks |
 | Camera video (workouts) | No, on-device | No | — | ML Kit on-device |
 

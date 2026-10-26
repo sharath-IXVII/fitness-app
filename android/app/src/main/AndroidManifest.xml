@@ -35,6 +35,7 @@
 
     <application
         android:label="Fittarc"
+        android:allowBackup="false"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

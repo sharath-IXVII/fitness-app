@@ -185,7 +185,7 @@ class ArcBadgeShelf extends ConsumerWidget {
     final arc = ref.watch(currentArcProvider);
     final r = ref.watch(currentArcResultProvider);
     return Pressable(
-      onTap: () => context.push(Routes.arcBadges),
+      onTap: () => context.push(Routes.arc),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(

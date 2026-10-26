@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:intl/intl.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/glass_card.dart';
@@ -9,7 +8,8 @@ import 'arc_providers.dart';
 import 'domain/arc.dart';
 import 'widgets/arc_widgets.dart';
 
-/// Every arc badge for five years: earned ones in colour, the rest waiting.
+/// The current arc's three badges, plus the ones earned in past arcs. Arcs
+/// that haven't started yet stay hidden, so their badges are a surprise.
 class BadgeCollectionScreen extends ConsumerWidget {
   const BadgeCollectionScreen({super.key});
 
@@ -19,8 +19,11 @@ class BadgeCollectionScreen extends ConsumerWidget {
     final now = ref.watch(currentArcProvider);
     final current = ref.watch(currentArcResultProvider);
     final earned = {for (final (p, t) in ref.watch(arcBadgesProvider)) p: t};
-    final catalog = arcCatalog();
-    final total = catalog.length * ArcTier.values.length;
+    // This arc, and any past arc where a badge was earned. Nothing upcoming.
+    final shown = [
+      for (final p in arcCatalog())
+        if (p == now || (p.start.isBefore(now.start) && earned[p] != null)) p,
+    ];
     final count = earned.values.fold(0, (a, t) => a + t.index + 1) + (current.earned?.index ?? -1) + 1;
 
     return Scaffold(
@@ -30,20 +33,16 @@ class BadgeCollectionScreen extends ConsumerWidget {
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
           children: [
-            Text('$count of $total badges', style: text.headlineSmall),
+            Text(count == 1 ? '1 badge earned' : '$count badges earned', style: text.headlineSmall),
             const SizedBox(height: 4),
             Text(
-              'Each arc has three badges. Earn the top one and you also hold the two below it.',
+              'Each arc has three badges. Earn the top one and you also hold the two below it. '
+              'A new arc\'s badges appear when it begins.',
               style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 16),
-            for (final p in catalog) ...[
-              _ArcRow(
-                period: p,
-                tier: p == now ? current.earned : earned[p],
-                isNow: p == now,
-                upcoming: p.start.isAfter(now.start),
-              ),
+            for (final p in shown) ...[
+              _ArcRow(period: p, tier: p == now ? current.earned : earned[p], isNow: p == now),
               const SizedBox(height: 10),
             ],
           ],
@@ -54,20 +53,18 @@ class BadgeCollectionScreen extends ConsumerWidget {
 }
 
 class _ArcRow extends StatelessWidget {
-  const _ArcRow({required this.period, required this.tier, required this.isNow, required this.upcoming});
+  const _ArcRow({required this.period, required this.tier, required this.isNow});
 
   final ArcPeriod period;
 
   /// Highest badge earned in this arc, if any.
   final ArcTier? tier;
   final bool isNow;
-  final bool upcoming;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final s = period.season;
-    if (upcoming) return _Mystery(period: period);
     final status = isNow
         ? 'Happening now'
         : tier == null
@@ -102,62 +99,6 @@ class _ArcRow extends StatelessWidget {
                         ArcMedal(season: s, tier: t, earned: tier != null && tier!.index >= t.index, size: 52),
                         const SizedBox(height: 4),
                         Text(s.tierName(t), style: text.labelSmall, textAlign: TextAlign.center, maxLines: 2),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// An arc that hasn't started: its look and badges stay a surprise until
-/// the season arrives.
-class _Mystery extends StatelessWidget {
-  const _Mystery({required this.period});
-
-  final ArcPeriod period;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return Opacity(
-      opacity: 0.8,
-      child: GlassCard(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.lock_outline_rounded, size: 18, color: AppColors.textMuted),
-                const SizedBox(width: 8),
-                Expanded(child: Text('A new arc', style: text.titleSmall)),
-                Text(
-                  'Starts ${DateFormat('d MMM yyyy').format(period.start)}',
-                  style: text.labelMedium?.copyWith(color: AppColors.textTertiary),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                for (var i = 0; i < ArcTier.values.length; i++)
-                  Expanded(
-                    child: Column(
-                      children: [
-                        Container(
-                          width: 52,
-                          height: 52,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(shape: BoxShape.circle, color: AppColors.surfaceHigh),
-                          child: Text('?', style: text.titleLarge?.copyWith(color: AppColors.textMuted)),
-                        ),
-                        const SizedBox(height: 4),
-                        Text('Surprise', style: text.labelSmall),
                       ],
                     ),
                   ),

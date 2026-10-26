@@ -362,7 +362,7 @@ class _TaskGrid extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _TaskTile(
-                  onTap: () => context.go(Routes.diet),
+                  onTap: () => context.push(Routes.diet),
                   title: 'Meals',
                   value: '${log.mealsLogged} / 3 logged',
                   progress: log.mealsLogged / 3,

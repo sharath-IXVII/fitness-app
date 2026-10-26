@@ -25,7 +25,11 @@ If you use Friends, Cloud Firestore (Google) stores a public profile that your f
 
 ## Data stored on your phone
 
-Alarms, routines, your My Day plan, weigh-ins, weight goal, saved foods and meal photos are stored only on your device and are not backed up, so they are not restored on a new phone. Your progress backup (above) is kept in your account. Uninstalling the app or using "Reset data on this device" removes what is on the phone.
+Alarms, routines, your My Day plan, weigh-ins, weight goal, saved foods, meal photos and the health readings you record in the Health tab (blood pressure, blood sugar, pulse and oxygen) are stored only on your device and are not backed up, so they are not restored on a new phone. Your progress backup (above) is kept in your account. Uninstalling the app or using "Reset data on this device" removes what is on the phone.
+
+## Health readings
+
+The Health tab keeps the readings you type in, such as blood pressure or blood sugar, and sorts them by standard medical ranges. Fittarc does not measure them and does not diagnose anything. They stay on your phone, are never uploaded, and are removed when you delete your account or reset data. If you choose "Share a summary with my doctor", the text goes only to the app you pick.
 
 ## Feedback emails
 

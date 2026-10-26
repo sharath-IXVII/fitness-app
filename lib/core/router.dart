@@ -10,6 +10,7 @@ import '../features/auth/auth_providers.dart';
 import '../features/auth/auth_screen.dart';
 import '../features/challenge/challenge_screen.dart';
 import '../features/diet/diet_screen.dart';
+import '../features/health/health_screen.dart';
 import '../features/diet/domain/meal_log.dart';
 import '../features/friends/friends_screen.dart';
 import '../features/home/home_screen.dart';
@@ -53,6 +54,7 @@ abstract final class Routes {
   static const trainingLibrary = '/workouts/library';
   static const myDay = '/my-day';
   static const alarms = '/alarms';
+  static const health = '/health';
   static const diet = '/diet';
   static const profile = '/profile';
 
@@ -156,6 +158,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         redirect: (_, s) => s.extra is ChallengeArgs ? null : Routes.home,
         pageBuilder: (_, s) => _fade(s, ChallengeScreen(args: s.extra! as ChallengeArgs)),
       ),
+      // Diet is still in beta, so it is opened from Today's meal card rather
+      // than from the tab bar.
+      GoRoute(
+        path: Routes.diet,
+        builder: (_, _) => Scaffold(
+          appBar: AppBar(backgroundColor: Colors.transparent, scrolledUnderElevation: 0),
+          extendBodyBehindAppBar: false,
+          body: const DietScreen(),
+        ),
+      ),
       GoRoute(
         path: Routes.scan,
         builder: (_, s) => ScanFoodScreen(meal: s.extra is MealType ? s.extra! as MealType : MealType.lunch),
@@ -206,7 +218,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [GoRoute(path: Routes.alarms, builder: (_, _) => const AlarmsScreen())],
           ),
           StatefulShellBranch(
-            routes: [GoRoute(path: Routes.diet, builder: (_, _) => const DietScreen())],
+            routes: [GoRoute(path: Routes.health, builder: (_, _) => const HealthScreen())],
           ),
         ],
       ),

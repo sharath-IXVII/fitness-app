@@ -13,7 +13,10 @@ const termsSections = <(String, String)>[
         'physiotherapist. Talk to a doctor before starting a new exercise or diet plan, especially if you have a '
         'health condition, are pregnant, or are recovering from an injury. Exercise at your own risk and at your '
         'own pace: stop if you feel pain, dizziness or breathlessness. Never use the phone while driving, and '
-        'choose a safe, clear space for workouts and for alarms that ask you to move.',
+        'choose a safe, clear space for workouts and for alarms that ask you to move. The Health tab only records '
+        'readings you type in from your own devices and sorts them by general guideline ranges. It does not measure '
+        'anything, diagnose anything or replace a doctor. In an emergency, call your local emergency number '
+        '(112 in India).',
   ),
   (
     'Estimates are estimates',

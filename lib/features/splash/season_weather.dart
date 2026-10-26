@@ -211,7 +211,7 @@ class SeasonWeatherPainter extends CustomPainter {
 }
 
 /// The Fittarc mark drawn straight onto the background (no tile): three
-/// blocks that slide in, shaded in the season's colours.
+/// pieces that slide in, shaded in the season's colours.
 class BrandMarkPainter extends CustomPainter {
   BrandMarkPainter({required this.look, required this.progress, required this.shine});
 
@@ -223,19 +223,17 @@ class BrandMarkPainter extends CustomPainter {
   /// 0–1: a band of light crossing the finished mark (null-ish when 0 or 1).
   final double shine;
 
-  static const _blocks = <List<Offset>>[
-    [Offset(595, 316), Offset(863, 316), Offset(941, 397), Offset(675, 397), Offset(675, 518), Offset(595, 433)],
+  static const _blocks = <List<List<Offset>>>[
     [
-      Offset(703, 467),
-      Offset(839, 467),
-      Offset(839, 545),
-      Offset(759, 545),
-      Offset(759, 727),
-      Offset(668, 635),
-      Offset(668, 527),
-      Offset(703, 562),
+      [Offset(560.9, 467.7), Offset(577.4, 482), Offset(628, 531.2), Offset(629.9, 388.2), Offset(865.7, 388.2), Offset(913, 386.8), Offset(848.7, 316), Offset(561.8, 316), Offset(560.4, 318.8)],
     ],
-    [Offset(817, 414), Offset(885, 414), Offset(932, 467), Offset(932, 560), Offset(851, 627), Offset(851, 467)],
+    [
+      [Offset(788, 436), Offset(645.9, 436.4), Offset(646.4, 569.3), Offset(645, 575.3), Offset(588.9, 527), Offset(588.9, 609.3), Offset(636.7, 656.7), Offset(700.2, 725.6), Offset(700.6, 492.5), Offset(749.8, 491.2)],
+    ],
+    [
+      [Offset(837.2, 398.8), Offset(787.5, 472.3), Offset(718.1, 567.9), Offset(718.6, 686.5), Offset(743.9, 653), Offset(837.6, 519.2), Offset(925.5, 656.7), Offset(974.2, 726.5), Offset(975.1, 598.3), Offset(880.9, 458.1)],
+      [Offset(781.1, 636), Offset(893.3, 636), Offset(857.9, 579.4), Offset(854.7, 579), Offset(817, 579.4)],
+    ],
   ];
   static const _from = [Offset(-170, -70), Offset(-60, 190), Offset(170, 30)];
   static const _centre = Offset(768, 521.5);
@@ -251,7 +249,10 @@ class BrandMarkPainter extends CustomPainter {
     for (var i = 0; i < _blocks.length; i++) {
       final t = Curves.easeOutCubic.transform(((progress - i * 0.14) / 0.6).clamp(0.0, 1.0));
       if (t <= 0) continue;
-      final path = Path()..addPolygon([for (final p in _blocks[i]) p + _from[i] * (1 - t)], true);
+      final path = Path();
+      for (final poly in _blocks[i]) {
+        path.addPolygon([for (final p in poly) p + _from[i] * (1 - t)], true);
+      }
       paths.add(path);
       final b = path.getBounds();
       // A soft shadow so the mark sits on the light background.

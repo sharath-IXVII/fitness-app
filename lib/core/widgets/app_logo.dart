@@ -83,7 +83,7 @@ class _AppLogoState extends ConsumerState<AppLogo> with SingleTickerProviderStat
                 fit: StackFit.expand,
                 children: [
                   Image.asset(
-                    'assets/logos/${season.name}.jpg',
+                    'assets/logos/${season.name}.png',
                     fit: BoxFit.cover,
                     filterQuality: FilterQuality.medium,
                     gaplessPlayback: true,

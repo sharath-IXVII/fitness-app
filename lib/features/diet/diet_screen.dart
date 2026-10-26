@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/animated_number.dart';
+import '../../core/widgets/beta_tag.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/page_background.dart';
 import '../../core/widgets/pressable.dart';
@@ -57,7 +58,13 @@ class DietScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Diet', style: text.headlineMedium),
+                Row(
+                  children: [
+                    Text('Diet', style: text.headlineMedium),
+                    const SizedBox(width: 10),
+                    const BetaTag(),
+                  ],
+                ),
                 Text(dietLabels[profile.diet]!, style: text.bodyMedium),
               ],
             ),
@@ -83,7 +90,9 @@ class DietScreen extends ConsumerWidget {
           ),
         ],
       ),
-      const SizedBox(height: 18),
+      const SizedBox(height: 14),
+      const BetaNote(),
+      const SizedBox(height: 14),
       _CaloriesCard(totals: totals, targets: targets),
       const SizedBox(height: 14),
       const _GoalCard(),

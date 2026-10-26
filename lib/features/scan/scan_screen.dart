@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../core/photo_store.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/beta_tag.dart';
 import '../../core/widgets/form_controls.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/gradient_button.dart';
@@ -182,7 +183,10 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
     final model = ref.watch(foodClassifierProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Scan food'),
+        title: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [Text('Scan food'), SizedBox(width: 10), BetaTag()],
+        ),
         actions: [
           if (_phase == _Phase.result)
             TextButton.icon(onPressed: _retake, icon: const Icon(Icons.refresh_rounded), label: const Text('Retake')),
@@ -222,6 +226,11 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
       key: const ValueKey('pick'),
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
       children: [
+        const BetaNote(
+          text: 'Food scanning is in beta. It can mix up dishes or get portions wrong, so check the result and '
+              'correct it before you save.',
+        ),
+        const SizedBox(height: 14),
         GlassCard(
           padding: const EdgeInsets.all(24),
           child: Column(

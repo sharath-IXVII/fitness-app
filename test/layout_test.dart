@@ -5,6 +5,11 @@ import 'package:fitalarm/core/theme/app_theme.dart';
 import 'package:fitalarm/features/health/food_guide_screen.dart';
 import 'package:fitalarm/features/health/health_screen.dart';
 import 'package:fitalarm/features/health/heart_rate_screen.dart';
+import 'package:fitalarm/features/health/domain/live_hr.dart';
+import 'package:fitalarm/features/health/hr_source.dart';
+import 'package:fitalarm/features/health/live_heart_screen.dart';
+import 'package:fitalarm/features/health/watch_data.dart';
+import 'package:fitalarm/features/health/watch_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -21,6 +26,8 @@ void main() {
     'Health': const HealthScreen(),
     'Heart rate': const HeartRateScreen(),
     'Food guide': const FoodGuideScreen(),
+    'Watch': const WatchScreen(),
+    'Live heart rate': const LiveHeartScreen(),
   };
 
   for (final MapEntry(key: name, value: screen) in screens.entries) {
@@ -46,9 +53,27 @@ void main() {
             }),
             // A reading of each kind, so every card is on screen.
             'health.readings.v1': jsonEncode([
-              {'id': '1', 'k': 'bloodPressure', 'at': DateTime(2026, 3, 1, 8).millisecondsSinceEpoch, 's': 128, 'd': 82},
-              {'id': '2', 'k': 'bloodPressure', 'at': DateTime(2026, 3, 1, 20).millisecondsSinceEpoch, 's': 122, 'd': 79},
-              {'id': '3', 'k': 'glucose', 'at': DateTime(2026, 3, 1, 7).millisecondsSinceEpoch, 'v': 96, 'c': 'fasting'},
+              {
+                'id': '1',
+                'k': 'bloodPressure',
+                'at': DateTime(2026, 3, 1, 8).millisecondsSinceEpoch,
+                's': 128,
+                'd': 82,
+              },
+              {
+                'id': '2',
+                'k': 'bloodPressure',
+                'at': DateTime(2026, 3, 1, 20).millisecondsSinceEpoch,
+                's': 122,
+                'd': 79,
+              },
+              {
+                'id': '3',
+                'k': 'glucose',
+                'at': DateTime(2026, 3, 1, 7).millisecondsSinceEpoch,
+                'v': 96,
+                'c': 'fasting',
+              },
               {'id': '4', 'k': 'pulse', 'at': DateTime(2026, 3, 1, 7).millisecondsSinceEpoch, 'v': 72},
               {'id': '5', 'k': 'oxygen', 'at': DateTime(2026, 3, 1, 7).millisecondsSinceEpoch, 'v': 98},
             ]),
@@ -56,7 +81,11 @@ void main() {
           final prefs = await SharedPreferences.getInstance();
           await t.pumpWidget(
             ProviderScope(
-              overrides: [sharedPrefsProvider.overrideWithValue(prefs)],
+              overrides: [
+                sharedPrefsProvider.overrideWithValue(prefs),
+                watchDataProvider.overrideWithValue(_Allowed()),
+                hrSourceProvider.overrideWithValue(_Nearby()),
+              ],
               child: MaterialApp(
                 theme: AppTheme.light(),
                 builder: (context, child) => MediaQuery(
@@ -82,11 +111,47 @@ void main() {
               await t.pump(const Duration(milliseconds: 100));
             }
             final later = t.takeException();
-            if (later != null) debugPrint('OVERFLOW(scrolled): ${later is FlutterError ? later.toStringDeep() : later}');
+            if (later != null) {
+              debugPrint('OVERFLOW(scrolled): ${later is FlutterError ? later.toStringDeep() : later}');
+            }
             expect(later, isNull);
           }
         });
       }
     }
   }
+}
+
+class _Allowed implements WatchData {
+  @override
+  Future<WatchStatus> status() async => WatchStatus.ready;
+
+  @override
+  Future<bool> requestAccess() async => true;
+
+  @override
+  Future<void> install() async {}
+
+  @override
+  Future<WatchSnapshot> read(DateTime now) async =>
+      WatchSnapshot(steps: 12840, latestBpm: 71, latestBpmAt: now, restingBpm: 58, sleepMinutes: 455);
+}
+
+class _Nearby implements HrSource {
+  @override
+  Stream<List<HrDevice>> scan() async* {
+    yield const [
+      HrDevice(id: '1', name: 'A watch with a really quite long name for a small screen', rssi: -50),
+      HrDevice(id: '2', name: '', rssi: -90),
+    ];
+  }
+
+  @override
+  Future<void> stopScan() async {}
+
+  @override
+  Stream<HrMeasurement> connect(String id) => const Stream.empty();
+
+  @override
+  Future<void> disconnect() async {}
 }

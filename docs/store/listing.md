@@ -21,6 +21,7 @@ EVERYTHING YOU DO COUNTS
 • Diet (beta): plan and log meals, and scan your plate for a suggested dish with calories and macros. It is still being improved, so always check and correct the result. Scanning happens on your phone.
 • Food guide: see which foods are rich in carbs, protein, fibre, vitamins and water per 100 g, and compare two foods side by side.
 • Health check (beta): an approximate heart-rate estimate with your fingertip on the camera, a log for your own blood pressure, blood sugar, pulse and oxygen readings with the standard ranges explained, and your height, weight and BMI.
+• Watch (beta): connect a Bluetooth watch or chest strap for live heart rate and earn Arc minutes for the time you spend in your hard and moderate zones. Optionally read steps, heart rate and sleep from your watch app through Health Connect.
 • Alarms that get you moving: workout alarms with brain challenges to switch them off. If you stop moving, the alarm rings again.
 • Strict mode: a loud alarm you cannot cheat. In an emergency, restarting your phone ends it.
 • Sleep alarm: set a bedtime and Fittarc quiets your phone until morning. An optional mode blocks other apps, while phone calls always work. Restarting your phone ends it.
@@ -52,6 +53,7 @@ Privacy policy: https://fittarc.in/privacy/
 Data collected:
 - Personal info: name, email address (Google Sign-In) for account and backup
 - Health and fitness: steps, workouts, water, sleep and meal logs (app functionality, backup)
+- Watch data from Health Connect (steps, heart rate, sleep) and live Bluetooth heart rate: read on the phone only, never uploaded or shared
 - Health readings you type in or save (heart-rate estimate, blood pressure, sugar, pulse, oxygen, height, weight): kept on the phone only, not uploaded
 - Photos: food photos are processed on the device and not uploaded
 - App activity: progress, levels, badges and streaks (backup)
@@ -65,6 +67,8 @@ Ads: none
 - Full-screen intent: the alarm screen must appear over the lock screen when it rings.
 - Camera (and its flash): rep counting during workouts, the food scanner, and the fingertip heart-rate estimate. All processed on the phone; nothing is uploaded.
 - Activity recognition and location: merged step counting and distance.
+- Nearby devices (Bluetooth scan and connect): finds and reads heart rate from a watch or chest strap the user picks. Declared "never for location".
+- Health Connect (read steps, heart rate, resting heart rate, sleep): shows what the user's watch app recorded. Read-only, user-initiated, nothing leaves the phone. The Health Connect permissions declaration form in Play Console asks why each is needed; answer: to show the user their own watch data inside the app.
 - Notifications: reminders for water, workouts and meals.
 
 ## Health apps declaration

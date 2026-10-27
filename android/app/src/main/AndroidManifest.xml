@@ -22,6 +22,16 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-feature android:name="android.hardware.sensor.stepcounter" android:required="false"/>
+    <!-- Live heart rate from a watch or chest strap over Bluetooth. Only used to find and read heart-rate
+         devices, never to find the phone's location. -->
+    <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
+    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false"/>
+    <!-- Read-only access to steps, heart rate and sleep that a watch app shares through Health Connect. -->
+    <uses-permission android:name="android.permission.health.READ_STEPS"/>
+    <uses-permission android:name="android.permission.health.READ_HEART_RATE"/>
+    <uses-permission android:name="android.permission.health.READ_RESTING_HEART_RATE"/>
+    <uses-permission android:name="android.permission.health.READ_SLEEP"/>
     <!-- Merged in by plugins but never used: keep them out of the Play listing. -->
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" tools:node="remove"/>
     <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" tools:node="remove"/>
@@ -61,12 +71,27 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Health Connect asks for the reason before it lets the app read. -->
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE"/>
+            </intent-filter>
             <!-- Lets the alarm plugin open this activity when an alarm rings. -->
             <intent-filter>
                 <action android:name="com.gdelataillade.alarm.action.RING"/>
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
         </activity>
+        <!-- Android 14+: the link to the privacy policy inside Health Connect's permission screen. -->
+        <activity-alias
+            android:name="ViewPermissionUsageActivity"
+            android:exported="true"
+            android:targetActivity=".MainActivity"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE"/>
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS"/>
+            </intent-filter>
+        </activity-alias>
         <service android:name="com.gdelataillade.alarm.services.NotificationOnKillService"/>
         <!-- Strict mode: reopen the app after a reboot if a strict alarm was active. -->
         <receiver android:exported="false" android:name=".StrictBootReceiver">
@@ -101,6 +126,11 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Watch data: lets the app see whether Health Connect is installed. -->
+        <package android:name="com.google.android.apps.healthdata"/>
+        <intent>
+            <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE"/>
         </intent>
         <!-- Voice coach: lets the app find the phone's text-to-speech engine. -->
         <intent>

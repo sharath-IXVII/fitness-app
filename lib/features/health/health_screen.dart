@@ -69,6 +69,8 @@ class HealthScreen extends ConsumerWidget {
       ),
       const _HeartRateCard(),
       const SizedBox(height: 12),
+      const _WatchCard(),
+      const SizedBox(height: 12),
       const _BodyCard(),
       const SizedBox(height: 12),
       const _HomeBpCard(),
@@ -82,9 +84,7 @@ class HealthScreen extends ConsumerWidget {
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
         childAspectRatio: 1.9,
-        children: [
-          for (final k in ReadingKind.values) _AddTile(kind: k, onTap: () => _add(context, k)),
-        ],
+        children: [for (final k in ReadingKind.values) _AddTile(kind: k, onTap: () => _add(context, k))],
       ),
       const SizedBox(height: 22),
       const _FoodGuideCard(),
@@ -230,6 +230,49 @@ class _HeartRateCard extends StatelessWidget {
   }
 }
 
+/// Watch: live heart rate and Health Connect.
+class _WatchCard extends ConsumerWidget {
+  const _WatchCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final text = Theme.of(context).textTheme;
+    final week = ref.watch(weekArcProvider);
+    return Pressable(
+      onTap: () => context.push(Routes.watch),
+      child: GlassCard(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(14)),
+              child: Icon(Icons.watch_rounded, color: AppColors.primary),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('Connect your watch', style: text.titleMedium),
+                  Text(
+                    week > 0
+                        ? '${week.toStringAsFixed(0)} Arc minutes this week. Live heart rate and watch data.'
+                        : 'Live heart rate by Bluetooth, plus steps and sleep from your watch app.',
+                    style: text.bodySmall,
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 /// Height, weight and BMI.
 class _BodyCard extends ConsumerWidget {
   const _BodyCard();
@@ -286,7 +329,10 @@ class _BodyCard extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: color.withValues(alpha: 0.5)),
                 ),
-                child: Text(rating.label, style: text.labelMedium?.copyWith(color: color, fontWeight: FontWeight.w700)),
+                child: Text(
+                  rating.label,
+                  style: text.labelMedium?.copyWith(color: color, fontWeight: FontWeight.w700),
+                ),
               ),
               if (p.age >= 18) ...[
                 const SizedBox(width: 10),
@@ -303,7 +349,11 @@ class _BodyCard extends ConsumerWidget {
           Text(rating.advice, style: text.bodySmall),
           if (trend.length >= 2) ...[
             const SizedBox(height: 10),
-            SizedBox(height: 44, width: double.infinity, child: CustomPaint(painter: WavePainter(trend, AppColors.primary))),
+            SizedBox(
+              height: 44,
+              width: double.infinity,
+              child: CustomPaint(painter: WavePainter(trend, AppColors.primary)),
+            ),
             Text('Your last ${trend.length} weigh-ins', style: text.bodySmall),
           ],
           const SizedBox(height: 6),
@@ -365,10 +415,14 @@ class _BodySheetState extends ConsumerState<_BodySheet> {
     final w = double.tryParse(_w.text.trim().replaceAll(',', '.'));
     if (h == null || w == null) return setState(() => _error = 'Enter both your height and your weight.');
     if (h < heightRangeCm.$1 || h > heightRangeCm.$2) {
-      return setState(() => _error = 'Height should be between ${heightRangeCm.$1.round()} and ${heightRangeCm.$2.round()} cm.');
+      return setState(
+        () => _error = 'Height should be between ${heightRangeCm.$1.round()} and ${heightRangeCm.$2.round()} cm.',
+      );
     }
     if (w < weightRangeKg.$1 || w > weightRangeKg.$2) {
-      return setState(() => _error = 'Weight should be between ${weightRangeKg.$1.round()} and ${weightRangeKg.$2.round()} kg.');
+      return setState(
+        () => _error = 'Weight should be between ${weightRangeKg.$1.round()} and ${weightRangeKg.$2.round()} kg.',
+      );
     }
     final p = ref.read(profileProvider);
     if (p != null && p.heightCm != h) await ref.read(profileProvider.notifier).save(p.copyWith(heightCm: h));
@@ -394,7 +448,10 @@ class _BodySheetState extends ConsumerState<_BodySheet> {
         shrinkWrap: true,
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
         children: [
-          Text('Weigh yourself in the morning, before eating, for the most comparable numbers.', style: text.bodyMedium),
+          Text(
+            'Weigh yourself in the morning, before eating, for the most comparable numbers.',
+            style: text.bodyMedium,
+          ),
           const SizedBox(height: 14),
           field(_h, 'Height (cm)'),
           const SizedBox(height: 12),
@@ -444,7 +501,10 @@ class _HomeBpCard extends ConsumerWidget {
               children: [
                 Text('${s.avgSystolic}/${s.avgDiastolic}', style: text.displaySmall),
                 const SizedBox(width: 6),
-                Padding(padding: const EdgeInsets.only(bottom: 6), child: Text('mmHg average', style: text.bodySmall)),
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Text('mmHg average', style: text.bodySmall),
+                ),
               ],
             ),
             const SizedBox(height: 8),
@@ -587,7 +647,10 @@ class _HistorySheet extends ConsumerWidget {
     return SheetFrame(
       title: kind.label,
       child: list.isEmpty
-          ? Padding(padding: const EdgeInsets.all(24), child: Text('No readings yet.', style: text.bodyMedium))
+          ? Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text('No readings yet.', style: text.bodyMedium),
+            )
           : ListView(
               shrinkWrap: true,
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
@@ -631,21 +694,33 @@ class _MeasureWellSheet extends StatelessWidget {
   const _MeasureWellSheet();
 
   static const _steps = [
-    ('Blood pressure', Icons.favorite_rounded, [
-      'Use an upper-arm monitor that has been validated. Wrist and finger devices are less reliable.',
-      'No coffee, exercise or smoking for 30 minutes. Use the toilet first.',
-      'Sit with your back supported, feet flat, arm resting on a table at heart level, cuff on bare skin.',
-      'Rest quietly for 5 minutes. Do not talk while measuring.',
-      'Take 2 readings, 1 minute apart, in the morning before medicines and in the evening. Do this for 7 days.',
-    ]),
-    ('Blood sugar', Icons.water_drop_rounded, [
-      'Wash and dry your hands. Use a fresh strip that is in date.',
-      'Fasting means at least 8 hours without food. After a meal means 2 hours after the first bite.',
-    ]),
-    ('Oxygen and pulse', Icons.air_rounded, [
-      'Warm, still hand. Remove nail polish. Rest for 5 minutes, sitting.',
-      'Wait until the number is steady for about 10 seconds before you read it.',
-    ]),
+    (
+      'Blood pressure',
+      Icons.favorite_rounded,
+      [
+        'Use an upper-arm monitor that has been validated. Wrist and finger devices are less reliable.',
+        'No coffee, exercise or smoking for 30 minutes. Use the toilet first.',
+        'Sit with your back supported, feet flat, arm resting on a table at heart level, cuff on bare skin.',
+        'Rest quietly for 5 minutes. Do not talk while measuring.',
+        'Take 2 readings, 1 minute apart, in the morning before medicines and in the evening. Do this for 7 days.',
+      ],
+    ),
+    (
+      'Blood sugar',
+      Icons.water_drop_rounded,
+      [
+        'Wash and dry your hands. Use a fresh strip that is in date.',
+        'Fasting means at least 8 hours without food. After a meal means 2 hours after the first bite.',
+      ],
+    ),
+    (
+      'Oxygen and pulse',
+      Icons.air_rounded,
+      [
+        'Warm, still hand. Remove nail polish. Rest for 5 minutes, sitting.',
+        'Wait until the number is steady for about 10 seconds before you read it.',
+      ],
+    ),
   ];
 
   @override

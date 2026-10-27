@@ -60,6 +60,7 @@ class LocalData {
       myFoodsProvider,
       weightLogProvider,
       healthLogProvider,
+      arcMinutesProvider,
       weightGoalProvider,
       trainingProvider,
       routinesProvider,

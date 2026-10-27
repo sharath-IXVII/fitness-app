@@ -39,6 +39,10 @@ If you write to us from the app, your email app sends the message to support@fit
 
 The workout camera counts reps using on-device pose detection (Google ML Kit). The heart-rate estimate in the Health tab uses the back camera and flash to see the light change with your pulse under your fingertip. Video and camera images are processed in memory only and are never recorded, stored or uploaded.
 
+## Watches and Health Connect
+
+If you choose to connect a watch, Fittarc can read its live heart rate over Bluetooth. It only looks for devices that share heart rate, and it does not use Bluetooth to find your location. If you allow it, Fittarc can also read your steps, heart rate and sleep from Android Health Connect, which your watch app fills in. Fittarc only reads, never writes, and never shares or uploads this data. It is shown on your phone, and the Arc minutes you earn are kept on your phone only. You can switch this off at any time in Health Connect or your phone settings.
+
 ## Food photos
 
 Food scanning happens entirely on your phone using a built-in recognition model. Meal photos are never uploaded; they are kept only on your phone, next to the meal you logged.

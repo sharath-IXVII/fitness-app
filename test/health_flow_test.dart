@@ -72,6 +72,8 @@ void main() {
     );
 
     // A normal reading.
+    await t.ensureVisible(find.descendant(of: find.byType(GridView), matching: find.text('Blood pressure')));
+    await _wait(t, 300);
     await t.tap(find.descendant(of: find.byType(GridView), matching: find.text('Blood pressure')));
     await _wait(t);
     await t.enterText(find.byType(TextField).at(0), '118');

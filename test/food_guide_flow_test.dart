@@ -73,6 +73,8 @@ void main() {
       200,
       scrollable: find.descendant(of: find.byType(HealthScreen), matching: find.byType(Scrollable)).first,
     );
+    await t.ensureVisible(find.text('Food guide'));
+    await _wait(t, 300);
     await t.tap(find.text('Food guide'));
     await _wait(t);
     expect(find.text('How to use the food guide'), findsOneWidget);

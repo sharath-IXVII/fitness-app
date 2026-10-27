@@ -20,7 +20,7 @@ import android.view.WindowManager
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 
@@ -36,7 +36,8 @@ import io.flutter.plugin.common.MethodChannel
  * progress) and the dialer are never covered. There is no exit button; a
  * restart releases it (see SleepMode in Dart).
  */
-class MainActivity : FlutterActivity() {
+// FragmentActivity: Health Connect's permission screen needs it.
+class MainActivity : FlutterFragmentActivity() {
     companion object {
         /** Survive the activity being recreated while the process lives. */
         @Volatile var strict = false

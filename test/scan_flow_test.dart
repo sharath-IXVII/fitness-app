@@ -66,12 +66,7 @@ Future<SharedPreferences> _pump(WidgetTester t, {bool model = true}) async {
     ),
   );
   await _wait(t, 5600);
-  // Diet is in beta: it opens from Today's meal card, not the tab bar.
-  final today = find.byType(Scrollable).hitTestable().first;
-    await t.scrollUntilVisible(find.text('Meals'), 200, scrollable: today);
-    await t.drag(today, const Offset(0, -240)); // clear of the tab bar
-    await _wait(t, 300);
-  await t.tap(find.text('Meals'));
+  await t.tap(find.text('Diet').last);
   await _wait(t);
   await t.tap(find.bySemanticsLabel('Scan food'));
   await _wait(t);

@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/beta_tag.dart';
 import '../../core/widgets/animated_number.dart';
 import '../../core/widgets/page_background.dart';
 import '../../core/widgets/glass_card.dart';
@@ -362,7 +363,7 @@ class _TaskGrid extends ConsumerWidget {
               const SizedBox(width: 12),
               Expanded(
                 child: _TaskTile(
-                  onTap: () => context.push(Routes.diet),
+                  onTap: () => context.go(Routes.diet),
                   title: 'Meals',
                   value: '${log.mealsLogged} / 3 logged',
                   progress: log.mealsLogged / 3,
@@ -376,7 +377,59 @@ class _TaskGrid extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         _ProteinBar(current: log.proteinG, target: targets.proteinG),
+        const SizedBox(height: 12),
+        const _HealthEntry(),
       ],
+    );
+  }
+}
+
+/// A small card that opens the Health page (heart rate, blood pressure and
+/// sugar log, height and weight). It is a card here, not a tab, to save space.
+class _HealthEntry extends StatelessWidget {
+  const _HealthEntry();
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Pressable(
+      onTap: () => context.push(Routes.health),
+      scale: 0.98,
+      child: GlassCard(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(14)),
+              child: Icon(Icons.monitor_heart_rounded, color: AppColors.primary, size: 22),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text('Health check', style: text.titleMedium),
+                      const SizedBox(width: 8),
+                      const BetaTag(),
+                    ],
+                  ),
+                  Text(
+                    'Heart rate, blood pressure, sugar, height and weight',
+                    style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -160,14 +160,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         redirect: (_, s) => s.extra is ChallengeArgs ? null : Routes.home,
         pageBuilder: (_, s) => _fade(s, ChallengeScreen(args: s.extra! as ChallengeArgs)),
       ),
-      // Diet is still in beta, so it is opened from Today's meal card rather
-      // than from the tab bar.
+      // Health opens from the card on Today, with a back arrow.
       GoRoute(
-        path: Routes.diet,
+        path: Routes.health,
         builder: (_, _) => Scaffold(
           appBar: AppBar(backgroundColor: Colors.transparent, scrolledUnderElevation: 0),
-          extendBodyBehindAppBar: false,
-          body: const DietScreen(),
+          body: const HealthScreen(),
         ),
       ),
       GoRoute(path: Routes.foodGuide, builder: (_, _) => const FoodGuideScreen()),
@@ -221,7 +219,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [GoRoute(path: Routes.alarms, builder: (_, _) => const AlarmsScreen())],
           ),
           StatefulShellBranch(
-            routes: [GoRoute(path: Routes.health, builder: (_, _) => const HealthScreen())],
+            routes: [GoRoute(path: Routes.diet, builder: (_, _) => const DietScreen())],
           ),
         ],
       ),

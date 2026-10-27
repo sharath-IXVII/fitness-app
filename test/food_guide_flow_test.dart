@@ -54,7 +54,12 @@ void main() {
     await _wait(t, 5600);
 
     // The Health tab shows a first-time guide, and it can be dismissed for good.
-    await t.tap(find.text('Health').last);
+    // Health opens from the card on Today.
+    final today = find.byType(Scrollable).hitTestable().first;
+    await t.scrollUntilVisible(find.text('Health check'), 200, scrollable: today);
+    await t.drag(today, const Offset(0, -240));
+    await _wait(t, 300);
+    await t.tap(find.text('Health check'));
     await _wait(t);
     expect(find.text('Start here: 3 taps'), findsOneWidget);
     await t.tap(find.text('Got it'));

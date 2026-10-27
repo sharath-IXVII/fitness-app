@@ -131,7 +131,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     (Icons.fitness_center_outlined, Icons.fitness_center_rounded, 'Workouts'),
     (Icons.view_timeline_outlined, Icons.view_timeline_rounded, 'My Day'),
     (Icons.alarm_outlined, Icons.alarm_rounded, 'Alarm'),
-    (Icons.monitor_heart_outlined, Icons.monitor_heart_rounded, 'Health'),
+    (Icons.restaurant_outlined, Icons.restaurant_rounded, 'Diet'),
   ];
 
   static const _seenKey = 'achievements.seen.v1';
@@ -232,6 +232,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                       icon: item.$1,
                       activeIcon: item.$2,
                       label: item.$3,
+                      beta: item.$3 == 'Diet',
                       active: index == i,
                       onTap: () {
                         HapticFeedback.selectionClick();
@@ -255,12 +256,14 @@ class _NavItem extends StatelessWidget {
     required this.label,
     required this.active,
     required this.onTap,
+    this.beta = false,
   });
 
   final IconData icon;
   final IconData activeIcon;
   final String label;
   final bool active;
+  final bool beta;
   final VoidCallback onTap;
 
   @override
@@ -286,7 +289,28 @@ class _NavItem extends StatelessWidget {
                 color: active ? AppColors.primarySoft : Colors.transparent,
                 borderRadius: BorderRadius.circular(15),
               ),
-              child: Icon(active ? activeIcon : icon, size: 22, color: color),
+              child: Stack(
+                alignment: Alignment.center,
+                clipBehavior: Clip.none,
+                children: [
+                  Icon(active ? activeIcon : icon, size: 22, color: color),
+                  // A small marker while the diet section is in beta.
+                  if (beta)
+                    Positioned(
+                      top: 0,
+                      right: active ? 2 : -2,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: AppColors.amber,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 1.2),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
             const SizedBox(height: 4),
             AnimatedDefaultTextStyle(

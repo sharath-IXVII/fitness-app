@@ -1,15 +1,15 @@
 ---
-title: Fittarc privacy policy
+title: FittArc privacy policy
 permalink: /privacy/
 ---
 
-# Fittarc privacy policy
+# FittArc privacy policy
 
 _Last updated: October 2026_
 
 ## Summary
 
-Fittarc keeps your fitness data on your phone and backs your progress up to your account, so you never lose your levels and badges. Three things leave your device: what's needed to sign you in, that progress backup, and, if you use Friends, a small public profile and your challenges. We don't sell data, show ads or use third-party analytics.
+FittArc keeps your fitness data on your phone and backs your progress up to your account, so you never lose your levels and badges. Three things leave your device: what's needed to sign you in, that progress backup, and, if you use Friends, a small public profile and your challenges. We don't sell data, show ads or use third-party analytics.
 
 ## Your account
 
@@ -29,11 +29,11 @@ Alarms, routines, your My Day plan, weigh-ins, weight goal, saved foods, meal ph
 
 ## Health readings
 
-The Health tab keeps the readings you type in, such as blood pressure or blood sugar, and sorts them by standard medical ranges. Fittarc does not measure them and does not diagnose anything. They stay on your phone, are never uploaded, and are removed when you delete your account or reset data. If you choose "Share a summary with my doctor", the text goes only to the app you pick.
+The Health tab keeps the readings you type in, such as blood pressure or blood sugar, and sorts them by standard medical ranges. FittArc does not measure them and does not diagnose anything. They stay on your phone, are never uploaded, and are removed when you delete your account or reset data. If you choose "Share a summary with my doctor", the text goes only to the app you pick.
 
 ## Feedback emails
 
-If you write to us from the app, your email app sends the message to support@fittarc.in. We read it to improve Fittarc and to reply to you; we don't share it.
+If you write to us from the app, your email app sends the message to support@fittarc.in. We read it to improve FittArc and to reply to you; we don't share it.
 
 ## Camera during workouts
 
@@ -41,7 +41,7 @@ The workout camera counts reps using on-device pose detection (Google ML Kit). T
 
 ## Watches and Health Connect
 
-If you choose to connect a watch, Fittarc can read its live heart rate over Bluetooth. It only looks for devices that share heart rate, and it does not use Bluetooth to find your location. If you allow it, Fittarc can also read your steps, heart rate and sleep from Android Health Connect, which your watch app fills in. Fittarc only reads, never writes, and never shares or uploads this data. It is shown on your phone, and the Arc minutes you earn are kept on your phone only. You can switch this off at any time in Health Connect or your phone settings.
+If you choose to connect a watch, FittArc can read its live heart rate over Bluetooth. It only looks for devices that share heart rate, and it does not use Bluetooth to find your location. If you allow it, FittArc can also read your steps, heart rate and sleep from Android Health Connect, which your watch app fills in. FittArc only reads, never writes, and never shares or uploads this data. It is shown on your phone, and the Arc minutes you earn are kept on your phone only. You can switch this off at any time in Health Connect or your phone settings.
 
 ## Food photos
 
@@ -57,11 +57,11 @@ Alarms and reminders are scheduled locally on your phone. No notification conten
 
 ## Deleting your data
 
-Use "Delete account" in your profile (tap your picture on Today) to permanently delete your sign-in, your progress backup, your Friends profile, friend list and challenges, and all Fittarc data on the phone. You can also email us to have your account deleted.
+Use "Delete account" in your profile (tap your picture on Today) to permanently delete your sign-in, your progress backup, your Friends profile, friend list and challenges, and all FittArc data on the phone. You can also email us to have your account deleted.
 
 ## Children
 
-Fittarc is not directed at children under 13.
+FittArc is not directed at children under 13.
 
 ## Contact
 

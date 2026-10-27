@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/arcs/arc_providers.dart';
 import '../../features/arcs/domain/arc.dart';
 
-/// The Fittarc logo in the look of the current season: ice and snow in
+/// The FittArc logo in the look of the current season: ice and snow in
 /// Winter, cherry blossom in Rise of Revolution, a sun in Summer, rain and storm in
 /// Thunder Arc (artwork in `assets/logos`). The plain lime-on-black version is the
 /// launcher and Play Store icon; this is what the app shows when it opens.

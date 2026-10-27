@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Writes Fittarc's three notification sounds (android/app/src/main/res/raw).
+"""Writes FittArc's three notification sounds (android/app/src/main/res/raw).
 
 All three share one idea, the "arc": a few soft bell notes that climb. Bell
 tones are built from sine partials that fade at different speeds, with a

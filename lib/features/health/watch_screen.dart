@@ -188,13 +188,13 @@ class _HealthConnectCard extends ConsumerWidget {
                 children: [
                   Text(
                     'Most watch apps (Fitbit, Samsung Health, Mi Fitness, Zepp, Noise, boAt, Garmin and others) can '
-                    'share with Health Connect. Turn that on in your watch app, then allow Fittarc to read steps, '
-                    'heart rate and sleep. Fittarc only reads, and keeps it on this phone.',
+                    'share with Health Connect. Turn that on in your watch app, then allow FittArc to read steps, '
+                    'heart rate and sleep. FittArc only reads, and keeps it on this phone.',
                     style: text.bodyMedium,
                   ),
                   const SizedBox(height: 12),
                   GradientButton(
-                    label: 'Allow Fittarc to read',
+                    label: 'Allow FittArc to read',
                     icon: Icons.lock_open_rounded,
                     onPressed: () => _allow(ref),
                   ),

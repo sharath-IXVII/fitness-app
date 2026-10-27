@@ -143,8 +143,8 @@ class _SleepRingState extends ConsumerState<SleepRing> {
       builder: (c) => AlertDialog(
         title: const Text('One more permission'),
         content: const Text(
-          'To keep other apps blocked while you sleep, Fittarc needs "Display over other apps". '
-          'On the next screen, find Fittarc and turn it on.',
+          'To keep other apps blocked while you sleep, FittArc needs "Display over other apps". '
+          'On the next screen, find FittArc and turn it on.',
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Skip')),

@@ -1,7 +1,7 @@
-# Fittarc: Play Store listing (copy and paste)
+# FittArc: Play Store listing (copy and paste)
 
 ## App name (max 30)
-Fittarc
+FittArc
 
 ## Short description (max 80)
 Seasonal fitness game: workouts, steps, water, sleep alarms and a health check.
@@ -9,7 +9,7 @@ Seasonal fitness game: workouts, steps, water, sleep alarms and a health check.
 (79 characters)
 
 ## Full description (max 4000)
-Fittarc turns daily fitness into a game that changes with the seasons.
+FittArc turns daily fitness into a game that changes with the seasons.
 
 THE RISE OF ARCS
 Every few months a new Arc begins: Winter Arc, Rise of Revolution, Summer Arc and Thunder Arc. Each Arc has its own look, badges and goals. Complete your daily goals, keep your streak and unlock the surprises each Arc has in store. What the next Arc looks like stays a secret until it arrives.
@@ -24,7 +24,7 @@ EVERYTHING YOU DO COUNTS
 • Watch (beta): connect a Bluetooth watch or chest strap for live heart rate and earn Arc minutes for the time you spend in your hard and moderate zones. Optionally read steps, heart rate and sleep from your watch app through Health Connect.
 • Alarms that get you moving: workout alarms with brain challenges to switch them off. If you stop moving, the alarm rings again.
 • Strict mode: a loud alarm you cannot cheat. In an emergency, restarting your phone ends it.
-• Sleep alarm: set a bedtime and Fittarc quiets your phone until morning. An optional mode blocks other apps, while phone calls always work. Restarting your phone ends it.
+• Sleep alarm: set a bedtime and FittArc quiets your phone until morning. An optional mode blocks other apps, while phone calls always work. Restarting your phone ends it.
 
 LEVELS AND BADGES
 Earn XP, climb the level ladder and collect badge sets across every Arc. Your progress, levels, badges and streaks are backed up to your account, so a new phone picks up where the old one stopped.
@@ -35,11 +35,11 @@ Add friends with a code, challenge them (do it together or each when you are fre
 YOUR PRIVACY
 Sign in with Google only. No ads. We don't sell your data. Read the policy at https://fittarc.in/privacy/
 
-Fittarc is for general fitness and wellness. It is not a medical device and does not give medical advice. The camera heart rate is an estimate and can be off by a few beats. Blood pressure, blood sugar and oxygen are never measured by the phone: you type in what your own device shows. Talk to a doctor before starting a new exercise or diet plan.
+FittArc is for general fitness and wellness. It is not a medical device and does not give medical advice. The camera heart rate is an estimate and can be off by a few beats. Blood pressure, blood sugar and oxygen are never measured by the phone: you type in what your own device shows. Talk to a doctor before starting a new exercise or diet plan.
 
 Feedback matters most to us. Write to support@fittarc.in and every message is read.
 
-Fittarc is a GetYr_io app.
+FittArc is a GetYr_io app.
 
 ## Category
 Health and Fitness

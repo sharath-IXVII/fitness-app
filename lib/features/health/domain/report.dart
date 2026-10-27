@@ -8,7 +8,7 @@ String buildReport(List<HealthReading> all, DateTime now) {
   final date = DateFormat('d MMM y');
   final stamp = DateFormat('d MMM, h:mm a');
   final b = StringBuffer()
-    ..writeln('Fittarc health record')
+    ..writeln('FittArc health record')
     ..writeln('Prepared on ${date.format(now)}')
     ..writeln();
 
@@ -43,7 +43,7 @@ String buildReport(List<HealthReading> all, DateTime now) {
   }
 
   b.writeln(
-    'These numbers were typed in or imported by the user from their own devices. Fittarc does not measure them '
+    'These numbers were typed in or imported by the user from their own devices. FittArc does not measure them '
     'and this is not a diagnosis.',
   );
   return b.toString().trimRight();

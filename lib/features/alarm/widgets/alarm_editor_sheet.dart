@@ -112,10 +112,10 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
         title: const Text('One more permission'),
         content: Text(
           _a.isSleep
-              ? 'To keep other apps blocked while you sleep, Fittarc needs "Display over other apps". '
-                    'On the next screen, find Fittarc and turn it on.'
-              : 'To bring the alarm back when someone leaves it, Fittarc needs "Display over other apps". '
-                    'On the next screen, find Fittarc and turn it on.',
+              ? 'To keep other apps blocked while you sleep, FittArc needs "Display over other apps". '
+                    'On the next screen, find FittArc and turn it on.'
+              : 'To bring the alarm back when someone leaves it, FittArc needs "Display over other apps". '
+                    'On the next screen, find FittArc and turn it on.',
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Later')),

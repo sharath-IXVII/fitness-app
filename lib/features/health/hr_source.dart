@@ -52,7 +52,7 @@ class BleHrSource implements HrSource {
     final connect = await Permission.bluetoothConnect.request();
     if (!scan.isGranted || !connect.isGranted) {
       throw StateError(
-        'Fittarc needs the "Nearby devices" permission to find your watch. Allow it in the phone settings.',
+        'FittArc needs the "Nearby devices" permission to find your watch. Allow it in the phone settings.',
       );
     }
     final state = await FlutterBluePlus.adapterState

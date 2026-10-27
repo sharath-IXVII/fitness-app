@@ -1,9 +1,9 @@
 ---
-title: Fittarc
+title: FittArc
 permalink: /
 ---
 
-# Fittarc
+# FittArc
 
 **The Rise of Arcs.** A fitness game that turns your habits into seasonal arcs: workouts, steps, water,
 meals and sleep, with streaks, badges and friends.

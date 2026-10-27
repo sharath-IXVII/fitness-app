@@ -15,6 +15,6 @@ void write(String file, String title, String permalink, String updated, List<(St
 }
 
 void main() {
-  write('privacy.md', 'Fittarc privacy policy', '/privacy/', privacyUpdated, privacySections);
-  write('terms.md', 'Fittarc terms of use', '/terms/', termsUpdated, termsSections);
+  write('privacy.md', 'FittArc privacy policy', '/privacy/', privacyUpdated, privacySections);
+  write('terms.md', 'FittArc terms of use', '/terms/', termsUpdated, termsSections);
 }

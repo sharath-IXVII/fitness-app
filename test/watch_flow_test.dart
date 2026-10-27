@@ -191,8 +191,8 @@ void main() {
       ),
     );
     await _open(t, hr: _FakeHr(), watch: watch);
-    expect(find.text('Allow Fittarc to read'), findsOneWidget);
-    await t.tap(find.text('Allow Fittarc to read'));
+    expect(find.text('Allow FittArc to read'), findsOneWidget);
+    await t.tap(find.text('Allow FittArc to read'));
     await _wait(t);
     expect(watch.asked, isTrue);
     expect(find.text('6,240'), findsOneWidget);

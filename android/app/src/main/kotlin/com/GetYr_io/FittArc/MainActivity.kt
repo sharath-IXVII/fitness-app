@@ -230,7 +230,7 @@ class MainActivity : FlutterFragmentActivity() {
         if (overlay != null || !Settings.canDrawOverlays(context)) return
         val wm = context.getSystemService(WindowManager::class.java) ?: return
         val dp = context.resources.displayMetrics.density
-        // Fittarc's own night-blue look (the same navy as the app icon), so
+        // FittArc's own night-blue look (the same navy as the app icon), so
         // the panel never looks like a different app.
         val panel = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
@@ -268,7 +268,7 @@ class MainActivity : FlutterFragmentActivity() {
                 setPadding(0, (10 * dp).toInt(), 0, (28 * dp).toInt())
             })
             addView(TextView(context).apply {
-                text = if (sleepLock) "Back to Fittarc" else "Back to alarm"
+                text = if (sleepLock) "Back to FittArc" else "Back to alarm"
                 textSize = 16f
                 typeface = Typeface.DEFAULT_BOLD
                 setTextColor(Color.parseColor("#06142B"))

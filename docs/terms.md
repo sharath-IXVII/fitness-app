@@ -1,19 +1,19 @@
 ---
-title: Fittarc terms of use
+title: FittArc terms of use
 permalink: /terms/
 ---
 
-# Fittarc terms of use
+# FittArc terms of use
 
 _Last updated: October 2026_
 
-## Using Fittarc
+## Using FittArc
 
-By creating an account or using Fittarc you agree to these terms and to our Privacy Policy. If you don't agree, please don't use the app. You must be at least 13 years old.
+By creating an account or using FittArc you agree to these terms and to our Privacy Policy. If you don't agree, please don't use the app. You must be at least 13 years old.
 
 ## Your health and safety
 
-Fittarc is a fitness and habit app. It is not medical advice and does not replace a doctor, dietitian or physiotherapist. Talk to a doctor before starting a new exercise or diet plan, especially if you have a health condition, are pregnant, or are recovering from an injury. Exercise at your own risk and at your own pace: stop if you feel pain, dizziness or breathlessness. Never use the phone while driving, and choose a safe, clear space for workouts and for alarms that ask you to move. The Health tab only records readings you type in from your own devices and sorts them by general guideline ranges. It does not measure anything, diagnose anything or replace a doctor. In an emergency, call your local emergency number (112 in India).
+FittArc is a fitness and habit app. It is not medical advice and does not replace a doctor, dietitian or physiotherapist. Talk to a doctor before starting a new exercise or diet plan, especially if you have a health condition, are pregnant, or are recovering from an injury. Exercise at your own risk and at your own pace: stop if you feel pain, dizziness or breathlessness. Never use the phone while driving, and choose a safe, clear space for workouts and for alarms that ask you to move. The Health tab only records readings you type in from your own devices and sorts them by general guideline ranges. It does not measure anything, diagnose anything or replace a doctor. In an emergency, call your local emergency number (112 in India).
 
 ## Estimates are estimates
 
@@ -21,7 +21,7 @@ Calories, nutrients, steps, distance and calories burned are approximate. The fo
 
 ## Alarms and strict mode
 
-Alarms depend on your phone's settings, battery saver and permissions, and on the phone being on. Don't rely on Fittarc as your only alarm for anything important (a flight, medication, an exam). Strict mode is your own choice and can be turned off in the app.
+Alarms depend on your phone's settings, battery saver and permissions, and on the phone being on. Don't rely on FittArc as your only alarm for anything important (a flight, medication, an exam). Strict mode is your own choice and can be turned off in the app.
 
 ## Your account and content
 
@@ -33,7 +33,7 @@ Be respectful. Don't use names or behaviour that harass, impersonate or mislead 
 
 ## Changes and availability
 
-We keep improving Fittarc and may change or remove features, or these terms. We'll update the date above when that happens. The app is provided "as is", without guarantees, and we are not liable for losses that result from using it, to the extent the law allows.
+We keep improving FittArc and may change or remove features, or these terms. We'll update the date above when that happens. The app is provided "as is", without guarantees, and we are not liable for losses that result from using it, to the extent the law allows.
 
 ## Feedback
 

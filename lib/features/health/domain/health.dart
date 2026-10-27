@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Health readings the user records from real devices (a blood pressure cuff,
-/// a glucometer, a pulse oximeter or a smartwatch). Fittarc does not measure
+/// a glucometer, a pulse oximeter or a smartwatch). FittArc does not measure
 /// anything itself; it keeps the readings, sorts them by the standard ranges
 /// and shows the trend.
 enum ReadingKind {

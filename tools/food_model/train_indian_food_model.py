@@ -1,7 +1,7 @@
-"""Train a small, phone-sized Indian-food classifier and export it for Fittarc.
+"""Train a small, phone-sized Indian-food classifier and export it for FittArc.
 
 Run it in Google Colab (free GPU): Runtime -> Change runtime type -> T4 GPU.
-Not tested inside the Fittarc build; treat the first run as an experiment.
+Not tested inside the FittArc build; treat the first run as an experiment.
 
 Steps (see README.md next to this file for the click-by-click version):
   1. Put the photos in /content/food/<dish name>/*.jpg  (one folder per dish).

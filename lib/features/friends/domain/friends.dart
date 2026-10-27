@@ -145,7 +145,7 @@ class FriendChallenge {
     final who = fromTitle == null ? fromName : '$fromName, $fromTitle';
     return "I'm challenging you to $task for the $arcLabel! 💪\n"
         '— $who\n\n'
-        'Get Fittarc, open Friends → Enter code and type $code. '
+        'Get FittArc, open Friends → Enter code and type $code. '
         'Finish it and we become friends on the leaderboard.\n$storeUrl';
   }
 

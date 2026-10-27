@@ -180,7 +180,7 @@ class _HonestNote extends StatelessWidget {
             child: Text(
               'Heart rate can be estimated with your camera, and it is approximate. A phone cannot measure blood '
               'pressure, sugar or oxygen accurately, so for those, type in what your own monitor, glucometer or '
-              'oximeter shows and Fittarc sorts it by medical guidelines. This is not medical advice.',
+              'oximeter shows and FittArc sorts it by medical guidelines. This is not medical advice.',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
@@ -757,7 +757,7 @@ class _MeasureWellSheet extends StatelessWidget {
           ],
           const SizedBox(height: 10),
           Text(
-            'Fittarc sorts readings by AHA/ACC blood pressure ranges and ADA blood sugar ranges. A single high '
+            'FittArc sorts readings by AHA/ACC blood pressure ranges and ADA blood sugar ranges. A single high '
             'reading is not a diagnosis. See a doctor if you are worried, and call emergency services (112 in '
             'India) for chest pain, trouble breathing or sudden weakness.',
             style: text.bodySmall,

@@ -49,7 +49,7 @@ abstract final class Reminders {
 
   static bool get supported => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
-  /// Fittarc's own notification look: a short rising chime in the app's
+  /// FittArc's own notification look: a short rising chime in the app's
   /// colours (one sound each for reminders, water and workouts), a distinct
   /// two-tap vibration, the logo as the picture and the season's colour as
   /// the accent. The channel ids end in "_v2" because Android keeps a

@@ -10,7 +10,7 @@ enum WatchStatus {
   /// It can be installed or updated from the store.
   needsInstall,
 
-  /// Fittarc has not been allowed to read yet.
+  /// FittArc has not been allowed to read yet.
   notAllowed,
   ready,
 }
@@ -28,7 +28,7 @@ class WatchSnapshot {
   bool get isEmpty => steps == null && latestBpm == null && restingBpm == null && sleepMinutes == null;
 }
 
-/// Reading from Health Connect. Read-only: Fittarc never writes to it.
+/// Reading from Health Connect. Read-only: FittArc never writes to it.
 abstract class WatchData {
   Future<WatchStatus> status();
 

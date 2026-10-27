@@ -64,7 +64,7 @@ class CameraPulseSource implements PulseSource {
       if (!out.isClosed) {
         out.addError(
           e.code.toLowerCase().contains('denied')
-              ? 'Camera permission is off. Allow the camera for Fittarc in Settings and try again.'
+              ? 'Camera permission is off. Allow the camera for FittArc in Settings and try again.'
               : 'The camera could not start (${e.code}).',
         );
       }

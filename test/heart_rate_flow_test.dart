@@ -127,7 +127,7 @@ void main() {
   });
 
   testWidgets('heart rate: a camera that will not start shows a clear message', (t) async {
-    await _open(t, _FakeSource(fail: 'Camera permission is off. Allow the camera for Fittarc in Settings and try again.'));
+    await _open(t, _FakeSource(fail: 'Camera permission is off. Allow the camera for FittArc in Settings and try again.'));
     await t.tap(find.text('Measure heart rate'));
     await _wait(t);
     await t.tap(find.text('Start'));

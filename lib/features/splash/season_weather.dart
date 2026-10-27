@@ -210,7 +210,7 @@ class SeasonWeatherPainter extends CustomPainter {
       old.seconds != seconds || old.intensity != intensity || old.season != season;
 }
 
-/// The Fittarc mark drawn straight onto the background (no tile): three
+/// The FittArc mark drawn straight onto the background (no tile): three
 /// pieces that slide in, shaded in the season's colours.
 class BrandMarkPainter extends CustomPainter {
   BrandMarkPainter({required this.look, required this.progress, required this.shine});

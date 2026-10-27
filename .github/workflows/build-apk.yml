@@ -96,7 +96,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          flutter build apk --release 2>&1 | tee build.log
+          flutter build apk --release --build-number=$((100 + GITHUB_RUN_NUMBER)) 2>&1 | tee build.log
 
       # Surfaces the Gradle error as an annotation on the run summary, so it's
       # readable without downloading the full log.
@@ -116,7 +116,8 @@ jobs:
         if: ${{ env.KEYSTORE_BASE64 != '' }}
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
-        run: flutter build appbundle --release
+        # Play needs a higher version code for every upload; the run number only goes up.
+        run: flutter build appbundle --release --build-number=$((100 + GITHUB_RUN_NUMBER))
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

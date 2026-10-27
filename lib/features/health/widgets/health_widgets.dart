@@ -110,3 +110,37 @@ class _SparkPainter extends CustomPainter {
   @override
   bool shouldRepaint(_SparkPainter old) => old.readings != readings || old.color != color;
 }
+
+/// The pulse wave while measuring: a line that rises and falls with each beat.
+class WavePainter extends CustomPainter {
+  WavePainter(this.values, this.color);
+
+  final List<double> values;
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (values.length < 2) return;
+    var lo = values.reduce((a, b) => a < b ? a : b), hi = values.reduce((a, b) => a > b ? a : b);
+    if (hi - lo < 1e-6) {
+      lo -= 1;
+      hi += 1;
+    }
+    final path = Path();
+    for (var i = 0; i < values.length; i++) {
+      final p = Offset(size.width * i / (values.length - 1), size.height * (1 - (values[i] - lo) / (hi - lo)));
+      i == 0 ? path.moveTo(p.dx, p.dy) : path.lineTo(p.dx, p.dy);
+    }
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = color
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.4
+        ..strokeJoin = StrokeJoin.round,
+    );
+  }
+
+  @override
+  bool shouldRepaint(WavePainter old) => true;
+}

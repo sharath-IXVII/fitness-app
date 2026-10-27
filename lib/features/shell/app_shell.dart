@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -320,7 +321,8 @@ class _NavItem extends StatelessWidget {
             const SizedBox(height: 4),
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 220),
-              style: TextStyle(
+              // Inter like the rest of the app, not the phone's default font.
+              style: GoogleFonts.inter(
                 fontSize: 11.5,
                 fontWeight: active ? FontWeight.w600 : FontWeight.w500,
                 color: active ? AppColors.textPrimary : AppColors.textTertiary,

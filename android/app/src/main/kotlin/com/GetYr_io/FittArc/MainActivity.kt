@@ -3,6 +3,7 @@ package com.GetYr_io.FittArc
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.Outline
 import android.graphics.PixelFormat
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
@@ -14,7 +15,9 @@ import android.os.PowerManager
 import android.provider.Settings
 import android.view.Gravity
 import android.view.View
+import android.view.ViewOutlineProvider
 import android.view.WindowManager
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import io.flutter.embedding.android.FlutterActivity
@@ -226,22 +229,40 @@ class MainActivity : FlutterActivity() {
         if (overlay != null || !Settings.canDrawOverlays(context)) return
         val wm = context.getSystemService(WindowManager::class.java) ?: return
         val dp = context.resources.displayMetrics.density
+        // Fittarc's own night-blue look (the same navy as the app icon), so
+        // the panel never looks like a different app.
         val panel = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER
-            setBackgroundColor(Color.parseColor("#FAF6EF"))
+            setBackgroundColor(Color.parseColor("#0C1B37"))
             setPadding((32 * dp).toInt(), 0, (32 * dp).toInt(), 0)
+            addView(ImageView(context).apply {
+                setImageResource(R.drawable.notif_large)
+                layoutParams = LinearLayout.LayoutParams((84 * dp).toInt(), (84 * dp).toInt()).apply {
+                    bottomMargin = (22 * dp).toInt()
+                }
+                outlineProvider = object : ViewOutlineProvider() {
+                    override fun getOutline(view: View, outline: Outline) {
+                        outline.setRoundRect(0, 0, view.width, view.height, 20 * dp)
+                    }
+                }
+                clipToOutline = true
+            })
             addView(TextView(context).apply {
                 text = if (sleepLock) "Sleep mode is on" else "Your alarm is still on"
                 textSize = 24f
                 typeface = Typeface.DEFAULT_BOLD
-                setTextColor(Color.parseColor("#3A2E25"))
+                setTextColor(Color.WHITE)
                 gravity = Gravity.CENTER
             })
             addView(TextView(context).apply {
-                text = if (sleepLock) "Time to rest. Calls still work. In an emergency, restart your phone to unlock it." else "Finish your workout or challenge to unlock your phone."
+                text = if (sleepLock) {
+                    "Time to rest. Calls still work. In an emergency, restart your phone to unlock it."
+                } else {
+                    "Finish your workout or challenge to unlock your phone. In an emergency, restart your phone."
+                }
                 textSize = 15f
-                setTextColor(Color.parseColor("#6E5C4B"))
+                setTextColor(Color.parseColor("#B9C8E0"))
                 gravity = Gravity.CENTER
                 setPadding(0, (10 * dp).toInt(), 0, (28 * dp).toInt())
             })
@@ -249,12 +270,12 @@ class MainActivity : FlutterActivity() {
                 text = if (sleepLock) "Back to Fittarc" else "Back to alarm"
                 textSize = 16f
                 typeface = Typeface.DEFAULT_BOLD
-                setTextColor(Color.WHITE)
+                setTextColor(Color.parseColor("#06142B"))
                 gravity = Gravity.CENTER
                 setPadding((36 * dp).toInt(), (16 * dp).toInt(), (36 * dp).toInt(), (16 * dp).toInt())
                 background = GradientDrawable().apply {
                     cornerRadius = 20 * dp
-                    setColor(Color.parseColor("#A47551"))
+                    setColor(Color.parseColor("#9AD3FF"))
                 }
                 setOnClickListener { StrictState.bringBack(context) }
             })

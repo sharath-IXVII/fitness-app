@@ -56,8 +56,9 @@ const privacySections = <(String, String)>[
   ),
   (
     'Camera during workouts',
-    'The workout camera counts reps using on-device pose detection (Google ML Kit). Video is processed in memory '
-        'and is never recorded, stored or uploaded.',
+    'The workout camera counts reps using on-device pose detection (Google ML Kit). The heart-rate estimate in the '
+        'Health tab uses the back camera and flash to see the light change with your pulse under your fingertip. '
+        'Video and camera images are processed in memory only and are never recorded, stored or uploaded.',
   ),
   (
     'Food photos',

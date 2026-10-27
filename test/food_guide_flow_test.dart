@@ -5,6 +5,7 @@ import 'package:fitalarm/core/storage.dart';
 import 'package:fitalarm/features/auth/auth_providers.dart';
 import 'package:fitalarm/features/auth/auth_service.dart';
 import 'package:fitalarm/features/health/food_guide_screen.dart';
+import 'package:fitalarm/features/health/health_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -67,6 +68,11 @@ void main() {
     expect(find.text('Start here: 3 taps'), findsNothing);
     expect(prefs.getBool('guide.health.v1'), isTrue);
 
+    await t.scrollUntilVisible(
+      find.text('Food guide'),
+      200,
+      scrollable: find.descendant(of: find.byType(HealthScreen), matching: find.byType(Scrollable)).first,
+    );
     await t.tap(find.text('Food guide'));
     await _wait(t);
     expect(find.text('How to use the food guide'), findsOneWidget);

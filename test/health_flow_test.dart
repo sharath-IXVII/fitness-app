@@ -60,8 +60,16 @@ void main() {
     await _wait(t, 300);
     await t.tap(find.text('Health check'));
     await _wait(t);
+    final list = find.descendant(of: find.byType(HealthScreen), matching: find.byType(Scrollable)).first;
+    await t.scrollUntilVisible(find.text('7-day home blood pressure'), 200, scrollable: list);
     expect(find.text('7-day home blood pressure'), findsOneWidget);
-    expect(find.textContaining('does not measure these itself'), findsOneWidget);
+    await t.scrollUntilVisible(find.textContaining('A phone cannot measure blood'), -200, scrollable: list);
+    expect(find.textContaining('A phone cannot measure blood'), findsOneWidget);
+    await t.scrollUntilVisible(
+      find.descendant(of: find.byType(GridView), matching: find.text('Blood pressure')),
+      200,
+      scrollable: list,
+    );
 
     // A normal reading.
     await t.tap(find.descendant(of: find.byType(GridView), matching: find.text('Blood pressure')));
@@ -71,7 +79,6 @@ void main() {
     await t.tap(find.text('Save reading'));
     await _wait(t);
     expect(find.textContaining('Saved: 118/76'), findsOneWidget);
-    final list = find.descendant(of: find.byType(HealthScreen), matching: find.byType(Scrollable)).first;
     await t.scrollUntilVisible(find.text('Normal'), 200, scrollable: list);
     expect(find.text('Normal'), findsWidgets);
     // Back up to the tiles.

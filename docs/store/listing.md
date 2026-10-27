@@ -4,9 +4,9 @@
 Fittarc
 
 ## Short description (max 80)
-Seasonal fitness game: workouts, steps, water, sleep alarms and a food scanner.
+Seasonal fitness game: workouts, steps, water, sleep alarms and a health check.
 
-(78 characters)
+(79 characters)
 
 ## Full description (max 4000)
 Fittarc turns daily fitness into a game that changes with the seasons.
@@ -18,21 +18,23 @@ EVERYTHING YOU DO COUNTS
 • Steps and distance: your phone's motion sensors and GPS work together, so your step count and kilometres stay steady. Set your own goals.
 • Water: a daily goal that follows your body and the season, with gentle reminders. You can set your own goal too.
 • Workouts: guided exercises with clear moving demos, body-part sessions and 30-day challenges.
-• Food scanner: point the camera at your plate and get a suggested dish with calories and macros. You can always correct it. Scanning happens on your phone.
-• Meal planner: log meals and see your day at a glance.
-• Alarms that get you moving: workout alarms with brain challenges to switch them off.
-• Sleep alarm: set a bedtime and Fittarc quiets your phone until morning. An optional Strict mode blocks other apps, while phone calls always work. Restarting your phone ends it.
+• Diet (beta): plan and log meals, and scan your plate for a suggested dish with calories and macros. It is still being improved, so always check and correct the result. Scanning happens on your phone.
+• Food guide: see which foods are rich in carbs, protein, fibre, vitamins and water per 100 g, and compare two foods side by side.
+• Health check (beta): an approximate heart-rate estimate with your fingertip on the camera, a log for your own blood pressure, blood sugar, pulse and oxygen readings with the standard ranges explained, and your height, weight and BMI.
+• Alarms that get you moving: workout alarms with brain challenges to switch them off. If you stop moving, the alarm rings again.
+• Strict mode: a loud alarm you cannot cheat. In an emergency, restarting your phone ends it.
+• Sleep alarm: set a bedtime and Fittarc quiets your phone until morning. An optional mode blocks other apps, while phone calls always work. Restarting your phone ends it.
 
 LEVELS AND BADGES
 Earn XP, climb the level ladder and collect badge sets across every Arc. Your progress, levels, badges and streaks are backed up to your account, so a new phone picks up where the old one stopped.
 
 FRIENDS
-Challenge friends, compare streaks and climb the leaderboard.
+Add friends with a code, challenge them (do it together or each when you are free), compare streaks and climb the leaderboard. Finish a challenge together and you both earn XP.
 
 YOUR PRIVACY
 Sign in with Google only. No ads. We don't sell your data. Read the policy at https://fittarc.in/privacy/
 
-Fittarc is for general fitness and wellness. It is not a medical device and does not give medical advice. Talk to a doctor before starting a new exercise or diet plan.
+Fittarc is for general fitness and wellness. It is not a medical device and does not give medical advice. The camera heart rate is an estimate and can be off by a few beats. Blood pressure, blood sugar and oxygen are never measured by the phone: you type in what your own device shows. Talk to a doctor before starting a new exercise or diet plan.
 
 Feedback matters most to us. Write to support@fittarc.in and every message is read.
 
@@ -50,6 +52,7 @@ Privacy policy: https://fittarc.in/privacy/
 Data collected:
 - Personal info: name, email address (Google Sign-In) for account and backup
 - Health and fitness: steps, workouts, water, sleep and meal logs (app functionality, backup)
+- Health readings you type in or save (heart-rate estimate, blood pressure, sugar, pulse, oxygen, height, weight): kept on the phone only, not uploaded
 - Photos: food photos are processed on the device and not uploaded
 - App activity: progress, levels, badges and streaks (backup)
 Shared with third parties: none
@@ -60,12 +63,15 @@ Ads: none
 ## Permissions to justify
 - Exact alarms (SCHEDULE_EXACT_ALARM): workout and sleep alarms are the core feature and must ring at the time the user sets.
 - Full-screen intent: the alarm screen must appear over the lock screen when it rings.
-- Camera: food scanner and rep counting.
+- Camera (and its flash): rep counting during workouts, the food scanner, and the fingertip heart-rate estimate. All processed on the phone; nothing is uploaded.
 - Activity recognition and location: merged step counting and distance.
 - Notifications: reminders for water, workouts and meals.
 
 ## Health apps declaration
 General fitness and wellness only. No diagnosis, treatment or medical advice.
+- The only vital sign the phone estimates is heart rate, from the camera, and it is labelled as an estimate (not medical).
+- The app does NOT claim to measure blood pressure, blood sugar or oxygen from the phone. Those are typed in by the user from their own devices.
+- If the form asks whether the app measures vital signs with the camera: say yes for heart rate only, as a wellness estimate, with no medical claims.
 
 ## Assets
 - Icon 512x512: docs/store/play-icon-512.png

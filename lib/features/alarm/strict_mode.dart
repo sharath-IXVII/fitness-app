@@ -15,15 +15,16 @@ import 'alarm_scheduler.dart';
 ///   (Android, needs "Display over other apps");
 /// - the screen is pinned where the system allows it;
 /// - the volume keys can't lower the alarm (see [AlarmScheduler]);
-/// - if the phone is switched off, the alarm rings again after it restarts.
+/// - restarting the phone ends strict mode (see StrictBootReceiver.kt), so
+///   there is always a way out in a real emergency. The alarm screens say so.
 ///
 /// What no app can do: block the power button or a forced restart. Those are
-/// reserved to the system, so strict mode makes the alarm come back instead.
+/// reserved to the system, so strict mode lets a restart release it.
 abstract final class StrictMode {
   static const _channel = MethodChannel('fittiepi/strict');
 
-  /// Saved while a strict alarm is unresolved. Read natively after a reboot
-  /// (see StrictBootReceiver.kt), so keep the key in sync.
+  /// Saved while a strict alarm is unresolved. Cleared natively after a
+  /// reboot (see StrictState.kt), so keep the key in sync.
   static const activeKey = 'strict.active.v1';
 
   static bool get _android => !kIsWeb && Platform.isAndroid;

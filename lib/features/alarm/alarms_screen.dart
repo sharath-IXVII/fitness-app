@@ -14,6 +14,7 @@ import '../../core/widgets/pressable.dart';
 import '../workout/domain/routine.dart';
 import '../workout/routine_providers.dart';
 import '../workout/workout_screen.dart';
+import '../health/widgets/guide_card.dart';
 import 'alarm_providers.dart';
 import 'sleep_screens.dart';
 import 'app_permissions.dart';
@@ -121,7 +122,17 @@ class _AlarmsScreenState extends ConsumerState<AlarmsScreen> with WidgetsBinding
             ),
             const SizedBox(height: 4),
             Text('Each alarm keeps ringing until you finish its workout or brain game.', style: text.bodyMedium),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
+            const GuideCard(
+              id: 'alarm',
+              title: 'How your alarm works',
+              steps: [
+                'Tap + to add an alarm. Set the time, the days and what you must do to switch it off.',
+                'Turn on Strict mode to make it impossible to cheat: full volume, no snooze, and the phone stays on the alarm until your workout is done.',
+                'If you stop moving during the workout, the alarm rings again after a minute.',
+                'Emergency? Restart your phone to leave Strict mode.',
+              ],
+            ),
             _NextUpBanner(next: ref.watch(nextAlarmProvider)),
             const SizedBox(height: 16),
             if (!_permissionsOk) ...[_PermissionBanner(onFixed: _checkPermissions), const SizedBox(height: 14)],

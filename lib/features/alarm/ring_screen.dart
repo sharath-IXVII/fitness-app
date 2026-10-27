@@ -172,6 +172,13 @@ class _RingScreenState extends ConsumerState<RingScreen> {
                               ],
                             ),
                           ),
+                      if (info.strict) ...[
+                        const SizedBox(height: 8),
+                        Text(
+                          'Emergency? Restarting your phone ends strict mode and stops this alarm.',
+                          style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
+                        ),
+                      ],
                     ],
                   ),
                 ).animate().fadeIn(duration: 300.ms, delay: 150.ms).moveY(begin: 8, end: 0, curve: Curves.easeOutCubic),

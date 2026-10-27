@@ -274,6 +274,30 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                         ],
                       ),
                     ),
+                    if (!_a.isSleep)
+                      FormSection(
+                        title: 'Strict mode: no cheating',
+                        child: Column(
+                          children: [
+                            SettingToggle(
+                              icon: Icons.snooze_rounded,
+                              title: 'No snooze or emergency stop',
+                              subtitle: 'Finishing the task is the only way to turn it off',
+                              value: _a.noEscape,
+                              onChanged: _a.strict ? null : (v) => _update(_a.copyWith(hardMode: v)),
+                            ),
+                            SettingToggle(
+                              icon: Icons.lock_outline_rounded,
+                              title: 'Strict mode',
+                              subtitle:
+                                  'Full volume that the buttons can\'t lower, and your phone stays on the alarm until '
+                                  'you finish. In an emergency, restart your phone to leave it.',
+                              value: _a.strict,
+                              onChanged: _setStrict,
+                            ),
+                          ],
+                        ),
+                      ),
                     if (_a.isSleep)
                       FormSection(
                         title: 'Sleep mode',
@@ -482,30 +506,6 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                         ),
                       ),
                     ),
-                    if (!_a.isSleep)
-                      FormSection(
-                        title: 'How strict',
-                        child: Column(
-                          children: [
-                            SettingToggle(
-                              icon: Icons.snooze_rounded,
-                              title: 'No snooze or emergency stop',
-                              subtitle: 'Finishing the task is the only way to turn it off',
-                              value: _a.noEscape,
-                              onChanged: _a.strict ? null : (v) => _update(_a.copyWith(hardMode: v)),
-                            ),
-                            SettingToggle(
-                              icon: Icons.lock_outline_rounded,
-                              title: 'Strict mode',
-                              subtitle:
-                                  'Rings at full volume that the buttons can\'t lower, keeps your phone on the alarm '
-                                  'until you finish, and rings again if the phone is restarted',
-                              value: _a.strict,
-                              onChanged: _setStrict,
-                            ),
-                          ],
-                        ),
-                      ),
                   ],
                 ),
               ),

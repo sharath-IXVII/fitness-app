@@ -14,6 +14,11 @@ object StrictState {
     fun isActive(context: Context): Boolean =
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).contains(ACTIVE)
 
+    /** Ends strict mode (used after the phone restarts). */
+    fun clear(context: Context) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().remove(ACTIVE).apply()
+    }
+
     /** Opens the app on top of whatever is showing. */
     fun bringBack(context: Context) {
         try {

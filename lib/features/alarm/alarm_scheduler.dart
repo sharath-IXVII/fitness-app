@@ -23,7 +23,7 @@ class RingInfo {
     this.challenge = AlarmChallenge.workout,
     this.level = ChallengeLevel.medium,
     this.sound = AlarmSound.sunrise,
-    this.volume = 0.9,
+    this.volume = 1.0,
     this.fadeIn = true,
     this.vibrate = true,
     this.kind = AlarmKind.wake,
@@ -150,7 +150,9 @@ abstract final class AlarmScheduler {
 
   /// Snoozed rings use their own id so a sync can't overwrite them.
   static int snoozeIdFor(int alarmId) => 10000 + alarmId;
-  static const idleTimeout = Duration(seconds: 90);
+  /// How long someone can stop moving (or never start) before the alarm
+  /// rings again, at full volume.
+  static const idleTimeout = Duration(seconds: 60);
 
   static bool get supported => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
@@ -171,6 +173,7 @@ abstract final class AlarmScheduler {
     required DateTime at,
     required RingInfo info,
     required String body,
+    bool loud = false,
   }) => AlarmSettings(
     id: id,
     dateTime: at,
@@ -185,10 +188,12 @@ abstract final class AlarmScheduler {
     payload: info.toPayload(),
     // Strict mode: full volume from the first second, and the volume keys
     // can't turn it down (the plugin resets any change).
-    volumeSettings: info.strict
+    // A re-ring (someone stopped moving or fell back asleep) is at full
+    // volume at once, with no slow build-up they could sleep through.
+    volumeSettings: info.strict || loud
         ? const VolumeSettings.fixed(volume: 1, volumeEnforced: true)
         : info.fadeIn
-        ? VolumeSettings.fade(volume: info.volume, fadeDuration: const Duration(seconds: 20), volumeEnforced: true)
+        ? VolumeSettings.fade(volume: info.volume, fadeDuration: const Duration(seconds: 12), volumeEnforced: true)
         : VolumeSettings.fixed(volume: info.volume, volumeEnforced: true),
     notificationSettings: NotificationSettings(
       title: info.label,
@@ -247,6 +252,7 @@ abstract final class AlarmScheduler {
         at: DateTime.now().add(const Duration(seconds: 3)),
         info: info,
         body: 'Your alarm is still on. Finish your workout to switch it off, you\'ve got this!',
+        loud: true,
       ),
     );
   }
@@ -260,6 +266,7 @@ abstract final class AlarmScheduler {
         at: DateTime.now().add(idleTimeout),
         info: info,
         body: "You stopped moving. Keep going, you're almost there! 🔥",
+        loud: true,
       ),
     );
   }

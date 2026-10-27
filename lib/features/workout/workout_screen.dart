@@ -311,7 +311,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                 const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  _alarmMode ? 'Finish to stop the alarm' : '${_routine.name} · practice',
+                  _alarmMode ? 'Keep going: the alarm rings again if you stop' : '${_routine.name} · practice',
                   style: text.titleSmall?.copyWith(color: Colors.white),
                 ),
               ),

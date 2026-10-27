@@ -40,7 +40,7 @@ class WorkoutAlarm {
     this.label = 'Wake-up workout',
     this.enabled = true,
     this.sound = AlarmSound.sunrise,
-    this.volume = 0.9,
+    this.volume = 1.0,
     this.fadeIn = true,
     this.vibrate = true,
     this.maxSnoozes = 1,

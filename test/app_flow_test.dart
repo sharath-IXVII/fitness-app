@@ -89,6 +89,8 @@ void main() {
       // Alarm tab: alarm card, then the editor sheet.
       await _tap(t, 'Alarm');
       expect(find.text('Alarms'), findsOneWidget);
+      expect(find.text('How your alarm works'), findsOneWidget); // the first-time guide
+      await _tap(t, 'Got it');
       expect(find.text('Beginner routine'), findsOneWidget); // the alarm card's routine tag
       await t.tap(find.byIcon(Icons.add_rounded).first);
       await _wait(t);

@@ -12,6 +12,7 @@ import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../features/myday/domain/day_block.dart';
+import 'theme/app_colors.dart';
 
 /// Storage keys shared with the background notification handler, which runs
 /// in its own isolate and can't use providers.
@@ -48,38 +49,82 @@ abstract final class Reminders {
 
   static bool get supported => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
-  static const _routineChannel = AndroidNotificationDetails(
-    'routine',
-    'My Day reminders',
-    channelDescription: 'Reminders for the items in your daily routine',
-    importance: Importance.high,
-    priority: Priority.high,
+  /// Fittarc's own notification look: a short rising chime in the app's
+  /// colours (one sound each for reminders, water and workouts), a distinct
+  /// two-tap vibration, the logo as the picture and the season's colour as
+  /// the accent. The channel ids end in "_v2" because Android keeps a
+  /// channel's sound for good once it exists, so new sounds need new ids.
+  static final _pattern = Int64List.fromList([0, 90, 60, 90, 60, 240]);
+
+  static AndroidNotificationDetails _android({
+    required String id,
+    required String name,
+    required String description,
+    required String sound,
+    required String body,
+    Importance importance = Importance.high,
+    List<AndroidNotificationAction> actions = const [],
+  }) => AndroidNotificationDetails(
+    id,
+    name,
+    channelDescription: description,
+    importance: importance,
+    priority: importance == Importance.high ? Priority.high : Priority.defaultPriority,
     icon: 'ic_stat_notify',
-    actions: [
-      AndroidNotificationAction('done', 'Done ✓', showsUserInterface: false),
-      AndroidNotificationAction('snooze', 'Snooze 10 min', showsUserInterface: false),
-    ],
+    largeIcon: const DrawableResourceAndroidBitmap('notif_large'),
+    color: AppColors.primary,
+    playSound: true,
+    sound: RawResourceAndroidNotificationSound(sound),
+    enableVibration: true,
+    vibrationPattern: _pattern,
+    enableLights: true,
+    ledColor: AppColors.primary,
+    ledOnMs: 600,
+    ledOffMs: 1200,
+    styleInformation: BigTextStyleInformation(body),
+    actions: actions,
   );
 
-  static const _waterChannel = AndroidNotificationDetails(
-    'water',
-    'Water reminders',
-    channelDescription: 'Regular nudges to drink water',
-    importance: Importance.defaultImportance,
-    icon: 'ic_stat_notify',
-    actions: [
-      AndroidNotificationAction('water_250', 'Yes, I had a glass ✓', showsUserInterface: false),
-      AndroidNotificationAction('water_500', '+500 ml', showsUserInterface: false),
-    ],
+  static NotificationDetails _routine(String body) => NotificationDetails(
+    android: _android(
+      id: 'routine_v2',
+      name: 'My Day reminders',
+      description: 'Reminders for the items in your daily routine',
+      sound: 'fittarc_routine',
+      body: body,
+      actions: const [
+        AndroidNotificationAction('done', 'Done ✓', showsUserInterface: false),
+        AndroidNotificationAction('snooze', 'Snooze 10 min', showsUserInterface: false),
+      ],
+    ),
+    iOS: const DarwinNotificationDetails(),
   );
 
-  static const _workoutChannel = AndroidNotificationDetails(
-    'workout',
-    'Workout reminders',
-    channelDescription: 'A daily nudge for your workout or 30-day challenge',
-    importance: Importance.high,
-    priority: Priority.high,
-    icon: 'ic_stat_notify',
+  static NotificationDetails _water(String body) => NotificationDetails(
+    android: _android(
+      id: 'water_v2',
+      name: 'Water reminders',
+      description: 'Regular nudges to drink water',
+      sound: 'fittarc_water',
+      body: body,
+      importance: Importance.defaultImportance,
+      actions: const [
+        AndroidNotificationAction('water_250', 'Yes, I had a glass ✓', showsUserInterface: false),
+        AndroidNotificationAction('water_500', '+500 ml', showsUserInterface: false),
+      ],
+    ),
+    iOS: const DarwinNotificationDetails(),
+  );
+
+  static NotificationDetails _workout(String body) => NotificationDetails(
+    android: _android(
+      id: 'workout_v2',
+      name: 'Workout reminders',
+      description: 'A daily nudge for your workout or 30-day challenge',
+      sound: 'fittarc_workout',
+      body: body,
+    ),
+    iOS: const DarwinNotificationDetails(),
   );
 
   /// Called in the foreground isolate when a reminder or action is tapped.
@@ -104,6 +149,13 @@ abstract final class Reminders {
       onDidReceiveBackgroundNotificationResponse: reminderBackgroundHandler,
     );
     _ready = true;
+    // The first version's channels had the phone's default sound; remove them.
+    final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    for (final old in const ['routine', 'water', 'workout']) {
+      try {
+        await android?.deleteNotificationChannel(channelId: old);
+      } catch (_) {}
+    }
   }
 
   static Future<void> _initTimeZone() async {
@@ -172,7 +224,7 @@ abstract final class Reminders {
           title: _title(b),
           body: _body(b),
           scheduledDate: _next(day, b.remindMinute),
-          notificationDetails: const NotificationDetails(android: _routineChannel, iOS: DarwinNotificationDetails()),
+          notificationDetails: _routine(_body(b)),
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
           matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
           payload: jsonEncode({'type': 'block', 'id': b.id, 'title': _title(b), 'body': _body(b)}),
@@ -239,7 +291,7 @@ abstract final class Reminders {
           title: _waterTexts[(d * 5 + i) % _waterTexts.length].$1,
           body: _waterTexts[(d * 5 + i) % _waterTexts.length].$2,
           scheduledDate: at,
-          notificationDetails: const NotificationDetails(android: _waterChannel, iOS: DarwinNotificationDetails()),
+          notificationDetails: _water(_waterTexts[(d * 5 + i) % _waterTexts.length].$2),
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
           payload: jsonEncode({'type': 'water', 'day': _dayKey(day)}),
         );
@@ -282,7 +334,7 @@ abstract final class Reminders {
         title: text.$1,
         body: text.$2,
         scheduledDate: at,
-        notificationDetails: const NotificationDetails(android: _workoutChannel, iOS: DarwinNotificationDetails()),
+        notificationDetails: _workout(text.$2),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
         payload: jsonEncode({'type': 'workout'}),
       );
@@ -320,7 +372,7 @@ abstract final class Reminders {
           title: data['title'] as String?,
           body: data['body'] as String?,
           scheduledDate: tz.TZDateTime.now(tz.local).add(const Duration(minutes: 10)),
-          notificationDetails: const NotificationDetails(android: _routineChannel, iOS: DarwinNotificationDetails()),
+          notificationDetails: _routine((data['body'] as String?) ?? ''),
           androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
           payload: payload,
         );

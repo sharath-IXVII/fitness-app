@@ -204,9 +204,20 @@ class SegmentedPills extends StatelessWidget {
 }
 
 class TimeWheel extends StatefulWidget {
-  const TimeWheel({super.key, required this.count, required this.value, required this.onChanged});
+  const TimeWheel({
+    super.key,
+    required this.count,
+    required this.value,
+    required this.onChanged,
+    this.label,
+    this.width = 96,
+    this.loop = true,
+  });
 
   final int count;
+  final String Function(int)? label;
+  final double width;
+  final bool loop;
   final int value;
   final ValueChanged<int> onChanged;
 
@@ -223,11 +234,16 @@ class _TimeWheelState extends State<TimeWheel> {
     super.dispose();
   }
 
+  List<Widget> _items(TextStyle? style) => [
+    for (var i = 0; i < widget.count; i++)
+      Center(child: Text(widget.label?.call(i) ?? i.toString().padLeft(2, '0'), style: style)),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final style = Theme.of(context).textTheme.displaySmall;
     return SizedBox(
-      width: 96,
+      width: widget.width,
       child: ListWheelScrollView.useDelegate(
         controller: _controller,
         itemExtent: 56,
@@ -239,12 +255,53 @@ class _TimeWheelState extends State<TimeWheel> {
           HapticFeedback.selectionClick();
           widget.onChanged(i % widget.count);
         },
-        childDelegate: ListWheelChildLoopingListDelegate(
-          children: [
-            for (var i = 0; i < widget.count; i++) Center(child: Text(i.toString().padLeft(2, '0'), style: style)),
-          ],
-        ),
+        childDelegate: widget.loop
+            ? ListWheelChildLoopingListDelegate(children: _items(style))
+            : ListWheelChildListDelegate(children: _items(style)),
       ),
+    );
+  }
+}
+
+/// Hour, minute and AM/PM wheels, so nobody has to read "15" as 3 PM.
+class ClockWheels extends StatelessWidget {
+  const ClockWheels({super.key, required this.time, required this.onChanged});
+
+  final TimeOfDay time;
+  final ValueChanged<TimeOfDay> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final pm = time.hour >= 12;
+    final hour12 = time.hour % 12 == 0 ? 12 : time.hour % 12;
+    int to24(int h12, bool isPm) => (h12 % 12) + (isPm ? 12 : 0);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Shows 12, 1, 2 ... 11; the wheel index is the hour on a 12-hour clock.
+        TimeWheel(
+          count: 12,
+          value: time.hour % 12,
+          label: (i) => (i == 0 ? 12 : i).toString(),
+          onChanged: (i) => onChanged(TimeOfDay(hour: to24(i, pm), minute: time.minute)),
+        ),
+        Text(':', style: text.displaySmall),
+        TimeWheel(
+          count: 60,
+          value: time.minute,
+          onChanged: (v) => onChanged(TimeOfDay(hour: time.hour, minute: v)),
+        ),
+        const SizedBox(width: 8),
+        TimeWheel(
+          count: 2,
+          value: pm ? 1 : 0,
+          width: 84,
+          loop: false,
+          label: (i) => i == 0 ? 'AM' : 'PM',
+          onChanged: (i) => onChanged(TimeOfDay(hour: to24(hour12, i == 1), minute: time.minute)),
+        ),
+      ],
     );
   }
 }

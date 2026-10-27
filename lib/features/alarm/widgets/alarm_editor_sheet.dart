@@ -194,29 +194,9 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                     ],
                     SizedBox(
                       height: 170,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          TimeWheel(
-                            count: 24,
-                            value: _a.time.hour,
-                            onChanged: (v) => _update(
-                              _a.copyWith(
-                                time: TimeOfDay(hour: v, minute: _a.time.minute),
-                              ),
-                            ),
-                          ),
-                          Text(':', style: text.displaySmall),
-                          TimeWheel(
-                            count: 60,
-                            value: _a.time.minute,
-                            onChanged: (v) => _update(
-                              _a.copyWith(
-                                time: TimeOfDay(hour: _a.time.hour, minute: v),
-                              ),
-                            ),
-                          ),
-                        ],
+                      child: ClockWheels(
+                        time: _a.time,
+                        onChanged: (t) => _update(_a.copyWith(time: t)),
                       ),
                     ),
                     Center(

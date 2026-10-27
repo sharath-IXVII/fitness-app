@@ -106,29 +106,9 @@ class _BlockEditorSheetState extends ConsumerState<BlockEditorSheet> {
                       title: 'When',
                       child: SizedBox(
                         height: 150,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            TimeWheel(
-                              count: 24,
-                              value: _b.time.hour,
-                              onChanged: (v) => _set(
-                                _b.copyWith(
-                                  time: TimeOfDay(hour: v, minute: _b.time.minute),
-                                ),
-                              ),
-                            ),
-                            Text(':', style: text.displaySmall),
-                            TimeWheel(
-                              count: 60,
-                              value: _b.time.minute,
-                              onChanged: (v) => _set(
-                                _b.copyWith(
-                                  time: TimeOfDay(hour: _b.time.hour, minute: v),
-                                ),
-                              ),
-                            ),
-                          ],
+                        child: ClockWheels(
+                          time: _b.time,
+                          onChanged: (t) => _set(_b.copyWith(time: t)),
                         ),
                       ),
                     ),

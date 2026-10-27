@@ -27,7 +27,11 @@ class FitTrackerApp extends ConsumerWidget {
       theme: AppTheme.light(),
       themeMode: ThemeMode.light,
       routerConfig: ref.watch(routerProvider),
-      builder: (context, child) => ResumeRefresher(child: AlarmRingListener(child: child!)),
+      // Times are always shown with AM and PM, whatever the phone's clock setting.
+      builder: (context, child) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: false),
+        child: ResumeRefresher(child: AlarmRingListener(child: child!)),
+      ),
     );
   }
 

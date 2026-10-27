@@ -253,7 +253,7 @@ abstract final class Reminders {
   };
 
   static String _body(DayBlock b) {
-    final at = '${b.time.hour.toString().padLeft(2, '0')}:${b.time.minute.toString().padLeft(2, '0')}';
+    final at = DateFormat.jm().format(DateTime(2000, 1, 1, b.time.hour, b.time.minute));
     if (b.leadMinutes > 0) return '${b.name} starts in ${b.leadMinutes} min ($at)';
     return switch (b.kind) {
       BlockKind.wake => 'A new day, a new chance. Let\'s make it count!',

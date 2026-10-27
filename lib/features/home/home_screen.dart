@@ -412,7 +412,7 @@ class _HealthEntry extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Text('Health check', style: text.titleMedium),
+                      Flexible(child: Text('Health check', style: text.titleMedium, overflow: TextOverflow.ellipsis)),
                       const SizedBox(width: 8),
                       const BetaTag(),
                     ],

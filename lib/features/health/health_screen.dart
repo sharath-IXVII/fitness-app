@@ -542,11 +542,15 @@ class _KindCard extends ConsumerWidget {
               children: [
                 Text(latest.display, style: text.headlineMedium),
                 const SizedBox(width: 6),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Text(
-                    '${kind.unit} · ${_when(latest.at)}',
-                    style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(
+                      '${kind.unit} · ${_when(latest.at)}',
+                      style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
               ],

@@ -68,6 +68,7 @@ class LocalData {
       stepsProvider,
       badgeVaultProvider,
       waterGoalProvider,
+      bonusXpProvider,
     ]) {
       _ref.invalidate(p);
     }

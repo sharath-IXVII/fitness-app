@@ -22,6 +22,8 @@ class FriendsFailure implements Exception {
 ///   users/{uid}                      public profile
 ///   users/{uid}/friends/{friendUid}  {since, via: challengeId}
 ///   users/{uid}/blocked/{otherUid}   people this user blocked
+///   users/{uid}/requests/{fromUid}   friend requests waiting for an answer
+///   friendCodes/{code}               {uid}: a code to be found by
 ///   challenges/{id}                  FriendChallenge
 ///   reports/{id}                     {by, about, reason, at}
 class FriendsBackend {
@@ -35,6 +37,11 @@ class FriendsBackend {
   /// codes/{code} → {challengeId, fromUid}. Looked up one at a time, so
   /// open challenges can't be listed by strangers.
   CollectionReference<Map<String, dynamic>> get _codes => _db.collection('codes');
+
+  /// friendCodes/{code} → {uid}. Your code for friend requests.
+  CollectionReference<Map<String, dynamic>> get _friendCodes => _db.collection('friendCodes');
+
+  CollectionReference<Map<String, dynamic>> _requests(String uid) => _users.doc(uid).collection('requests');
 
   // ------------------------------------------------------------- profiles
 
@@ -76,6 +83,67 @@ class FriendsBackend {
         return out;
       });
 
+  // ------------------------------------------------------ friend requests
+
+  /// Your friend code, made the first time it is needed.
+  Future<String> myFriendCode(String uid) async {
+    final mine = await _friendCodes.where('uid', isEqualTo: uid).limit(1).get();
+    if (mine.docs.isNotEmpty) return mine.docs.first.id;
+    var code = newChallengeCode();
+    for (var i = 0; i < 5 && (await _friendCodes.doc(code).get()).exists; i++) {
+      code = newChallengeCode();
+    }
+    await _friendCodes.doc(code).set({'uid': uid});
+    return code;
+  }
+
+  /// Whose code this is, or a friendly reason it can't be used.
+  Future<PublicProfile> findByFriendCode(String typed, {required String me}) async {
+    final code = normalizeCode(typed);
+    if (code.length != 6) throw const FriendsFailure('Friend codes have 6 letters and numbers.');
+    final uid = (await _friendCodes.doc(code).get()).data()?['uid'];
+    if (uid is! String) throw const FriendsFailure('No one has that code. Check it and try again.');
+    if (uid == me) throw const FriendsFailure("That's your own code. Share it with a friend!");
+    final p = await profile(uid);
+    if (p == null) throw const FriendsFailure('No one has that code. Check it and try again.');
+    if (await _blocked(uid, me) || await _blocked(me, uid)) {
+      throw const FriendsFailure("You can't add this person.");
+    }
+    if (await areFriends(me, uid)) throw FriendsFailure('You and ${p.name} are already friends.');
+    return p;
+  }
+
+  /// Asks [to] to be friends. They see it in their inbox and can accept.
+  Future<void> sendRequest(PublicProfile me, PublicProfile to) async {
+    if (await _blocked(to.uid, me.uid)) throw const FriendsFailure("You can't add this person.");
+    await _requests(to.uid).doc(me.uid).set({'name': me.name, 'title': me.title, 'at': FieldValue.serverTimestamp()});
+  }
+
+  /// Requests waiting for [uid]'s answer, newest first.
+  Stream<List<FriendRequest>> incomingRequests(String uid) => _requests(uid).snapshots().map((snap) {
+    final list = [
+      for (final d in snap.docs)
+        FriendRequest.fromJson(d.id, {
+          ...d.data(),
+          'at': d.data()['at'] is Timestamp ? (d.data()['at'] as Timestamp).toDate() : null,
+        }),
+    ]..sort((a, b) => b.at.compareTo(a.at));
+    return list;
+  });
+
+  /// Accepts: both become friends. No XP, since no challenge was done.
+  Future<void> acceptRequest(String me, FriendRequest r) async {
+    if (await _blocked(me, r.fromUid)) throw const FriendsFailure("You can't add this person.");
+    final since = clock.now().millisecondsSinceEpoch;
+    final batch = _db.batch()
+      ..set(_users.doc(me).collection('friends').doc(r.fromUid), {'since': since, 'via': 'request'})
+      ..set(_users.doc(r.fromUid).collection('friends').doc(me), {'since': since, 'via': 'request'})
+      ..delete(_requests(me).doc(r.fromUid));
+    await batch.commit();
+  }
+
+  Future<void> declineRequest(String me, String fromUid) => _requests(me).doc(fromUid).delete();
+
   Future<bool> areFriends(String a, String b) async => (await _users.doc(a).collection('friends').doc(b).get()).exists;
 
   Future<void> removeFriend(String me, String other) async {
@@ -110,6 +178,13 @@ class FriendsBackend {
     }
     for (final b in (await me.collection('blocked').get()).docs) {
       await b.reference.delete();
+    }
+    // Your friend code and any requests waiting for you.
+    for (final c in (await _friendCodes.where('uid', isEqualTo: uid).get()).docs) {
+      await c.reference.delete();
+    }
+    for (final r in (await _requests(uid).get()).docs) {
+      await r.reference.delete();
     }
     // Challenges carry names, so they go too.
     for (final c in await challenges(uid).first) {

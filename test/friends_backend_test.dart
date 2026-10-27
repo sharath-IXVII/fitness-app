@@ -145,4 +145,109 @@ void main() {
     expect(await b.profile('ravi'), isNull);
     expect(await b.areFriends('asha', 'ravi'), isFalse);
   });
+
+  group('friend requests (no XP)', () {
+    test('everyone gets one stable code, and it can be looked up', () async {
+      final code = await b.myFriendCode('asha');
+      expect(code, hasLength(6));
+      expect(await b.myFriendCode('asha'), code);
+      expect(await b.myFriendCode('ravi'), isNot(code));
+      final found = await b.findByFriendCode(' ${code.toLowerCase()} ', me: 'ravi');
+      expect(found.uid, 'asha');
+      expect(found.name, 'Asha');
+    });
+
+    test('bad codes, your own code, blocked people and existing friends get a clear message', () async {
+      final mine = await b.myFriendCode('asha');
+      await expectLater(b.findByFriendCode('ABC', me: 'ravi'), throwsA(isA<FriendsFailure>()));
+      await expectLater(b.findByFriendCode('ZZZZZZ', me: 'ravi'), throwsA(isA<FriendsFailure>()));
+      await expectLater(b.findByFriendCode(mine, me: 'asha'), throwsA(isA<FriendsFailure>()));
+      await b.block('asha', 'ravi');
+      await expectLater(b.findByFriendCode(mine, me: 'ravi'), throwsA(isA<FriendsFailure>()));
+    });
+
+    test('ask, accept, and both are friends; the request is gone', () async {
+      await b.sendRequest(_ravi, _asha);
+      final inbox = await b.incomingRequests('asha').first;
+      expect(inbox.single.fromUid, 'ravi');
+      expect(inbox.single.name, 'Ravi');
+      expect(await b.areFriends('asha', 'ravi'), isFalse);
+
+      await b.acceptRequest('asha', inbox.single);
+      expect(await b.areFriends('asha', 'ravi'), isTrue);
+      expect(await b.areFriends('ravi', 'asha'), isTrue);
+      expect(await b.incomingRequests('asha').first, isEmpty);
+      expect((await b.friends('ravi').first).single.uid, 'asha');
+    });
+
+    test('declining removes it and nobody becomes friends', () async {
+      await b.sendRequest(_ravi, _asha);
+      await b.declineRequest('asha', 'ravi');
+      expect(await b.incomingRequests('asha').first, isEmpty);
+      expect(await b.areFriends('asha', 'ravi'), isFalse);
+    });
+
+    test('someone who blocked you cannot be asked', () async {
+      await b.block('asha', 'ravi');
+      await expectLater(b.sendRequest(_ravi, _asha), throwsA(isA<FriendsFailure>()));
+    });
+
+    test('friends made this way can challenge each other straight away', () async {
+      await b.sendRequest(_ravi, _asha);
+      await b.acceptRequest('asha', (await b.incomingRequests('asha').first).single);
+      final c = await b.createChallenge(
+        from: _asha,
+        exercise: Exercise.squat,
+        reps: 12,
+        arcLabel: 'Winter Arc 2026',
+        to: _ravi,
+      );
+      expect(c.status, ChallengeStatus.accepted);
+    });
+
+    test('deleting your account removes your code and waiting requests', () async {
+      final code = await b.myFriendCode('asha');
+      await b.sendRequest(_ravi, _asha);
+      await b.deleteMe('asha');
+      await expectLater(b.findByFriendCode(code, me: 'meena'), throwsA(isA<FriendsFailure>()));
+      expect(await b.incomingRequests('asha').first, isEmpty);
+    });
+  });
+
+  group('XP for finishing challenges', () {
+    FriendChallenge done(DateTime at, {ChallengeStatus status = ChallengeStatus.done}) => FriendChallenge(
+      id: '${at.microsecondsSinceEpoch}',
+      code: 'AAAAAA',
+      fromUid: 'asha',
+      fromName: 'Asha',
+      exercise: Exercise.pushUp,
+      reps: 10,
+      arcLabel: 'Winter Arc 2026',
+      createdAt: at,
+      status: status,
+    );
+
+    test('50 XP for each finished challenge', () {
+      expect(challengeBonusXp([done(DateTime(2026, 3, 2))]), 50);
+      expect(challengeBonusXp(const []), 0);
+    });
+
+    test('open, taken and declined challenges earn nothing; friend requests earn nothing', () {
+      expect(
+        challengeBonusXp([
+          done(DateTime(2026, 3, 2), status: ChallengeStatus.open),
+          done(DateTime(2026, 3, 3), status: ChallengeStatus.accepted),
+          done(DateTime(2026, 3, 4), status: ChallengeStatus.declined),
+        ]),
+        0,
+      );
+    });
+
+    test('at most 3 count in one week, so it rewards doing them, not making them in bulk', () {
+      final week = [for (var d = 2; d <= 8; d++) done(DateTime(2026, 3, d))]; // Mon 2 Mar to Sun 8 Mar
+      expect(challengeBonusXp(week), 150);
+      final nextWeek = [...week, done(DateTime(2026, 3, 9))];
+      expect(challengeBonusXp(nextWeek), 200);
+    });
+  });
 }

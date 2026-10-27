@@ -86,9 +86,24 @@ final achievementsProvider = Provider<Map<BadgeKey, DateTime>>((ref) {
   };
 });
 
-/// Level from activity XP plus the bonus for every finished badge set.
+/// XP that does not come from the daily logs: finished challenges. The app
+/// shell keeps it current from the challenges list.
+class BonusXp extends Notifier<int> {
+  @override
+  int build() => 0;
+
+  void set(int value) => state = value;
+}
+
+final bonusXpProvider = NotifierProvider<BonusXp, int>(BonusXp.new);
+
+/// Level from activity XP, the bonus for every finished badge set, and XP
+/// from finished challenges.
 final levelProvider = Provider<Level>((ref) {
-  final xp = totalXp(ref.watch(dayScoresProvider)) + setBonusXp(ref.watch(completedSetsProvider));
+  final int xp =
+      totalXp(ref.watch(dayScoresProvider)) +
+      setBonusXp(ref.watch(completedSetsProvider)) +
+      ref.watch(bonusXpProvider);
   return Level.of(xp);
 });
 

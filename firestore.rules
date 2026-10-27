@@ -86,8 +86,29 @@ service cloud.firestore {
         allow read: if me() == uid || me() == fid;
         allow create, update: if (me() == uid || me() == fid)
           && data().keys().hasOnly(['since', 'via'])
-          && challengeDoneBetween(data().via, uid, fid);
+          && (
+            // Finished a challenge together.
+            challengeDoneBetween(data().via, uid, fid)
+            // Or one asked and the other accepted: each side is written by
+            // the person who received the request (before it is deleted).
+            || (data().via == 'request' && data().since is int && !blockedEither(uid, fid)
+                && ((me() == uid && exists(/databases/$(database)/documents/users/$(uid)/requests/$(fid)))
+                    || (me() == fid && exists(/databases/$(database)/documents/users/$(fid)/requests/$(uid)))))
+          );
         allow delete: if me() == uid || me() == fid;
+      }
+
+      // Friend requests land in the inbox of the person asked. Only the
+      // asker writes one (one per asker), never to themselves or to someone
+      // who blocked them. The person asked, and the asker, can read and
+      // remove it.
+      match /requests/{from} {
+        allow create: if me() == from && me() != uid && !blockedEither(from, uid)
+          && data().keys().hasOnly(['name', 'title', 'at'])
+          && shortText(data().name, 40) && optText(data().get('title', null), 60)
+          && data().at == request.time;
+        allow get, delete: if me() == uid || me() == from;
+        allow list: if me() == uid;
       }
 
       // You can see whether someone blocked you, nothing else.
@@ -151,6 +172,16 @@ service cloud.firestore {
 
       // Either side can delete (account deletion).
       allow delete: if signedIn() && isParty();
+    }
+
+    // Friend codes: a short code you can give someone so they can send you a
+    // friend request. Looked up one at a time; you can find your own.
+    match /friendCodes/{code} {
+      allow get: if signedIn();
+      allow list: if signedIn() && resource.data.uid == me();
+      allow create: if signedIn() && code.matches('^[A-HJKMNP-Z2-9]{6}$')
+        && data().keys().hasOnly(['uid']) && data().uid == me();
+      allow delete: if signedIn() && resource.data.uid == me();
     }
 
     // Share codes: looked up one at a time by the person given the code.

@@ -61,12 +61,27 @@ final friendsListProvider = StreamProvider<List<PublicProfile>>((ref) {
   return b.friends(uid);
 });
 
+/// Friend requests waiting for this user.
+final friendRequestsProvider = StreamProvider<List<FriendRequest>>((ref) {
+  final b = ref.watch(friendsBackendProvider), uid = ref.watch(friendsUidProvider);
+  if (b == null || uid == null) return Stream.value(const []);
+  return b.incomingRequests(uid);
+});
+
+/// This user's friend code (made on first use).
+final myFriendCodeProvider = FutureProvider<String?>((ref) async {
+  final b = ref.watch(friendsBackendProvider), uid = ref.watch(friendsUidProvider);
+  if (b == null || uid == null) return null;
+  return b.myFriendCode(uid);
+});
+
 /// Challenges waiting on this user: to do, or to answer.
 final challengesToDoProvider = Provider<int>((ref) {
   final uid = ref.watch(friendsUidProvider);
   if (uid == null) return 0;
   final list = ref.watch(challengesProvider).value ?? const [];
-  return list.where((c) => c.status == ChallengeStatus.accepted && !c.doneBy(uid)).length;
+  final requests = ref.watch(friendRequestsProvider).value?.length ?? 0;
+  return requests + list.where((c) => c.status == ChallengeStatus.accepted && !c.doneBy(uid)).length;
 });
 
 /// One person's public profile, live. Cached per id.

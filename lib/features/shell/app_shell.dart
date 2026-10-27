@@ -193,6 +193,11 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
     ref.listen(trainingProvider.select((t) => t.challenges), (_, _) => _replan());
     ref.listen(todayProvider, (_, _) => _replan());
+    // XP from finished challenges (50 each, up to 3 a week).
+    ref.listen(
+      challengesProvider,
+      (_, next) => ref.read(bonusXpProvider.notifier).set(challengeBonusXp(next.value ?? const [])),
+    );
     // A finished challenge whose friendship didn't get saved (offline, app
     // closed): write it again. Safe to repeat.
     ref.listen(challengesProvider, (_, next) {

@@ -186,6 +186,42 @@ class FriendChallenge {
   );
 }
 
+/// Someone asking to be friends, waiting in your inbox. Accepting makes you
+/// friends; no XP either way (XP comes from finishing a challenge together).
+class FriendRequest {
+  const FriendRequest({required this.fromUid, required this.name, required this.at, this.title});
+
+  final String fromUid;
+  final String name;
+  final String? title;
+  final DateTime at;
+
+  factory FriendRequest.fromJson(String fromUid, Map<String, dynamic> j) => FriendRequest(
+    fromUid: fromUid,
+    name: _str(j['name']) ?? 'Someone',
+    title: _str(j['title']),
+    at: j['at'] is DateTime ? j['at'] as DateTime : DateTime.fromMillisecondsSinceEpoch(_int(j['at']) ?? 0),
+  );
+}
+
+/// XP for finishing a challenge together, and the most that count in one
+/// week, so it rewards doing the challenge, not making them in bulk.
+const challengeXpEach = 50;
+const challengeXpPerWeek = 3;
+
+/// XP earned from finished challenges. Worked out from the challenges
+/// themselves (never stored), like the rest of XP.
+int challengeBonusXp(Iterable<FriendChallenge> all) {
+  final perWeek = <DateTime, int>{};
+  for (final c in all) {
+    if (c.status != ChallengeStatus.done) continue;
+    final d = c.createdAt;
+    final monday = DateTime(d.year, d.month, d.day).subtract(Duration(days: d.weekday - 1));
+    perWeek[monday] = (perWeek[monday] ?? 0) + 1;
+  }
+  return perWeek.values.fold<int>(0, (a, n) => a + (n < challengeXpPerWeek ? n : challengeXpPerWeek) * challengeXpEach);
+}
+
 /// Exercises a challenge can use: ones the camera can count, so nobody can
 /// just claim they did it.
 const challengeExercises = [

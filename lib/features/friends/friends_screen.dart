@@ -74,6 +74,9 @@ class FriendsScreen extends ConsumerWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 18),
+            const _FriendRequests(),
+            const _AddFriendsCard(),
             const SizedBox(height: 24),
             Text('Challenges', style: text.titleLarge),
             const SizedBox(height: 10),
@@ -91,7 +94,7 @@ class FriendsScreen extends ConsumerWidget {
                     .toList();
                 if (shown.isEmpty) {
                   return Text(
-                    'No challenges yet. Tap Challenge, pick an exercise and send the code to a friend.',
+                    'No challenges yet. Tap Challenge, pick an exercise and send the code to a friend. Finish it together and you both earn 50 XP.',
                     style: text.bodyMedium?.copyWith(color: AppColors.textSecondary),
                   );
                 }
@@ -106,7 +109,7 @@ class FriendsScreen extends ConsumerWidget {
             Text('Leaderboard', style: text.titleLarge),
             const SizedBox(height: 4),
             Text(
-              friends.isEmpty ? 'Finish a challenge together and your friend appears here.' : 'Ranked by XP',
+              friends.isEmpty ? 'Add a friend with a code, or finish a challenge together, and they appear here.' : 'Ranked by XP',
               style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 10),
@@ -141,7 +144,7 @@ class FriendsScreen extends ConsumerWidget {
               if (c.fromTitle != null) ...[_TitleChip(title: c.fromTitle!), const SizedBox(height: 12)],
               Text('${c.task[0].toUpperCase()}${c.task.substring(1)} for the ${c.arcLabel}.'),
               const SizedBox(height: 8),
-              const Text('The camera counts your reps. Finish it and you both become friends.'),
+              const Text('The camera counts your reps. Finish it and you both become friends and earn 50 XP.'),
             ],
           ),
           actions: [
@@ -245,7 +248,8 @@ class _ChallengeSheetState extends ConsumerState<_ChallengeSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'For the ${arc.label}. The camera counts every rep, so no cheating!',
+              'For the ${arc.label}. The camera counts every rep, so no cheating! You can both do it at the same '
+              'time, or each when you are free. Finish it and you both earn 50 XP.',
               style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 14),
@@ -295,7 +299,10 @@ class _ChallengeSheetState extends ConsumerState<_ChallengeSheet> {
 }
 
 class _CodeDialog extends StatefulWidget {
-  const _CodeDialog();
+  const _CodeDialog({this.title = 'Enter challenge code', this.action = 'Find'});
+
+  final String title;
+  final String action;
 
   @override
   State<_CodeDialog> createState() => _CodeDialogState();
@@ -312,7 +319,7 @@ class _CodeDialogState extends State<_CodeDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-    title: const Text('Enter challenge code'),
+    title: Text(widget.title),
     content: TextField(
       controller: _c,
       autofocus: true,
@@ -323,9 +330,199 @@ class _CodeDialogState extends State<_CodeDialog> {
     ),
     actions: [
       TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-      FilledButton(onPressed: () => Navigator.pop(context, _c.text), child: const Text('Find')),
+      FilledButton(onPressed: () => Navigator.pop(context, _c.text), child: Text(widget.action)),
     ],
   );
+}
+
+/// Your friend code, and a way to enter a friend's. Friends added this way
+/// don't earn XP; finishing a challenge together does.
+class _AddFriendsCard extends ConsumerWidget {
+  const _AddFriendsCard();
+
+  Future<void> _enter(BuildContext context, WidgetRef ref) async {
+    final typed = await showDialog<String>(
+      context: context,
+      builder: (_) => const _CodeDialog(title: "Enter a friend's code", action: 'Find'),
+    );
+    if (typed == null || !context.mounted) return;
+    final b = ref.read(friendsBackendProvider)!, me = ref.read(myPublicProfileProvider)!;
+    try {
+      final found = await b.findByFriendCode(typed, me: me.uid);
+      if (!context.mounted) return;
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (d) => AlertDialog(
+          title: Text('Add ${found.name}?'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (found.title != null) ...[_TitleChip(title: found.title!), const SizedBox(height: 12)],
+              Text('Level ${found.level} · ${found.streak}-day streak'),
+              const SizedBox(height: 8),
+              const Text('They get a request and become your friend when they accept.'),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(d, false), child: const Text('Cancel')),
+            FilledButton(onPressed: () => Navigator.pop(d, true), child: const Text('Send request')),
+          ],
+        ),
+      );
+      if (ok != true) return;
+      await b.sendRequest(me, found);
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Request sent to ${found.name}')));
+      }
+    } on FriendsFailure catch (e) {
+      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(const SnackBar(content: Text("Couldn't reach Friends. Check your internet and try again.")));
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final text = Theme.of(context).textTheme;
+    final code = ref.watch(myFriendCodeProvider);
+    return GlassCard(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Add friends', style: text.titleMedium),
+          const SizedBox(height: 2),
+          Text(
+            'Share your code, or enter a friend\'s. Friends added this way earn no XP. Finish a challenge '
+            'together and you both earn 50 XP.',
+            style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(14)),
+                  child: code.when(
+                    loading: () => Text('…', style: text.titleLarge),
+                    error: (_, _) => Text('Unavailable', style: text.bodyMedium),
+                    data: (c) => Text(
+                      c ?? '',
+                      style: text.titleLarge?.copyWith(letterSpacing: 4, color: AppColors.primary),
+                    ),
+                  ),
+                ),
+              ),
+              IconButton(
+                tooltip: 'Copy my code',
+                onPressed: code.value == null
+                    ? null
+                    : () {
+                        Clipboard.setData(ClipboardData(text: code.value!));
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Code copied')));
+                      },
+                icon: const Icon(Icons.copy_rounded),
+              ),
+              IconButton(
+                tooltip: 'Share my code',
+                onPressed: code.value == null
+                    ? null
+                    : () => SharePlus.instance.share(
+                        ShareParams(
+                          text: 'Add me on ${AppInfo.name}! My friend code is ${code.value}. ${AppInfo.storeUrl}',
+                        ),
+                      ),
+                icon: const Icon(Icons.share_rounded),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            onPressed: () => _enter(context, ref),
+            icon: const Icon(Icons.person_add_alt_1_rounded),
+            label: const Text("Enter a friend's code"),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Friend requests waiting for an answer.
+class _FriendRequests extends ConsumerWidget {
+  const _FriendRequests();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final list = ref.watch(friendRequestsProvider).value ?? const <FriendRequest>[];
+    if (list.isEmpty) return const SizedBox.shrink();
+    final text = Theme.of(context).textTheme;
+    final b = ref.read(friendsBackendProvider)!, me = ref.read(myPublicProfileProvider)!;
+
+    Future<void> run(Future<void> Function() job, String done) async {
+      try {
+        await job();
+        if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(done)));
+      } on FriendsFailure catch (e) {
+        if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
+      } catch (_) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Couldn't do that. Check your internet.")));
+        }
+      }
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: GlassCard(
+        glow: AppColors.energy,
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Friend requests', style: text.titleMedium),
+            const SizedBox(height: 8),
+            for (final r in list)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: AppColors.primarySoft,
+                      child: Text(r.name.isEmpty ? '?' : r.name[0].toUpperCase(), style: TextStyle(color: AppColors.primary)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(r.name, style: text.titleSmall),
+                          Text(r.title ?? 'Wants to be friends', style: text.bodySmall),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Decline',
+                      onPressed: () => run(() => b.declineRequest(me.uid, r.fromUid), 'Request removed'),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                    FilledButton(
+                      onPressed: () => run(() => b.acceptRequest(me.uid, r), 'You and ${r.name} are friends'),
+                      child: const Text('Accept'),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _Unavailable extends StatelessWidget {
@@ -460,7 +657,7 @@ class _ChallengeCard extends StatelessWidget {
     final other = c.otherName(me.uid);
     final iDid = c.doneBy(me.uid);
     final (status, color) = switch (c.status) {
-      ChallengeStatus.done => ('Done together · friends ✓', AppColors.primary),
+      ChallengeStatus.done => ('Done together · friends ✓ · +50 XP', AppColors.primary),
       ChallengeStatus.declined => ('Declined', AppColors.textMuted),
       ChallengeStatus.open => ('Waiting for someone to join · code ${c.code} · ${_timeLeft(c)}', AppColors.amber),
       ChallengeStatus.accepted when !iDid => ('Your turn!', AppColors.energy),

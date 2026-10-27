@@ -1,5 +1,6 @@
 // Security-rule tests for Friends, run against the Firestore emulator:
 //   cd firebase-tests && npm install && npm test
+import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, test } from 'node:test';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
@@ -179,4 +180,95 @@ test('progress backup: the state document', async () => {
   await assertFails(setDoc(doc(a, 'users/asha/backup/state'), state({ badges: 'all of them' })));
   await assertFails(setDoc(doc(a, 'users/asha/backup/state'), state({ updatedAt: 5 })));
   await assertSucceeds(deleteDoc(doc(a, 'users/asha/backup/state')));
+});
+
+// ---------------------------------------------------------- friend requests
+
+const FR = ['asha', 'ravi', 'meena'];
+const request = (over = {}) => ({ name: 'Asha', title: null, at: serverTimestamp(), ...over });
+
+test('friend codes: yours to create and delete, anyone can look one up, nobody can list them all', async () => {
+  const a = as('asha');
+  await assertSucceeds(setDoc(doc(a, 'friendCodes/K7Q2MX'), { uid: 'asha' }));
+  await assertFails(setDoc(doc(as('ravi'), 'friendCodes/ABCDEF'), { uid: 'asha' })); // not their own
+  await assertFails(setDoc(doc(a, 'friendCodes/abc'), { uid: 'asha' })); // wrong shape
+  await assertFails(setDoc(doc(a, 'friendCodes/K7Q2M0'), { uid: 'asha' })); // 0 is not in the alphabet
+  await assertFails(setDoc(doc(a, 'friendCodes/ZZZZZZ'), { uid: 'asha', extra: 1 }));
+  await assertSucceeds(getDoc(doc(as('ravi'), 'friendCodes/K7Q2MX')));
+  await assertFails(getDoc(doc(anon(), 'friendCodes/K7Q2MX')));
+  await assertFails(getDocs(collection(as('ravi'), 'friendCodes')));
+  await assertSucceeds(getDocs(query(collection(a, 'friendCodes'), where('uid', '==', 'asha'))));
+  await assertFails(getDocs(query(collection(as('ravi'), 'friendCodes'), where('uid', '==', 'asha'))));
+  await assertFails(deleteDoc(doc(as('ravi'), 'friendCodes/K7Q2MX')));
+  await assertSucceeds(deleteDoc(doc(a, 'friendCodes/K7Q2MX')));
+});
+
+test('friend requests: only the asker sends one, only the two people can see it', async () => {
+  const a = as('asha');
+  await assertSucceeds(setDoc(doc(a, 'users/ravi/requests/asha'), request()));
+  await assertFails(setDoc(doc(as('meena'), 'users/ravi/requests/asha'), request())); // pretending to be asha
+  await assertFails(setDoc(doc(a, 'users/asha/requests/asha'), request())); // yourself
+  await assertFails(setDoc(doc(a, 'users/meena/requests/asha'), request({ name: 'x'.repeat(41) })));
+  await assertFails(setDoc(doc(a, 'users/meena/requests/asha'), request({ extra: true })));
+  await assertFails(setDoc(doc(anon(), 'users/meena/requests/asha'), request()));
+  await assertSucceeds(getDoc(doc(as('ravi'), 'users/ravi/requests/asha')));
+  await assertSucceeds(getDocs(collection(as('ravi'), 'users/ravi/requests')));
+  await assertSucceeds(getDoc(doc(a, 'users/ravi/requests/asha'))); // the asker can see their own
+  await assertFails(getDoc(doc(as('meena'), 'users/ravi/requests/asha')));
+  await assertFails(getDocs(collection(as('meena'), 'users/ravi/requests')));
+  await assertFails(getDocs(collection(a, 'users/ravi/requests'))); // the asker cannot read the whole inbox
+});
+
+test('friend requests: a person who blocked you cannot be asked', async () => {
+  await asAdmin((db) => setDoc(doc(db, 'users/ravi/blocked/asha'), { at: 1 }));
+  await assertFails(setDoc(doc(as('asha'), 'users/ravi/requests/asha'), request()));
+  await asAdmin((db) => setDoc(doc(db, 'users/asha/blocked/meena'), { at: 1 }));
+  await assertFails(setDoc(doc(as('meena'), 'users/asha/requests/meena'), request()));
+});
+
+test('accepting a request makes both people friends, with no challenge needed', async () => {
+  await assertSucceeds(setDoc(doc(as('asha'), 'users/ravi/requests/asha'), request()));
+  const r = as('ravi');
+  const b = writeBatch(r);
+  b.set(doc(r, 'users/ravi/friends/asha'), { since: 5, via: 'request' });
+  b.set(doc(r, 'users/asha/friends/ravi'), { since: 5, via: 'request' });
+  b.delete(doc(r, 'users/ravi/requests/asha'));
+  await assertSucceeds(b.commit());
+  await assertSucceeds(getDoc(doc(as('asha'), 'users/asha/friends/ravi')));
+  await assertSucceeds(getDoc(doc(r, 'users/ravi/friends/asha')));
+  const gone = await getDoc(doc(r, 'users/ravi/requests/asha'));
+  assert.equal(gone.exists(), false);
+});
+
+test('nobody can make friends without a real request, or by writing for the other person', async () => {
+  // No request at all.
+  const r = as('ravi');
+  const b0 = writeBatch(r);
+  b0.set(doc(r, 'users/ravi/friends/asha'), { since: 5, via: 'request' });
+  b0.set(doc(r, 'users/asha/friends/ravi'), { since: 5, via: 'request' });
+  await assertFails(b0.commit());
+  // The asker cannot accept their own request.
+  await assertSucceeds(setDoc(doc(as('asha'), 'users/ravi/requests/asha'), request()));
+  const a = as('asha');
+  const b1 = writeBatch(a);
+  b1.set(doc(a, 'users/asha/friends/ravi'), { since: 5, via: 'request' });
+  b1.set(doc(a, 'users/ravi/friends/asha'), { since: 5, via: 'request' });
+  await assertFails(b1.commit());
+  // A third person cannot add anyone.
+  const m = as('meena');
+  await assertFails(setDoc(doc(m, 'users/ravi/friends/asha'), { since: 5, via: 'request' }));
+  // Extra fields or a made-up reason are refused.
+  await assertFails(setDoc(doc(r, 'users/ravi/friends/asha'), { since: 5, via: 'request', xp: 9 }));
+  await assertFails(setDoc(doc(r, 'users/ravi/friends/asha'), { since: 5, via: 'whatever' }));
+  // A blocked asker cannot be befriended even with a leftover request.
+  await asAdmin((db) => setDoc(doc(db, 'users/ravi/blocked/asha'), { at: 1 }));
+  await assertFails(setDoc(doc(r, 'users/ravi/friends/asha'), { since: 5, via: 'request' }));
+});
+
+test('declining or cancelling a request just removes it', async () => {
+  await assertSucceeds(setDoc(doc(as('asha'), 'users/ravi/requests/asha'), request()));
+  await assertFails(deleteDoc(doc(as('meena'), 'users/ravi/requests/asha')));
+  await assertSucceeds(deleteDoc(doc(as('ravi'), 'users/ravi/requests/asha'))); // decline
+  await assertSucceeds(setDoc(doc(as('asha'), 'users/ravi/requests/asha'), request()));
+  await assertSucceeds(deleteDoc(doc(as('asha'), 'users/ravi/requests/asha'))); // cancel
 });

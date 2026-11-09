@@ -67,7 +67,10 @@ void main() {
       await _tap(t, 'Continue');
       await _tap(t, 'Beginner');
       await _tap(t, 'Continue');
-      await _tap(t, 'Build my plan');
+      await _tap(t, 'Continue');
+      // The watch step can be skipped.
+      expect(find.text('Got a smartwatch?'), findsOneWidget);
+      await _tap(t, 'Skip for now');
       expect(find.textContaining('Your plan is ready'), findsOneWidget);
 
       await _tap(t, "Let's go");

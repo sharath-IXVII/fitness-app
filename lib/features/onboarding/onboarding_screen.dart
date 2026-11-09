@@ -13,6 +13,8 @@ import '../../core/widgets/gradient_button.dart';
 import '../../core/widgets/pressable.dart';
 import '../alarm/alarm_providers.dart';
 import '../auth/auth_providers.dart';
+import '../health/domain/body.dart';
+import '../health/watch_data.dart';
 import '../profile/domain/health_targets.dart';
 import '../profile/domain/user_profile.dart';
 import '../profile/profile_providers.dart';
@@ -44,7 +46,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   TimeOfDay _wake = const TimeOfDay(hour: 6, minute: 0);
   TimeOfDay _sleep = const TimeOfDay(hour: 22, minute: 30);
 
-  static const _stepCount = 11;
+  static const _stepCount = 12;
+
+  /// Whether a watch (Health Connect) was connected on the watch step.
+  bool _watchOn = false;
+  bool _watchBusy = false;
 
   @override
   void dispose() {
@@ -120,6 +126,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     _dietStep(),
                     _levelStep(),
                     _timesStep(),
+                    _watchStep(),
                     _summaryStep(),
                   ],
                 ),
@@ -129,7 +136,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 child: GradientButton(
                   label: switch (_page) {
                     0 => 'Get started',
-                    9 => 'Build my plan',
+                    9 => 'Continue',
+                    10 => _watchOn ? 'Build my plan' : 'Skip for now',
                     _ when last => "Let's go",
                     _ => 'Continue',
                   },
@@ -357,9 +365,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _weightStep() => _step(
     title: "What's your weight?",
     subtitle: 'Only you can see this.',
-    child: Padding(
-      padding: const EdgeInsets.only(top: 40),
-      child: RulerPicker(
+    child: Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(top: 40),
+          child: RulerPicker(
         min: 30,
         max: 180,
         step: 0.5,
@@ -369,8 +379,76 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         color: AppColors.water,
         onChanged: (v) => setState(() => _weight = v),
       ),
+        ),
+        _healthyHint(),
+      ],
     ),
   );
+
+  /// Invites the user to connect a watch through Health Connect, with Skip.
+  Future<void> _connectWatch() async {
+    setState(() => _watchBusy = true);
+    final w = ref.read(watchDataProvider);
+    var ok = false;
+    try {
+      final st = await w.status();
+      if (st == WatchStatus.needsInstall) {
+        await w.install();
+      } else if (st != WatchStatus.unavailable) {
+        ok = st == WatchStatus.ready || await w.requestAccess();
+      }
+    } catch (_) {}
+    if (!mounted) return;
+    setState(() {
+      _watchBusy = false;
+      _watchOn = ok;
+    });
+  }
+
+  Widget _watchStep() {
+    final text = Theme.of(context).textTheme;
+    return _step(
+      title: 'Got a smartwatch?',
+      subtitle: 'Connect it to see your steps, heart rate and sleep in FittArc. You can do this later too.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Icon(Icons.watch_rounded, size: 84, color: _watchOn ? AppColors.primary : AppColors.textMuted),
+          const SizedBox(height: 18),
+          if (_watchOn)
+            Text('Connected ✓', textAlign: TextAlign.center, style: text.titleLarge?.copyWith(color: AppColors.primary))
+          else
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(56)),
+              onPressed: _watchBusy ? null : _connectWatch,
+              icon: const Icon(Icons.link_rounded),
+              label: const Text('Connect my watch'),
+            ),
+          const SizedBox(height: 14),
+          Text(
+            'Works with watches that share data through Health Connect (Samsung, Fitbit, Noise, boAt, Amazfit '
+            'and more, through their own app). Live heart rate also works with Bluetooth straps on the Watch page.',
+            style: text.bodySmall,
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Healthy weight for the height chosen, under the weight ruler.
+  Widget _healthyHint() {
+    if (_age < 18) return const SizedBox.shrink();
+    final r = healthyWeightRange(_height);
+    return Padding(
+      padding: const EdgeInsets.only(top: 24),
+      child: Text(
+        'Healthy weight for ${_height.round()} cm: ${r.min.round()}–${r.max.round()} kg',
+        textAlign: TextAlign.center,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(color: AppColors.textSecondary),
+      ),
+    );
+  }
 
   Widget _options<T>(List<(T, String, String, IconData, Color)> items, T? selected, ValueChanged<T> onPick) => Column(
     children: [

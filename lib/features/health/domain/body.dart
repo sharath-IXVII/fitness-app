@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 /// Body mass index from height and weight, and what it means. A rough guide:
 /// it does not see muscle, and it is only for adults.
 double bmi(double kg, double cm) => kg / ((cm / 100) * (cm / 100));
@@ -61,3 +63,38 @@ BmiRating rateBmi(double value, {required int age}) {
 /// Allowed values when typing.
 const heightRangeCm = (100.0, 230.0);
 const weightRangeKg = (20.0, 300.0);
+
+/// Body fat estimated from a tape measure (the U.S. Navy method): waist and
+/// neck, plus hips for women. Usually within 3 to 4 percentage points of a
+/// lab scan. Returns null for impossible measurements.
+double? navyBodyFat({
+  required bool female,
+  required double heightCm,
+  required double waistCm,
+  required double neckCm,
+  double? hipCm,
+}) {
+  double log10(double v) => math.log(v) / math.ln10;
+  if (female) {
+    if (hipCm == null || waistCm + hipCm - neckCm <= 0) return null;
+    final v = 495 / (1.29579 - 0.35004 * log10(waistCm + hipCm - neckCm) + 0.22100 * log10(heightCm)) - 450;
+    return v.isFinite && v > 2 && v < 60 ? v : null;
+  }
+  if (waistCm - neckCm <= 0) return null;
+  final v = 495 / (1.0324 - 0.19077 * log10(waistCm - neckCm) + 0.15456 * log10(heightCm)) - 450;
+  return v.isFinite && v > 2 && v < 60 ? v : null;
+}
+
+/// What a body-fat percentage means (American Council on Exercise bands),
+/// in plain wellness words.
+String bodyFatBand(double pct, {required bool female}) {
+  final b = female ? const [14, 21, 25, 32] : const [6, 14, 18, 25];
+  if (pct < b[0]) return 'Very lean';
+  if (pct < b[1]) return 'Athletic';
+  if (pct < b[2]) return 'Fit';
+  if (pct < b[3]) return 'Average';
+  return 'Above average';
+}
+
+/// Waist divided by height. Under 0.5 is a healthy sign for most adults.
+double waistToHeight(double waistCm, double heightCm) => waistCm / heightCm;

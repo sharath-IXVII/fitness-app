@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/storage.dart';
 import '../arcs/arc_providers.dart';
 import '../auth/auth_providers.dart';
 import '../auth/auth_service.dart';
@@ -104,3 +107,47 @@ final inviteesProvider = StreamProvider<List<String>>((ref) {
   if (b == null || uid == null) return Stream.value(const []);
   return b.invitees(uid);
 });
+
+/// What a friend is to you: kept on this phone only, never shared.
+enum FriendTag {
+  gym('Gym partner', '🏋️'),
+  walking('Walking partner', '🚶'),
+  running('Running partner', '🏃'),
+  cycling('Cycling partner', '🚴'),
+  yoga('Yoga partner', '🧘'),
+  diet('Diet buddy', '🥗'),
+  family('Family', '🏠');
+
+  const FriendTag(this.label, this.emoji);
+
+  final String label;
+  final String emoji;
+}
+
+class FriendTagsNotifier extends Notifier<Map<String, FriendTag>> {
+  static const key = 'friends.tags.v1';
+
+  @override
+  Map<String, FriendTag> build() {
+    try {
+      final j = jsonDecode(ref.read(sharedPrefsProvider).getString(key) ?? '{}') as Map<String, dynamic>;
+      final tags = FriendTag.values.asNameMap();
+      return {
+        for (final e in j.entries)
+          if (tags.containsKey(e.value)) e.key: tags[e.value]!,
+      };
+    } catch (_) {
+      return const {};
+    }
+  }
+
+  Future<void> set(String uid, FriendTag? tag) async {
+    state = {...state}..remove(uid);
+    if (tag != null) state = {...state, uid: tag};
+    await ref
+        .read(sharedPrefsProvider)
+        .setString(key, jsonEncode({for (final e in state.entries) e.key: e.value.name}));
+  }
+}
+
+final friendTagsProvider = NotifierProvider<FriendTagsNotifier, Map<String, FriendTag>>(FriendTagsNotifier.new);

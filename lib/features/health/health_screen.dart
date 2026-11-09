@@ -17,6 +17,7 @@ import '../profile/profile_providers.dart';
 import 'domain/body.dart';
 import 'domain/health.dart';
 import 'health_providers.dart';
+import 'widgets/body_check_sheet.dart';
 import 'widgets/health_widgets.dart';
 
 /// Health: the camera heart-rate estimate, a watch, height, weight and BMI,
@@ -285,6 +286,13 @@ class _BodyCard extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           Text(rating.advice, style: text.bodySmall),
+          const SizedBox(height: 10),
+          OutlinedButton.icon(
+            style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46)),
+            onPressed: () => SheetFrame.show<void>(context, const BodyCheckSheet()),
+            icon: const Icon(Icons.accessibility_new_rounded),
+            label: const Text('Body check: body fat and healthy weight'),
+          ),
           if (trend.length >= 2) ...[
             const SizedBox(height: 10),
             SizedBox(

@@ -754,7 +754,7 @@ class _ChallengeCard extends StatelessWidget {
   }
 }
 
-class _BoardRow extends StatelessWidget {
+class _BoardRow extends ConsumerWidget {
   const _BoardRow({required this.rank, required this.profile, required this.isMe, this.onTap});
 
   final int rank;
@@ -763,7 +763,8 @@ class _BoardRow extends StatelessWidget {
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tag = isMe ? null : ref.watch(friendTagsProvider)[profile.uid];
     final text = Theme.of(context).textTheme;
     return Pressable(
       onTap: onTap,
@@ -794,6 +795,8 @@ class _BoardRow extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(isMe ? '${profile.name} (you)' : profile.name, style: text.titleSmall),
+                  if (tag != null)
+                    Text('${tag.emoji} ${tag.label}', style: text.labelSmall?.copyWith(color: AppColors.primary)),
                   Text(
                     profile.title ?? 'Level ${profile.level}',
                     style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
@@ -905,6 +908,24 @@ class FriendProfileScreen extends ConsumerWidget {
                       const SizedBox(height: 12),
                       Center(child: Text(p.name, style: text.headlineSmall)),
                       if (p.title != null) Center(child: _TitleChip(title: p.title!)),
+                      const SizedBox(height: 10),
+                      Center(
+                        child: PopupMenuButton<FriendTag?>(
+                          tooltip: 'Tag this friend',
+                          onSelected: (t) => ref.read(friendTagsProvider.notifier).set(uid, t),
+                          itemBuilder: (_) => [
+                            for (final t in FriendTag.values) PopupMenuItem(value: t, child: Text('${t.emoji} ${t.label}')),
+                            const PopupMenuItem(value: null, child: Text('No tag')),
+                          ],
+                          child: Chip(
+                            avatar: const Icon(Icons.label_outline_rounded, size: 18),
+                            label: Text(switch (ref.watch(friendTagsProvider)[uid]) {
+                              final t? => '${t.emoji} ${t.label}',
+                              null => 'Tag: gym, walking, running partner…',
+                            }),
+                          ),
+                        ),
+                      ),
                       const SizedBox(height: 18),
                       GlassCard(
                         padding: const EdgeInsets.symmetric(vertical: 14),

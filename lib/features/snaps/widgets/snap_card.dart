@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/theme/app_colors.dart';
+
 import '../domain/food_snap.dart';
 
 /// The shareable food snap, in story shape (9:16): the plate with each dish
@@ -14,10 +16,11 @@ class SnapCard extends StatelessWidget {
   final FoodSnap snap;
   final ImageProvider? photo;
 
-  static const _bg = Color(0xFF1B1714);
-  static const _glow = Color(0xFFFFB547);
-  static const _ink = Color(0xFFF7EFE6);
-  static const _muted = Color(0xFFB9AA9A);
+  // The app's own seasonal colours, so a snap looks like FittArc.
+  static Color get _bg => AppColors.background;
+  static Color get _glow => AppColors.primary;
+  static Color get _ink => AppColors.textPrimary;
+  static Color get _muted => AppColors.textSecondary;
 
   @override
   Widget build(BuildContext context) {
@@ -25,8 +28,8 @@ class SnapCard extends StatelessWidget {
     final total = snap.total;
     TextStyle sport(double size, [FontWeight w = FontWeight.w700]) =>
         GoogleFonts.chakraPetch(fontSize: size, fontWeight: w, color: _ink, height: 1.1);
-    TextStyle body(double size, [Color c = _ink, FontWeight w = FontWeight.w500]) =>
-        GoogleFonts.inter(fontSize: size, fontWeight: w, color: c, height: 1.2);
+    TextStyle body(double size, [Color? c, FontWeight w = FontWeight.w500]) =>
+        GoogleFonts.inter(fontSize: size, fontWeight: w, color: c ?? _ink, height: 1.2);
 
     // Material gives the text its normal style when the card is drawn
     // outside a page (for the saved picture).
@@ -35,11 +38,11 @@ class SnapCard extends StatelessWidget {
       child: SizedBox.fromSize(
         size: size,
         child: DecoratedBox(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xFF2A221C), _bg, Color(0xFF120F0D)],
+              colors: [AppColors.surface, _bg],
             ),
           ),
           child: Padding(
@@ -62,7 +65,7 @@ class SnapCard extends StatelessWidget {
                             if (photo != null)
                               Image(image: photo!, fit: BoxFit.cover, gaplessPlayback: true)
                             else
-                              const ColoredBox(color: Color(0xFF3A2F27)),
+                              ColoredBox(color: AppColors.surfaceHigh),
                             for (final (i, item) in items.indexed) ..._mark(item, i, side, body),
                             // The only branding: a soft FittArc wordmark inside the photo.
                             Positioned(
@@ -86,7 +89,7 @@ class SnapCard extends StatelessWidget {
                 const SizedBox(height: 12),
                 Row(
                   children: [
-                    const Icon(Icons.bar_chart_rounded, color: _glow, size: 16),
+                    Icon(Icons.bar_chart_rounded, color: _glow, size: 16),
                     const SizedBox(width: 6),
                     Text('Detected foods', style: body(13, _ink, FontWeight.w700)),
                     const SizedBox(width: 4),
@@ -110,11 +113,11 @@ class SnapCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(color: _glow.withValues(alpha: 0.8), width: 1.4),
-                    color: _glow.withValues(alpha: 0.08),
+                    color: AppColors.primarySoft,
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.local_fire_department_rounded, color: _glow, size: 22),
+                      Icon(Icons.local_fire_department_rounded, color: _glow, size: 22),
                       const SizedBox(width: 6),
                       Expanded(flex: 3, child: Text('≈ ${total.kcal.round()} kcal', style: sport(18))),
                       _total('Protein', _g(total.protein), body),
@@ -135,11 +138,14 @@ class SnapCard extends StatelessWidget {
 
   /// A glowing frame and a name tag where the dish is; dishes seen only in
   /// the whole photo get a tag in the corner instead.
-  List<Widget> _mark(SnapItem item, int i, double side, TextStyle Function(double, [Color, FontWeight]) body) {
+  List<Widget> _mark(SnapItem item, int i, double side, TextStyle Function(double, [Color?, FontWeight]) body) {
     final tag = Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: const Color(0xF2FFF6EA), borderRadius: BorderRadius.circular(20)),
-      child: Text(item.name, style: body(10, const Color(0xFF2A221C), FontWeight.w700)),
+      decoration: BoxDecoration(
+        color: AppColors.surface.withValues(alpha: 0.94),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(item.name, style: body(10, AppColors.textPrimary, FontWeight.w700)),
     );
     final b = item.box;
     if (b == null) {
@@ -159,7 +165,7 @@ class SnapCard extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFFFE27A), width: 2.2),
+            border: Border.all(color: AppColors.primary, width: 2.2),
           ),
         ),
       ),
@@ -186,7 +192,7 @@ class SnapCard extends StatelessWidget {
     ),
   );
 
-  static Widget _total(String label, String value, TextStyle Function(double, [Color, FontWeight]) body) => Expanded(
+  static Widget _total(String label, String value, TextStyle Function(double, [Color?, FontWeight]) body) => Expanded(
     flex: 2,
     child: Column(
       children: [

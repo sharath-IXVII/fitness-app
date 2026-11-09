@@ -174,15 +174,16 @@ class _MyClubTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final club = ref.watch(clubProvider(id)).value;
     if (club == null) return const SizedBox.shrink();
-    return _ClubTile(club: club, member: true);
+    return _ClubTile(club: club, member: true, unread: ref.watch(clubUnreadProvider(id)));
   }
 }
 
 class _ClubTile extends StatelessWidget {
-  const _ClubTile({required this.club, this.member = false});
+  const _ClubTile({required this.club, this.member = false, this.unread = 0});
 
   final Club club;
   final bool member;
+  final int unread;
 
   @override
   Widget build(BuildContext context) {
@@ -216,10 +217,21 @@ class _ClubTile extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(
-                member ? Icons.chat_bubble_outline_rounded : Icons.chevron_right_rounded,
-                color: AppColors.textMuted,
-              ),
+              if (unread > 0)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
+                  decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(12)),
+                  child: Text(
+                    unread > 99 ? '99+' : '$unread',
+                    semanticsLabel: '$unread new messages',
+                    style: text.labelMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w700),
+                  ),
+                )
+              else
+                Icon(
+                  member ? Icons.chat_bubble_outline_rounded : Icons.chevron_right_rounded,
+                  color: AppColors.textMuted,
+                ),
             ],
           ),
         ),

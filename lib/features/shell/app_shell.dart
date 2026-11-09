@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../clubs/clubs_providers.dart';
 import '../../core/cloud_backup.dart';
 import '../../core/reminders.dart';
 import '../../core/router.dart';
@@ -194,6 +195,8 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
     ref.listen(trainingProvider.select((t) => t.challenges), (_, _) => _replan());
     ref.listen(todayProvider, (_, _) => _replan());
+    // Club challenge reminders on this phone (no server needed).
+    ref.watch(clubReminderPlannerProvider);
     // XP from finished challenges (50 each, up to 3 a week).
     ref.listen(
       challengesProvider,

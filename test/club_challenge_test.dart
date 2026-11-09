@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:fitalarm/features/clubs/challenge_screens.dart' show countdown;
 import 'package:fitalarm/features/clubs/clubs_backend.dart';
+import 'package:fitalarm/features/clubs/clubs_providers.dart' show clubReminderItems;
 import 'package:fitalarm/features/clubs/domain/club.dart';
 import 'package:fitalarm/features/clubs/domain/club_challenge.dart';
 import 'package:fitalarm/features/clubs/map_picker_screen.dart' show routeLength;
@@ -110,6 +111,21 @@ void main() {
       final secs = t.reachedAt(1000)!.difference(t.firstAt!).inMilliseconds / 1000;
       expect(secs, closeTo(1000 / 3, 1000 / 3 * 0.015)); // 1 km at 3 m/s
     });
+  });
+
+  test('challenge reminders: 15 minutes before and at the start, for the coming week only', () {
+    final now = DateTime(2026, 11, 9, 20);
+    final items = clubReminderItems({
+      'Lake Runners': [
+        _ch('Sunrise 5K', DateTime(2026, 11, 10, 6), place: 'Lake gate'),
+        _ch('Old run', DateTime(2026, 11, 8, 6)),
+        _ch('Far away', DateTime(2026, 11, 30, 6)),
+      ],
+    }, now);
+    expect(items.map((i) => i.$1), [DateTime(2026, 11, 10, 5, 45), DateTime(2026, 11, 10, 6)]);
+    expect(items.first.$2, 'Sunrise 5K starts in 15 minutes');
+    expect(items.first.$3, contains('Lake gate'));
+    expect(items.last.$2, contains('has started'));
   });
 
   test('countdown text', () {
@@ -251,3 +267,14 @@ List<GpsFix> noisyRoute(
   }
   return (pts, total);
 }
+
+ClubChallenge _ch(String title, DateTime start, {String place = ''}) => ClubChallenge(
+  id: title,
+  clubId: 'c',
+  title: title,
+  kind: ActivityKind.run,
+  distanceM: 5000,
+  startsAt: start,
+  endsAt: start.add(const Duration(hours: 2)),
+  startName: place,
+);

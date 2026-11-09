@@ -318,6 +318,12 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
       for (final m in ref.watch(clubMessagesProvider(c.id)).value ?? const <ClubMessage>[])
         if (!hidden.contains(m.uid) && !m.expired(now)) m,
     ];
+    // Reading the chat clears its unread count.
+    if (messages.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) ref.read(clubSeenProvider.notifier).seen(c.id, messages.last.at);
+      });
+    }
     return Column(
       children: [
         Container(

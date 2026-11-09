@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:share_plus/share_plus.dart';
 
+import '../../core/reminders.dart';
 import '../../core/storage.dart';
 import '../friends/friends_providers.dart';
 import 'clubs_backend.dart';
@@ -169,3 +170,70 @@ final shareTextProvider = Provider<Future<void> Function(String text)>(
   (ref) =>
       (text) async => SharePlus.instance.share(ShareParams(text: text)),
 );
+
+/// Reminders for the challenges in [byClub] (club name → its challenges)
+/// that start within the next week: 15 minutes before, and at the start.
+List<(DateTime, String, String)> clubReminderItems(Map<String, List<ClubChallenge>> byClub, DateTime now) => [
+  for (final MapEntry(key: club, value: list) in byClub.entries)
+    for (final c in list)
+      if (c.startsAt.isAfter(now) && c.startsAt.isBefore(now.add(const Duration(days: 7)))) ...[
+        (
+          c.startsAt.subtract(const Duration(minutes: 15)),
+          '${c.title} starts in 15 minutes',
+          '$club: get ready${c.startName.isEmpty ? '' : ' at ${c.startName}'}. Turn on location and head to the start.',
+        ),
+        (c.startsAt, '${c.title} has started! 🏁', '$club: open FittArc and tap Start challenge.'),
+      ],
+];
+
+/// Plans the reminders for every club challenge this user can join.
+Future<void> planClubReminders(Ref ref) async {
+  final b = ref.read(clubsBackendProvider);
+  final ids = ref.read(myClubIdsProvider).value ?? const <String>{};
+  if (b == null) return;
+  final byClub = <String, List<ClubChallenge>>{};
+  for (final id in ids) {
+    try {
+      final club = await b.watchClub(id).first;
+      if (club == null) continue;
+      byClub[club.name] = await b.challenges(id).first;
+    } catch (_) {}
+  }
+  await Reminders.scheduleClub(clubReminderItems(byClub, clock.now()));
+}
+
+final clubReminderPlannerProvider = Provider<void>((ref) {
+  ref.listen(myClubIdsProvider, (_, _) => planClubReminders(ref), fireImmediately: true);
+});
+
+/// When this user last read each club's chat (ms since epoch), on this phone.
+class ClubSeenNotifier extends Notifier<Map<String, int>> {
+  static const key = 'clubs.seen.v1';
+
+  @override
+  Map<String, int> build() {
+    final raw = ref.read(sharedPrefsProvider).getString(key);
+    if (raw == null) return const {};
+    try {
+      return {for (final e in (jsonDecode(raw) as Map<String, dynamic>).entries) e.key: (e.value as num).toInt()};
+    } catch (_) {
+      return const {};
+    }
+  }
+
+  void seen(String club, DateTime at) {
+    if ((state[club] ?? 0) >= at.millisecondsSinceEpoch) return;
+    state = {...state, club: at.millisecondsSinceEpoch};
+    ref.read(sharedPrefsProvider).setString(key, jsonEncode(state));
+  }
+}
+
+final clubSeenProvider = NotifierProvider<ClubSeenNotifier, Map<String, int>>(ClubSeenNotifier.new);
+
+/// Messages from others in [club] since this user last read the chat.
+final clubUnreadProvider = Provider.autoDispose.family<int, String>((ref, club) {
+  final me = ref.watch(friendsUidProvider);
+  final seen = ref.watch(clubSeenProvider)[club] ?? 0;
+  final msgs = ref.watch(clubMessagesProvider(club)).value ?? const <ClubMessage>[];
+  return msgs.where((m) => m.uid != me && m.at.millisecondsSinceEpoch > seen).length;
+});

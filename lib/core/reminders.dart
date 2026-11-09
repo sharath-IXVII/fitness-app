@@ -37,6 +37,9 @@ abstract final class Reminders {
   static const _snoozeBase = 300000;
   static const _workoutBase = 400000;
   static const _workoutEnd = 500000;
+  static const _clubBase = 500000;
+  static const _clubEnd = 510000;
+  static const _reportId = 510001;
 
   /// Days ahead that one-off reminders are scheduled for. They are
   /// re-planned whenever the app opens, so this only matters if the app
@@ -127,6 +130,92 @@ abstract final class Reminders {
     iOS: const DarwinNotificationDetails(),
   );
 
+  static NotificationDetails _club(String body) => NotificationDetails(
+    android: _android(
+      id: 'club_v1',
+      name: 'Club challenges',
+      description: 'Reminders before a club challenge starts',
+      sound: 'fittarc_workout',
+      body: body,
+    ),
+    iOS: const DarwinNotificationDetails(),
+  );
+
+  static NotificationDetails _report(String body) => NotificationDetails(
+    android: _android(
+      id: 'report_v1',
+      name: 'Daily report',
+      description: 'Your day in FittArc, every evening',
+      sound: 'fittarc_routine',
+      body: body,
+      importance: Importance.defaultImportance,
+    ),
+    iOS: const DarwinNotificationDetails(),
+  );
+
+  /// Replaces club challenge reminders with [items] (time, title, body).
+  /// Only future ones, at most 60.
+  static Future<void> scheduleClub(List<(DateTime, String, String)> items) async {
+    if (!supported) return;
+    await init();
+    await _cancelRange(_clubBase, _clubEnd);
+    final now = DateTime.now();
+    final upcoming = items.where((i) => i.$1.isAfter(now)).toList()..sort((a, b) => a.$1.compareTo(b.$1));
+    for (final (n, (at, title, body)) in upcoming.take(60).indexed) {
+      await _plugin.zonedSchedule(
+        id: _clubBase + n,
+        title: title,
+        body: body,
+        scheduledDate: tz.TZDateTime.from(at, tz.local),
+        notificationDetails: _club(body),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: jsonEncode({'type': 'clubs'}),
+      );
+    }
+  }
+
+  /// The evening daily report, every day at [minuteOfDay].
+  static Future<void> scheduleDailyReport({required int minuteOfDay, required bool enabled}) async {
+    if (!supported) return;
+    await init();
+    await _plugin.cancel(id: _reportId);
+    if (!enabled) return;
+    const body = 'See your steps, water, food, workouts and score for today.';
+    final now = tz.TZDateTime.now(tz.local);
+    var at = tz.TZDateTime(tz.local, now.year, now.month, now.day, minuteOfDay ~/ 60, minuteOfDay % 60);
+    if (!at.isAfter(now)) at = at.add(const Duration(days: 1));
+    await _plugin.zonedSchedule(
+      id: _reportId,
+      title: 'Your day in FittArc 📊',
+      body: body,
+      scheduledDate: at,
+      notificationDetails: _report(body),
+      androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.time,
+      payload: jsonEncode({'type': 'report'}),
+    );
+  }
+
+  /// What a tapped notification wants opened ("report", "clubs"), set when
+  /// one is tapped; the app reads and clears it.
+  static String? pendingOpen;
+
+  /// Called when a notification itself (not an action) is tapped.
+  static void Function(String type)? onOpen;
+
+  static void _opened(String? payload) {
+    if (payload == null) return;
+    try {
+      final type = (jsonDecode(payload) as Map<String, dynamic>)['type'];
+      if (type is! String || !(type == 'report' || type == 'clubs')) return;
+      if (onOpen != null) {
+        onOpen!(type);
+      } else {
+        pendingOpen = type;
+      }
+    } catch (_) {}
+  }
+
   /// Called in the foreground isolate when a reminder or action is tapped.
   static void Function()? onChanged;
 
@@ -143,12 +232,18 @@ abstract final class Reminders {
         ),
       ),
       onDidReceiveNotificationResponse: (r) async {
+        if (r.actionId == null) _opened(r.payload);
         await handleAction(r.actionId, r.payload);
         onChanged?.call();
       },
       onDidReceiveBackgroundNotificationResponse: reminderBackgroundHandler,
     );
     _ready = true;
+    // Opened by tapping a notification while the app was closed.
+    try {
+      final launch = await _plugin.getNotificationAppLaunchDetails();
+      if (launch?.didNotificationLaunchApp == true) _opened(launch!.notificationResponse?.payload);
+    } catch (_) {}
     // The first version's channels had the phone's default sound; remove them.
     final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     for (final old in const ['routine', 'water', 'workout']) {

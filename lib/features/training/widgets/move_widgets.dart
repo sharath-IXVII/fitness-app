@@ -79,7 +79,7 @@ Future<void> showMoveHowTo(BuildContext context, Move move, {WorkoutItem? item})
     context,
     SheetFrame(
       title: move.name,
-      child: Padding(
+      child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,10 +1,14 @@
 import 'dart:convert';
 
+import 'package:clock/clock.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:fitalarm/app.dart';
 import 'package:fitalarm/core/storage.dart';
 import 'package:fitalarm/features/auth/auth_providers.dart';
 import 'package:fitalarm/features/auth/auth_service.dart';
+import 'package:fitalarm/core/widgets/gradient_button.dart';
+import 'package:fitalarm/features/clubs/clubs_backend.dart';
+import 'package:fitalarm/features/clubs/domain/club.dart';
 import 'package:fitalarm/features/clubs/domain/club_challenge.dart';
 import 'package:fitalarm/features/clubs/gps.dart';
 import 'package:fitalarm/features/friends/domain/friends.dart';
@@ -208,6 +212,61 @@ void main() {
     final r = (await b.db.doc('clubs/$club/challenges/$ch/results/demo').get()).data()!;
     expect(r['distanceM'], greaterThanOrEqualTo(500));
     expect(r['timeMs'], greaterThan(ActivityKind.run.minMillis(500)));
+  });
+
+  testWidgets('a scheduled challenge counts down and Start turns on at the start time', (t) async {
+    var now = DateTime(2026, 11, 9, 5, 30);
+    await withClock(Clock(() => now), () async {
+      final b = (await _open(t, gps: const _FakeGps()))!;
+      final clubs = ClubsBackend(b.db);
+      final club = await clubs.create(
+        uid: 'demo',
+        myName: 'Asha',
+        name: 'Dawn Walkers',
+        about: '',
+        kind: ClubKind.walking,
+      );
+      final startsAt = DateTime(2026, 11, 9, 6);
+      await clubs.createChallenge(
+        club.id,
+        uid: 'demo',
+        title: 'Sunrise walk',
+        kind: ActivityKind.walk,
+        distanceM: 2000,
+        startsAt: startsAt,
+        endsAt: startsAt.add(const Duration(hours: 2)),
+      );
+      await t.tap(find.byTooltip('Friends'));
+      await _wait(t);
+      await t.tap(find.text('Clubs'));
+      await _wait(t);
+      await t.tap(find.text('Dawn Walkers'));
+      await _wait(t);
+      await t.tap(find.text('Challenges'));
+      await _wait(t);
+      await t.tap(find.text('Sunrise walk'));
+      await _wait(t);
+
+      // 30 minutes before: locked, with a countdown.
+      final locked = find.ancestor(of: find.text('Starts in 30 min 00 s'), matching: find.byType(GradientButton));
+      expect(t.widget<GradientButton>(locked).onPressed, isNull);
+      expect(find.text('The Start button turns on at 9 Nov, 6:00 AM.'), findsOneWidget);
+
+      now = DateTime(2026, 11, 9, 5, 59, 58);
+      await _wait(t, 1100);
+      expect(find.text('Starts in 0 min 02 s'), findsOneWidget);
+
+      // At 6:00 it turns on by itself.
+      now = DateTime(2026, 11, 9, 6, 0, 1);
+      await _wait(t, 1100);
+      final open = find.ancestor(of: find.text('Start challenge'), matching: find.byType(GradientButton));
+      expect(t.widget<GradientButton>(open).onPressed, isNotNull);
+
+      // After the end, it's closed.
+      now = DateTime(2026, 11, 9, 8, 0, 1);
+      await _wait(t, 1100);
+      expect(find.text('Challenge ended'), findsOneWidget);
+    });
   });
 }
 

@@ -136,7 +136,48 @@ class _NewChallengeSheetState extends ConsumerState<_NewChallengeSheet> {
   final _place = TextEditingController();
   ActivityKind _kind = ActivityKind.run;
   double _km = 5;
-  int _days = 7;
+
+  /// When it starts: null means right away.
+  DateTime? _startsAt;
+
+  /// How long it stays open after the start.
+  Duration _open = const Duration(days: 1);
+
+  static const _openChoices = [
+    (Duration(hours: 1), '1 hour'),
+    (Duration(hours: 3), '3 hours'),
+    (Duration(days: 1), '1 day'),
+    (Duration(days: 7), '7 days'),
+    (Duration(days: 30), '30 days'),
+  ];
+
+  Future<void> _pickStart() async {
+    final now = clock.now();
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _startsAt ?? now,
+      firstDate: DateTime(now.year, now.month, now.day),
+      lastDate: now.add(const Duration(days: 60)),
+      helpText: 'Challenge date',
+    );
+    if (date == null || !mounted) return;
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_startsAt ?? now.add(const Duration(hours: 1))),
+      helpText: 'Start time',
+    );
+    if (time == null || !mounted) return;
+    final at = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    setState(() {
+      if (at.isBefore(now)) {
+        _error = 'Pick a time that is still to come.';
+      } else {
+        _startsAt = at;
+        _error = null;
+      }
+    });
+  }
+
   (double, double)? _start;
   String? _error;
   bool _busy = false;
@@ -178,8 +219,8 @@ class _NewChallengeSheetState extends ConsumerState<_NewChallengeSheet> {
             title: _title.text.trim().isEmpty ? '${_kind.label} ${formatKm(_km * 1000)}' : _title.text,
             kind: _kind,
             distanceM: (_km * 1000).round(),
-            startsAt: now,
-            endsAt: now.add(Duration(days: _days)),
+            startsAt: _startsAt ?? now,
+            endsAt: (_startsAt ?? now).add(_open),
             start: _start,
             startName: _start == null ? '' : _place.text,
           );
@@ -235,17 +276,34 @@ class _NewChallengeSheetState extends ConsumerState<_NewChallengeSheet> {
                 hintText: '${_kind.label} ${formatKm(_km * 1000)} challenge',
               ),
             ),
+            Text('Starts', style: text.titleSmall),
+            const SizedBox(height: 6),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                ChoiceChip(
+                  label: const Text('Right now'),
+                  selected: _startsAt == null,
+                  onSelected: (_) => setState(() => _startsAt = null),
+                ),
+                ChoiceChip(
+                  avatar: const Icon(Icons.event_rounded, size: 18),
+                  label: Text(_startsAt == null ? 'Pick date & time' : _day.format(_startsAt!)),
+                  selected: _startsAt != null,
+                  onSelected: (_) => _pickStart(),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
             Text('Open for', style: text.titleSmall),
             const SizedBox(height: 6),
             Wrap(
               spacing: 8,
+              runSpacing: 8,
               children: [
-                for (final d in const [1, 3, 7, 30])
-                  ChoiceChip(
-                    label: Text(d == 1 ? '1 day' : '$d days'),
-                    selected: _days == d,
-                    onSelected: (_) => setState(() => _days = d),
-                  ),
+                for (final (d, label) in _openChoices)
+                  ChoiceChip(label: Text(label), selected: _open == d, onSelected: (_) => setState(() => _open = d)),
               ],
             ),
             const SizedBox(height: 14),
@@ -340,12 +398,7 @@ class ClubChallengeScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 14),
-            if (c.openAt(now))
-              GradientButton(
-                label: 'Start challenge',
-                icon: Icons.play_arrow_rounded,
-                onPressed: () => context.push(Routes.clubRun, extra: c),
-              ),
+            _StartButton(challenge: c),
             const SizedBox(height: 22),
             Text('Ranking', style: text.titleLarge),
             const SizedBox(height: 8),
@@ -383,6 +436,80 @@ class ClubChallengeScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// "Start challenge", enabled only while the challenge is open. Before the
+/// start time it counts down and switches on by itself.
+class _StartButton extends StatefulWidget {
+  const _StartButton({required this.challenge});
+
+  final ClubChallenge challenge;
+
+  @override
+  State<_StartButton> createState() => _StartButtonState();
+}
+
+class _StartButtonState extends State<_StartButton> {
+  Timer? _tick;
+
+  @override
+  void initState() {
+    super.initState();
+    _tick = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _tick?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.challenge;
+    final now = clock.now();
+    final text = Theme.of(context).textTheme;
+    final ended = !now.isBefore(c.endsAt);
+    final waiting = now.isBefore(c.startsAt);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        GradientButton(
+          label: ended
+              ? 'Challenge ended'
+              : waiting
+              ? 'Starts in ${countdown(c.startsAt.difference(now))}'
+              : 'Start challenge',
+          icon: ended
+              ? Icons.flag_rounded
+              : waiting
+              ? Icons.lock_clock_rounded
+              : Icons.play_arrow_rounded,
+          onPressed: c.openAt(now) ? () => context.push(Routes.clubRun, extra: c) : null,
+        ),
+        const SizedBox(height: 6),
+        Text(
+          waiting
+              ? 'The Start button turns on at ${_day.format(c.startsAt)}.'
+              : ended
+              ? 'See how everyone did below.'
+              : 'Open until ${_day.format(c.endsAt)}.',
+          style: text.bodySmall,
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+}
+
+/// "2 d 3 h", "1 h 05 min", "4 min 09 s".
+String countdown(Duration d) {
+  String two(int v) => v.toString().padLeft(2, '0');
+  if (d.inDays > 0) return '${d.inDays} d ${d.inHours % 24} h';
+  if (d.inHours > 0) return '${d.inHours} h ${two(d.inMinutes % 60)} min';
+  return '${d.inMinutes} min ${two(d.inSeconds % 60)} s';
 }
 
 enum _RunPhase { checking, ready, running, saving, done }
@@ -439,7 +566,12 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
       _problem = null;
     });
     final gps = ref.read(gpsProvider);
-    var problem = await gps.ensure();
+    final now = clock.now();
+    var problem = now.isBefore(c.startsAt)
+        ? 'This challenge starts at ${_day.format(c.startsAt)}.'
+        : !c.openAt(now)
+        ? 'This challenge has ended.'
+        : await gps.ensure();
     if (problem == null && c.start != null) {
       final here = await gps.current();
       if (here == null) {

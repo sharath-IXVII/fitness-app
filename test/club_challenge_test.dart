@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:fitalarm/features/clubs/challenge_screens.dart' show countdown;
 import 'package:fitalarm/features/clubs/clubs_backend.dart';
 import 'package:fitalarm/features/clubs/domain/club.dart';
 import 'package:fitalarm/features/clubs/domain/club_challenge.dart';
@@ -100,6 +101,12 @@ void main() {
       final secs = t.reachedAt(1000)!.difference(t.firstAt!).inMilliseconds / 1000;
       expect(secs, closeTo(1000 / 3, 1000 / 3 * 0.015)); // 1 km at 3 m/s
     });
+  });
+
+  test('countdown text', () {
+    expect(countdown(const Duration(days: 2, hours: 3, minutes: 4)), '2 d 3 h');
+    expect(countdown(const Duration(hours: 1, minutes: 5)), '1 h 05 min');
+    expect(countdown(const Duration(minutes: 4, seconds: 9)), '4 min 09 s');
   });
 
   test('formatting and XP', () {

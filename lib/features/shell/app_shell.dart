@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../report/report_providers.dart';
 import '../clubs/clubs_providers.dart';
 import '../../core/cloud_backup.dart';
 import '../../core/reminders.dart';
@@ -51,14 +52,32 @@ class _AppShellState extends ConsumerState<AppShell> {
       ref.read(badgeVaultProvider.notifier).merge(ref.read(computedBadgesProvider));
       _announce(ref.read(achievementsProvider));
       ref.read(cloudBackupProvider).schedule(after: const Duration(seconds: 5));
+      ref.read(reportSettingsProvider.notifier).reschedule();
+      // Opened by tapping a notification: go to what it's about.
+      Reminders.onOpen = _openFromNotification;
+      if (Reminders.pendingOpen case final type?) {
+        Reminders.pendingOpen = null;
+        _openFromNotification(type);
+      }
     });
     _lifecycle = AppLifecycleListener(onResume: _replan, onPause: () => ref.read(cloudBackupProvider).push());
   }
 
   late final AppLifecycleListener _lifecycle;
 
+  void _openFromNotification(String type) {
+    if (!mounted) return;
+    switch (type) {
+      case 'report':
+        context.push(Routes.dailyReport);
+      case 'clubs':
+        context.push(Routes.clubs);
+    }
+  }
+
   @override
   void dispose() {
+    Reminders.onOpen = null;
     _lifecycle.dispose();
     super.dispose();
   }

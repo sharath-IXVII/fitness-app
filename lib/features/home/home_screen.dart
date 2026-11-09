@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../report/daily_report_screen.dart';
 import '../festivals/festival_widgets.dart';
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
@@ -60,6 +61,8 @@ class HomeScreen extends ConsumerWidget {
       const _NextAlarmCard(),
       const SizedBox(height: 12),
       const ProgressCard(),
+      const SizedBox(height: 12),
+      const TodayReportTile(),
       const SizedBox(height: 32),
     ];
 

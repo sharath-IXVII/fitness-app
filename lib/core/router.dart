@@ -32,6 +32,7 @@ import '../features/clubs/club_screen.dart';
 import '../features/clubs/domain/club_challenge.dart';
 import '../features/clubs/report_screen.dart';
 import '../features/clubs/clubs_screen.dart';
+import '../features/report/daily_report_screen.dart';
 import '../features/snaps/snap_screen.dart';
 import '../features/scan/scan_screen.dart';
 import '../features/shell/app_shell.dart';
@@ -86,6 +87,7 @@ abstract final class Routes {
   static const clubChallenge = '/club-challenge';
   static const clubRun = '/club-run';
   static const runReport = '/run-report';
+  static const dailyReport = '/daily-report';
   static const achievements = '/achievements';
   static const report = '/report';
   static const privacy = '/privacy';
@@ -211,6 +213,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         redirect: (_, s) => s.extra is String ? null : Routes.clubs,
         builder: (_, s) => RunReportScreen(id: s.extra! as String),
       ),
+      GoRoute(path: Routes.dailyReport, builder: (_, _) => const DailyReportScreen()),
       GoRoute(
         path: Routes.snap,
         redirect: (_, s) => s.extra is SnapArgs ? null : Routes.diet,

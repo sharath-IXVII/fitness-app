@@ -10,6 +10,7 @@ import '../report/report_providers.dart';
 import '../clubs/clubs_providers.dart';
 import '../../core/cloud_backup.dart';
 import '../../core/reminders.dart';
+import '../../core/home_widget_sync.dart';
 import '../../core/router.dart';
 import '../../core/storage.dart';
 import '../../core/theme/app_colors.dart';
@@ -256,6 +257,8 @@ class _AppShellState extends ConsumerState<AppShell> {
         ref.read(clubXpProvider.notifier).award('ref-$uid', FriendsBackend.inviteXp);
       }
     });
+    // Keeps the home screen widget up to date.
+    ref.watch(homeWidgetSyncProvider);
     // Club challenge reminders on this phone (no server needed).
     ref.watch(clubReminderPlannerProvider);
     // XP from finished challenges (50 each, up to 3 a week).

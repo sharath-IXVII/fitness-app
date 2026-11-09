@@ -121,7 +121,14 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-    </application>
+            <!-- Home screen widget: streak, score, steps, water. -->
+        <receiver android:name=".FittArcWidget" android:exported="true" android:label="FittArc">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data android:name="android.appwidget.provider" android:resource="@xml/fittarc_widget_info" />
+        </receiver>
+</application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
          https://developer.android.com/reference/android/content/Intent#ACTION_PROCESS_TEXT.

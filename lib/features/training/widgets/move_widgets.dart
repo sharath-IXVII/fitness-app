@@ -5,7 +5,9 @@ import '../../../core/widgets/pressable.dart';
 import '../../diet/widgets/sheet_frame.dart';
 import '../../workout/widgets/exercise_demo.dart';
 import '../domain/move.dart';
+import '../domain/muscles.dart';
 import '../domain/plans.dart';
+import 'body_map.dart';
 
 /// Animated stick figure for [move] on a soft cream tile.
 class MoveThumb extends StatelessWidget {
@@ -97,6 +99,10 @@ Future<void> showMoveHowTo(BuildContext context, Move move, {WorkoutItem? item})
               decoration: BoxDecoration(color: AppColors.background, borderRadius: BorderRadius.circular(18)),
               child: ExerciseDemo.move(demoId: move.demo, label: move.name, height: 190),
             ),
+            const SizedBox(height: 16),
+            Text('Muscles it works', style: text.titleMedium),
+            const SizedBox(height: 8),
+            BodyMap(muscles: musclesIn(move.muscles), height: 170),
             const SizedBox(height: 16),
             Text('How to do it', style: text.titleMedium),
             const SizedBox(height: 8),

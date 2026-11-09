@@ -18,6 +18,8 @@ import 'domain/plans.dart';
 import 'training_done_screen.dart';
 import 'training_providers.dart';
 import 'voice_coach.dart';
+import 'domain/muscles.dart';
+import 'widgets/body_map.dart';
 import 'widgets/move_widgets.dart';
 
 enum _Phase { ready, work, rest }
@@ -301,6 +303,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
         _demo(),
         const Spacer(),
         Text(_item.move.name, style: text.headlineMedium, textAlign: TextAlign.center),
+        // Which muscles this move works, lit up while it plays.
+        BodyMap(muscles: musclesIn(_item.move.muscles), height: 84, showLegend: false),
         const SizedBox(height: 6),
         if (timed)
           _Countdown(left: _left, total: _total, paused: _paused, onTap: _togglePause)

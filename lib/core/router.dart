@@ -27,7 +27,9 @@ import '../features/profile/profile_providers.dart';
 import '../features/progress/achievements_screen.dart';
 import '../features/progress/weekly_report_screen.dart';
 import '../features/profile/profile_screen.dart';
+import '../features/clubs/challenge_screens.dart';
 import '../features/clubs/club_screen.dart';
+import '../features/clubs/domain/club_challenge.dart';
 import '../features/clubs/clubs_screen.dart';
 import '../features/snaps/snap_screen.dart';
 import '../features/scan/scan_screen.dart';
@@ -80,6 +82,8 @@ abstract final class Routes {
   static const snap = '/snap';
   static const clubs = '/clubs';
   static const club = '/club';
+  static const clubChallenge = '/club-challenge';
+  static const clubRun = '/club-run';
   static const achievements = '/achievements';
   static const report = '/report';
   static const privacy = '/privacy';
@@ -189,6 +193,16 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.club,
         redirect: (_, s) => s.extra is String ? null : Routes.clubs,
         builder: (_, s) => ClubScreen(id: s.extra! as String),
+      ),
+      GoRoute(
+        path: Routes.clubChallenge,
+        redirect: (_, s) => s.extra is ClubChallenge ? null : Routes.clubs,
+        builder: (_, s) => ClubChallengeScreen(challenge: s.extra! as ClubChallenge),
+      ),
+      GoRoute(
+        path: Routes.clubRun,
+        redirect: (_, s) => s.extra is ClubChallenge ? null : Routes.clubs,
+        builder: (_, s) => ClubRunScreen(challenge: s.extra! as ClubChallenge),
       ),
       GoRoute(
         path: Routes.snap,

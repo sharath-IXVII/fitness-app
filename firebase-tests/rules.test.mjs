@@ -323,3 +323,27 @@ test('clubs: the owner can delete messages and remove members for good', async (
   await assertFails(setDoc(doc(as('ravi'), 'clubs/c1/members/ravi'), { name: 'Ravi', joinedAt: serverTimestamp() }));
   await assertFails(setDoc(doc(as('ravi'), 'clubs/c1/banned/asha'), { at: serverTimestamp() }));
 });
+
+test('club challenges: only the admin sets them; finishes must be real and only improve', async () => {
+  await clubWithRavi();
+  const now = Date.now();
+  const ch = {
+    title: 'Run 8 km', kind: 'run', distanceM: 8000, startsAt: new Date(now - 60000), endsAt: new Date(now + 86400000),
+    startName: 'Lake gate', createdBy: 'asha', createdAt: serverTimestamp(),
+  };
+  await assertFails(setDoc(doc(as('ravi'), 'clubs/c1/challenges/x1'), { ...ch, createdBy: 'ravi' }));
+  await assertFails(setDoc(doc(as('asha'), 'clubs/c1/challenges/x1'), { ...ch, title: 'go to x.com' }));
+  await assertFails(setDoc(doc(as('asha'), 'clubs/c1/challenges/x1'), { ...ch, distanceM: 200 }));
+  await assertSucceeds(setDoc(doc(as('asha'), 'clubs/c1/challenges/x1'), ch));
+  await assertFails(getDoc(doc(as('meera'), 'clubs/c1/challenges/x1')));
+
+  const res = (timeMs, distanceM = 8000) => ({ name: 'Ravi', timeMs, distanceM, at: serverTimestamp() });
+  const r = doc(as('ravi'), 'clubs/c1/challenges/x1/results/ravi');
+  await assertFails(setDoc(r, res(40 * 60000, 5000))); // not the full distance
+  await assertFails(setDoc(r, res(10 * 60000))); // 8 km in 10 min: 48 km/h
+  await assertFails(setDoc(doc(as('ravi'), 'clubs/c1/challenges/x1/results/asha'), res(45 * 60000)));
+  await assertSucceeds(setDoc(r, res(45 * 60000)));
+  await assertFails(setDoc(r, res(50 * 60000))); // slower doesn't replace
+  await assertSucceeds(setDoc(r, res(42 * 60000)));
+  await assertSucceeds(getDocs(collection(as('asha'), 'clubs/c1/challenges/x1/results')));
+});

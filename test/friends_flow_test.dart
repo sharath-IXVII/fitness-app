@@ -5,6 +5,8 @@ import 'package:fitalarm/app.dart';
 import 'package:fitalarm/core/storage.dart';
 import 'package:fitalarm/features/auth/auth_providers.dart';
 import 'package:fitalarm/features/auth/auth_service.dart';
+import 'package:fitalarm/features/clubs/domain/club_challenge.dart';
+import 'package:fitalarm/features/clubs/gps.dart';
 import 'package:fitalarm/features/friends/domain/friends.dart';
 import 'package:fitalarm/features/friends/friends_backend.dart';
 import 'package:fitalarm/features/friends/friends_providers.dart';
@@ -38,7 +40,7 @@ Map<String, Object> _seed() => {
   }),
 };
 
-Future<FriendsBackend?> _open(WidgetTester t, {bool online = true}) async {
+Future<FriendsBackend?> _open(WidgetTester t, {bool online = true, Gps? gps}) async {
   t.view.physicalSize = const Size(390, 844) * 3;
   t.view.devicePixelRatio = 3;
   addTearDown(t.view.reset);
@@ -51,6 +53,7 @@ Future<FriendsBackend?> _open(WidgetTester t, {bool online = true}) async {
         sharedPrefsProvider.overrideWithValue(prefs),
         authServiceProvider.overrideWithValue(DemoAuthService(prefs)),
         friendsBackendProvider.overrideWithValue(backend),
+        if (gps != null) gpsProvider.overrideWithValue(gps),
       ],
       child: const FitTrackerApp(),
     ),
@@ -161,4 +164,68 @@ void main() {
     final club = (await b.db.collection('clubs').get()).docs.single;
     expect(club['ownerUid'], 'demo');
   });
+
+  testWidgets('club challenge: the admin sets one, runs it with GPS, earns XP and tops the ranking', (t) async {
+    final b = (await _open(t, gps: const _FakeGps()))!;
+    await t.tap(find.byTooltip('Friends'));
+    await _wait(t);
+    await t.tap(find.text('Clubs'));
+    await _wait(t);
+    await t.tap(find.text('Create a club'));
+    await _wait(t);
+    await t.enterText(find.widgetWithText(TextField, 'Club name'), 'Lake Runners');
+    await t.tap(find.text('Create club'));
+    await _wait(t, 1500);
+    expect(find.text('You are the admin'), findsOneWidget);
+
+    await t.tap(find.text('Challenges'));
+    await _wait(t);
+    await t.tap(find.text('New challenge'));
+    await _wait(t);
+    // 1 km: drag the distance slider all the way down, then one step up.
+    await t.drag(find.byType(Slider), const Offset(-600, 0));
+    await _wait(t, 300);
+    expect(find.text('Distance: 0.5 km'), findsOneWidget);
+    await t.tap(find.text('Create challenge'));
+    await _wait(t, 1500);
+    expect(find.text('Run 0.5 km'), findsOneWidget);
+
+    await t.tap(find.text('Run 0.5 km'));
+    await _wait(t);
+    expect(find.text('No one has finished yet. Be the first!'), findsOneWidget);
+    await t.tap(find.text('Start challenge'));
+    await _wait(t);
+    await t.tap(find.text('Start'));
+    await _wait(t, 3000);
+    expect(find.text('Finished! 🎉'), findsOneWidget);
+    expect(find.text('+55 XP'), findsOneWidget);
+    expect(find.text('Saved to the club ranking.'), findsOneWidget);
+    await t.tap(find.text('See ranking'));
+    await _wait(t);
+    expect(find.text('Asha (you)'), findsOneWidget);
+    final club = (await b.db.collection('clubs').get()).docs.single.id;
+    final ch = (await b.db.collection('clubs/$club/challenges').get()).docs.single.id;
+    final r = (await b.db.doc('clubs/$club/challenges/$ch/results/demo').get()).data()!;
+    expect(r['distanceM'], greaterThanOrEqualTo(500));
+    expect(r['timeMs'], greaterThan(ActivityKind.run.minMillis(500)));
+  });
+}
+
+/// A jog north at about 10 km/h, one reading every 10 seconds.
+class _FakeGps extends Gps {
+  const _FakeGps();
+
+  @override
+  Future<String?> ensure() async => null;
+
+  @override
+  Future<GpsFix?> current() async => GpsFix(12.97, 77.59, 5, DateTime(2026, 11, 9, 6));
+
+  @override
+  Stream<GpsFix> track() async* {
+    for (var i = 0; i < 30; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      yield GpsFix(12.97 + i * 0.00025, 77.59, 6, DateTime(2026, 11, 9, 6).add(Duration(seconds: i * 10)));
+    }
+  }
 }

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../clubs/clubs_providers.dart';
 import '../../core/storage.dart';
 import '../profile/profile_providers.dart';
 import '../streaks/daily_log_providers.dart';
@@ -100,10 +101,13 @@ final bonusXpProvider = NotifierProvider<BonusXp, int>(BonusXp.new);
 /// Level from activity XP, the bonus for every finished badge set, and XP
 /// from finished challenges.
 final levelProvider = Provider<Level>((ref) {
-  final int xp =
-      totalXp(ref.watch(dayScoresProvider)) +
-      setBonusXp(ref.watch(completedSetsProvider)) +
-      ref.watch(bonusXpProvider);
+  final Map<String, int> clubXp = ref.watch(clubXpProvider);
+  final int bonus = ref.watch(bonusXpProvider);
+  var club = 0;
+  for (final v in clubXp.values) {
+    club += v;
+  }
+  final int xp = totalXp(ref.watch(dayScoresProvider)) + setBonusXp(ref.watch(completedSetsProvider)) + bonus + club;
   return Level.of(xp);
 });
 

@@ -254,6 +254,46 @@ service cloud.firestore {
           && data().expireAt < request.time + duration.value(25, 'h');
         allow delete: if signedIn() && (resource.data.uid == me() || ownsClub(club));
       }
+
+      // Challenges the club admin sets ("Run 8 km from the lake gate").
+      match /challenges/{ch} {
+        allow read: if isMember(club);
+        allow create: if ownsClub(club)
+          && data().keys().hasOnly(['title', 'kind', 'distanceM', 'startsAt', 'endsAt', 'start', 'startName',
+                                    'createdBy', 'createdAt'])
+          && data().createdBy == me()
+          && data().title is string && data().title.size() >= 3 && data().title.size() <= 60 && noLink(data().title)
+          && data().kind in ['run', 'walk', 'cycle']
+          && data().distanceM is int && data().distanceM >= 500 && data().distanceM <= 100000
+          && data().startsAt is timestamp && data().endsAt is timestamp
+          && data().endsAt > data().startsAt
+          && data().endsAt <= data().startsAt + duration.value(31, 'd')
+          && (data().get('start', null) == null || data().start is latlng)
+          && data().startName is string && data().startName.size() <= 40 && noLink(data().startName)
+          && data().createdAt == request.time;
+        allow delete: if ownsClub(club);
+
+        // One best finish per member. The time must be humanly possible for
+        // the activity (run 25 km/h, walk 9, cycle 60 on average), and only
+        // a faster time replaces an earlier one.
+        match /results/{uid} {
+          function challenge() { return get(/databases/$(database)/documents/clubs/$(club)/challenges/$(ch)).data; }
+          function maxKmh(kind) { return kind == 'run' ? 25 : (kind == 'walk' ? 9 : 60); }
+          function validResult() {
+            let c = challenge();
+            return data().keys().hasOnly(['name', 'timeMs', 'distanceM', 'at'])
+              && shortText(data().name, 40)
+              && data().distanceM is int && data().distanceM >= c.distanceM && data().distanceM <= c.distanceM * 2
+              && data().timeMs is int && data().timeMs * maxKmh(c.kind) >= data().distanceM * 3600
+              && data().at == request.time
+              && request.time >= c.startsAt && request.time <= c.endsAt + duration.value(6, 'h');
+          }
+          allow read: if isMember(club);
+          allow create: if me() == uid && isMember(club) && validResult();
+          allow update: if me() == uid && isMember(club) && validResult() && data().timeMs < resource.data.timeMs;
+          allow delete: if me() == uid || ownsClub(club);
+        }
+      }
     }
 
     // App settings the owner edits in the console (festival dates).

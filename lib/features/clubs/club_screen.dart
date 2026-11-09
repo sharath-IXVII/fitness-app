@@ -9,6 +9,7 @@ import '../../core/widgets/gradient_button.dart';
 import '../../core/widgets/page_background.dart';
 import '../friends/friends_backend.dart' show FriendsFailure;
 import '../friends/friends_providers.dart';
+import 'challenge_screens.dart';
 import 'clubs_providers.dart';
 import 'domain/club.dart';
 
@@ -167,7 +168,13 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
     final member = ref.watch(clubMembersProvider(widget.id)).value?.containsKey(me.uid) ?? false;
     return Scaffold(
       appBar: AppBar(
-        title: Text(c.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(c.name, maxLines: 1, overflow: TextOverflow.ellipsis),
+            if (owner) Text('You are the admin', style: Theme.of(context).textTheme.labelSmall),
+          ],
+        ),
         actions: [
           if (member)
             PopupMenuButton<String>(
@@ -180,7 +187,31 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
             ),
         ],
       ),
-      body: PageBackground(child: member ? _chat(c, me.uid) : _about(c, me.uid, me.name)),
+      body: PageBackground(
+        child: member
+            ? DefaultTabController(
+                length: 2,
+                child: Column(
+                  children: [
+                    const TabBar(
+                      tabs: [
+                        Tab(icon: Icon(Icons.chat_bubble_outline_rounded), text: 'Chat'),
+                        Tab(icon: Icon(Icons.flag_outlined), text: 'Challenges'),
+                      ],
+                    ),
+                    Expanded(
+                      child: TabBarView(
+                        children: [
+                          _chat(c, me.uid),
+                          ClubChallengesTab(club: c, admin: owner),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            : _about(c, me.uid, me.name),
+      ),
     );
   }
 

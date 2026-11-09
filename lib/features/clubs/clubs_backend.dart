@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../friends/friends_backend.dart' show FriendsFailure;
 import 'domain/club.dart';
+import 'domain/club_challenge.dart';
 
 /// Clubs in Cloud Firestore. Text only: no photos, no Firebase Storage.
 ///
@@ -11,6 +12,8 @@ import 'domain/club.dart';
 ///   clubs/{id}/members/{uid}        {name, joinedAt}
 ///   clubs/{id}/banned/{uid}         people the owner removed
 ///   clubs/{id}/messages/{msg}       {uid, name, text, at, expireAt}
+///   clubs/{id}/challenges/{c}       ClubChallenge, set by the club admin
+///   clubs/{id}/challenges/{c}/results/{uid}  {name, timeMs, distanceM, at}: best finish
 ///   users/{uid}/clubs/{id}          {name, kind}: the clubs this user is in
 ///
 /// Messages carry expireAt (24 hours after sending). The app only shows the
@@ -159,6 +162,90 @@ class ClubsBackend {
     'reason': 'Club $club, message ${message.id}: $reason. Text: ${message.text}'.characters500,
     'at': FieldValue.serverTimestamp(),
   });
+
+  // ------------------------------------------------------- challenges
+
+  CollectionReference<Map<String, dynamic>> _challenges(String club) => _clubs.doc(club).collection('challenges');
+
+  /// The club's challenges, newest first.
+  Stream<List<ClubChallenge>> challenges(String club) =>
+      _challenges(club)
+          .orderBy('startsAt', descending: true)
+          .limit(30)
+          .snapshots()
+          .map((s) => [for (final d in s.docs) ?challengeFromJson(club, d.id, d.data())]);
+
+  /// Only the club admin (who started the club) can do this; the rules check it.
+  Future<void> createChallenge(
+    String club, {
+    required String uid,
+    required String title,
+    required ActivityKind kind,
+    required int distanceM,
+    required DateTime startsAt,
+    required DateTime endsAt,
+    (double, double)? start,
+    String startName = '',
+  }) async {
+    final t = title.trim();
+    if (t.length < 3 || t.length > 60) throw const FriendsFailure('Give the challenge a name of 3 to 60 letters.');
+    if (containsLink(t) || containsLink(startName)) throw const FriendsFailure('Links are not allowed in clubs.');
+    if (distanceM < 500 || distanceM > 100000) throw const FriendsFailure('Pick a distance from 0.5 to 100 km.');
+    if (!endsAt.isAfter(startsAt)) throw const FriendsFailure('The end must be after the start.');
+    await _challenges(club).add({
+      'title': t,
+      'kind': kind.name,
+      'distanceM': distanceM,
+      'startsAt': Timestamp.fromDate(startsAt),
+      'endsAt': Timestamp.fromDate(endsAt),
+      if (start != null) 'start': GeoPoint(start.$1, start.$2),
+      'startName': startName.trim(),
+      'createdBy': uid,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> deleteChallenge(String club, String id) => _challenges(club).doc(id).delete();
+
+  /// Fastest first.
+  Stream<List<ChallengeResult>> results(String club, String challenge) =>
+      _challenges(club)
+          .doc(challenge)
+          .collection('results')
+          .orderBy('timeMs')
+          .limit(100)
+          .snapshots()
+          .map(
+            (s) => [
+              for (final d in s.docs)
+                ChallengeResult(
+                  uid: d.id,
+                  name: d.data()['name'] as String? ?? 'Member',
+                  timeMs: (d.data()['timeMs'] as num?)?.toInt() ?? 0,
+                  distanceM: (d.data()['distanceM'] as num?)?.toInt() ?? 0,
+                ),
+            ],
+          );
+
+  /// Saves a finish; only a faster time replaces an earlier one. Returns
+  /// true if this is now the member's best.
+  Future<bool> submitResult(
+    ClubChallenge c, {
+    required String uid,
+    required String myName,
+    required int timeMs,
+    required int distanceM,
+  }) async {
+    if (distanceM < c.distanceM) throw const FriendsFailure('Finish the full distance to get on the board.');
+    if (timeMs < c.kind.minMillis(distanceM)) {
+      throw const FriendsFailure("That's faster than anyone can go, so it can't count.");
+    }
+    final ref = _challenges(c.clubId).doc(c.id).collection('results').doc(uid);
+    final before = (await ref.get()).data()?['timeMs'];
+    if (before is num && before <= timeMs) return false;
+    await ref.set({'name': myName, 'timeMs': timeMs, 'distanceM': distanceM, 'at': FieldValue.serverTimestamp()});
+    return true;
+  }
 
   /// Removes [uid] from every club, with their messages; closes the clubs
   /// they own (account deletion).

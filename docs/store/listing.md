@@ -33,7 +33,7 @@ FRIENDS
 Add friends with a code, challenge them (do it together or each when you are free), compare streaks and climb the leaderboard. Finish a challenge together and you both earn XP.
 
 CLUBS
-Start your own club or join one: a gym crew, morning walkers, a running group. Chat with members to plan your workouts. Messages disappear after 24 hours and links are not allowed, so clubs stay friendly and spam-free.
+Start your own club or join one: a gym crew, morning walkers, a running group. Chat with members to plan your workouts. Messages disappear after 24 hours and links are not allowed, so clubs stay friendly and spam-free. Club admins set challenges like "Run 8 km from the lake gate": members start it, FittArc measures the route with GPS, and the fastest times top the club ranking and earn XP.
 
 YOUR PRIVACY
 Sign in with Google only. No ads. We don't sell your data. Read the policy at https://fittarc.in/privacy/
@@ -61,6 +61,7 @@ Data collected:
 - Photos: food photos are processed on the device and not uploaded
 - App activity: progress, levels, badges and streaks (backup)
 - Messages (Other in-app messages): club chat text, shown to club members, deleted after 24 hours
+- Location (precise): used on the phone during a club challenge to measure distance; not uploaded (only time and distance are shared with the club). Also challenge start points set by club admins.
 Shared with third parties: none
 Encrypted in transit: yes
 Users can delete their account and data: yes (in the app under Profile, or by writing to support@fittarc.in)
@@ -70,7 +71,8 @@ Ads: none
 - Exact alarms (SCHEDULE_EXACT_ALARM): workout and sleep alarms are the core feature and must ring at the time the user sets.
 - Full-screen intent: the alarm screen must appear over the lock screen when it rings.
 - Camera (and its flash): rep counting during workouts, the food scanner, and the fingertip heart-rate estimate. All processed on the phone; nothing is uploaded.
-- Activity recognition and location: merged step counting and distance.
+- Activity recognition and location: merged step counting and distance, and measuring club challenges (run, walk, cycle).
+- Foreground service (location): keeps measuring a club challenge with the screen off; a notification shows while it runs. Play Console → App content → Foreground service permissions: choose "Location" and describe: "Measures the distance of a run, walk or ride the user starts in a club challenge, while the screen is off. Stops when the challenge ends." A short video of starting a challenge may be requested.
 - Nearby devices (Bluetooth scan and connect): finds and reads heart rate from a watch or chest strap the user picks. Declared "never for location".
 - Health Connect (read steps, heart rate, resting heart rate, sleep): shows what the user's watch app recorded. Read-only, user-initiated, nothing leaves the phone. The Health Connect permissions declaration form in Play Console asks why each is needed; answer: to show the user their own watch data inside the app.
 - Notifications: reminders for water, workouts and meals.

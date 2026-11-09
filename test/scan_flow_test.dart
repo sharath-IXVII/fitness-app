@@ -130,7 +130,6 @@ void main() {
     // The meal becomes a food snap: a FittArc story card that can be shared.
     expect(find.text('Food snap'), findsOneWidget);
     expect(find.text('FittArc'), findsOneWidget);
-    expect(find.text('FOOD SNAP · LUNCH'), findsOneWidget);
     expect(find.text('≈ 660 kcal'), findsOneWidget);
     final snaps = jsonDecode(prefs.getString('snaps.v1')!) as List;
     expect(snaps.single['meal'], 'lunch');

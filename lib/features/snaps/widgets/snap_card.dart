@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:intl/intl.dart';
 
-import '../../../core/widgets/app_logo.dart';
 import '../domain/food_snap.dart';
 
-/// The shareable food snap, in story shape (9:16). FittArc's name is at the
-/// top, then the plate with each dish marked, the nutrition table and the
-/// plate total. Drawn at 360 × 640 and saved at 3× (1080 × 1920).
+/// The shareable food snap, in story shape (9:16): the plate with each dish
+/// marked and a soft FittArc wordmark, the nutrition table and the plate
+/// total. Drawn at 360 × 640 and saved at 3× (1080 × 1920).
 class SnapCard extends StatelessWidget {
   const SnapCard({super.key, required this.snap, this.photo});
 
@@ -47,29 +45,9 @@ class SnapCard extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                // Brand header: always at the top of the story.
-                Row(
-                  children: [
-                    const AppLogo(size: 34, heroTag: null),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('FittArc', style: sport(22)),
-                          Text(
-                            'FOOD SNAP · ${snap.meal.label.toUpperCase()}',
-                            style: body(9.5, _glow, FontWeight.w700),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Text(DateFormat('d MMM · h:mm a').format(snap.at), style: body(10, _muted)),
-                  ],
-                ),
-                const SizedBox(height: 12),
                 // The plate, with each dish marked.
                 AspectRatio(
                   aspectRatio: 1,
@@ -86,6 +64,19 @@ class SnapCard extends StatelessWidget {
                             else
                               const ColoredBox(color: Color(0xFF3A2F27)),
                             for (final (i, item) in items.indexed) ..._mark(item, i, side, body),
+                            // The only branding: a soft FittArc wordmark inside the photo.
+                            Positioned(
+                              right: 12,
+                              bottom: 10,
+                              child: Text(
+                                'FittArc',
+                                style: sport(17).copyWith(
+                                  color: Colors.white.withValues(alpha: 0.62),
+                                  letterSpacing: 0.6,
+                                  shadows: const [Shadow(color: Color(0x66000000), blurRadius: 6)],
+                                ),
+                              ),
+                            ),
                           ],
                         );
                       },
@@ -113,7 +104,7 @@ class SnapCard extends StatelessWidget {
                     _g(item.macros.carbs),
                     _g(item.macros.fiber),
                   ], body(10)),
-                const Spacer(),
+                const SizedBox(height: 14),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
@@ -131,12 +122,6 @@ class SnapCard extends StatelessWidget {
                       _total('Fibre', _g(total.fiber), body),
                     ],
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Approximate values from a photo · fittarc.in',
-                  textAlign: TextAlign.center,
-                  style: body(8.5, _muted),
                 ),
               ],
             ),

@@ -127,6 +127,8 @@ jobs:
         with:
           name: fitalarm-test-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+          # Keep build files only a few days so GitHub storage never fills up.
+          retention-days: 5
 
       - name: Upload App Bundle
         if: ${{ env.KEYSTORE_BASE64 != '' }}
@@ -136,6 +138,7 @@ jobs:
         with:
           name: fit-tracker-play-bundle
           path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 5
 
       - name: Publish "Test build" release
         uses: softprops/action-gh-release@v2

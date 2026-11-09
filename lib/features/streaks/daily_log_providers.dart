@@ -76,7 +76,12 @@ final dayScoresProvider = Provider<Map<DateTime, DayScore>>((ref) {
   return ref.watch(dailyLogsProvider).map((d, log) => MapEntry(d, DayScore.of(log, targets)));
 });
 
+/// The streak, with streak freezes covering missed days.
+final streakFreezeProvider = Provider<({int current, int longest, int freezes, Set<DateTime> frozen})>(
+  (ref) => streakWithFreezes(ref.watch(dayScoresProvider), DateTime.now()),
+);
+
 final streakProvider = Provider<({int current, int longest})>((ref) {
-  final scores = ref.watch(dayScoresProvider);
-  return (current: currentStreak(scores, DateTime.now()), longest: longestStreak(scores));
+  final s = ref.watch(streakFreezeProvider);
+  return (current: s.current, longest: s.longest);
 });

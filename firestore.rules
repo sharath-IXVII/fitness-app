@@ -318,6 +318,18 @@ service cloud.firestore {
       allow read: if true;
     }
 
+    // Invites: a new user records, once, who invited them. The inviter can
+    // list who they invited (to get their XP).
+    match /referrals/{uid} {
+      allow create: if me() == uid && data().keys().hasOnly(['by', 'at'])
+        && data().by is string && data().by != uid
+        && exists(/databases/$(database)/documents/users/$(data().by))
+        && data().at == request.time;
+      allow get: if me() == uid;
+      allow list: if signedIn() && resource.data.by == me();
+      allow delete: if me() == uid;
+    }
+
     // Reports of abuse: write-only, reviewed in the console.
     match /reports/{id} {
       allow create: if signedIn() && data().by == me() && data().about is string

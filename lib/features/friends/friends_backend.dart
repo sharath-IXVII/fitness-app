@@ -26,6 +26,7 @@ class FriendsFailure implements Exception {
 ///   friendCodes/{code}               {uid}: a code to be found by
 ///   challenges/{id}                  FriendChallenge
 ///   reports/{id}                     {by, about, reason, at}
+///   referrals/{newUid}               {by: inviterUid, at}: who invited whom (once)
 class FriendsBackend {
   FriendsBackend(this._db);
 
@@ -173,6 +174,36 @@ class FriendsBackend {
   Future<void> report(String me, String other, String reason) =>
       _db.collection('reports').add({'by': me, 'about': other, 'reason': reason, 'at': FieldValue.serverTimestamp()});
 
+  // ------------------------------------------------------------ invites
+
+  /// XP each side gets for an invite, and how many invites earn it.
+  static const inviteXp = 200;
+  static const maxRewardedInvites = 10;
+
+  CollectionReference<Map<String, dynamic>> get _referrals => _db.collection('referrals');
+
+  /// Whether [uid] already used an invite code.
+  Future<bool> wasInvited(String uid) async => (await _referrals.doc(uid).get()).exists;
+
+  /// A new user enters the code of the friend who invited them: it's
+  /// recorded once, and a friend request goes to the inviter.
+  Future<PublicProfile> redeemInvite(PublicProfile me, String typed) async {
+    if (await wasInvited(me.uid)) throw const FriendsFailure('You already used an invite code.');
+    final inviter = await findByFriendCode(typed, me: me.uid);
+    await _referrals.doc(me.uid).set({'by': inviter.uid, 'at': FieldValue.serverTimestamp()});
+    try {
+      await sendRequest(me, inviter);
+    } catch (_) {}
+    return inviter;
+  }
+
+  /// People this user invited (who entered their code).
+  Stream<List<String>> invitees(String uid) => _referrals
+      .where('by', isEqualTo: uid)
+      .limit(maxRewardedInvites)
+      .snapshots()
+      .map((s) => [for (final d in s.docs) d.id]);
+
   /// Deletes everything friends could see about [uid] (account deletion).
   Future<void> deleteMe(String uid) async {
     final me = _users.doc(uid);
@@ -194,6 +225,9 @@ class FriendsBackend {
       if (c.status == ChallengeStatus.open) await _codes.doc(c.code).delete();
       await _challenges.doc(c.id).delete();
     }
+    try {
+      await _referrals.doc(uid).delete();
+    } catch (_) {}
     await me.delete();
   }
 

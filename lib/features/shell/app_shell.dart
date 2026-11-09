@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../friends/friends_backend.dart';
 import '../share/share_card.dart';
 import '../report/report_providers.dart';
 import '../clubs/clubs_providers.dart';
@@ -249,6 +250,12 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
     ref.listen(trainingProvider.select((t) => t.challenges), (_, _) => _replan());
     ref.listen(todayProvider, (_, _) => _replan());
+    // Invite rewards: XP for each friend who joined with this user's code.
+    ref.listen(inviteesProvider, (_, next) {
+      for (final uid in next.value ?? const <String>[]) {
+        ref.read(clubXpProvider.notifier).award('ref-$uid', FriendsBackend.inviteXp);
+      }
+    });
     // Club challenge reminders on this phone (no server needed).
     ref.watch(clubReminderPlannerProvider);
     // XP from finished challenges (50 each, up to 3 a week).

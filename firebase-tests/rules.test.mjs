@@ -368,3 +368,14 @@ test('club invite codes: only the admin adds one, anyone signed in can look it u
   await assertFails(deleteDoc(doc(as('ravi'), 'clubCodes/K7Q2MX')));
   await assertSucceeds(deleteDoc(doc(as('asha'), 'clubCodes/K7Q2MX')));
 });
+
+test('referrals: recorded once by the new user, listed only by the inviter', async () => {
+  await assertSucceeds(setDoc(doc(as('asha'), 'users/asha'), profile()));
+  await assertFails(setDoc(doc(as('ravi'), 'referrals/ravi'), { by: 'ravi', at: serverTimestamp() }));
+  await assertFails(setDoc(doc(as('ravi'), 'referrals/ravi'), { by: 'ghost', at: serverTimestamp() }));
+  await assertFails(setDoc(doc(as('meera'), 'referrals/ravi'), { by: 'asha', at: serverTimestamp() }));
+  await assertSucceeds(setDoc(doc(as('ravi'), 'referrals/ravi'), { by: 'asha', at: serverTimestamp() }));
+  await assertFails(setDoc(doc(as('ravi'), 'referrals/ravi'), { by: 'asha', at: serverTimestamp() })); // once
+  await assertSucceeds(getDocs(query(collection(as('asha'), 'referrals'), where('by', '==', 'asha'))));
+  await assertFails(getDocs(query(collection(as('meera'), 'referrals'), where('by', '==', 'asha'))));
+});

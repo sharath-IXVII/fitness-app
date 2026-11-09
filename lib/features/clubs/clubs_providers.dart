@@ -85,8 +85,9 @@ final challengeResultsProvider = StreamProvider.autoDispose.family<List<Challeng
   return b.results(k.$1, k.$2);
 });
 
-/// XP earned from club challenges, by challenge id (once each). Kept on
-/// this phone and added to the level.
+/// Bonus XP by id (once each): club challenges (by challenge id) and
+/// invites (`ref-joined`, `ref-UID`). Kept on this phone and added to
+/// the level.
 class ClubXpNotifier extends Notifier<Map<String, int>> {
   static const key = 'clubs.xp.v1';
 

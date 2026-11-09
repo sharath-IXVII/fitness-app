@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../clubs/clubs_providers.dart';
 import '../../core/app_info.dart';
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
@@ -394,6 +395,30 @@ class _AddFriendsCard extends ConsumerWidget {
     }
   }
 
+  /// A new user enters the code of the friend who invited them.
+  Future<void> _redeem(BuildContext context, WidgetRef ref) async {
+    final typed = await showDialog<String>(
+      context: context,
+      builder: (_) => const _CodeDialog(title: 'Who invited you? Enter their code', action: 'Claim'),
+    );
+    if (typed == null || !context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final inviter = await ref
+          .read(friendsBackendProvider)!
+          .redeemInvite(ref.read(myPublicProfileProvider)!, typed);
+      await ref.read(clubXpProvider.notifier).award('ref-joined', FriendsBackend.inviteXp);
+      ref.invalidate(wasInvitedProvider);
+      messenger.showSnackBar(
+        SnackBar(content: Text('+${FriendsBackend.inviteXp} XP! ${inviter.name} gets it too, and a friend request.')),
+      );
+    } on FriendsFailure catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.message)));
+    } catch (_) {
+      messenger.showSnackBar(const SnackBar(content: Text("Couldn't reach Friends. Check your internet.")));
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
@@ -406,8 +431,8 @@ class _AddFriendsCard extends ConsumerWidget {
           Text('Add friends', style: text.titleMedium),
           const SizedBox(height: 2),
           Text(
-            'Share your code, or enter a friend\'s. Friends added this way earn no XP. Finish a challenge '
-            'together and you both earn 50 XP.',
+            'Share your code: when a new friend joins with it, you both get ${FriendsBackend.inviteXp} XP. '
+            'Finish a challenge together and you both earn 50 XP.',
             style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 12),
@@ -443,7 +468,9 @@ class _AddFriendsCard extends ConsumerWidget {
                     ? null
                     : () => SharePlus.instance.share(
                         ShareParams(
-                          text: 'Add me on ${AppInfo.name}! My friend code is ${code.value}. ${AppInfo.storeUrl}',
+                          text:
+                              'Join me on ${AppInfo.name}! Enter my code ${code.value} in Friends and we both get '
+                              '${FriendsBackend.inviteXp} XP. ${AppInfo.storeUrl}',
                         ),
                       ),
                 icon: const Icon(Icons.share_rounded),
@@ -456,6 +483,15 @@ class _AddFriendsCard extends ConsumerWidget {
             icon: const Icon(Icons.person_add_alt_1_rounded),
             label: const Text("Enter a friend's code"),
           ),
+          if (ref.watch(wasInvitedProvider).value == false &&
+              DateTime.now().difference(ref.watch(firstUseProvider)).inDays <= 14) ...[
+            const SizedBox(height: 8),
+            OutlinedButton.icon(
+              onPressed: () => _redeem(context, ref),
+              icon: const Icon(Icons.card_giftcard_rounded),
+              label: Text('Invited by a friend? Both get ${FriendsBackend.inviteXp} XP'),
+            ),
+          ],
         ],
       ),
     );

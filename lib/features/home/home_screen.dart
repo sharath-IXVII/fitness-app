@@ -50,7 +50,12 @@ class HomeScreen extends ConsumerWidget {
       const ArcCard(),
       const SizedBox(height: 14),
       // The streak calendar leads the page — it's the habit we want to build.
-      ConsistencyCard(scores: scores, current: streak.current, longest: streak.longest),
+      ConsistencyCard(
+        scores: scores,
+        current: streak.current,
+        longest: streak.longest,
+        freezes: ref.watch(streakFreezeProvider).freezes,
+      ),
       const SizedBox(height: 14),
       _ScoreCard(score: score),
       const SizedBox(height: 12),

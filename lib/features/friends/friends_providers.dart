@@ -90,3 +90,17 @@ final friendProfileProvider = StreamProvider.autoDispose.family<PublicProfile?, 
   if (b == null) return Stream.value(null);
   return b.watchProfile(uid);
 });
+
+/// Whether this user already entered an invite code.
+final wasInvitedProvider = FutureProvider<bool>((ref) async {
+  final b = ref.watch(friendsBackendProvider), uid = ref.watch(friendsUidProvider);
+  if (b == null || uid == null) return true;
+  return b.wasInvited(uid);
+});
+
+/// People this user invited.
+final inviteesProvider = StreamProvider<List<String>>((ref) {
+  final b = ref.watch(friendsBackendProvider), uid = ref.watch(friendsUidProvider);
+  if (b == null || uid == null) return Stream.value(const []);
+  return b.invitees(uid);
+});

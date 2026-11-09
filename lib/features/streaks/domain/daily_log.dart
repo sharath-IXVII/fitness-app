@@ -115,3 +115,41 @@ int longestStreak(Map<DateTime, DayScore> scores) {
   }
   return best;
 }
+
+/// Streaks with streak freezes. Every 7 days in a row earn one freeze (at
+/// most [maxFreezes] kept). A missed day uses a freeze automatically, so the
+/// streak goes on (the frozen day itself isn't counted). Worked out from
+/// the history, so it's the same on every phone.
+({int current, int longest, int freezes, Set<DateTime> frozen}) streakWithFreezes(
+  Map<DateTime, DayScore> scores,
+  DateTime today, {
+  int maxFreezes = 2,
+}) {
+  final t = dayOnly(today);
+  final kept = [
+    for (final e in scores.entries)
+      if (e.value.keepsStreak) e.key,
+  ]..sort();
+  if (kept.isEmpty) return (current: 0, longest: 0, freezes: 0, frozen: const {});
+  final frozen = <DateTime>{};
+  var bank = 0, run = 0, best = 0;
+  // Day by day from the first kept day up to yesterday; today can still be
+  // done, so it never uses a freeze.
+  for (var d = kept.first; d.isBefore(t); d = addDays(d, 1)) {
+    if (scores[d]?.keepsStreak ?? false) {
+      run++;
+      if (run % 7 == 0 && bank < maxFreezes) bank++;
+    } else if (run > 0 && bank > 0) {
+      bank--;
+      frozen.add(d);
+    } else {
+      run = 0;
+    }
+    if (run > best) best = run;
+  }
+  if (scores[t]?.keepsStreak ?? false) {
+    run++;
+    if (run > best) best = run;
+  }
+  return (current: run, longest: best, freezes: bank, frozen: frozen);
+}

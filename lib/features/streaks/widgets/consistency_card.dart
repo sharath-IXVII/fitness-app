@@ -10,11 +10,20 @@ import '../../arcs/widgets/arc_calendar.dart';
 
 /// Streak stats, the arc calendar, and this week at a glance.
 class ConsistencyCard extends StatelessWidget {
-  const ConsistencyCard({super.key, required this.scores, required this.current, required this.longest});
+  const ConsistencyCard({
+    super.key,
+    required this.scores,
+    required this.current,
+    required this.longest,
+    this.freezes = 0,
+  });
 
   final Map<DateTime, DayScore> scores;
   final int current;
   final int longest;
+
+  /// Streak freezes saved up (one per 7 days in a row, at most 2).
+  final int freezes;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +48,28 @@ class ConsistencyCard extends StatelessWidget {
                 _Stat(icon: Icons.emoji_events_rounded, color: AppColors.gold, value: longest, label: 'Best streak'),
                 const _Divider(),
                 _Stat(icon: Icons.verified_rounded, color: AppColors.primary, value: perfect, label: 'Perfect days'),
+              ],
+            ),
+          ),
+          const SizedBox(height: 10),
+          Tooltip(
+            message: 'Every 7 days in a row earns a streak freeze (keep up to 2). '
+                'If you miss a day, a freeze saves your streak automatically.',
+            triggerMode: TooltipTriggerMode.tap,
+            showDuration: const Duration(seconds: 5),
+            child: Row(
+              children: [
+                Text('❄️', style: Theme.of(context).textTheme.titleSmall),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    freezes == 0
+                        ? 'Streak freeze: earn one with 7 days in a row'
+                        : '$freezes streak freeze${freezes == 1 ? '' : 's'} ready: a missed day won\'t break your streak',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ),
+                Icon(Icons.info_outline_rounded, size: 16, color: AppColors.textMuted),
               ],
             ),
           ),

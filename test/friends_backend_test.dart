@@ -250,4 +250,16 @@ void main() {
       expect(challengeBonusXp(nextWeek), 200);
     });
   });
+
+  test('invites: a new user enters a code once; the inviter sees them', () async {
+    final code = await b.myFriendCode('asha');
+    expect(await b.wasInvited('ravi'), isFalse);
+    final inviter = await b.redeemInvite(_ravi, code);
+    expect(inviter.uid, 'asha');
+    expect(await b.wasInvited('ravi'), isTrue);
+    expect(await b.invitees('asha').first, ['ravi']);
+    await expectLater(b.redeemInvite(_ravi, code), throwsA(isA<FriendsFailure>()));
+    // Ravi's request reached Asha.
+    expect((await b.incomingRequests('asha').first).map((r) => r.fromUid), ['ravi']);
+  });
 }

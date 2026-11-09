@@ -6,10 +6,13 @@ import 'package:image/image.dart' as img;
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 import 'domain/recognition.dart';
+import 'tflite_food_detector.dart';
 
-/// Loads the bundled model; null when it's missing.
-Future<Future<List<(String, double, int)>> Function(Uint8List)?> loadFoodModel() async =>
-    (await TfliteFoodRecognizer.load())?.classify;
+/// Loads the bundled food model; null when there is none. A trained food
+/// detector (exact boxes around each dish) is used when the build has one;
+/// otherwise the dish classifier, which marks rough areas.
+Future<Future<List<(String, double, Rect?)>> Function(Uint8List)?> loadFoodModel() async =>
+    (await TfliteFoodDetector.load())?.detect ?? (await TfliteFoodRecognizer.load())?.classify;
 
 /// Recognises the food in a photo, entirely on the phone. Free, offline and
 /// private: the photo never leaves the device.
@@ -41,14 +44,17 @@ class TfliteFoodRecognizer {
   /// Top guesses as (label, probability) for the whole photo and for five
   /// zoomed regions (four corners and the centre), merged so that each dish
   /// on a mixed plate gets a chance.
-  Future<List<(String, double, int)>> classify(Uint8List image) async {
+  Future<List<(String, double, Rect?)>> classify(Uint8List image) async {
     final input = _interpreter.getInputTensor(0);
     final h = input.shape[1], w = input.shape[2];
 
     // Decoding and resizing a photo is slow; do it off the UI thread.
     final views = await Isolate.run(() => preprocess(image, w, h));
     if (views.isEmpty) return const [];
-    return mergeViews([for (final rgb in views) _run(rgb, w, h)]);
+    return [
+      for (final (label, score, region) in mergeViews([for (final rgb in views) _run(rgb, w, h)]))
+        (label, score, region > 0 && region < scanRegions.length ? scanRegions[region] : null),
+    ];
   }
 
   List<(String, double)> _run(Uint8List rgb, int w, int h) {

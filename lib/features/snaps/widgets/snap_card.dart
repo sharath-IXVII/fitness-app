@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_colors.dart';
 
+import '../../scan/domain/recognition.dart' show scanRegions;
 import '../domain/food_snap.dart';
 
 /// The shareable food snap, in story shape (9:16): the plate with each dish
@@ -151,14 +152,18 @@ class SnapCard extends StatelessWidget {
     if (b == null) {
       return [Positioned(left: 8, bottom: 8.0 + i * 24, child: tag)];
     }
-    // The region the model looked at is large and overlaps its neighbours, so
-    // the frame marks its middle part, where the dish most likely is.
+    // A box from the food detector fits the dish: draw it as it is. A rough
+    // area from the classifier is large and overlaps its neighbours, so mark
+    // its middle part, where the dish most likely is.
+    final rough = scanRegions.contains(b);
     final c = b.center;
-    final r = Rect.fromCenter(
-      center: Offset(c.dx * side, c.dy * side),
-      width: b.width * side * 0.62,
-      height: b.height * side * 0.62,
-    );
+    final r = rough
+        ? Rect.fromCenter(
+            center: Offset(c.dx * side, c.dy * side),
+            width: b.width * side * 0.62,
+            height: b.height * side * 0.62,
+          )
+        : Rect.fromLTWH(b.left * side, b.top * side, b.width * side, b.height * side);
     return [
       Positioned.fromRect(
         rect: r,

@@ -27,9 +27,13 @@ final _png = base64Decode(
 
 /// Stands in for the on-device model: a confident butter chicken, a less
 /// likely chicken curry, and a dish with no nutrition data.
-Future<List<(String, double, int)>> _fakeClassify(Uint8List image) async {
+Future<List<(String, double, Rect?)>> _fakeClassify(Uint8List image) async {
   await Future<void>.delayed(const Duration(milliseconds: 300));
-  return const [('Butter chicken', 0.71, 1), ('Chicken curry', 0.12, 0), ('Chaudin', 0.05, 0)];
+  return const [
+    ('Butter chicken', 0.71, Rect.fromLTWH(0, 0, 0.6, 0.6)),
+    ('Chicken curry', 0.12, null),
+    ('Chaudin', 0.05, null),
+  ];
 }
 
 Map<String, Object> _seed() => {

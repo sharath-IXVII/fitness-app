@@ -50,6 +50,15 @@ jobs:
           test "$(wc -l < assets/models/food_labels.csv)" -gt 2000
           ls -la assets/models
 
+      # The trained food detector, if one has been published (release tag
+      # "food-detector", see tools/food_model/README.md). Optional.
+      - name: Download food detector (optional)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download food-detector --repo "$GITHUB_REPOSITORY" --pattern 'food_detector*' --dir assets/models \
+            && echo "Food detector added." || echo "No food detector yet; the classifier is used."
+
       - name: Install packages
         run: flutter pub get
 

@@ -1,6 +1,8 @@
 import 'package:fitalarm/features/diet/domain/food.dart';
 import 'package:fitalarm/features/diet/domain/food_db.dart';
 import 'package:fitalarm/features/scan/domain/recognition.dart';
+import 'package:fitalarm/features/scan/tflite_food_detector.dart' show parseDetections;
+import 'package:flutter/painting.dart' show Rect;
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -68,5 +70,39 @@ void main() {
     expect(matchFood('boiled rice', byId)?.id, 'rice');
     expect(matchFood('Fish curry', byId)?.id, 'fish_curry'); // exact rules still win
     expect(matchFood('veg biryani', byId)?.id, 'veg_biryani');
+  });
+
+  test('detector outputs: boxes, classes and scores in either order', () {
+    final boxes = [
+      [
+        [0.1, 0.2, 0.5, 0.6],
+        [0.5, 0.5, 0.9, 0.95],
+        [0.0, 0.0, 0.1, 0.1],
+      ],
+    ];
+    final classes = [
+      [3.0, 0.0, 7.0],
+    ];
+    final scores = [
+      [0.82, 0.64, 0.1],
+    ];
+    for (final order in [
+      [
+        boxes,
+        classes,
+        scores,
+        <double>[3],
+      ],
+      [
+        boxes,
+        scores,
+        classes,
+        <double>[3],
+      ],
+    ]) {
+      final d = parseDetections(order);
+      expect(d.map((x) => x.$1), [3, 0]); // the 0.1 one is too unsure
+      expect(d.first.$3, const Rect.fromLTRB(0.2, 0.1, 0.6, 0.5));
+    }
   });
 }

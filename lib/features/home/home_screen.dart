@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../wrapped/wrapped_screen.dart';
 import '../report/daily_report_screen.dart';
 import '../festivals/festival_widgets.dart';
 import '../../core/router.dart';
@@ -46,6 +47,8 @@ class HomeScreen extends ConsumerWidget {
       const SizedBox(height: 18),
       // On festival days: "Happy Diwali, Asha!".
       FestivalBanner(name: profile.name),
+      // For two weeks after an Arc ends: its Wrapped story.
+      const WrappedReadyTile(),
       // The season's arc sets the tone for the whole app.
       const ArcCard(),
       const SizedBox(height: 14),

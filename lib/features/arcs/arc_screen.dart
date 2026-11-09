@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/page_background.dart';
@@ -27,7 +29,16 @@ class ArcScreen extends ConsumerWidget {
     final lateStart = r.from.isAfter(arc.start);
 
     return Scaffold(
-      appBar: AppBar(title: Text(arc.label)),
+      appBar: AppBar(
+        title: Text(arc.label),
+        actions: [
+          TextButton.icon(
+            onPressed: () => context.push(Routes.wrapped, extra: arc),
+            icon: const Icon(Icons.auto_awesome_rounded),
+            label: const Text('Wrapped so far'),
+          ),
+        ],
+      ),
       body: PageBackground(
         child: ListView(
           physics: const BouncingScrollPhysics(),

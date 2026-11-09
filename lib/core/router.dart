@@ -27,6 +27,7 @@ import '../features/profile/profile_providers.dart';
 import '../features/progress/achievements_screen.dart';
 import '../features/progress/weekly_report_screen.dart';
 import '../features/profile/profile_screen.dart';
+import '../features/arcs/domain/arc.dart';
 import '../features/clubs/challenge_screens.dart';
 import '../features/clubs/club_screen.dart';
 import '../features/clubs/domain/club_challenge.dart';
@@ -34,6 +35,7 @@ import '../features/clubs/report_screen.dart';
 import '../features/clubs/clubs_screen.dart';
 import '../features/report/daily_report_screen.dart';
 import '../features/share/share_card.dart';
+import '../features/wrapped/wrapped_screen.dart';
 import '../features/snaps/snap_screen.dart';
 import '../features/scan/scan_screen.dart';
 import '../features/shell/app_shell.dart';
@@ -90,6 +92,7 @@ abstract final class Routes {
   static const runReport = '/run-report';
   static const dailyReport = '/daily-report';
   static const shareCard = '/share-card';
+  static const wrapped = '/wrapped';
   static const achievements = '/achievements';
   static const report = '/report';
   static const privacy = '/privacy';
@@ -216,6 +219,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, s) => RunReportScreen(id: s.extra! as String),
       ),
       GoRoute(path: Routes.dailyReport, builder: (_, _) => const DailyReportScreen()),
+      GoRoute(
+        path: Routes.wrapped,
+        redirect: (_, s) => s.extra is ArcPeriod ? null : Routes.home,
+        builder: (_, s) => ArcWrappedScreen(period: s.extra! as ArcPeriod),
+      ),
       GoRoute(
         path: Routes.shareCard,
         redirect: (_, s) => s.extra is ShareCardData ? null : Routes.home,

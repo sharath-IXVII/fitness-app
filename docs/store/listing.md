@@ -61,6 +61,8 @@ Data collected:
 - Photos: food photos are processed on the device and not uploaded
 - App activity: progress, levels, badges and streaks (backup)
 - Messages (Other in-app messages): club chat text, shown to club members, deleted after 24 hours
+- Photos: food snaps a user chooses to send to FittArc friends (small JPEG), shown only to those friends, deleted after 24 hours
+- App activity: team streaks (team name, member names, which members finished each day)
 - Location (precise): used on the phone during a club challenge to measure distance; not uploaded (only time and distance are shared with the club). Also challenge start points set by club admins.
 Shared with third parties: none
 Encrypted in transit: yes

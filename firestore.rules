@@ -361,6 +361,22 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/teams/$(data().teamId)).data.code == code;
     }
 
+    // Snaps sent to friends inside the app (a small JPEG, gone in 24 hours).
+    match /snapShares/{id} {
+      allow read: if signedIn() && (me() in resource.data.to || resource.data.from == me());
+      allow create: if signedIn()
+        && data().keys().hasOnly(['from', 'fromName', 'to', 'caption', 'image', 'at', 'expireAt'])
+        && data().from == me() && shortText(data().fromName, 40)
+        && data().to is list && data().to.size() > 0 && data().to.size() <= 10 && !(me() in data().to)
+        && data().caption is string && data().caption.size() <= 120 && noLink(data().caption)
+        && data().image is bytes && data().image.size() <= 204800
+        && data().at == request.time
+        && data().expireAt is timestamp
+        && data().expireAt > request.time + duration.value(23, 'h')
+        && data().expireAt < request.time + duration.value(25, 'h');
+      allow delete: if signedIn() && resource.data.from == me();
+    }
+
     // App settings the owner edits in the console (festival dates).
     match /config/{doc} {
       allow read: if true;

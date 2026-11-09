@@ -47,6 +47,14 @@ const privacySections = <(String, String)>[
         'time and distance are shared with the club for the ranking.',
   ),
   (
+    'Teams and snaps to friends',
+    'If you join a team streak, Cloud Firestore stores the team name, its members\' names and, for each day, '
+        'which members hit their goals (nothing else about the day). If you send a food snap to friends inside '
+        'FittArc, a small picture of the snap and a short caption are stored for the friends you pick and deleted '
+        'after 24 hours. Runs, walks and rides you track on your own, and your body-check measurements, stay on '
+        'your phone.',
+  ),
+  (
     'Data stored on your phone',
     'Alarms, routines, your My Day plan, weigh-ins, weight goal, saved foods, meal photos and the pulse readings '
         'you save in the Health tab are stored only on your device and are not backed up, so they are not restored on a new phone. Your progress backup (above) '

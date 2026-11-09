@@ -404,3 +404,21 @@ test('team streaks: create, join with the code, check in only yourself', async (
   // Leave.
   await assertSucceeds(updateDoc(doc(as('ravi'), 'teams/t1'), { members: ['asha'], 'names.ravi': deleteField() }));
 });
+
+test('snap shares: sender writes, only recipients read, small and short-lived', async () => {
+  const { Bytes } = await import('firebase/firestore');
+  const img = Bytes.fromUint8Array(new Uint8Array(1000));
+  const snap = (over = {}) => ({
+    from: 'asha', fromName: 'Asha', to: ['ravi'], caption: 'Lunch: about 450 kcal', image: img,
+    at: serverTimestamp(), expireAt: inHours(24), ...over,
+  });
+  await assertSucceeds(setDoc(doc(as('asha'), 'snapShares/s1'), snap()));
+  await assertFails(setDoc(doc(as('asha'), 'snapShares/s2'), snap({ from: 'ravi' })));
+  await assertFails(setDoc(doc(as('asha'), 'snapShares/s3'), snap({ expireAt: inHours(24 * 7) })));
+  await assertFails(setDoc(doc(as('asha'), 'snapShares/s4'), snap({ caption: 'see x.com' })));
+  await assertFails(setDoc(doc(as('asha'), 'snapShares/s5'), snap({ image: Bytes.fromUint8Array(new Uint8Array(300000)) })));
+  await assertSucceeds(getDoc(doc(as('ravi'), 'snapShares/s1')));
+  await assertFails(getDoc(doc(as('meera'), 'snapShares/s1')));
+  await assertFails(deleteDoc(doc(as('ravi'), 'snapShares/s1')));
+  await assertSucceeds(deleteDoc(doc(as('asha'), 'snapShares/s1')));
+});

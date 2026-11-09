@@ -1,3 +1,4 @@
+import 'dart:isolate';
 import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
@@ -5,12 +6,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image/image.dart' as img;
 import 'package:share_plus/share_plus.dart';
 
 import '../../core/photo_store.dart';
 import '../../core/widgets/gradient_button.dart';
 import '../../core/widgets/page_background.dart';
+import '../friends/friends_providers.dart';
 import 'domain/food_snap.dart';
+import 'snap_share_backend.dart';
+import 'snap_share_providers.dart';
 import 'snaps_providers.dart';
 import 'widgets/snap_card.dart';
 
@@ -76,6 +81,96 @@ class _SnapScreenState extends ConsumerState<SnapScreen> {
     final data = await image.toByteData(format: ui.ImageByteFormat.png);
     image.dispose();
     return data?.buffer.asUint8List();
+  }
+
+  /// The card as a small JPEG for sending inside the app (about 100 KB).
+  Future<Uint8List?> _jpeg() async {
+    final box = _boundary.currentContext?.findRenderObject() as RenderRepaintBoundary?;
+    if (box == null) return null;
+    final image = await box.toImage(pixelRatio: 1.6);
+    final data = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+    final (w, h) = (image.width, image.height);
+    image.dispose();
+    if (data == null) return null;
+    final rgba = data.buffer.asUint8List();
+    return Isolate.run(() {
+      final pic = img.Image.fromBytes(width: w, height: h, bytes: rgba.buffer, numChannels: 4);
+      var q = 75;
+      var out = img.encodeJpg(pic, quality: q);
+      while (out.length > SnapShareBackend.maxBytes && q > 35) {
+        q -= 15;
+        out = img.encodeJpg(pic, quality: q);
+      }
+      return out;
+    });
+  }
+
+  /// Sends the snap to friends inside FittArc; it disappears after 24 hours.
+  Future<void> _sendToFriends(FoodSnap snap) async {
+    final friends = ref.read(friendsListProvider).value ?? const [];
+    final me = ref.read(myPublicProfileProvider);
+    final b = ref.read(snapShareBackendProvider);
+    if (me == null || b == null) return;
+    if (friends.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Add friends first (Friends page).')));
+      return;
+    }
+    final chosen = await showDialog<List<String>>(
+      context: context,
+      builder: (d) {
+        final picked = <String>{};
+        return StatefulBuilder(
+          builder: (d, setD) => AlertDialog(
+            title: const Text('Send to friends'),
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  for (final f in friends)
+                    CheckboxListTile(
+                      value: picked.contains(f.uid),
+                      onChanged: (v) => setD(() => v == true ? picked.add(f.uid) : picked.remove(f.uid)),
+                      title: Text(f.name),
+                    ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(d).pop(), child: const Text('Cancel')),
+              TextButton(
+                onPressed: picked.isEmpty ? null : () => Navigator.of(d).pop(picked.toList()),
+                child: const Text('Send'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (chosen == null || chosen.isEmpty || !mounted) return;
+    setState(() => _sharing = true);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final jpeg = await _jpeg();
+      if (jpeg == null) return;
+      await b.send(
+        from: me.uid,
+        fromName: me.name,
+        to: chosen.take(SnapShareBackend.maxFriends).toList(),
+        caption: '${snap.meal.label}: about ${snap.total.kcal.round()} kcal',
+        jpeg: jpeg,
+      );
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text('Sent to ${chosen.length} ${chosen.length == 1 ? 'friend' : 'friends'}. Gone in 24 hours.'),
+        ),
+      );
+    } catch (e) {
+      debugPrint('snap send: $e');
+      messenger.showSnackBar(const SnackBar(content: Text("Couldn't send. Check your internet.")));
+    } finally {
+      if (mounted) setState(() => _sharing = false);
+    }
   }
 
   Future<void> _share(FoodSnap snap) async {
@@ -159,10 +254,16 @@ class _SnapScreenState extends ConsumerState<SnapScreen> {
                       child: Column(
                         children: [
                           GradientButton(
-                            label: _sharing ? 'Preparing…' : 'Share to story or friends',
+                            label: _sharing ? 'Preparing…' : 'Share to story or other apps',
                             icon: Icons.ios_share_rounded,
                             onPressed: _sharing ? null : () => _share(snap),
                           ),
+                          if (ref.watch(snapShareBackendProvider) != null)
+                            TextButton.icon(
+                              onPressed: _sharing ? null : () => _sendToFriends(snap),
+                              icon: const Icon(Icons.send_rounded),
+                              label: const Text('Send to FittArc friends (24 h)'),
+                            ),
                           const SizedBox(height: 4),
                           Text(
                             'Saved on this phone only. Sharing sends the picture to the app you pick.',

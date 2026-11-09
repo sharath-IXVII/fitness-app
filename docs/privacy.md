@@ -27,6 +27,10 @@ If you use Friends, Cloud Firestore (Google) stores a public profile that your f
 
 If you create or join a club, Cloud Firestore stores the club's name, description and type, who started it, its members' names, and the text messages sent in it. Every signed-in user can see a club's name and description; only members can read its chat. Messages are text only (no photos or links) and are deleted automatically 24 hours after they are sent. You can delete your own messages, leave a club, report a message or block a person at any time; the person who started a club can remove messages and members. Club admins can set challenges such as "Run 8 km", optionally with a start point (a location). When you do a challenge, FittArc uses your phone's location only while it runs, to measure the distance, also with the screen off (a notification shows it is on). Your route stays on your phone; only your name, time and distance are shared with the club for the ranking.
 
+## Teams and snaps to friends
+
+If you join a team streak, Cloud Firestore stores the team name, its members' names and, for each day, which members hit their goals (nothing else about the day). If you send a food snap to friends inside FittArc, a small picture of the snap and a short caption are stored for the friends you pick and deleted after 24 hours. Runs, walks and rides you track on your own, and your body-check measurements, stay on your phone.
+
 ## Data stored on your phone
 
 Alarms, routines, your My Day plan, weigh-ins, weight goal, saved foods, meal photos and the pulse readings you save in the Health tab are stored only on your device and are not backed up, so they are not restored on a new phone. Your progress backup (above) is kept in your account. Uninstalling the app or using "Reset data on this device" removes what is on the phone.

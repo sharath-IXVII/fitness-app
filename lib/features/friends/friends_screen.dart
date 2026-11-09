@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../snaps/widgets/snap_inbox.dart';
 import '../teams/teams_screen.dart';
 import '../clubs/clubs_providers.dart';
 import '../../core/app_info.dart';
@@ -60,6 +61,7 @@ class FriendsScreen extends ConsumerWidget {
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
           children: [
+            const SnapInbox(),
             _MyCard(me: me),
             const SizedBox(height: 14),
             Row(

@@ -139,7 +139,7 @@ void main() {
     expect(snaps.single['meal'], 'lunch');
     expect((snaps.single['items'] as List).single['n'], 'Butter chicken');
     expect((snaps.single['items'] as List).single['b'], [0, 0, 0.6, 0.6]); // seen in the top-left region
-    await t.tap(find.text('Share to story or friends'));
+    await t.tap(find.text('Share to story or other apps'));
     await t.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 500)));
     await _wait(t, 300);
     expect(shared, hasLength(1));

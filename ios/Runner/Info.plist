@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>FittArc saves your challenge report to Photos when you tap Download.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Counts your steps and notices when you are in a vehicle so rides are not counted.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

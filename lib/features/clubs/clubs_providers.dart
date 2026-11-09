@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/storage.dart';
@@ -7,6 +8,7 @@ import '../friends/friends_providers.dart';
 import 'clubs_backend.dart';
 import 'domain/club.dart';
 import 'domain/club_challenge.dart';
+import 'domain/run_report.dart';
 
 /// Clubs need an online account, like Friends; null in demo mode.
 final clubsBackendProvider = Provider<ClubsBackend?>((ref) {
@@ -107,3 +109,55 @@ class ClubXpNotifier extends Notifier<Map<String, int>> {
 }
 
 final clubXpProvider = NotifierProvider<ClubXpNotifier, Map<String, int>>(ClubXpNotifier.new);
+
+/// The user's own challenge reports, on this phone only. Each one is
+/// removed [RunReport.keepFor] after finishing.
+class RunReportsNotifier extends Notifier<List<RunReport>> {
+  static const key = 'clubs.reports.v1';
+
+  @override
+  List<RunReport> build() {
+    final raw = ref.read(sharedPrefsProvider).getString(key);
+    if (raw == null) return const [];
+    try {
+      final now = clock.now();
+      final all = [for (final j in jsonDecode(raw) as List<dynamic>) ?RunReport.fromJson(j as Map<String, dynamic>)];
+      final live = [
+        for (final r in all)
+          if (!r.expired(now)) r,
+      ];
+      if (live.length != all.length) _write(live);
+      return live;
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  void _write(List<RunReport> list) =>
+      ref.read(sharedPrefsProvider).setString(key, jsonEncode([for (final r in list) r.toJson()]));
+
+  Future<void> add(RunReport r) async {
+    state = [r, ...state.where((o) => o.id != r.id)];
+    _write(state);
+  }
+
+  /// Drops reports whose time is up (called when a report screen opens).
+  void prune() {
+    final now = clock.now();
+    if (state.any((r) => r.expired(now))) {
+      state = [
+        for (final r in state)
+          if (!r.expired(now)) r,
+      ];
+      _write(state);
+    }
+  }
+}
+
+final runReportsProvider = NotifierProvider<RunReportsNotifier, List<RunReport>>(RunReportsNotifier.new);
+
+/// The report for one challenge, if it's still kept.
+final runReportProvider = Provider.family<RunReport?, String>((ref, id) {
+  final now = clock.now();
+  return ref.watch(runReportsProvider).where((r) => r.id == id && !r.expired(now)).firstOrNull;
+});

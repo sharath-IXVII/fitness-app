@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:clock/clock.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -11,6 +12,7 @@ import 'package:fitalarm/features/clubs/clubs_backend.dart';
 import 'package:fitalarm/features/clubs/domain/club.dart';
 import 'package:fitalarm/features/clubs/domain/club_challenge.dart';
 import 'package:fitalarm/features/clubs/gps.dart';
+import 'package:fitalarm/features/clubs/report_screen.dart';
 import 'package:fitalarm/features/friends/domain/friends.dart';
 import 'package:fitalarm/features/friends/friends_backend.dart';
 import 'package:fitalarm/features/friends/friends_providers.dart';
@@ -44,6 +46,8 @@ Map<String, Object> _seed() => {
   }),
 };
 
+final saved = <Uint8List>[];
+
 Future<FriendsBackend?> _open(WidgetTester t, {bool online = true, Gps? gps}) async {
   t.view.physicalSize = const Size(390, 844) * 3;
   t.view.devicePixelRatio = 3;
@@ -58,6 +62,7 @@ Future<FriendsBackend?> _open(WidgetTester t, {bool online = true, Gps? gps}) as
         authServiceProvider.overrideWithValue(DemoAuthService(prefs)),
         friendsBackendProvider.overrideWithValue(backend),
         if (gps != null) gpsProvider.overrideWithValue(gps),
+        saveImageProvider.overrideWithValue((png, name) async => saved.add(png)),
       ],
       child: const FitTrackerApp(),
     ),
@@ -204,9 +209,24 @@ void main() {
     expect(find.text('Finished! 🎉'), findsOneWidget);
     expect(find.text('+55 XP'), findsOneWidget);
     expect(find.text('Saved to the club ranking.'), findsOneWidget);
-    await t.tap(find.text('See ranking'));
+    expect(find.text('You are #1 of 1 in the club.'), findsOneWidget);
+
+    // The member's own report: download or share; kept for 5 hours.
+    await t.tap(find.text('See my report'));
+    await _wait(t);
+    expect(find.text('My report'), findsOneWidget);
+    expect(find.text('#1 of 1'), findsOneWidget);
+    expect(find.textContaining('Download it to keep it.'), findsOneWidget);
+    await t.tap(find.text('Download'));
+    await t.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 500)));
+    await _wait(t, 300);
+    expect(saved, hasLength(1));
+    expect(saved.single.sublist(1, 4), 'PNG'.codeUnits);
+    expect(find.text('Saved to your gallery.'), findsOneWidget);
+    await t.pageBack();
     await _wait(t);
     expect(find.text('Asha (you)'), findsOneWidget);
+    expect(find.textContaining('My report (until'), findsOneWidget);
     final club = (await b.db.collection('clubs').get()).docs.single.id;
     final ch = (await b.db.collection('clubs/$club/challenges').get()).docs.single.id;
     final r = (await b.db.doc('clubs/$club/challenges/$ch/results/demo').get()).data()!;

@@ -18,6 +18,7 @@ import '../friends/friends_providers.dart';
 import 'clubs_providers.dart';
 import 'domain/club.dart';
 import 'domain/club_challenge.dart';
+import 'domain/run_report.dart';
 import 'gps.dart';
 
 final _day = DateFormat('d MMM, h:mm a');
@@ -399,6 +400,15 @@ class ClubChallengeScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 14),
             _StartButton(challenge: c),
+            if (ref.watch(runReportProvider(c.id)) case final r?)
+              Padding(
+                padding: const EdgeInsets.only(top: 10),
+                child: OutlinedButton.icon(
+                  onPressed: () => context.push(Routes.runReport, extra: c.id),
+                  icon: const Icon(Icons.insights_rounded),
+                  label: Text('My report (until ${DateFormat('h:mm a').format(r.expiresAt)})'),
+                ),
+              ),
             const SizedBox(height: 22),
             Text('Ranking', style: text.titleLarge),
             const SizedBox(height: 8),
@@ -544,6 +554,7 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
   static const _goodEnough = 20.0;
   String _result = '';
   int _xp = 0;
+  int? _rank, _of;
 
   ClubChallenge get c => widget.challenge;
 
@@ -655,11 +666,39 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
           .submitResult(c, uid: me.uid, myName: me.name, timeMs: time, distanceM: _tracker.meters.round());
       _xp = await ref.read(clubXpProvider.notifier).award(c.id, c.finishXp);
       _result = best ? 'Saved to the club ranking.' : 'Your earlier time was faster, so it stays on the board.';
+      // Where this time places in the club.
+      try {
+        final board = await ref.read(clubsBackendProvider)!.results(c.clubId, c.id).first;
+        final mine = board.indexWhere((r) => r.uid == me.uid);
+        if (mine >= 0) {
+          _rank = mine + 1;
+          _of = board.length;
+        }
+      } catch (_) {}
     } on FriendsFailure catch (e) {
       _result = e.message;
     } catch (_) {
       _result = "Couldn't save your time. Check your internet.";
     }
+    // The member's own report, kept on this phone for 5 hours.
+    await ref
+        .read(runReportsProvider.notifier)
+        .add(
+          RunReport(
+            id: c.id,
+            title: c.title,
+            clubName: ref.read(clubProvider(c.clubId)).value?.name ?? '',
+            kind: c.kind,
+            distanceM: c.distanceM,
+            timeMs: time,
+            splitsMs: _tracker.splitsMs,
+            route: simplifyRoute(_tracker.route),
+            finishedAt: clock.now(),
+            rank: _rank,
+            of: _of,
+            xp: _xp,
+          ),
+        );
     if (mounted) setState(() => _phase = _RunPhase.done);
   }
 
@@ -788,7 +827,14 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
                     if (_xp > 0) Text('+$_xp XP', style: text.titleLarge?.copyWith(color: AppColors.primary)),
                     Text(_result, style: text.bodyLarge, textAlign: TextAlign.center),
                     const SizedBox(height: 12),
-                    GradientButton(label: 'See ranking', onPressed: () => Navigator.of(context).pop()),
+                    if (_rank != null) Text('You are #$_rank of $_of in the club.', style: text.titleMedium),
+                    const SizedBox(height: 12),
+                    GradientButton(
+                      label: 'See my report',
+                      icon: Icons.insights_rounded,
+                      onPressed: () => context.pushReplacement(Routes.runReport, extra: c.id),
+                    ),
+                    TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('See ranking')),
                   ],
                 },
               ],

@@ -181,6 +181,9 @@ class RouteTracker {
 
   /// Smoothed points.
   final List<GpsFix> route = [];
+
+  /// Time from the first reading to each full kilometre, in ms.
+  final List<int> splitsMs = [];
   double meters = 0;
   int skipped = 0;
 
@@ -276,10 +279,15 @@ class RouteTracker {
     }
     meters += d;
     route.add(point);
+    // When a mark (a full km, or the target) was passed, worked out between readings.
+    int at(num mark) =>
+        (last.at.difference(firstAt!).inMilliseconds + f.at.difference(last.at).inMilliseconds * (mark - before) / d)
+            .round();
+    while (meters >= (splitsMs.length + 1) * 1000) {
+      splitsMs.add(at((splitsMs.length + 1) * 1000));
+    }
     if (target != null && before < target && meters >= target && _reached == null && d > 0) {
-      final frac = (target - before) / d;
-      final ms = last.at.difference(firstAt!).inMilliseconds + f.at.difference(last.at).inMilliseconds * frac;
-      _reached = (target, firstAt!.add(Duration(milliseconds: ms.round())));
+      _reached = (target, firstAt!.add(Duration(milliseconds: at(target))));
     }
     return true;
   }

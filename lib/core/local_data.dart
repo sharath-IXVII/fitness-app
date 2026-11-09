@@ -74,6 +74,7 @@ class LocalData {
       bonusXpProvider,
       snapsProvider,
       clubXpProvider,
+      runReportsProvider,
     ]) {
       _ref.invalidate(p);
     }

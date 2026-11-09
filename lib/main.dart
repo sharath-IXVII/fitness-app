@@ -10,6 +10,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'app.dart';
+import 'core/photo_store.dart';
 import 'core/reminders.dart';
 import 'core/storage.dart';
 import 'features/alarm/alarm_scheduler.dart';
@@ -71,6 +72,9 @@ Future<void> _start() async {
     return;
   }
   final auth = await _safe('sign-in', () => _authService(prefs)) ?? DemoAuthService(prefs);
+  // Old meal and snap photos are removed in the background, so the app
+  // never fills the phone.
+  unawaited(PhotoStore.deleteOld());
   runApp(
     ProviderScope(
       overrides: [sharedPrefsProvider.overrideWithValue(prefs), authServiceProvider.overrideWithValue(auth)],

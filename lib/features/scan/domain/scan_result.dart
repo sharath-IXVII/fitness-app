@@ -1,3 +1,5 @@
+import 'dart:ui' show Rect;
+
 import '../../diet/domain/food.dart';
 
 enum ScanConfidence { high, medium, low }
@@ -13,6 +15,7 @@ class ScannedItem {
     required this.cls,
     required this.confidence,
     this.factor = 1,
+    this.box,
   });
 
   final String name;
@@ -22,6 +25,9 @@ class ScannedItem {
   final FoodClass cls;
   final ScanConfidence confidence;
   final double factor;
+
+  /// Roughly where it is on the photo (fractions of the square photo).
+  final Rect? box;
 
   Macros get scaled => macros.scale(factor);
 
@@ -33,15 +39,17 @@ class ScannedItem {
     cls: cls,
     confidence: confidence,
     factor: factor ?? this.factor,
+    box: box,
   );
 
   /// A food from the nutrition list, recognised with [score] (0–1).
-  factory ScannedItem.fromFood(Food f, double score) => ScannedItem(
+  factory ScannedItem.fromFood(Food f, double score, {Rect? box}) => ScannedItem(
     name: f.name,
     portion: f.serving,
     grams: 0,
     macros: f.macros,
     cls: f.cls,
+    box: box,
     confidence: score >= 0.6
         ? ScanConfidence.high
         : score >= 0.3

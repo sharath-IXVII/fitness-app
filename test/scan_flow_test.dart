@@ -7,6 +7,7 @@ import 'package:fitalarm/features/auth/auth_providers.dart';
 import 'package:fitalarm/features/auth/auth_service.dart';
 import 'package:fitalarm/features/scan/food_recognizer.dart';
 import 'package:fitalarm/features/scan/scan_screen.dart';
+import 'package:fitalarm/features/snaps/snap_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -26,9 +27,9 @@ final _png = base64Decode(
 
 /// Stands in for the on-device model: a confident butter chicken, a less
 /// likely chicken curry, and a dish with no nutrition data.
-Future<List<(String, double)>> _fakeClassify(Uint8List image) async {
+Future<List<(String, double, int)>> _fakeClassify(Uint8List image) async {
   await Future<void>.delayed(const Duration(milliseconds: 300));
-  return const [('Butter chicken', 0.71), ('Chicken curry', 0.12), ('Chaudin', 0.05)];
+  return const [('Butter chicken', 0.71, 1), ('Chicken curry', 0.12, 0), ('Chaudin', 0.05, 0)];
 }
 
 Map<String, Object> _seed() => {
@@ -48,6 +49,8 @@ Map<String, Object> _seed() => {
   }),
 };
 
+final shared = <(Uint8List, String)>[];
+
 Future<SharedPreferences> _pump(WidgetTester t, {bool model = true}) async {
   t.view.physicalSize = const Size(390, 844) * 3;
   t.view.devicePixelRatio = 3;
@@ -60,6 +63,7 @@ Future<SharedPreferences> _pump(WidgetTester t, {bool model = true}) async {
         sharedPrefsProvider.overrideWithValue(prefs),
         authServiceProvider.overrideWithValue(DemoAuthService(prefs)),
         foodClassifierProvider.overrideWith((ref) async => model ? _fakeClassify : null),
+        shareSnapProvider.overrideWithValue((png, text) async => shared.add((png, text))),
         pickImageProvider.overrideWithValue((_) async => (bytes: _png, mediaType: 'image/png')),
       ],
       child: const FitTrackerApp(),
@@ -122,6 +126,27 @@ void main() {
     expect(saved.single['name'], 'Butter chicken');
     expect(saved.single['servings'], 1.5);
     expect(saved.single['source'], 'scan');
+
+    // The meal becomes a food snap: a FittArc story card that can be shared.
+    expect(find.text('Food snap'), findsOneWidget);
+    expect(find.text('FittArc'), findsOneWidget);
+    expect(find.text('FOOD SNAP · LUNCH'), findsOneWidget);
+    expect(find.text('≈ 660 kcal'), findsOneWidget);
+    final snaps = jsonDecode(prefs.getString('snaps.v1')!) as List;
+    expect(snaps.single['meal'], 'lunch');
+    expect((snaps.single['items'] as List).single['n'], 'Butter chicken');
+    expect((snaps.single['items'] as List).single['b'], [0, 0, 0.6, 0.6]); // seen in the top-left region
+    await t.tap(find.text('Share to story or friends'));
+    await t.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 500)));
+    await _wait(t, 300);
+    expect(shared, hasLength(1));
+    expect(shared.single.$2, contains('FittArc'));
+    expect(shared.single.$1.sublist(1, 4), 'PNG'.codeUnits);
+
+    // Back on Diet, today's snaps show it.
+    await t.pageBack();
+    await _wait(t);
+    expect(find.text("Today's snaps (1)"), findsOneWidget);
   });
 
   testWidgets('without the model the scanner offers manual entry', (t) async {

@@ -54,6 +54,8 @@ void main() {
       [('Biryani', 0.9)],
     ]);
     expect(merged.map((g) => g.$1), ['Biryani', 'Raita', 'Pilaf']);
+    // Where each was seen best: Biryani in region 2, Raita in region 1, Pilaf only in the whole photo.
+    expect(merged.map((g) => g.$3), [2, 1, 0]);
     expect(merged.first.$2, closeTo(0.765, 1e-9)); // region score, weighted
     expect(merged[1].$2, closeTo(0.425, 1e-9));
   });

@@ -18,6 +18,7 @@ import '../../core/widgets/progress_ring.dart';
 import '../profile/domain/user_profile.dart';
 import '../profile/profile_providers.dart';
 import 'diet_providers.dart';
+import '../snaps/widgets/today_snaps.dart';
 import 'domain/food.dart';
 import 'domain/meal_log.dart';
 import 'domain/meal_plan.dart';
@@ -94,6 +95,7 @@ class DietScreen extends ConsumerWidget {
       const BetaNote(),
       const SizedBox(height: 14),
       _CaloriesCard(totals: totals, targets: targets),
+      const TodaySnaps(),
       const SizedBox(height: 14),
       const _GoalCard(),
       const SizedBox(height: 26),
@@ -119,9 +121,7 @@ class DietScreen extends ConsumerWidget {
             children: [
               Icon(Icons.restaurant_menu_rounded, color: AppColors.primary),
               const SizedBox(width: 12),
-              Expanded(
-                child: Text('Food guide: what is in 100 g of common foods', style: text.titleSmall),
-              ),
+              Expanded(child: Text('Food guide: what is in 100 g of common foods', style: text.titleSmall)),
               Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
             ],
           ),

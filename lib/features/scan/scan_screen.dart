@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/photo_store.dart';
+import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/beta_tag.dart';
 import '../../core/widgets/form_controls.dart';
@@ -20,6 +22,9 @@ import '../diet/domain/meal_log.dart';
 import '../diet/widgets/food_search_sheet.dart';
 import '../diet/widgets/sheet_frame.dart';
 import '../profile/profile_providers.dart';
+import '../snaps/domain/food_snap.dart';
+import '../snaps/snap_screen.dart';
+import '../snaps/snaps_providers.dart';
 import 'domain/recognition.dart';
 import 'domain/scan_result.dart';
 import 'food_recognizer.dart';
@@ -105,7 +110,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
           .take(maxAutoAdd);
       setState(() {
         _guesses = guesses;
-        _items = [for (final g in best) ScannedItem.fromFood(g.food!, g.score)];
+        _items = [for (final g in best) ScannedItem.fromFood(g.food!, g.score, box: g.box)];
         _phase = _Phase.result;
       });
     } catch (e) {
@@ -137,7 +142,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
       if (_isChosen(f)) {
         _items = [..._items.where((i) => i.name != f.name)];
       } else {
-        _items = [..._items, ScannedItem.fromFood(f, g.score)];
+        _items = [..._items, ScannedItem.fromFood(f, g.score, box: g.box)];
       }
     });
   }
@@ -161,6 +166,26 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
           photo: i == 0 ? photo : null,
         ),
     ]);
+    // Every scan also becomes a food snap, kept on this phone.
+    await ref
+        .read(snapsProvider.notifier)
+        .add(
+          FoodSnap(
+            id: base,
+            at: DateTime.now(),
+            meal: _meal,
+            photo: photo,
+            items: [
+              for (final item in _items)
+                SnapItem(
+                  name: item.name,
+                  portion: portionText(item.portion, item.factor),
+                  macros: item.scaled,
+                  box: item.box,
+                ),
+            ],
+          ),
+        );
     HapticFeedback.mediumImpact();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -170,7 +195,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
         ),
       ),
     );
-    Navigator.of(context).pop();
+    context.pushReplacement(Routes.snap, extra: SnapArgs(base, photo: _image?.bytes));
   }
 
   Future<void> _manual({String? query}) async {
@@ -183,10 +208,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
     final model = ref.watch(foodClassifierProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [Text('Scan food'), SizedBox(width: 10), BetaTag()],
-        ),
+        title: const Row(mainAxisSize: MainAxisSize.min, children: [Text('Scan food'), SizedBox(width: 10), BetaTag()]),
         actions: [
           if (_phase == _Phase.result)
             TextButton.icon(onPressed: _retake, icon: const Icon(Icons.refresh_rounded), label: const Text('Retake')),
@@ -227,7 +249,8 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
       children: [
         const BetaNote(
-          text: 'Food scanning is in beta. It can mix up dishes or get portions wrong, so check the result and '
+          text:
+              'Food scanning is in beta. It can mix up dishes or get portions wrong, so check the result and '
               'correct it before you save.',
         ),
         const SizedBox(height: 14),

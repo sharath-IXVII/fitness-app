@@ -1,13 +1,18 @@
 import 'dart:math' as math;
+import 'dart:ui' show Rect;
 
 import '../../diet/domain/food.dart';
 
 /// One guess from the on-device food model, with the matching food from the
 /// app's nutrition list when there is one.
 class FoodGuess {
-  const FoodGuess({required this.label, required this.score, this.food});
+  const FoodGuess({required this.label, required this.score, this.food, this.box});
 
   final String label;
+
+  /// Roughly where on the photo the dish was seen, as fractions (0–1) of the
+  /// square plate photo; null when only the whole photo showed it.
+  final Rect? box;
 
   /// 0–1.
   final double score;
@@ -55,25 +60,45 @@ List<(int, double)> topK(List<double> scores, {int k = 5, double minScore = 0.02
   ];
 }
 
+/// The parts of the square plate photo the model looks at: the whole photo
+/// first, then four overlapping corners and the centre (fractions, 0–1).
+const scanRegions = <Rect>[
+  Rect.fromLTWH(0, 0, 1, 1),
+  Rect.fromLTWH(0, 0, 0.6, 0.6),
+  Rect.fromLTWH(0.4, 0, 0.6, 0.6),
+  Rect.fromLTWH(0, 0.4, 0.6, 0.6),
+  Rect.fromLTWH(0.4, 0.4, 0.6, 0.6),
+  Rect.fromLTWH(0.2, 0.2, 0.6, 0.6),
+];
+
 /// Merges guesses from the whole photo ([views] first) and zoomed-in
 /// regions of it, so a plate with several dishes yields each of them. A
 /// label keeps its best score; region guesses count a little less than the
-/// whole photo and must be fairly confident to be listed at all.
-List<(String, double)> mergeViews(
+/// whole photo and must be fairly confident to be listed at all. Each result
+/// also names the region it scored best in (0 is the whole photo), which
+/// marks roughly where the dish sits.
+List<(String, double, int)> mergeViews(
   List<List<(String, double)>> views, {
   double regionWeight = 0.85,
   double minRegionScore = 0.3,
   int k = 8,
 }) {
   final best = <String, double>{};
+  final where = <String, int>{};
+  // The region where the dish scored highest, before weighting.
+  final raw = <String, double>{};
   for (final (v, guesses) in views.indexed) {
     for (final (label, score) in guesses) {
       if (v > 0 && score < minRegionScore) continue;
       final s = v == 0 ? score : score * regionWeight;
       if (s > (best[label] ?? 0)) best[label] = s;
+      if (v > 0 && score > (raw[label] ?? 0)) {
+        raw[label] = score;
+        where[label] = v;
+      }
     }
   }
-  final out = best.entries.map((e) => (e.key, e.value)).toList()..sort((a, b) => b.$2.compareTo(a.$2));
+  final out = [for (final e in best.entries) (e.key, e.value, where[e.key] ?? 0)]..sort((a, b) => b.$2.compareTo(a.$2));
   return out.take(k).toList();
 }
 

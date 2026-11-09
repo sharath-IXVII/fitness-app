@@ -27,6 +27,7 @@ import '../features/profile/profile_providers.dart';
 import '../features/progress/achievements_screen.dart';
 import '../features/progress/weekly_report_screen.dart';
 import '../features/profile/profile_screen.dart';
+import '../features/snaps/snap_screen.dart';
 import '../features/scan/scan_screen.dart';
 import '../features/shell/app_shell.dart';
 import '../features/splash/splash_screen.dart';
@@ -74,6 +75,7 @@ abstract final class Routes {
   static const steps = '/steps';
   static const water = '/water';
   static const scan = '/scan';
+  static const snap = '/snap';
   static const achievements = '/achievements';
   static const report = '/report';
   static const privacy = '/privacy';
@@ -178,6 +180,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.heartRate, builder: (_, _) => const HeartRateScreen()),
       GoRoute(path: Routes.watch, builder: (_, _) => const WatchScreen()),
       GoRoute(path: Routes.liveHeart, builder: (_, _) => const LiveHeartScreen()),
+      GoRoute(
+        path: Routes.snap,
+        redirect: (_, s) => s.extra is SnapArgs ? null : Routes.diet,
+        builder: (_, s) => SnapScreen(args: s.extra! as SnapArgs),
+      ),
       GoRoute(
         path: Routes.scan,
         builder: (_, s) => ScanFoodScreen(meal: s.extra is MealType ? s.extra! as MealType : MealType.lunch),

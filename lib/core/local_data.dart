@@ -5,6 +5,7 @@ import '../features/alarm/alarm_providers.dart';
 import '../features/alarm/strict_mode.dart';
 import '../features/arcs/arc_providers.dart';
 import '../features/diet/diet_providers.dart';
+import '../features/snaps/snaps_providers.dart';
 import '../features/health/health_providers.dart';
 import '../features/myday/myday_providers.dart';
 import '../features/profile/profile_providers.dart';
@@ -70,6 +71,7 @@ class LocalData {
       badgeVaultProvider,
       waterGoalProvider,
       bonusXpProvider,
+      snapsProvider,
     ]) {
       _ref.invalidate(p);
     }

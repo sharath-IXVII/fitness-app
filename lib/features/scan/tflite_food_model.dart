@@ -8,7 +8,7 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 import 'domain/recognition.dart';
 
 /// Loads the bundled model; null when it's missing.
-Future<Future<List<(String, double)>> Function(Uint8List)?> loadFoodModel() async =>
+Future<Future<List<(String, double, int)>> Function(Uint8List)?> loadFoodModel() async =>
     (await TfliteFoodRecognizer.load())?.classify;
 
 /// Recognises the food in a photo, entirely on the phone. Free, offline and
@@ -41,7 +41,7 @@ class TfliteFoodRecognizer {
   /// Top guesses as (label, probability) for the whole photo and for five
   /// zoomed regions (four corners and the centre), merged so that each dish
   /// on a mixed plate gets a chance.
-  Future<List<(String, double)>> classify(Uint8List image) async {
+  Future<List<(String, double, int)>> classify(Uint8List image) async {
     final input = _interpreter.getInputTensor(0);
     final h = input.shape[1], w = input.shape[2];
 
@@ -89,13 +89,17 @@ class TfliteFoodRecognizer {
     final upright = img.bakeOrientation(decoded);
     final side = upright.width < upright.height ? upright.width : upright.height;
     final x0 = (upright.width - side) ~/ 2, y0 = (upright.height - side) ~/ 2;
-    final part = (side * 0.6).round(), far = side - part, mid = (side - part) ~/ 2;
-    final regions = [(0, 0, side), (0, 0, part), (far, 0, part), (0, far, part), (far, far, part), (mid, mid, part)];
     return [
-      for (final (x, y, s) in regions)
+      for (final r in scanRegions)
         _rgb(
           img.copyResize(
-            img.copyCrop(upright, x: x0 + x, y: y0 + y, width: s, height: s),
+            img.copyCrop(
+              upright,
+              x: x0 + (side * r.left).round(),
+              y: y0 + (side * r.top).round(),
+              width: (side * r.width).round(),
+              height: (side * r.height).round(),
+            ),
             width: w,
             height: h,
             interpolation: img.Interpolation.average,

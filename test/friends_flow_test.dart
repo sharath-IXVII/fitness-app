@@ -131,4 +131,34 @@ void main() {
     expect(find.text('Challenge Ravi'), findsOneWidget);
     expect(find.text('Master of Winter 2026'), findsOneWidget);
   });
+
+  testWidgets('clubs: create one, chat, links are refused', (t) async {
+    final b = (await _open(t))!;
+    await t.tap(find.byTooltip('Friends'));
+    await _wait(t);
+    await t.tap(find.text('Clubs'));
+    await _wait(t);
+    expect(find.text('No clubs here yet. Start one!'), findsOneWidget);
+
+    await t.tap(find.text('Create a club'));
+    await _wait(t);
+    await t.enterText(find.widgetWithText(TextField, 'Club name'), 'Morning Walkers');
+    await t.tap(find.text('Walking').last);
+    await t.tap(find.text('Create club'));
+    await _wait(t, 1500);
+
+    // In the chat: a note about 24 hours, a link is refused, a normal message goes.
+    expect(find.text('Morning Walkers'), findsOneWidget);
+    expect(find.text('Messages disappear after 24 hours. Links are not allowed.'), findsOneWidget);
+    await t.enterText(find.widgetWithText(TextField, 'Message the club'), 'join fitgang.in');
+    await t.tap(find.byTooltip('Send'));
+    await _wait(t, 500);
+    expect(find.text('Links are not allowed in clubs.'), findsOneWidget);
+    await t.enterText(find.widgetWithText(TextField, 'Message the club'), 'Walk at 6 tomorrow?');
+    await t.tap(find.byTooltip('Send'));
+    await _wait(t, 1000);
+    expect(find.text('Walk at 6 tomorrow?'), findsOneWidget);
+    final club = (await b.db.collection('clubs').get()).docs.single;
+    expect(club['ownerUid'], 'demo');
+  });
 }

@@ -111,6 +111,14 @@ service cloud.firestore {
         allow list: if me() == uid;
       }
 
+      // The clubs this user is in (their own list).
+      match /clubs/{club} {
+        allow read, delete: if me() == uid;
+        allow create, update: if me() == uid
+          && data().keys().hasOnly(['name', 'kind'])
+          && shortText(data().name, 40) && data().kind is string && data().kind.size() <= 20;
+      }
+
       // You can see whether someone blocked you, nothing else.
       match /blocked/{other} {
         allow get: if me() == uid || me() == other;
@@ -192,6 +200,60 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/challenges/$(data().challengeId)).data.fromUid == me()
         && getAfter(/databases/$(database)/documents/challenges/$(data().challengeId)).data.code == code;
       allow delete: if signedIn() && resource.data.fromUid == me();
+    }
+
+    // ------------------------------------------------------------- clubs
+    // Same pattern as containsLink() in lib/features/clubs/domain/club.dart.
+    function noLink(v) {
+      return !v.lower().matches('(?s).*(https?://|www[.]|wa[.]me|t[.]me|[a-z0-9-]+[.](com|in|net|org|io|co|me|ly|app|xyz|link|gg|info|biz|online|site|shop|club|tv|to)([^a-z0-9].*|$)).*');
+    }
+    function clubDoc(c) { return get(/databases/$(database)/documents/clubs/$(c)).data; }
+    function isMember(c) { return exists(/databases/$(database)/documents/clubs/$(c)/members/$(me())); }
+    function ownsClub(c) { return clubDoc(c).ownerUid == me(); }
+
+    match /clubs/{club} {
+      // Anyone signed in can browse clubs.
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && data().keys().hasOnly(['name', 'about', 'kind', 'ownerUid', 'ownerName', 'createdAt'])
+        && data().ownerUid == me()
+        && data().name is string && data().name.size() >= 3 && data().name.size() <= 40 && noLink(data().name)
+        && data().about is string && data().about.size() <= 200 && noLink(data().about)
+        && data().kind in ['gym', 'running', 'walking', 'cycling', 'yoga', 'sports', 'diet', 'other']
+        && shortText(data().ownerName, 40)
+        && data().createdAt == request.time;
+      allow delete: if signedIn() && resource.data.ownerUid == me();
+
+      match /members/{uid} {
+        allow read: if signedIn();
+        // Join yourself, unless the owner removed you.
+        allow create: if me() == uid
+          && !exists(/databases/$(database)/documents/clubs/$(club)/banned/$(uid))
+          && data().keys().hasOnly(['name', 'joinedAt'])
+          && shortText(data().name, 40) && data().joinedAt == request.time;
+        allow delete: if me() == uid || ownsClub(club);
+      }
+
+      match /banned/{uid} {
+        allow get: if me() == uid || ownsClub(club);
+        allow create: if ownsClub(club) && uid != me() && data().keys().hasOnly(['at']);
+      }
+
+      // Members only. Text with no links, gone after 24 hours: the app shows
+      // only the last day, and a TTL policy on expireAt deletes them.
+      match /messages/{msg} {
+        allow read: if isMember(club);
+        allow create: if isMember(club)
+          && data().keys().hasOnly(['uid', 'name', 'text', 'at', 'expireAt'])
+          && data().uid == me()
+          && shortText(data().name, 40)
+          && shortText(data().text, 500) && noLink(data().text)
+          && data().at == request.time
+          && data().expireAt is timestamp
+          && data().expireAt > request.time + duration.value(23, 'h')
+          && data().expireAt < request.time + duration.value(25, 'h');
+        allow delete: if signedIn() && (resource.data.uid == me() || ownsClub(club));
+      }
     }
 
     // Reports of abuse: write-only, reviewed in the console.

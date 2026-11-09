@@ -31,6 +31,9 @@ class FriendsBackend {
 
   final FirebaseFirestore _db;
 
+  /// The same database, for Clubs.
+  FirebaseFirestore get db => _db;
+
   CollectionReference<Map<String, dynamic>> get _users => _db.collection('users');
   CollectionReference<Map<String, dynamic>> get _challenges => _db.collection('challenges');
 

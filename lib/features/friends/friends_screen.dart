@@ -43,7 +43,16 @@ class FriendsScreen extends ConsumerWidget {
     final board = [...friends, me]..sort((a, b) => b.xp.compareTo(a.xp));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Friends')),
+      appBar: AppBar(
+        title: const Text('Friends'),
+        actions: [
+          TextButton.icon(
+            onPressed: () => context.push(Routes.clubs),
+            icon: const Icon(Icons.groups_rounded),
+            label: const Text('Clubs'),
+          ),
+        ],
+      ),
       body: PageBackground(
         child: ListView(
           physics: const BouncingScrollPhysics(),

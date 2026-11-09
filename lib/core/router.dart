@@ -27,6 +27,8 @@ import '../features/profile/profile_providers.dart';
 import '../features/progress/achievements_screen.dart';
 import '../features/progress/weekly_report_screen.dart';
 import '../features/profile/profile_screen.dart';
+import '../features/clubs/club_screen.dart';
+import '../features/clubs/clubs_screen.dart';
 import '../features/snaps/snap_screen.dart';
 import '../features/scan/scan_screen.dart';
 import '../features/shell/app_shell.dart';
@@ -76,6 +78,8 @@ abstract final class Routes {
   static const water = '/water';
   static const scan = '/scan';
   static const snap = '/snap';
+  static const clubs = '/clubs';
+  static const club = '/club';
   static const achievements = '/achievements';
   static const report = '/report';
   static const privacy = '/privacy';
@@ -180,6 +184,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.heartRate, builder: (_, _) => const HeartRateScreen()),
       GoRoute(path: Routes.watch, builder: (_, _) => const WatchScreen()),
       GoRoute(path: Routes.liveHeart, builder: (_, _) => const LiveHeartScreen()),
+      GoRoute(path: Routes.clubs, builder: (_, _) => const ClubsScreen()),
+      GoRoute(
+        path: Routes.club,
+        redirect: (_, s) => s.extra is String ? null : Routes.clubs,
+        builder: (_, s) => ClubScreen(id: s.extra! as String),
+      ),
       GoRoute(
         path: Routes.snap,
         redirect: (_, s) => s.extra is SnapArgs ? null : Routes.diet,

@@ -32,6 +32,9 @@ Earn XP, climb the level ladder and collect badge sets across every Arc. Your pr
 FRIENDS
 Add friends with a code, challenge them (do it together or each when you are free), compare streaks and climb the leaderboard. Finish a challenge together and you both earn XP.
 
+CLUBS
+Start your own club or join one: a gym crew, morning walkers, a running group. Chat with members to plan your workouts. Messages disappear after 24 hours and links are not allowed, so clubs stay friendly and spam-free.
+
 YOUR PRIVACY
 Sign in with Google only. No ads. We don't sell your data. Read the policy at https://fittarc.in/privacy/
 
@@ -57,6 +60,7 @@ Data collected:
 - Health readings you save (heart-rate estimate, height, weight): kept on the phone only, not uploaded
 - Photos: food photos are processed on the device and not uploaded
 - App activity: progress, levels, badges and streaks (backup)
+- Messages (Other in-app messages): club chat text, shown to club members, deleted after 24 hours
 Shared with third parties: none
 Encrypted in transit: yes
 Users can delete their account and data: yes (in the app under Profile, or by writing to support@fittarc.in)
@@ -81,3 +85,8 @@ General fitness and wellness only. No diagnosis, treatment or medical advice.
 - Icon 512x512: docs/store/play-icon-512.png
 - Feature graphic 1024x500: still to make
 - Phone screenshots (2 to 8): still to capture on a real phone
+
+## Clubs (user-generated content)
+- Content rating questionnaire: answer YES to "users can interact / exchange content" (text chat in clubs).
+- In-app tools: report a message, block a person, delete own messages, club owner removes messages and members.
+- Links are blocked in the app and on the server (firestore.rules). Messages expire after 24 hours.

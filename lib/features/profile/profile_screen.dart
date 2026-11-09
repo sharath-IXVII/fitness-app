@@ -15,6 +15,7 @@ import '../../core/widgets/page_background.dart';
 import '../../core/widgets/glass_card.dart';
 import '../arcs/widgets/arc_widgets.dart';
 import '../auth/auth_providers.dart';
+import '../clubs/clubs_providers.dart';
 import '../friends/friends_providers.dart';
 import '../auth/domain/app_user.dart';
 import '../streaks/daily_log_providers.dart';
@@ -264,6 +265,7 @@ class ProfileScreen extends ConsumerWidget {
                         try {
                           // Online data first, while still signed in.
                           if (friends != null && uid != null) {
+                            await ref.read(clubsBackendProvider)?.deleteMe(uid).timeout(const Duration(seconds: 20));
                             await friends.deleteMe(uid).timeout(const Duration(seconds: 20));
                             await ref.read(cloudStoreProvider)?.delete(uid).timeout(const Duration(seconds: 20));
                           }

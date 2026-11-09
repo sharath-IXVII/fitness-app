@@ -23,6 +23,10 @@ So that your hard-earned levels, badges and streaks survive a lost phone or a re
 
 If you use Friends, Cloud Firestore (Google) stores a public profile that your friends can see: your name, your best arc badge, level and XP, current and best streak, active days in the current arc and workouts this week. It also stores your friend list, people you blocked, challenges you send or join (names, exercise, target and whether each of you finished) and reports you make. It also stores your friend code (a short random code that lets someone find you to send a friend request) and the friend requests you send or receive (the sender's name and badge title). Anyone you give a challenge code to can see that challenge. Nothing else (weight, meals, photos, location, health details) is shared.
 
+## Clubs
+
+If you create or join a club, Cloud Firestore stores the club's name, description and type, who started it, its members' names, and the text messages sent in it. Every signed-in user can see a club's name and description; only members can read its chat. Messages are text only (no photos or links) and are deleted automatically 24 hours after they are sent. You can delete your own messages, leave a club, report a message or block a person at any time; the person who started a club can remove messages and members.
+
 ## Data stored on your phone
 
 Alarms, routines, your My Day plan, weigh-ins, weight goal, saved foods, meal photos and the pulse readings you save in the Health tab are stored only on your device and are not backed up, so they are not restored on a new phone. Your progress backup (above) is kept in your account. Uninstalling the app or using "Reset data on this device" removes what is on the phone.
@@ -57,7 +61,7 @@ Alarms and reminders are scheduled locally on your phone. No notification conten
 
 ## Deleting your data
 
-Use "Delete account" in your profile (tap your picture on Today) to permanently delete your sign-in, your progress backup, your Friends profile, friend list and challenges, and all FittArc data on the phone. You can also email us to have your account deleted.
+Use "Delete account" in your profile (tap your picture on Today) to permanently delete your sign-in, your progress backup, your Friends profile, friend list and challenges, your club memberships and messages (and clubs you started), and all FittArc data on the phone. You can also email us to have your account deleted.
 
 ## Children
 

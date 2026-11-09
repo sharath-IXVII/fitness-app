@@ -272,3 +272,54 @@ test('declining or cancelling a request just removes it', async () => {
   await assertSucceeds(setDoc(doc(as('asha'), 'users/ravi/requests/asha'), request()));
   await assertSucceeds(deleteDoc(doc(as('asha'), 'users/ravi/requests/asha'))); // cancel
 });
+
+// ------------------------------------------------------------------ clubs
+const club = (over = {}) => ({
+  name: 'Morning Walkers', about: '6 am at the park', kind: 'walking', ownerUid: 'asha', ownerName: 'Asha',
+  createdAt: serverTimestamp(), ...over,
+});
+const inHours = (h) => new Date(Date.now() + h * 3600 * 1000);
+const msg = (over = {}) => ({
+  uid: 'ravi', name: 'Ravi', text: 'Walk tomorrow?', at: serverTimestamp(), expireAt: inHours(24), ...over,
+});
+async function clubWithRavi() {
+  await assertSucceeds(setDoc(doc(as('asha'), 'clubs/c1'), club()));
+  await assertSucceeds(setDoc(doc(as('asha'), 'clubs/c1/members/asha'), { name: 'Asha', joinedAt: serverTimestamp() }));
+  await assertSucceeds(setDoc(doc(as('ravi'), 'clubs/c1/members/ravi'), { name: 'Ravi', joinedAt: serverTimestamp() }));
+}
+
+test('clubs: anyone signed in creates and browses; no links in names', async () => {
+  await assertFails(setDoc(doc(anon(), 'clubs/c1'), club()));
+  await assertFails(setDoc(doc(as('ravi'), 'clubs/c1'), club())); // owner must be you
+  await assertFails(setDoc(doc(as('asha'), 'clubs/c1'), club({ about: 'see fitgang.in' })));
+  await assertFails(setDoc(doc(as('asha'), 'clubs/c1'), club({ name: 'www.walk' })));
+  await assertSucceeds(setDoc(doc(as('asha'), 'clubs/c1'), club()));
+  await assertSucceeds(getDocs(collection(as('ravi'), 'clubs')));
+  await assertFails(deleteDoc(doc(as('ravi'), 'clubs/c1')));
+  await assertSucceeds(deleteDoc(doc(as('asha'), 'clubs/c1')));
+});
+
+test('clubs: members chat; no links; messages must expire in a day', async () => {
+  await clubWithRavi();
+  const ravi = as('ravi');
+  await assertSucceeds(addDoc(collection(ravi, 'clubs/c1/messages'), msg()));
+  await assertFails(addDoc(collection(ravi, 'clubs/c1/messages'), msg({ text: 'join https://x.co' })));
+  await assertFails(addDoc(collection(ravi, 'clubs/c1/messages'), msg({ text: 'wa.me/9198' })));
+  await assertFails(addDoc(collection(ravi, 'clubs/c1/messages'), msg({ expireAt: inHours(24 * 30) })));
+  await assertFails(addDoc(collection(ravi, 'clubs/c1/messages'), msg({ uid: 'asha' })));
+  // Not a member: can't read or write.
+  await assertFails(getDocs(collection(as('meera'), 'clubs/c1/messages')));
+  await assertFails(addDoc(collection(as('meera'), 'clubs/c1/messages'), msg({ uid: 'meera' })));
+  await assertSucceeds(getDocs(collection(ravi, 'clubs/c1/messages')));
+});
+
+test('clubs: the owner can delete messages and remove members for good', async () => {
+  await clubWithRavi();
+  const m = await addDoc(collection(as('ravi'), 'clubs/c1/messages'), msg());
+  await assertFails(deleteDoc(doc(as('meera'), m.path)));
+  await assertSucceeds(deleteDoc(doc(as('asha'), m.path)));
+  await assertSucceeds(setDoc(doc(as('asha'), 'clubs/c1/banned/ravi'), { at: serverTimestamp() }));
+  await assertSucceeds(deleteDoc(doc(as('asha'), 'clubs/c1/members/ravi')));
+  await assertFails(setDoc(doc(as('ravi'), 'clubs/c1/members/ravi'), { name: 'Ravi', joinedAt: serverTimestamp() }));
+  await assertFails(setDoc(doc(as('ravi'), 'clubs/c1/banned/asha'), { at: serverTimestamp() }));
+});

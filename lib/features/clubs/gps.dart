@@ -23,6 +23,10 @@ class Gps {
       if (p == LocationPermission.deniedForever) {
         return 'Location is blocked for FittArc. Allow it in Settings → Apps → FittArc → Permissions.';
       }
+      // "Approximate" location is off by hundreds of metres: useless for a route.
+      if (await Geolocator.getLocationAccuracy() == LocationAccuracyStatus.reduced) {
+        return 'Turn on "Precise location" for FittArc so your distance is measured accurately.';
+      }
       return null;
     } catch (e) {
       debugPrint('location check failed: $e');

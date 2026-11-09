@@ -223,7 +223,7 @@ class _FakeGps extends Gps {
 
   @override
   Stream<GpsFix> track() async* {
-    for (var i = 0; i < 30; i++) {
+    for (var i = 0; i < 400; i++) {
       await Future<void>.delayed(const Duration(milliseconds: 50));
       yield GpsFix(12.97 + i * 0.00025, 77.59, 6, DateTime(2026, 11, 9, 6).add(Duration(seconds: i * 10)));
     }

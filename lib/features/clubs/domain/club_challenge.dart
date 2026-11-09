@@ -105,7 +105,7 @@ double distanceBetween((double, double) a, (double, double) b) {
 
 /// One GPS reading.
 class GpsFix {
-  const GpsFix(this.lat, this.lng, this.accuracy, this.at);
+  const GpsFix(this.lat, this.lng, this.accuracy, this.at, {this.speed, this.speedAccuracy});
 
   final double lat;
   final double lng;
@@ -114,49 +114,184 @@ class GpsFix {
   final double accuracy;
   final DateTime at;
 
+  /// Speed measured by the GPS chip itself (Doppler), m/s, when the phone
+  /// gives one. Much more precise than working it out from positions.
+  final double? speed;
+
+  /// m/s; null or 0 when the phone doesn't say.
+  final double? speedAccuracy;
+
   (double, double) get point => (lat, lng);
+
+  bool get hasSpeed => speed != null && speed! >= 0 && (speedAccuracy == null || speedAccuracy! <= 1.5);
 }
 
-/// Adds up the distance of a run from GPS readings. Poor readings and jumps
-/// faster than the activity allows (a car, a GPS glitch) are left out.
+/// One axis (east or north, in metres) of a constant-velocity Kalman filter.
+class _Axis {
+  _Axis(this.p);
+
+  double p, v = 0;
+  double pp = 0, pv = 0, vv = 4;
+
+  void step(double dt, double accel, double z, double r) {
+    // Predict: keep moving at the same speed; uncertainty grows with how
+    // sharply someone can speed up or turn.
+    p += v * dt;
+    final q = accel * accel;
+    final dt2 = dt * dt, dt3 = dt2 * dt, dt4 = dt3 * dt;
+    pp += dt * (2 * pv + dt * vv) + q * dt4 / 4;
+    pv += dt * vv + q * dt3 / 2;
+    vv += q * dt2;
+    // Update with the reading.
+    final s = pp + r;
+    final kp = pp / s, kv = pv / s;
+    final y = z - p;
+    p += kp * y;
+    v += kv * y;
+    final npp = (1 - kp) * pp, npv = (1 - kp) * pv, nvv = vv - kv * pv;
+    pp = npp;
+    pv = npv;
+    vv = nvv;
+  }
+}
+
+/// Adds up the distance of a run from GPS readings, as accurately as the
+/// phone allows:
+///  * readings with poor accuracy are skipped;
+///  * a Kalman filter that follows position and speed smooths the readings,
+///    so GPS jitter (a few metres of zig-zag on every reading) doesn't pile
+///    up into extra distance, while real turns are kept;
+///  * nothing is added while standing still;
+///  * jumps faster than the activity allows (a car, a glitch) are left out;
+///  * the moment the target is reached is worked out between readings, so
+///    the finish time isn't rounded up to the next reading.
 class RouteTracker {
-  RouteTracker(this.kind, {this.maxAccuracy = 30});
+  RouteTracker(this.kind, {this.maxAccuracy = 25, double? accel, double? step})
+    : _accelOverride = accel,
+      _stepOverride = step;
 
   final ActivityKind kind;
   final double maxAccuracy;
+  final double? _accelOverride, _stepOverride;
 
+  /// Distance is counted in steps of at least this many metres.
+  double get _step => _stepOverride ?? 20;
+  double _ae = 0, _an = 0;
+  GpsFix? _lastFix;
+
+  /// Smoothed points.
   final List<GpsFix> route = [];
   double meters = 0;
   int skipped = 0;
 
-  /// Time between the first and last counted reading.
-  int get spanMs => route.length < 2 ? 0 : route.last.at.difference(route.first.at).inMilliseconds;
+  static const _mPerDegLat = 111320.0;
+  late double _lat0, _lng0, _mPerDegLng;
+  _Axis? _e, _n;
+  DateTime? _t;
 
-  /// Adds [f]; returns true if it counted.
-  bool add(GpsFix f) {
-    if (f.accuracy > maxAccuracy) {
+  /// The first and latest good reading.
+  DateTime? firstAt, lastAt;
+
+  /// Time between the first and last good reading.
+  int get spanMs => firstAt == null ? 0 : lastAt!.difference(firstAt!).inMilliseconds;
+
+  /// Current smoothed speed, m/s.
+  double get speed => _e == null ? 0 : math.sqrt(_e!.v * _e!.v + _n!.v * _n!.v);
+
+  /// How sharply someone can change speed or direction, m/s².
+  double get _accel =>
+      _accelOverride ??
+      switch (kind) {
+        ActivityKind.walk => 0.3,
+        ActivityKind.run => 0.5,
+        ActivityKind.cycle => 1.0,
+      };
+
+  /// Below this smoothed speed, they're standing still.
+  double get _still => kind == ActivityKind.cycle ? 0.8 : 0.4;
+
+  (int, DateTime)? _reached;
+
+  /// When [target] metres were reached, if they were.
+  DateTime? reachedAt(int target) => _reached?.$1 == target ? _reached!.$2 : null;
+
+  /// Adds [f]; returns true if the distance changed.
+  bool add(GpsFix f, {int? target}) {
+    if (f.accuracy <= 0 || f.accuracy > maxAccuracy) {
       skipped++;
       return false;
     }
-    if (route.isEmpty) {
-      route.add(f);
-      return true;
+    if (_t != null && !f.at.isAfter(_t!)) return false;
+    if (_e == null) {
+      _lat0 = f.lat;
+      _lng0 = f.lng;
+      _mPerDegLng = _mPerDegLat * math.cos(f.lat * math.pi / 180);
+      _e = _Axis(0);
+      _n = _Axis(0);
+      _t = firstAt = lastAt = f.at;
+      route.add(GpsFix(f.lat, f.lng, f.accuracy, f.at));
+      _lastFix = f;
+      return false;
     }
+    final dt = f.at.difference(_t!).inMilliseconds / 1000;
+    final x = (f.lng - _lng0) * _mPerDegLng, y = (f.lat - _lat0) * _mPerDegLat;
+    // A jump no one could make on foot or bike: a glitch, not movement.
+    final px = _e!.p + _e!.v * dt, py = _n!.p + _n!.v * dt;
+    final jump = math.sqrt((x - px) * (x - px) + (y - py) * (y - py));
+    if (jump > f.accuracy * 3 + kind.maxKmh / 3.6 * dt) {
+      skipped++;
+      return false;
+    }
+    final r = f.accuracy * f.accuracy;
+    _e!.step(dt, _accel, x, r);
+    _n!.step(dt, _accel, y, r);
+    _t = lastAt = f.at;
+    final point = GpsFix(_lat0 + _n!.p / _mPerDegLat, _lng0 + _e!.p / _mPerDegLng, f.accuracy, f.at);
     final last = route.last;
-    final secs = f.at.difference(last.at).inMilliseconds / 1000;
-    if (secs <= 0) return false;
-    final d = distanceBetween(last.point, f.point);
-    // Tiny moves are GPS wobble while standing still.
-    if (d < 3) return false;
-    // Faster than the activity allows (with headroom for a sprint): ignore.
-    if (d / secs * 3.6 > kind.maxKmh * 1.6) {
-      skipped++;
-      return false;
+    final before = meters;
+    double d;
+    if (f.hasSpeed && _lastFix?.hasSpeed == true) {
+      // The GPS chip's own speed: distance = average speed × time. This
+      // follows curves exactly and has no jitter to add up.
+      final v = (f.speed! + _lastFix!.speed!) / 2;
+      _lastFix = f;
+      if (v < _still) return false;
+      // Faster than the activity allows (a car, a bus): not counted.
+      if (v * 3.6 > kind.maxKmh * 1.3) {
+        skipped++;
+        return false;
+      }
+      d = v * dt;
+      _ae = _e!.p;
+      _an = _n!.p;
+    } else {
+      _lastFix = f;
+      if (speed < _still) return false;
+      // No chip speed: count from the last counted point once the smoothed
+      // position is a full step away, so leftover jitter can't add up.
+      d = math.sqrt((_e!.p - _ae) * (_e!.p - _ae) + (_n!.p - _an) * (_n!.p - _an));
+      if (d < _step) return false;
+      _ae = _e!.p;
+      _an = _n!.p;
     }
     meters += d;
-    route.add(f);
+    route.add(point);
+    if (target != null && before < target && meters >= target && _reached == null && d > 0) {
+      final frac = (target - before) / d;
+      final ms = last.at.difference(firstAt!).inMilliseconds + f.at.difference(last.at).inMilliseconds * frac;
+      _reached = (target, firstAt!.add(Duration(milliseconds: ms.round())));
+    }
     return true;
   }
+
+  /// How good the signal is, for the screen.
+  static String signal(double accuracy) => accuracy <= 10
+      ? 'Strong'
+      : accuracy <= 20
+      ? 'Good'
+      : accuracy <= 40
+      ? 'Weak'
+      : 'Searching';
 }
 
 /// Reads a challenge document; null when it's damaged.

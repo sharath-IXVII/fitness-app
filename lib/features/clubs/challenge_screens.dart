@@ -406,6 +406,15 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
   Timer? _tick;
   DateTime? _startedAt;
   int _elapsed = 0;
+
+  /// Latest GPS accuracy in metres, for the signal check before Start.
+  double? _accuracy;
+
+  /// Time from Start to the first reading after it.
+  int? _firstFixOffset;
+
+  /// Start needs a signal at least this good.
+  static const _goodEnough = 20.0;
   String _result = '';
   int _xp = 0;
 
@@ -449,30 +458,58 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
       _problem = problem;
       _phase = _RunPhase.ready;
     });
+    // Warm the GPS up before Start: the first readings are the least accurate.
+    if (problem == null) _listen();
+  }
+
+  void _listen() {
+    _sub ??= ref
+        .read(gpsProvider)
+        .track()
+        .listen(
+          _onFix,
+          onError: (_) {
+            if (mounted) setState(() => _problem = 'Lost the GPS signal. Keep going; it will pick up again.');
+          },
+        );
+  }
+
+  void _onFix(GpsFix f) {
+    if (!mounted) return;
+    if (_phase != _RunPhase.running) {
+      setState(() => _accuracy = f.accuracy);
+      return;
+    }
+    _firstFixOffset ??= clock.now().difference(_startedAt!).inMilliseconds;
+    _accuracy = f.accuracy;
+    _tracker.add(f, target: c.distanceM);
+    setState(() {});
+    if (_tracker.meters >= c.distanceM) _finish();
   }
 
   void _go() {
     HapticFeedback.heavyImpact();
     _tracker = RouteTracker(c.kind);
     _startedAt = clock.now();
+    _firstFixOffset = null;
     _elapsed = 0;
     setState(() => _phase = _RunPhase.running);
     _tick = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() => _elapsed = clock.now().difference(_startedAt!).inMilliseconds);
     });
-    _sub = ref.read(gpsProvider).track().listen((f) {
-      if (!_tracker.add(f) || !mounted) return;
-      setState(() {});
-      if (_tracker.meters >= c.distanceM) _finish();
-    }, onError: (_) => setState(() => _problem = 'Lost the GPS signal. Keep going; it will pick up again.'));
+    _listen();
   }
 
   Future<void> _finish() async {
     if (_phase != _RunPhase.running) return;
-    // The clock on the phone, or the GPS readings' own times if longer.
-    final wall = clock.now().difference(_startedAt!).inMilliseconds;
-    final time = wall > _tracker.spanMs ? wall : _tracker.spanMs;
+    // Time from Start to the exact moment the distance was reached, using the
+    // GPS readings' own times (worked out between two readings).
+    final reached = _tracker.reachedAt(c.distanceM);
+    final time = reached != null && _tracker.firstAt != null
+        ? (_firstFixOffset ?? 0) + reached.difference(_tracker.firstAt!).inMilliseconds
+        : clock.now().difference(_startedAt!).inMilliseconds;
     await _sub?.cancel();
+    _sub = null;
     _tick?.cancel();
     HapticFeedback.heavyImpact();
     setState(() {
@@ -573,13 +610,36 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
                   _RunPhase.ready =>
                     _problem == null
                         ? [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.gps_fixed_rounded,
+                                  color: (_accuracy ?? 99) <= _goodEnough ? AppColors.primary : AppColors.amber,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _accuracy == null
+                                      ? 'GPS: searching…'
+                                      : 'GPS: ${RouteTracker.signal(_accuracy!)} (±${_accuracy!.round()} m)',
+                                  style: text.titleMedium,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
                             Text(
-                              'Location is on. Tap Start and go. It finishes by itself at ${c.distanceLabel}.',
+                              (_accuracy ?? 99) <= _goodEnough
+                                  ? 'Ready. Tap Start and go. It finishes by itself at ${c.distanceLabel}.'
+                                  : 'Waiting for a strong GPS signal. Stand in the open, away from tall buildings.',
                               style: text.bodyMedium,
                               textAlign: TextAlign.center,
                             ),
                             const SizedBox(height: 12),
-                            GradientButton(label: 'Start', icon: Icons.play_arrow_rounded, onPressed: _go),
+                            GradientButton(
+                              label: 'Start',
+                              icon: Icons.play_arrow_rounded,
+                              onPressed: (_accuracy ?? 99) <= _goodEnough ? _go : null,
+                            ),
                           ]
                         : [GradientButton(label: 'Try again', icon: Icons.refresh_rounded, onPressed: _check)],
                   _RunPhase.running => [

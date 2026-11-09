@@ -5,6 +5,7 @@ import 'package:fitalarm/features/clubs/challenge_screens.dart' show countdown;
 import 'package:fitalarm/features/clubs/clubs_backend.dart';
 import 'package:fitalarm/features/clubs/domain/club.dart';
 import 'package:fitalarm/features/clubs/domain/club_challenge.dart';
+import 'package:fitalarm/features/clubs/map_picker_screen.dart' show routeLength;
 import 'package:fitalarm/features/friends/friends_backend.dart' show FriendsFailure;
 import 'package:flutter_test/flutter_test.dart';
 
@@ -13,6 +14,14 @@ GpsFix at(int step, {double every = 0.0005, int secs = 10, double acc = 8}) =>
     GpsFix(12.97 + step * every, 77.59, acc, DateTime(2026, 11, 9, 6).add(Duration(seconds: step * secs)));
 
 void main() {
+  test('distance from the drawn route, and its length', () {
+    const route = [(12.97, 77.59), (12.98, 77.59)]; // ~1.1 km due north
+    expect(distanceToRoute((12.975, 77.59), route), lessThan(1));
+    expect(distanceToRoute((12.975, 77.5905), route), closeTo(54, 3)); // 0.0005° east ≈ 54 m
+    expect(distanceToRoute((12.99, 77.59), route), closeTo(1113, 5)); // past the end
+    expect(routeLength(route), closeTo(1112, 5));
+  });
+
   test('distance between two points', () {
     expect(distanceBetween((12.97, 77.59), (12.98, 77.59)), closeTo(1112, 5));
   });
@@ -141,6 +150,7 @@ void main() {
       endsAt: DateTime(2026, 11, 16),
       start: (12.97, 77.59),
       finish: (12.97, 77.66),
+      plan: const [(12.97, 77.59), (12.98, 77.6), (12.97, 77.66)],
       startName: 'Lake gate',
     );
     await expectLater(
@@ -158,6 +168,7 @@ void main() {
     final ch = (await b.challenges(club.id).first).single;
     expect(ch.start, (12.97, 77.59));
     expect(ch.finish, (12.97, 77.66));
+    expect(ch.plan, [(12.97, 77.59), (12.98, 77.6), (12.97, 77.66)]);
     expect(ch.startName, 'Lake gate');
 
     expect(await b.submitResult(ch, uid: 'ravi', myName: 'Ravi', timeMs: 48 * 60000, distanceM: 8010), isTrue);

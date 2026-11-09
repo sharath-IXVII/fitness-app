@@ -36,6 +36,7 @@ class ClubChallenge {
     required this.endsAt,
     this.start,
     this.finish,
+    this.plan = const [],
     this.startName = '',
   });
 
@@ -58,6 +59,9 @@ class ClubChallenge {
 
   /// Where it ends, or null to end wherever the distance is reached.
   final (double, double)? finish;
+
+  /// The route the admin drew, for members to follow (may be empty).
+  final List<(double, double)> plan;
 
   /// "Lake gate", shown to members.
   final String startName;
@@ -322,6 +326,10 @@ ClubChallenge? challengeFromJson(String club, String id, Map<String, dynamic> j)
       startsAt: (j['startsAt'] as Timestamp).toDate(),
       endsAt: (j['endsAt'] as Timestamp).toDate(),
       start: start is GeoPoint ? (start.latitude, start.longitude) : null,
+      plan: [
+        for (final g in (j['plan'] as List<dynamic>? ?? const []))
+          if (g is GeoPoint) (g.latitude, g.longitude),
+      ],
       finish: j['finish'] is GeoPoint
           ? ((j['finish'] as GeoPoint).latitude, (j['finish'] as GeoPoint).longitude)
           : null,
@@ -330,4 +338,23 @@ ClubChallenge? challengeFromJson(String club, String id, Map<String, dynamic> j)
   } catch (_) {
     return null;
   }
+}
+
+/// Metres from [p] to the nearest point of [route] (a polyline).
+double distanceToRoute((double, double) p, List<(double, double)> route) {
+  if (route.isEmpty) return double.infinity;
+  if (route.length == 1) return distanceBetween(p, route.first);
+  const m = 111320.0;
+  final k = math.cos(p.$1 * math.pi / 180) * m;
+  (double, double) xy((double, double) q) => ((q.$2 - p.$2) * k, (q.$1 - p.$1) * m);
+  var best = double.infinity;
+  for (var i = 1; i < route.length; i++) {
+    final a = xy(route[i - 1]), b = xy(route[i]);
+    final dx = b.$1 - a.$1, dy = b.$2 - a.$2;
+    final len2 = dx * dx + dy * dy;
+    final t = len2 == 0 ? 0.0 : (-(a.$1 * dx + a.$2 * dy) / len2).clamp(0.0, 1.0);
+    final x = a.$1 + t * dx, y = a.$2 + t * dy;
+    best = math.min(best, math.sqrt(x * x + y * y));
+  }
+  return best;
 }

@@ -259,7 +259,7 @@ service cloud.firestore {
       match /challenges/{ch} {
         allow read: if isMember(club);
         allow create: if ownsClub(club)
-          && data().keys().hasOnly(['title', 'kind', 'distanceM', 'startsAt', 'endsAt', 'start', 'finish', 'startName',
+          && data().keys().hasOnly(['title', 'kind', 'distanceM', 'startsAt', 'endsAt', 'start', 'finish', 'plan', 'startName',
                                     'createdBy', 'createdAt'])
           && data().createdBy == me()
           && data().title is string && data().title.size() >= 3 && data().title.size() <= 60 && noLink(data().title)
@@ -270,6 +270,7 @@ service cloud.firestore {
           && data().endsAt <= data().startsAt + duration.value(31, 'd')
           && (data().get('start', null) == null || data().start is latlng)
           && (data().get('finish', null) == null || data().finish is latlng)
+          && (data().get('plan', null) == null || (data().plan is list && data().plan.size() <= 200))
           && data().startName is string && data().startName.size() <= 40 && noLink(data().startName)
           && data().createdAt == request.time;
         allow delete: if ownsClub(club);

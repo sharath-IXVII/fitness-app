@@ -186,8 +186,10 @@ class ClubsBackend {
     required DateTime endsAt,
     (double, double)? start,
     (double, double)? finish,
+    List<(double, double)> plan = const [],
     String startName = '',
   }) async {
+    if (plan.length > 200) throw const FriendsFailure('That route has too many points. Use fewer taps.');
     final t = title.trim();
     if (t.length < 3 || t.length > 60) throw const FriendsFailure('Give the challenge a name of 3 to 60 letters.');
     if (containsLink(t) || containsLink(startName)) throw const FriendsFailure('Links are not allowed in clubs.');
@@ -201,6 +203,7 @@ class ClubsBackend {
       'endsAt': Timestamp.fromDate(endsAt),
       if (start != null) 'start': GeoPoint(start.$1, start.$2),
       if (finish != null) 'finish': GeoPoint(finish.$1, finish.$2),
+      if (plan.isNotEmpty) 'plan': [for (final (a, b) in plan) GeoPoint(a, b)],
       'startName': startName.trim(),
       'createdBy': uid,
       'createdAt': FieldValue.serverTimestamp(),

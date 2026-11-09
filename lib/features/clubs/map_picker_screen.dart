@@ -1,72 +1,59 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../core/widgets/gradient_button.dart';
 import 'domain/club_challenge.dart';
+import 'widgets/route_map.dart';
 
-typedef StartFinish = ({(double, double) start, (double, double)? finish});
+/// The planned route: the points the admin tapped, start first, finish last.
+typedef PlannedRoute = List<(double, double)>;
 
-/// The admin taps the map to set the start, then (optionally) the finish.
-class MapPickerScreen extends StatefulWidget {
-  const MapPickerScreen({super.key, required this.around, this.start, this.finish});
+/// Length of a planned route in metres.
+double routeLength(PlannedRoute r) {
+  var m = 0.0;
+  for (var i = 1; i < r.length; i++) {
+    m += distanceBetween(r[i - 1], r[i]);
+  }
+  return m;
+}
+
+/// The admin draws the challenge route by tapping along the roads: the
+/// first tap is the start, the last is the finish. The distance is worked
+/// out from the route.
+class RoutePlannerScreen extends StatefulWidget {
+  const RoutePlannerScreen({super.key, required this.around, this.initial = const []});
 
   /// Where to centre the map at first (the admin's location).
   final (double, double) around;
-  final (double, double)? start;
-  final (double, double)? finish;
+  final PlannedRoute initial;
 
   @override
-  State<MapPickerScreen> createState() => _MapPickerScreenState();
+  State<RoutePlannerScreen> createState() => _RoutePlannerScreenState();
 }
 
-class _MapPickerScreenState extends State<MapPickerScreen> {
-  late (double, double)? _start = widget.start;
-  late (double, double)? _finish = widget.finish;
-
-  void _tap(LatLng p) => setState(() {
-    if (_start == null) {
-      _start = (p.latitude, p.longitude);
-    } else {
-      _finish = (p.latitude, p.longitude);
-    }
-  });
+class _RoutePlannerScreenState extends State<RoutePlannerScreen> {
+  late final PlannedRoute _points = [...widget.initial];
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final line = _start != null && _finish != null ? distanceBetween(_start!, _finish!) : null;
+    final length = routeLength(_points);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Start and finish'),
+        title: const Text('Draw the route'),
         actions: [
-          if (_start != null)
-            TextButton(onPressed: () => setState(() => _start = _finish = null), child: const Text('Reset')),
+          if (_points.isNotEmpty)
+            IconButton(
+              tooltip: 'Undo last point',
+              icon: const Icon(Icons.undo_rounded),
+              onPressed: () => setState(_points.removeLast),
+            ),
+          if (_points.isNotEmpty) TextButton(onPressed: () => setState(_points.clear), child: const Text('Clear')),
         ],
       ),
       body: Column(
         children: [
           Expanded(
-            child: GoogleMap(
-              initialCameraPosition: CameraPosition(target: LatLng(widget.around.$1, widget.around.$2), zoom: 15),
-              myLocationEnabled: true,
-              zoomControlsEnabled: false,
-              onTap: _tap,
-              markers: {
-                if (_start case final s?)
-                  Marker(
-                    markerId: const MarkerId('start'),
-                    position: LatLng(s.$1, s.$2),
-                    icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
-                    infoWindow: const InfoWindow(title: 'Start'),
-                  ),
-                if (_finish case final f?)
-                  Marker(
-                    markerId: const MarkerId('finish'),
-                    position: LatLng(f.$1, f.$2),
-                    infoWindow: const InfoWindow(title: 'Finish'),
-                  ),
-              },
-            ),
+            child: RouteMap(plan: _points, around: widget.around, onTap: (p) => setState(() => _points.add(p))),
           ),
           SafeArea(
             top: false,
@@ -76,12 +63,11 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(
-                    _start == null
-                        ? 'Tap the map where the challenge starts.'
-                        : _finish == null
-                        ? 'Now tap where it finishes, or tap Done to finish anywhere.'
-                        : 'Start to finish: ${formatKm(line!.round())} in a straight line. '
-                              'Set the distance to the route people will take.',
+                    _points.isEmpty
+                        ? 'Tap where the challenge starts.'
+                        : _points.length == 1
+                        ? 'Now tap along the roads to the finish. Tap at each turn.'
+                        : 'Route: ${formatKm(length.round())}. Keep tapping to extend it, or tap Done.',
                     style: text.bodyLarge,
                     textAlign: TextAlign.center,
                   ),
@@ -89,9 +75,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
                   GradientButton(
                     label: 'Done',
                     icon: Icons.check_rounded,
-                    onPressed: _start == null
-                        ? null
-                        : () => Navigator.of(context).pop<StartFinish>((start: _start!, finish: _finish)),
+                    onPressed: _points.isEmpty ? null : () => Navigator.of(context).pop<PlannedRoute>([..._points]),
                   ),
                 ],
               ),

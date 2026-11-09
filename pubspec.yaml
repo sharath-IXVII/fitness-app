@@ -68,8 +68,7 @@ dependencies:
   health: ^13.3.2
   flutter_blue_plus: ^1.34.5
   gal: ^2.3.3
-  google_maps_flutter: ^2.19.0
-
+  maplibre_gl: ^0.28.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

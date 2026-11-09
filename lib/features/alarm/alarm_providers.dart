@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../profile/profile_providers.dart';
 import '../../core/storage.dart';
 import '../profile/domain/user_profile.dart';
 import '../workout/domain/routine.dart';
@@ -29,12 +30,17 @@ class AlarmsNotifier extends Notifier<List<WorkoutAlarm>> {
 
   int get _nextId => state.fold(0, (m, a) => a.id > m ? a.id : m) % WorkoutAlarm.maxUserId + 1;
 
-  WorkoutAlarm draft() => WorkoutAlarm(
-    id: _nextId,
-    time: const TimeOfDay(hour: 6, minute: 0),
-    days: const {1, 2, 3, 4, 5, 6, 7},
-    routineId: Routine.beginner.id,
-  );
+  /// A new wake-up alarm, with a workout that suits the user's age.
+  WorkoutAlarm draft() {
+    final p = ref.read(profileProvider);
+    return WorkoutAlarm(
+      id: _nextId,
+      time: const TimeOfDay(hour: 6, minute: 0),
+      days: const {1, 2, 3, 4, 5, 6, 7},
+      routineId: p == null ? Routine.beginner.id : Routine.forProfile(p).id,
+      level: p == null ? ChallengeLevel.medium : challengeLevelForAge(p.age),
+    );
+  }
 
   /// A new bedtime alarm: gentle bells, one 10-minute snooze, Sleep mode
   /// until 3:00 AM.
@@ -92,7 +98,8 @@ class AlarmsNotifier extends Notifier<List<WorkoutAlarm>> {
         id: 1,
         time: profile.wakeTime,
         days: const {1, 2, 3, 4, 5, 6, 7},
-        routineId: Routine.forLevel(profile.level).id,
+        routineId: Routine.forProfile(profile).id,
+        level: challengeLevelForAge(profile.age),
       ),
     );
   }

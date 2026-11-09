@@ -26,3 +26,6 @@ enum ChallengeLevel {
 
   final String label;
 }
+
+/// Brain-game level that suits someone's age: easy from 60.
+ChallengeLevel challengeLevelForAge(int age) => age >= 60 ? ChallengeLevel.easy : ChallengeLevel.medium;

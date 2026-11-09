@@ -114,7 +114,30 @@ class Routine {
     ],
   );
 
-  static const presets = [beginner, moderate, advanced, upperBody, core, cardio];
+  /// Low impact, no jumping and no floor work that is hard to get up from:
+  /// for 60 and over.
+  static const gentle = Routine(
+    id: 'gentle',
+    name: 'Gentle start',
+    builtIn: true,
+    steps: [
+      RoutineStep(Exercise.squat, 8),
+      RoutineStep(Exercise.kneePushUp, 6),
+      RoutineStep(Exercise.lateralRaise, 10),
+      RoutineStep(Exercise.wallSit, 15),
+    ],
+  );
+
+  static const presets = [gentle, beginner, moderate, advanced, upperBody, core, cardio];
+
+  /// The wake-up routine that suits someone's age and fitness: 60 and over
+  /// get the gentle routine; 45 to 59 and under 18 at most Moderate.
+  static Routine forProfile(UserProfile p) {
+    if (p.age >= 60) return gentle;
+    final r = forLevel(p.level);
+    if ((p.age >= 45 || p.age < 18) && r == advanced) return moderate;
+    return r;
+  }
 
   static Routine forLevel(FitnessLevel level) => switch (level) {
     FitnessLevel.beginner => beginner,

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,8 +23,10 @@ import 'sleep_screens.dart';
 import 'strict_mode.dart';
 
 /// Full-screen view while an alarm rings. There is no dismiss button — the
-/// way out is the workout or brain game. Snooze and a deliberately awkward
-/// emergency stop exist unless the alarm has no snooze or strict mode on.
+/// A normal alarm has Snooze and Stop like any phone alarm, with the
+/// workout or game offered. With "No snooze" or Strict mode the workout or
+/// game is the only way out (in Strict mode, restarting the phone in an
+/// emergency).
 class RingScreen extends ConsumerStatefulWidget {
   const RingScreen({super.key, required this.info});
 
@@ -81,9 +82,9 @@ class _RingScreenState extends ConsumerState<RingScreen> {
     super.dispose();
   }
 
-  Future<void> _emergencyStop() async {
-    final ok = await showDialog<bool>(context: context, builder: (_) => const _EmergencyDialog());
-    if (ok != true || !mounted) return;
+  /// A normal alarm stops like any phone alarm.
+  Future<void> _stop() async {
+    HapticFeedback.mediumImpact();
     await AlarmScheduler.silence(widget.info);
     await ref.read(alarmsProvider.notifier).handled(widget.info.alarmId);
     if (mounted) context.go(Routes.home);
@@ -138,7 +139,10 @@ class _RingScreenState extends ConsumerState<RingScreen> {
                     children: [
                       Row(
                         children: [
-                          Text('To turn it off', style: text.labelMedium?.copyWith(color: AppColors.textSecondary)),
+                          Text(
+                            info.hardMode ? 'To turn it off' : 'Start your day with',
+                            style: text.labelMedium?.copyWith(color: AppColors.textSecondary),
+                          ),
                           const Spacer(),
                           if (info.strict)
                             _Tag(icon: Icons.lock_outline_rounded, label: 'Strict mode')
@@ -208,9 +212,19 @@ class _RingScreenState extends ConsumerState<RingScreen> {
                       ),
                     if (canSnooze) const SizedBox(width: 8),
                     if (!info.hardMode)
-                      TextButton(
-                        onPressed: _emergencyStop,
-                        child: Text('Emergency stop', style: text.bodySmall),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: _stop,
+                          icon: const Icon(Icons.alarm_off_rounded, size: 18),
+                          label: const Text('Stop'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: AppColors.textPrimary,
+                            backgroundColor: AppColors.surface,
+                            side: BorderSide(color: AppColors.stroke),
+                            minimumSize: const Size.fromHeight(52),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                        ),
                       ),
                   ],
                 ),
@@ -269,99 +283,4 @@ class _RingingIcon extends StatelessWidget {
       ],
     ),
   );
-}
-
-/// Hold for three seconds, then solve a sum. Annoying on purpose.
-class _EmergencyDialog extends StatefulWidget {
-  const _EmergencyDialog();
-
-  @override
-  State<_EmergencyDialog> createState() => _EmergencyDialogState();
-}
-
-class _EmergencyDialogState extends State<_EmergencyDialog> with SingleTickerProviderStateMixin {
-  late final _hold = AnimationController(vsync: this, duration: const Duration(seconds: 3))
-    ..addStatusListener((s) {
-      if (s == AnimationStatus.completed) {
-        HapticFeedback.heavyImpact();
-        setState(() => _unlocked = true);
-      }
-    });
-  final _answer = TextEditingController();
-  final _rng = math.Random();
-  late final int _a = 12 + _rng.nextInt(30), _b = 3 + _rng.nextInt(7);
-  bool _unlocked = false;
-  bool _wrong = false;
-
-  @override
-  void dispose() {
-    _hold.dispose();
-    _answer.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return AlertDialog(
-      backgroundColor: AppColors.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      title: const Text('Emergency stop'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text("Today's workout won't count and your streak may break.", style: text.bodyMedium),
-          const SizedBox(height: 20),
-          if (!_unlocked)
-            GestureDetector(
-              onTapDown: (_) => _hold.forward(),
-              onTapUp: (_) => _hold.reverse(),
-              onTapCancel: () => _hold.reverse(),
-              child: AnimatedBuilder(
-                animation: _hold,
-                builder: (_, _) => Container(
-                  height: 54,
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), color: AppColors.surfaceHigh),
-                  clipBehavior: Clip.antiAlias,
-                  child: Stack(
-                    children: [
-                      FractionallySizedBox(
-                        widthFactor: _hold.value,
-                        child: Container(color: AppColors.danger.withValues(alpha: 0.25)),
-                      ),
-                      Center(child: Text('Press and hold for 3 seconds', style: text.titleSmall)),
-                    ],
-                  ),
-                ),
-              ),
-            )
-          else ...[
-            Text('What is $_a × $_b?', style: text.titleMedium),
-            const SizedBox(height: 10),
-            TextField(
-              controller: _answer,
-              autofocus: true,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(hintText: 'Answer', errorText: _wrong ? 'Not quite' : null),
-            ),
-          ],
-        ],
-      ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("I'll work out")),
-        if (_unlocked)
-          TextButton(
-            onPressed: () {
-              if (int.tryParse(_answer.text.trim()) == _a * _b) {
-                Navigator.pop(context, true);
-              } else {
-                setState(() => _wrong = true);
-              }
-            },
-            child: const Text('Stop alarm', style: TextStyle(color: AppColors.danger)),
-          ),
-      ],
-    );
-  }
 }

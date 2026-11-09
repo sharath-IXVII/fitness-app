@@ -27,6 +27,9 @@ import '../features/profile/profile_providers.dart';
 import '../features/progress/achievements_screen.dart';
 import '../features/progress/weekly_report_screen.dart';
 import '../features/profile/profile_screen.dart';
+import '../features/activity/activity_screen.dart';
+import '../features/activity/domain/activity_session.dart';
+import '../features/activity/skipping_screen.dart';
 import '../features/arcs/domain/arc.dart';
 import '../features/clubs/challenge_screens.dart';
 import '../features/clubs/club_screen.dart';
@@ -93,6 +96,10 @@ abstract final class Routes {
   static const dailyReport = '/daily-report';
   static const shareCard = '/share-card';
   static const wrapped = '/wrapped';
+  static const activity = '/activity';
+  static const activitySummary = '/activity-summary';
+  static const activities = '/activities';
+  static const skipping = '/skipping';
   static const achievements = '/achievements';
   static const report = '/report';
   static const privacy = '/privacy';
@@ -219,6 +226,21 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (_, s) => RunReportScreen(id: s.extra! as String),
       ),
       GoRoute(path: Routes.dailyReport, builder: (_, _) => const DailyReportScreen()),
+      GoRoute(
+        path: Routes.activity,
+        redirect: (_, s) => s.extra is ActivityKind ? null : Routes.training,
+        builder: (_, s) => ActivityScreen(kind: s.extra! as ActivityKind),
+      ),
+      GoRoute(
+        path: Routes.activitySummary,
+        redirect: (_, s) => s.extra is ActivitySession ? null : Routes.training,
+        builder: (_, s) {
+          final a = s.extra! as ActivitySession;
+          return RunReportScreen(id: a.id, report: sessionReport(a));
+        },
+      ),
+      GoRoute(path: Routes.activities, builder: (_, _) => const ActivityHistoryScreen()),
+      GoRoute(path: Routes.skipping, builder: (_, _) => const SkippingScreen()),
       GoRoute(
         path: Routes.wrapped,
         redirect: (_, s) => s.extra is ArcPeriod ? null : Routes.home,

@@ -27,9 +27,12 @@ final saveImageProvider = Provider<Future<void> Function(Uint8List png, String n
 /// A member's performance report after a challenge: distance, time, pace,
 /// speed, calories, km splits, rank and the route. Kept for 5 hours.
 class RunReportScreen extends ConsumerStatefulWidget {
-  const RunReportScreen({super.key, required this.id});
+  const RunReportScreen({super.key, required this.id, this.report});
 
   final String id;
+
+  /// Shown as it is (a saved activity), instead of the 5-hour club report.
+  final RunReport? report;
 
   @override
   ConsumerState<RunReportScreen> createState() => _RunReportScreenState();
@@ -72,10 +75,11 @@ class _RunReportScreenState extends ConsumerState<RunReportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final r = ref.watch(runReportProvider(widget.id));
+    final kept = widget.report == null;
+    final r = widget.report ?? ref.watch(runReportProvider(widget.id));
     final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('My report')),
+      appBar: AppBar(title: Text(widget.report == null ? 'My report' : widget.report!.title)),
       body: PageBackground(
         child: r == null
             ? Center(
@@ -123,6 +127,7 @@ class _RunReportScreenState extends ConsumerState<RunReportScreen> {
                               icon: const Icon(Icons.map_rounded),
                               label: const Text('See the route on the map'),
                             ),
+                          if (kept)
                           Text(
                             'Kept until ${DateFormat('h:mm a').format(r.expiresAt)}. Download it to keep it.',
                             style: text.bodySmall,

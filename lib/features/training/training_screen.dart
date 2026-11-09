@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../clubs/domain/club_challenge.dart';
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/glass_card.dart';
@@ -50,6 +51,62 @@ class TrainingScreen extends ConsumerWidget {
       Text('Home workouts, no gym needed', style: text.bodyMedium?.copyWith(color: AppColors.textSecondary)),
       const SizedBox(height: 16),
       _WeekCard(workouts: week.workouts, minutes: week.minutes, kcal: week.kcal),
+      const SizedBox(height: 24),
+      Row(
+        children: [
+          const Expanded(child: _Title('Run · Walk · Cycle')),
+          TextButton(onPressed: () => context.push(Routes.activities), child: const Text('History')),
+        ],
+      ),
+      const SizedBox(height: 8),
+      Row(
+        children: [
+          for (final (i, k) in ActivityKind.values.indexed) ...[
+            if (i > 0) const SizedBox(width: 10),
+            Expanded(
+              child: Material(
+                color: AppColors.surface,
+                borderRadius: BorderRadius.circular(18),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(18),
+                  onTap: () => context.push(Routes.activity, extra: k),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    child: Column(
+                      children: [
+                        Icon(k.icon, color: AppColors.primary, size: 30),
+                        const SizedBox(height: 6),
+                        Text(k.label, style: text.titleSmall),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(width: 10),
+          Expanded(
+            child: Material(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(18),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(18),
+                onTap: () => context.push(Routes.skipping),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Column(
+                    children: [
+                      Icon(Icons.sports_gymnastics_rounded, color: AppColors.primary, size: 30),
+                      const SizedBox(height: 6),
+                      Text('Skipping', style: text.titleSmall),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
       const SizedBox(height: 24),
       const _Title('30-day challenges'),
       const SizedBox(height: 12),

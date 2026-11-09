@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:share_plus/share_plus.dart';
 
+import '../teams/teams_screen.dart';
 import '../clubs/clubs_providers.dart';
 import '../../core/app_info.dart';
 import '../../core/router.dart';
@@ -130,6 +131,8 @@ class FriendsScreen extends ConsumerWidget {
                 isMe: p.uid == me.uid,
                 onTap: p.uid == me.uid ? null : () => context.push(Routes.friendProfile, extra: p.uid),
               ),
+            const SizedBox(height: 24),
+            const TeamsSection(),
           ],
         ),
       ),

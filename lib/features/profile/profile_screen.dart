@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:intl/intl.dart';
 
+import '../teams/teams_providers.dart';
 import '../../core/cloud_backup.dart';
 import '../../core/local_data.dart';
 import '../../core/app_info.dart';
@@ -266,6 +267,7 @@ class ProfileScreen extends ConsumerWidget {
                           // Online data first, while still signed in.
                           if (friends != null && uid != null) {
                             await ref.read(clubsBackendProvider)?.deleteMe(uid).timeout(const Duration(seconds: 20));
+                            await ref.read(teamsBackendProvider)?.leaveAll(uid).timeout(const Duration(seconds: 20));
                             await friends.deleteMe(uid).timeout(const Duration(seconds: 20));
                             await ref.read(cloudStoreProvider)?.delete(uid).timeout(const Duration(seconds: 20));
                           }

@@ -174,6 +174,19 @@ abstract final class Reminders {
     }
   }
 
+  /// A friendly nudge right now (e.g. "Ravi finished today's goals").
+  static Future<void> nudgeNow(String title, String body) async {
+    if (!supported) return;
+    await init();
+    await _plugin.show(
+      id: _reportId + 1,
+      title: title,
+      body: body,
+      notificationDetails: _club(body),
+      payload: jsonEncode({'type': 'teams'}),
+    );
+  }
+
   /// The evening daily report, every day at [minuteOfDay].
   static Future<void> scheduleDailyReport({required int minuteOfDay, required bool enabled}) async {
     if (!supported) return;
@@ -207,7 +220,7 @@ abstract final class Reminders {
     if (payload == null) return;
     try {
       final type = (jsonDecode(payload) as Map<String, dynamic>)['type'];
-      if (type is! String || !(type == 'report' || type == 'clubs')) return;
+      if (type is! String || !(type == 'report' || type == 'clubs' || type == 'teams')) return;
       if (onOpen != null) {
         onOpen!(type);
       } else {

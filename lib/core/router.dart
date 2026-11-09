@@ -38,6 +38,7 @@ import '../features/clubs/report_screen.dart';
 import '../features/clubs/clubs_screen.dart';
 import '../features/report/daily_report_screen.dart';
 import '../features/share/share_card.dart';
+import '../features/teams/teams_screen.dart';
 import '../features/wrapped/wrapped_screen.dart';
 import '../features/snaps/snap_screen.dart';
 import '../features/scan/scan_screen.dart';
@@ -100,6 +101,7 @@ abstract final class Routes {
   static const activitySummary = '/activity-summary';
   static const activities = '/activities';
   static const skipping = '/skipping';
+  static const team = '/team';
   static const achievements = '/achievements';
   static const report = '/report';
   static const privacy = '/privacy';
@@ -241,6 +243,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(path: Routes.activities, builder: (_, _) => const ActivityHistoryScreen()),
       GoRoute(path: Routes.skipping, builder: (_, _) => const SkippingScreen()),
+      GoRoute(
+        path: Routes.team,
+        redirect: (_, s) => s.extra is String ? null : Routes.friends,
+        builder: (_, s) => TeamScreen(id: s.extra! as String),
+      ),
       GoRoute(
         path: Routes.wrapped,
         redirect: (_, s) => s.extra is ArcPeriod ? null : Routes.home,

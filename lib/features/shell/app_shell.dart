@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../teams/teams_providers.dart';
 import '../friends/friends_backend.dart';
 import '../share/share_card.dart';
 import '../report/report_providers.dart';
@@ -75,6 +76,8 @@ class _AppShellState extends ConsumerState<AppShell> {
         context.push(Routes.dailyReport);
       case 'clubs':
         context.push(Routes.clubs);
+      case 'teams':
+        context.push(Routes.friends);
     }
   }
 
@@ -257,6 +260,8 @@ class _AppShellState extends ConsumerState<AppShell> {
         ref.read(clubXpProvider.notifier).award('ref-$uid', FriendsBackend.inviteXp);
       }
     });
+    // Team streak check-ins and nudges.
+    ref.watch(teamSyncProvider);
     // Keeps the home screen widget up to date.
     ref.watch(homeWidgetSyncProvider);
     // Club challenge reminders on this phone (no server needed).

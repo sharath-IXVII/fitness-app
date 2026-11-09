@@ -5,7 +5,7 @@ import { readFileSync } from 'node:fs';
 import { after, before, beforeEach, test } from 'node:test';
 import { assertFails, assertSucceeds, initializeTestEnvironment } from '@firebase/rules-unit-testing';
 import {
-  doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, query, where, getDocs, writeBatch, serverTimestamp,
+  doc, getDoc, setDoc, updateDoc, deleteDoc, collection, addDoc, query, where, getDocs, writeBatch, serverTimestamp, deleteField,
 } from 'firebase/firestore';
 
 let env;
@@ -378,4 +378,29 @@ test('referrals: recorded once by the new user, listed only by the inviter', asy
   await assertFails(setDoc(doc(as('ravi'), 'referrals/ravi'), { by: 'asha', at: serverTimestamp() })); // once
   await assertSucceeds(getDocs(query(collection(as('asha'), 'referrals'), where('by', '==', 'asha'))));
   await assertFails(getDocs(query(collection(as('meera'), 'referrals'), where('by', '==', 'asha'))));
+});
+
+test('team streaks: create, join with the code, check in only yourself', async () => {
+  const create = (db, uid = 'asha') => {
+    const b = writeBatch(db);
+    b.set(doc(db, 'teams/t1'), {
+      name: 'Winter Warriors', members: [uid], names: { [uid]: 'Asha' }, createdBy: uid, code: 'K7Q2MX',
+      createdAt: serverTimestamp(),
+    });
+    b.set(doc(db, 'teamCodes/K7Q2MX'), { teamId: 't1' });
+    return b.commit();
+  };
+  await assertSucceeds(create(as('asha')));
+  // Ravi joins (adds only himself).
+  await assertSucceeds(updateDoc(doc(as('ravi'), 'teams/t1'), { members: ['asha', 'ravi'], 'names.ravi': 'Ravi' }));
+  await assertFails(updateDoc(doc(as('meera'), 'teams/t1'), { members: ['asha', 'ravi', 'meera', 'x'], 'names.meera': 'M' }));
+  // Days: only yourself, only members.
+  await assertSucceeds(setDoc(doc(as('ravi'), 'teams/t1/days/2026-11-09'), { done: ['ravi'] }));
+  await assertSucceeds(updateDoc(doc(as('asha'), 'teams/t1/days/2026-11-09'), { done: ['ravi', 'asha'] }));
+  await assertFails(setDoc(doc(as('ravi'), 'teams/t1/days/2026-11-10'), { done: ['asha'] }));
+  await assertFails(setDoc(doc(as('meera'), 'teams/t1/days/2026-11-10'), { done: ['meera'] }));
+  await assertFails(getDoc(doc(as('meera'), 'teams/t1/days/2026-11-09')));
+  await assertSucceeds(getDocs(query(collection(as('ravi'), 'teams'), where('members', 'array-contains', 'ravi'))));
+  // Leave.
+  await assertSucceeds(updateDoc(doc(as('ravi'), 'teams/t1'), { members: ['asha'], 'names.ravi': deleteField() }));
 });

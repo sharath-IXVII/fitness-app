@@ -1,6 +1,6 @@
 /// The privacy policy shown in the app. Keep in sync with docs/privacy.md,
 /// which is the version to host publicly for the Play Store listing.
-const privacyUpdated = 'October 2026';
+const privacyUpdated = 'November 2026';
 
 const privacySections = <(String, String)>[
   (
@@ -36,18 +36,16 @@ const privacySections = <(String, String)>[
   ),
   (
     'Data stored on your phone',
-    'Alarms, routines, your My Day plan, weigh-ins, weight goal, saved foods, meal photos and the health readings '
-        'you record in the Health tab (blood pressure, blood sugar, pulse and oxygen) are stored only on '
-        'your device and are not backed up, so they are not restored on a new phone. Your progress backup (above) '
+    'Alarms, routines, your My Day plan, weigh-ins, weight goal, saved foods, meal photos and the pulse readings '
+        'you save in the Health tab are stored only on your device and are not backed up, so they are not restored on a new phone. Your progress backup (above) '
         'is kept in your account. Uninstalling the app or using "Reset data on this device" removes what is on the '
         'phone.',
   ),
   (
     'Health readings',
-    'The Health tab keeps the readings you type in, such as blood pressure or blood sugar, and sorts them by '
-        'standard medical ranges. FittArc does not measure them and does not diagnose anything. They stay on your '
-        'phone, are never uploaded, and are removed when you delete your account or reset data. If you choose '
-        '"Share a summary with my doctor", the text goes only to the app you pick.',
+    'The Health tab keeps the resting pulse you save from the camera heart-rate estimate. It is an approximate '
+        'wellness estimate, not a medical measurement, and FittArc does not diagnose anything. Readings stay on your '
+        'phone, are never uploaded, and are removed when you delete your account or reset data.',
   ),
   (
     'Feedback emails',

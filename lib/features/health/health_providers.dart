@@ -56,9 +56,6 @@ final readingsOfProvider = Provider.family<List<HealthReading>, ReadingKind>((re
   ];
 });
 
-/// The last week of blood pressure, averaged the way guidelines advise.
-final homeBpProvider = Provider<HomeBpSummary>((ref) => homeBpSummary(ref.watch(healthLogProvider), clock.now()));
-
 const _arcKey = 'health.arc.v1';
 
 /// Arc minutes earned from live heart-rate sessions, by day. Kept on this

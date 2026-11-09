@@ -51,31 +51,10 @@ void main() {
               'wake': 390,
               'sleep': 1380,
             }),
-            // A reading of each kind, so every card is on screen.
+            // Two pulse readings, so the card and its trend are on screen.
             'health.readings.v1': jsonEncode([
-              {
-                'id': '1',
-                'k': 'bloodPressure',
-                'at': DateTime(2026, 3, 1, 8).millisecondsSinceEpoch,
-                's': 128,
-                'd': 82,
-              },
-              {
-                'id': '2',
-                'k': 'bloodPressure',
-                'at': DateTime(2026, 3, 1, 20).millisecondsSinceEpoch,
-                's': 122,
-                'd': 79,
-              },
-              {
-                'id': '3',
-                'k': 'glucose',
-                'at': DateTime(2026, 3, 1, 7).millisecondsSinceEpoch,
-                'v': 96,
-                'c': 'fasting',
-              },
               {'id': '4', 'k': 'pulse', 'at': DateTime(2026, 3, 1, 7).millisecondsSinceEpoch, 'v': 72},
-              {'id': '5', 'k': 'oxygen', 'at': DateTime(2026, 3, 1, 7).millisecondsSinceEpoch, 'v': 98},
+              {'id': '5', 'k': 'pulse', 'at': DateTime(2026, 3, 2, 7).millisecondsSinceEpoch, 'v': 68},
             ]),
           });
           final prefs = await SharedPreferences.getInstance();

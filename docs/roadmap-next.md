@@ -47,5 +47,4 @@ Owner's inputs, kept as written, with notes on what each one needs.
 ## Account type check (personal Play developer account)
 - Fine on a personal account: items 1, 3, 4, 7, 8, watch onboarding, friends and group challenges, chat (with moderation), body scan as a wellness estimate.
 - Not allowed on a personal account: anything declared under "Medical" in the Health apps declaration, for example blood pressure,
-  blood sugar or oxygen logging, or health-risk predictions. The current build still has the BP / sugar / oxygen log, and
-  Play has flagged it. Decide next week: remove those three logs from the Play version (recommended) or move to an organisation account.
+  blood sugar or oxygen logging, or health-risk predictions. Those three logs were removed on 2026-11-09.

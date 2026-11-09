@@ -5,7 +5,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
@@ -17,93 +16,33 @@ import '../diet/widgets/sheet_frame.dart';
 import '../profile/profile_providers.dart';
 import 'domain/body.dart';
 import 'domain/health.dart';
-import 'domain/report.dart';
 import 'health_providers.dart';
-import 'widgets/add_reading_sheet.dart';
-import 'widgets/guide_card.dart';
 import 'widgets/health_widgets.dart';
 
-/// Health: blood pressure, blood sugar, pulse and oxygen from real devices,
-/// sorted by the standard ranges, with the 7-day home blood pressure method.
+/// Health: the camera heart-rate estimate, a watch, height, weight and BMI,
+/// and the food guide. A wellness page: no medical values are logged.
 class HealthScreen extends ConsumerWidget {
   const HealthScreen({super.key});
-
-  Future<void> _add(BuildContext context, ReadingKind kind) async {
-    final r = await SheetFrame.show<HealthReading>(context, AddReadingSheet(kind: kind));
-    if (r == null || !context.mounted) return;
-    final rating = r.rating;
-    if (rating.needsCare) {
-      await showDialog<void>(
-        context: context,
-        builder: (dialog) => AlertDialog(
-          icon: Icon(Icons.warning_amber_rounded, color: rating.level.color, size: 36),
-          title: Text('${r.kind.label}: ${rating.label}'),
-          content: Text(rating.advice),
-          actions: [TextButton(onPressed: () => Navigator.of(dialog).pop(), child: const Text('I understand'))],
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Saved: ${r.display} · ${rating.label}')));
-    }
-  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
-    final all = ref.watch(healthLogProvider);
 
     final sections = <Widget>[
       Text('Health', style: text.headlineMedium),
-      Text('Your own readings, understood.', style: text.bodyMedium),
+      Text('Your heart, body and food, in one place.', style: text.bodyMedium),
       const SizedBox(height: 14),
       const _HonestNote(),
       const SizedBox(height: 16),
-      const GuideCard(
-        id: 'health',
-        title: 'Start here: 3 taps',
-        steps: [
-          'Tap a tile under "Add a reading", for example Blood pressure.',
-          'Type exactly what your monitor shows, then tap Save reading.',
-          'For blood pressure, do it morning and evening for 7 days. The card below then shows your reliable average.',
-        ],
-      ),
       const _HeartRateCard(),
       const SizedBox(height: 12),
       const _WatchCard(),
       const SizedBox(height: 12),
       const _BodyCard(),
       const SizedBox(height: 12),
-      const _HomeBpCard(),
-      const SizedBox(height: 22),
-      Text('Add a reading', style: text.titleLarge),
-      const SizedBox(height: 10),
-      GridView.count(
-        crossAxisCount: 2,
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        childAspectRatio: 1.9,
-        children: [for (final k in ReadingKind.values) _AddTile(kind: k, onTap: () => _add(context, k))],
-      ),
-      const SizedBox(height: 22),
       const _FoodGuideCard(),
       const SizedBox(height: 22),
       for (final k in ReadingKind.values) ...[_KindCard(kind: k), const SizedBox(height: 12)],
-      if (all.isNotEmpty) ...[
-        const SizedBox(height: 6),
-        OutlinedButton.icon(
-          onPressed: () => SharePlus.instance.share(ShareParams(text: buildReport(all, clock.now()))),
-          icon: const Icon(Icons.ios_share_rounded),
-          label: const Text('Share a summary with my doctor'),
-        ),
-      ],
-      const SizedBox(height: 12),
-      TextButton.icon(
-        onPressed: () => SheetFrame.show<void>(context, const _MeasureWellSheet()),
-        icon: const Icon(Icons.help_outline_rounded, size: 18),
-        label: const Text('How to measure accurately'),
-      ),
       const SizedBox(height: 32),
     ];
 
@@ -178,9 +117,8 @@ class _HonestNote extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Heart rate can be estimated with your camera, and it is approximate. A phone cannot measure blood '
-              'pressure, sugar or oxygen accurately, so for those, type in what your own monitor, glucometer or '
-              'oximeter shows and FittArc sorts it by medical guidelines. This is not medical advice.',
+              'Heart rate can be estimated with your camera, and it is approximate. FittArc is for general fitness '
+              'and wellness. It is not a medical device and this is not medical advice.',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
@@ -466,107 +404,6 @@ class _BodySheetState extends ConsumerState<_BodySheet> {
   }
 }
 
-/// The 7-day home blood pressure method.
-class _HomeBpCard extends ConsumerWidget {
-  const _HomeBpCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final text = Theme.of(context).textTheme;
-    final s = ref.watch(homeBpProvider);
-    final progress = (s.count / s.needed).clamp(0.0, 1.0);
-    return GlassCard(
-      padding: const EdgeInsets.all(18),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.favorite_rounded, color: AppColors.primary, size: 20),
-              const SizedBox(width: 8),
-              Expanded(child: Text('7-day home blood pressure', style: text.titleMedium)),
-              if (s.rating != null && s.complete) RatingChip(rating: s.rating!),
-            ],
-          ),
-          const SizedBox(height: 12),
-          if (!s.hasAverage) ...[
-            Text(
-              'One reading is not enough to judge blood pressure. Doctors advise measuring twice every morning and '
-              'evening for 7 days, then looking at the average.',
-              style: text.bodyMedium,
-            ),
-          ] else ...[
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text('${s.avgSystolic}/${s.avgDiastolic}', style: text.displaySmall),
-                const SizedBox(width: 6),
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 6),
-                  child: Text('mmHg average', style: text.bodySmall),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(6),
-              child: LinearProgressIndicator(
-                value: progress,
-                minHeight: 8,
-                backgroundColor: AppColors.surfaceHigh,
-                color: s.complete ? AppColors.primary : AppColors.amber,
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              s.complete
-                  ? '${s.count} readings over ${s.days} days. ${s.rating!.advice}'
-                  : '${s.count} of ${s.needed} readings so far. Keep going for a reliable average.',
-              style: text.bodySmall,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _AddTile extends ConsumerWidget {
-  const _AddTile({required this.kind, required this.onTap});
-
-  final ReadingKind kind;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final text = Theme.of(context).textTheme;
-    return Pressable(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(color: AppColors.stroke),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(12)),
-              child: Icon(kind.icon, color: AppColors.primary, size: 20),
-            ),
-            const SizedBox(width: 10),
-            Expanded(child: Text(kind.label, style: text.titleSmall)),
-            Icon(Icons.add_rounded, color: AppColors.textMuted),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
 /// The latest reading of one kind, its trend, and the history.
 class _KindCard extends ConsumerWidget {
   const _KindCard({required this.kind});
@@ -668,13 +505,7 @@ class _HistorySheet extends ConsumerWidget {
                         RatingChip(rating: r.rating),
                       ],
                     ),
-                    subtitle: Text(
-                      [
-                        _when(r.at),
-                        if (r.pulse != null) 'pulse ${r.pulse}',
-                        if (r.context != null) r.context!.label.toLowerCase(),
-                      ].join(' · '),
-                    ),
+                    subtitle: Text([_when(r.at)].join(' · ')),
                     trailing: IconButton(
                       tooltip: 'Delete this reading',
                       icon: const Icon(Icons.delete_outline_rounded),
@@ -686,84 +517,6 @@ class _HistorySheet extends ConsumerWidget {
                   ),
               ],
             ),
-    );
-  }
-}
-
-class _MeasureWellSheet extends StatelessWidget {
-  const _MeasureWellSheet();
-
-  static const _steps = [
-    (
-      'Blood pressure',
-      Icons.favorite_rounded,
-      [
-        'Use an upper-arm monitor that has been validated. Wrist and finger devices are less reliable.',
-        'No coffee, exercise or smoking for 30 minutes. Use the toilet first.',
-        'Sit with your back supported, feet flat, arm resting on a table at heart level, cuff on bare skin.',
-        'Rest quietly for 5 minutes. Do not talk while measuring.',
-        'Take 2 readings, 1 minute apart, in the morning before medicines and in the evening. Do this for 7 days.',
-      ],
-    ),
-    (
-      'Blood sugar',
-      Icons.water_drop_rounded,
-      [
-        'Wash and dry your hands. Use a fresh strip that is in date.',
-        'Fasting means at least 8 hours without food. After a meal means 2 hours after the first bite.',
-      ],
-    ),
-    (
-      'Oxygen and pulse',
-      Icons.air_rounded,
-      [
-        'Warm, still hand. Remove nail polish. Rest for 5 minutes, sitting.',
-        'Wait until the number is steady for about 10 seconds before you read it.',
-      ],
-    ),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return SheetFrame(
-      title: 'Measuring accurately',
-      child: ListView(
-        shrinkWrap: true,
-        padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-        children: [
-          for (final (title, icon, points) in _steps) ...[
-            Padding(
-              padding: const EdgeInsets.only(top: 12, bottom: 6),
-              child: Row(
-                children: [
-                  Icon(icon, size: 18, color: AppColors.primary),
-                  const SizedBox(width: 8),
-                  Text(title, style: text.titleSmall),
-                ],
-              ),
-            ),
-            for (final p in points)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 6),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text('•  '),
-                    Expanded(child: Text(p, style: text.bodyMedium)),
-                  ],
-                ),
-              ),
-          ],
-          const SizedBox(height: 10),
-          Text(
-            'FittArc sorts readings by AHA/ACC blood pressure ranges and ADA blood sugar ranges. A single high '
-            'reading is not a diagnosis. See a doctor if you are worried, and call emergency services (112 in '
-            'India) for chest pain, trouble breathing or sudden weakness.',
-            style: text.bodySmall,
-          ),
-        ],
-      ),
     );
   }
 }

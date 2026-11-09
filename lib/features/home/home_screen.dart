@@ -384,8 +384,8 @@ class _TaskGrid extends ConsumerWidget {
   }
 }
 
-/// A small card that opens the Health page (heart rate, blood pressure and
-/// sugar log, height and weight). It is a card here, not a tab, to save space.
+/// A small card that opens the Health page (heart rate, watch, height,
+/// weight and BMI). It is a card here, not a tab, to save space.
 class _HealthEntry extends StatelessWidget {
   const _HealthEntry();
 
@@ -412,13 +412,15 @@ class _HealthEntry extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Flexible(child: Text('Health check', style: text.titleMedium, overflow: TextOverflow.ellipsis)),
+                      Flexible(
+                        child: Text('Health check', style: text.titleMedium, overflow: TextOverflow.ellipsis),
+                      ),
                       const SizedBox(width: 8),
                       const BetaTag(),
                     ],
                   ),
                   Text(
-                    'Heart rate, blood pressure, sugar, height and weight',
+                    'Heart rate, watch, height, weight and BMI',
                     style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

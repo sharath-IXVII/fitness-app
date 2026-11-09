@@ -20,7 +20,7 @@ Future<void> _wait(WidgetTester t, [int ms = 900]) async {
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
-  testWidgets('Health tab: add readings, see how they sort, get a warning for a dangerous one', (t) async {
+  testWidgets('Health tab: wellness only, with the pulse history and no medical logs', (t) async {
     t.view.physicalSize = const Size(390, 844) * 3;
     t.view.devicePixelRatio = 3;
     addTearDown(t.view.reset);
@@ -40,6 +40,11 @@ void main() {
         'wake': 390,
         'sleep': 1380,
       }),
+      // An older version also kept blood pressure; it is no longer shown.
+      'health.readings.v1': jsonEncode([
+        {'id': '1', 'k': 'bloodPressure', 'at': DateTime(2026, 3, 1, 8).millisecondsSinceEpoch, 's': 128, 'd': 82},
+        {'id': '2', 'k': 'pulse', 'at': DateTime(2026, 3, 1, 7).millisecondsSinceEpoch, 'v': 72},
+      ]),
     });
     final prefs = await SharedPreferences.getInstance();
     await t.pumpWidget(
@@ -61,57 +66,18 @@ void main() {
     await t.tap(find.text('Health check'));
     await _wait(t);
     final list = find.descendant(of: find.byType(HealthScreen), matching: find.byType(Scrollable)).first;
-    await t.scrollUntilVisible(find.text('7-day home blood pressure'), 200, scrollable: list);
-    expect(find.text('7-day home blood pressure'), findsOneWidget);
-    await t.scrollUntilVisible(find.textContaining('A phone cannot measure blood'), -200, scrollable: list);
-    expect(find.textContaining('A phone cannot measure blood'), findsOneWidget);
-    await t.scrollUntilVisible(
-      find.descendant(of: find.byType(GridView), matching: find.text('Blood pressure')),
-      200,
-      scrollable: list,
-    );
-
-    // A normal reading.
-    await t.ensureVisible(find.descendant(of: find.byType(GridView), matching: find.text('Blood pressure')));
-    await _wait(t, 300);
-    await t.tap(find.descendant(of: find.byType(GridView), matching: find.text('Blood pressure')));
-    await _wait(t);
-    await t.enterText(find.byType(TextField).at(0), '118');
-    await t.enterText(find.byType(TextField).at(1), '76');
-    await t.tap(find.text('Save reading'));
-    await _wait(t);
-    expect(find.textContaining('Saved: 118/76'), findsOneWidget);
-    await t.scrollUntilVisible(find.text('Normal'), 200, scrollable: list);
-    expect(find.text('Normal'), findsWidgets);
-    // Back up to the tiles.
-    await t.scrollUntilVisible(
-      find.descendant(of: find.byType(GridView), matching: find.text('Blood pressure')),
-      -300,
-      scrollable: list,
-    );
-
-    // Numbers that cannot be right are refused.
-    await t.tap(find.descendant(of: find.byType(GridView), matching: find.text('Blood pressure')));
-    await _wait(t);
-    await t.enterText(find.byType(TextField).at(0), '80');
-    await t.enterText(find.byType(TextField).at(1), '90');
-    await t.tap(find.text('Save reading'));
-    await _wait(t, 300);
-    expect(find.textContaining('top number must be higher'), findsOneWidget);
-
-    // A dangerous reading shows a warning that tells the person what to do.
-    await t.enterText(find.byType(TextField).at(0), '190');
-    await t.enterText(find.byType(TextField).at(1), '125');
-    await t.tap(find.text('Save reading'));
-    await _wait(t);
-    expect(find.text('Blood pressure: Very high'), findsOneWidget);
-    expect(find.textContaining('112'), findsOneWidget);
-    await t.tap(find.text('I understand'));
-    await _wait(t);
-
-    // Both readings are kept on this phone only.
-    final saved = jsonDecode(prefs.getString('health.readings.v1')!) as List;
-    expect(saved, hasLength(2));
-    expect(saved.map((e) => (e as Map)['s']), containsAll([118, 190]));
+    expect(find.textContaining('not a medical device'), findsOneWidget);
+    await t.scrollUntilVisible(find.text('Resting pulse'), 200, scrollable: list);
+    expect(find.text('Resting pulse'), findsOneWidget);
+    expect(find.text('72'), findsOneWidget);
+    for (final gone in [
+      'Blood pressure',
+      'Blood sugar',
+      'Oxygen (SpO₂)',
+      '7-day home blood pressure',
+      'Add a reading',
+    ]) {
+      expect(find.text(gone), findsNothing);
+    }
   });
 }

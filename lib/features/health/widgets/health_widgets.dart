@@ -27,8 +27,7 @@ class RatingChip extends StatelessWidget {
   }
 }
 
-/// The last readings as a line, oldest to newest. Blood pressure draws two
-/// lines (top and bottom number).
+/// The last readings as a line, oldest to newest.
 class Sparkline extends StatelessWidget {
   const Sparkline({super.key, required this.kind, required this.readings, this.height = 46});
 
@@ -69,11 +68,7 @@ class _SparkPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final lines = <List<double>>[
-      if (kind == ReadingKind.bloodPressure) ...[
-        [for (final r in readings) r.systolic!.toDouble()],
-        [for (final r in readings) r.diastolic!.toDouble()],
-      ] else
-        [for (final r in readings) r.value!.toDouble()],
+      [for (final r in readings) r.value.toDouble()],
     ];
     final all = lines.expand((l) => l);
     var lo = all.reduce((a, b) => a < b ? a : b), hi = all.reduce((a, b) => a > b ? a : b);

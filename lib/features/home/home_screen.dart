@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../festivals/festival_widgets.dart';
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/beta_tag.dart';
@@ -42,6 +43,8 @@ class HomeScreen extends ConsumerWidget {
     final sections = <Widget>[
       _Header(name: profile.name),
       const SizedBox(height: 18),
+      // On festival days: "Happy Diwali, Asha!".
+      FestivalBanner(name: profile.name),
       // The season's arc sets the tone for the whole app.
       const ArcCard(),
       const SizedBox(height: 14),

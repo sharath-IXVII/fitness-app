@@ -256,6 +256,11 @@ service cloud.firestore {
       }
     }
 
+    // App settings the owner edits in the console (festival dates).
+    match /config/{doc} {
+      allow read: if true;
+    }
+
     // Reports of abuse: write-only, reviewed in the console.
     match /reports/{id} {
       allow create: if signedIn() && data().by == me() && data().about is string

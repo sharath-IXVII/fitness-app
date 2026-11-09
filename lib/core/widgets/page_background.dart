@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../features/arcs/arc_providers.dart';
 import '../../features/arcs/domain/arc.dart';
+import '../../features/festivals/festival_widgets.dart';
 import '../theme/app_colors.dart';
 
 /// Page canvas shared by every screen, with the current arc's weather
@@ -27,6 +28,8 @@ class PageBackground extends ConsumerWidget {
           // A few particles drift in front of the content too, so the
           // weather feels like it is falling over the whole screen.
           Positioned.fill(child: ArcWeather(effect: effect, foreground: true, count: 9)),
+          // On festival days, a light sparkle in the festival's colours.
+          const Positioned.fill(child: FestivalLayer()),
         ],
       ),
     );

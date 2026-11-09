@@ -25,6 +25,44 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
   String _query = '';
   ClubKind? _kind;
 
+  Future<void> _enterCode(BuildContext context) async {
+    final controller = TextEditingController();
+    String? error;
+    final club = await showDialog<Club>(
+      context: context,
+      builder: (d) => StatefulBuilder(
+        builder: (d, setD) => AlertDialog(
+          title: const Text('Join with a code'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            textCapitalization: TextCapitalization.characters,
+            maxLength: 7,
+            decoration: InputDecoration(hintText: 'K7Q2MX', errorText: error),
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.of(d).pop(), child: const Text('Cancel')),
+            TextButton(
+              onPressed: () async {
+                try {
+                  final c = await ref.read(clubsBackendProvider)!.findByCode(controller.text);
+                  if (d.mounted) Navigator.of(d).pop(c);
+                } on FriendsFailure catch (e) {
+                  setD(() => error = e.message);
+                } catch (_) {
+                  setD(() => error = "Couldn't check the code. Check your internet.");
+                }
+              },
+              child: const Text('Find club'),
+            ),
+          ],
+        ),
+      ),
+    );
+    controller.dispose();
+    if (club != null && context.mounted) context.push(Routes.club, extra: club.id);
+  }
+
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
@@ -63,6 +101,13 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
                 isScrollControlled: true,
                 builder: (_) => const _CreateClubSheet(),
               ),
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
+              onPressed: () => _enterCode(context),
+              icon: const Icon(Icons.keyboard_rounded),
+              label: const Text('Enter club code'),
             ),
             if (mine.isNotEmpty) ...[
               const SizedBox(height: 22),

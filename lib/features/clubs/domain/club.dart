@@ -26,6 +26,7 @@ class Club {
     required this.kind,
     required this.ownerUid,
     required this.ownerName,
+    this.code,
   });
 
   final String id;
@@ -35,6 +36,9 @@ class Club {
   final String ownerUid;
   final String ownerName;
 
+  /// The invite code people type to find this club, e.g. "K7Q2MX".
+  final String? code;
+
   static Club fromJson(String id, Map<String, dynamic> j) => Club(
     id: id,
     name: j['name'] as String? ?? 'Club',
@@ -42,6 +46,7 @@ class Club {
     kind: ClubKind.values.asNameMap()[j['kind']] ?? ClubKind.other,
     ownerUid: j['ownerUid'] as String? ?? '',
     ownerName: j['ownerName'] as String? ?? '',
+    code: j['code'] as String?,
   );
 }
 

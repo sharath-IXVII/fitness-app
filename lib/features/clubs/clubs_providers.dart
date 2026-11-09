@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:clock/clock.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:share_plus/share_plus.dart';
+
 import '../../core/storage.dart';
 import '../friends/friends_providers.dart';
 import 'clubs_backend.dart';
@@ -161,3 +163,9 @@ final runReportProvider = Provider.family<RunReport?, String>((ref, id) {
   final now = clock.now();
   return ref.watch(runReportsProvider).where((r) => r.id == id && !r.expired(now)).firstOrNull;
 });
+
+/// Shares plain text through the phone's share sheet. Overridden in tests.
+final shareTextProvider = Provider<Future<void> Function(String text)>(
+  (ref) =>
+      (text) async => SharePlus.instance.share(ShareParams(text: text)),
+);

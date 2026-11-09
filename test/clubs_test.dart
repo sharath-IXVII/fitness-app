@@ -108,4 +108,19 @@ void main() {
     expect(left, ['Yes!']);
     expect((await b.members(club.id).first).keys, ['asha']);
   });
+
+  test('invite codes: the club gets one, anyone can find the club with it', () async {
+    final db = FakeFirebaseFirestore();
+    final b = ClubsBackend(db);
+    final club = await b.create(uid: 'asha', myName: 'Asha', name: 'Gym Gang', about: '', kind: ClubKind.gym);
+    expect(club.code, hasLength(6));
+    expect(await b.inviteCode(club.id), club.code); // the same code every time
+    final found = await b.findByCode(' ${club.code!.toLowerCase()} ');
+    expect(found.id, club.id);
+    expect(found.name, 'Gym Gang');
+    await expectLater(b.findByCode('ZZZZZZ'), throwsA(isA<FriendsFailure>()));
+    await expectLater(b.findByCode('abc'), throwsA(isA<FriendsFailure>()));
+    await b.deleteClub(club.id, 'asha');
+    expect((await db.collection('clubCodes').get()).docs, isEmpty);
+  });
 }

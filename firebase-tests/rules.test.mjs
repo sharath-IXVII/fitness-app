@@ -350,3 +350,21 @@ test('club challenges: only the admin sets them; finishes must be real and only 
   await assertSucceeds(setDoc(r, res(42 * 60000)));
   await assertSucceeds(getDocs(collection(as('asha'), 'clubs/c1/challenges/x1/results')));
 });
+
+test('club invite codes: only the admin adds one, anyone signed in can look it up', async () => {
+  await clubWithRavi();
+  const addCode = (db, code, clubId = 'c1') => {
+    const b = writeBatch(db);
+    b.set(doc(db, `clubCodes/${code}`), { clubId });
+    b.update(doc(db, `clubs/${clubId}`), { code });
+    return b.commit();
+  };
+  await assertFails(addCode(as('ravi'), 'K7Q2MX'));
+  await assertFails(addCode(as('asha'), 'bad'));
+  await assertSucceeds(addCode(as('asha'), 'K7Q2MX'));
+  await assertFails(updateDoc(doc(as('asha'), 'clubs/c1'), { code: 'P3R4ST' })); // only once
+  await assertSucceeds(getDoc(doc(as('meera'), 'clubCodes/K7Q2MX')));
+  await assertFails(getDocs(collection(as('meera'), 'clubCodes')));
+  await assertFails(deleteDoc(doc(as('ravi'), 'clubCodes/K7Q2MX')));
+  await assertSucceeds(deleteDoc(doc(as('asha'), 'clubCodes/K7Q2MX')));
+});

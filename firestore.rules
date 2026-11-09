@@ -223,6 +223,11 @@ service cloud.firestore {
         && shortText(data().ownerName, 40)
         && data().createdAt == request.time;
       allow delete: if signedIn() && resource.data.ownerUid == me();
+      // The admin adds the invite code once.
+      allow update: if signedIn() && resource.data.ownerUid == me()
+        && changes().hasOnly(['code']) && resource.data.get('code', null) == null
+        && data().code is string && data().code.matches('^[A-HJKMNP-Z2-9]{6}$')
+        && getAfter(/databases/$(database)/documents/clubCodes/$(data().code)).data.clubId == club;
 
       match /members/{uid} {
         allow read: if signedIn();
@@ -296,6 +301,16 @@ service cloud.firestore {
           allow delete: if me() == uid || ownsClub(club);
         }
       }
+    }
+
+    // Club invite codes: looked up one at a time by people given the code.
+    match /clubCodes/{code} {
+      allow get: if signedIn();
+      allow create: if signedIn() && code.matches('^[A-HJKMNP-Z2-9]{6}$')
+        && data().keys().hasOnly(['clubId'])
+        && getAfter(/databases/$(database)/documents/clubs/$(data().clubId)).data.ownerUid == me()
+        && getAfter(/databases/$(database)/documents/clubs/$(data().clubId)).data.code == code;
+      allow delete: if signedIn() && get(/databases/$(database)/documents/clubs/$(resource.data.clubId)).data.ownerUid == me();
     }
 
     // App settings the owner edits in the console (festival dates).

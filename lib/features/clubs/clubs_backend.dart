@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../friends/domain/friends.dart' show newChallengeCode, normalizeCode;
 import '../friends/friends_backend.dart' show FriendsFailure;
 import 'domain/club.dart';
 import 'domain/club_challenge.dart';
@@ -24,6 +25,9 @@ class ClubsBackend {
   final FirebaseFirestore _db;
 
   CollectionReference<Map<String, dynamic>> get _clubs => _db.collection('clubs');
+
+  /// clubCodes/{code} → {clubId}: invite codes, looked up one at a time.
+  CollectionReference<Map<String, dynamic>> get _codes => _db.collection('clubCodes');
   CollectionReference<Map<String, dynamic>> _members(String club) => _clubs.doc(club).collection('members');
   CollectionReference<Map<String, dynamic>> _messages(String club) => _clubs.doc(club).collection('messages');
   CollectionReference<Map<String, dynamic>> _mine(String uid) => _db.collection('users').doc(uid).collection('clubs');
@@ -63,7 +67,44 @@ class ClubsBackend {
     };
     await ref.set(club);
     await join(ref.id, uid: uid, myName: myName, clubName: name.trim(), kind: kind);
-    return Club(id: ref.id, name: name.trim(), about: about.trim(), kind: kind, ownerUid: uid, ownerName: myName);
+    String? code;
+    try {
+      code = await inviteCode(ref.id);
+    } catch (_) {}
+    return Club(
+      id: ref.id,
+      name: name.trim(),
+      about: about.trim(),
+      kind: kind,
+      ownerUid: uid,
+      ownerName: myName,
+      code: code,
+    );
+  }
+
+  /// The club's invite code, made the first time (admin only).
+  Future<String> inviteCode(String club) async {
+    final existing = (await _clubs.doc(club).get()).data()?['code'];
+    if (existing is String) return existing;
+    var code = newChallengeCode();
+    for (var i = 0; i < 5 && (await _codes.doc(code).get()).exists; i++) {
+      code = newChallengeCode();
+    }
+    final b = _db.batch()
+      ..set(_codes.doc(code), {'clubId': club})
+      ..update(_clubs.doc(club), {'code': code});
+    await b.commit();
+    return code;
+  }
+
+  /// The club with this invite code.
+  Future<Club> findByCode(String typed) async {
+    final code = normalizeCode(typed);
+    if (code.length != 6) throw const FriendsFailure('Club codes have 6 letters and numbers.');
+    final id = (await _codes.doc(code).get()).data()?['clubId'];
+    final data = id is String ? (await _clubs.doc(id).get()).data() : null;
+    if (id is! String || data == null) throw const FriendsFailure('No club has that code. Check it and try again.');
+    return Club.fromJson(id, data);
   }
 
   Future<void> join(
@@ -106,6 +147,8 @@ class ClubsBackend {
       await m.reference.delete();
     }
     await _mine(uid).doc(club).delete();
+    final code = (await _clubs.doc(club).get()).data()?['code'];
+    if (code is String) await _codes.doc(code).delete();
     await _clubs.doc(club).delete();
   }
 

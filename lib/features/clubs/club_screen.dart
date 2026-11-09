@@ -145,6 +145,59 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
     }
   }
 
+  /// Shows the club's invite code to copy or share (the admin makes it the
+  /// first time).
+  Future<void> _invite(Club club) async {
+    var code = club.code;
+    if (code == null) {
+      setState(() => _busy = true);
+      try {
+        code = await ref.read(clubsBackendProvider)!.inviteCode(club.id);
+      } catch (_) {
+        _say("Couldn't make an invite code. Check your internet.");
+      } finally {
+        if (mounted) setState(() => _busy = false);
+      }
+    }
+    if (code == null || !mounted) return;
+    final message =
+        'Join my club "${club.name}" on FittArc! Open FittArc → Friends → Clubs → Enter club code, and type $code';
+    await showDialog<void>(
+      context: context,
+      builder: (d) => AlertDialog(
+        title: const Text('Invite people'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Share this code. Anyone with FittArc can join with it.'),
+            const SizedBox(height: 14),
+            SelectableText(
+              code!,
+              style: Theme.of(d).textTheme.displaySmall?.copyWith(letterSpacing: 6, fontWeight: FontWeight.w800),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: code!));
+              Navigator.of(d).pop();
+              _say('Code copied.');
+            },
+            child: const Text('Copy'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(d).pop();
+              ref.read(shareTextProvider)(message);
+            },
+            child: const Text('Share'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
@@ -176,6 +229,12 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
           ],
         ),
         actions: [
+          if (member && (c.code != null || owner))
+            IconButton(
+              tooltip: 'Invite people',
+              icon: const Icon(Icons.person_add_alt_1_rounded),
+              onPressed: () => _invite(c),
+            ),
           if (member)
             PopupMenuButton<String>(
               tooltip: 'Club options',

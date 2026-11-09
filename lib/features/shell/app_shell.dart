@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../share/share_card.dart';
 import '../report/report_providers.dart';
 import '../clubs/clubs_providers.dart';
 import '../../core/cloud_backup.dart';
@@ -156,6 +157,28 @@ class _AppShellState extends ConsumerState<AppShell> {
   ];
 
   static const _seenKey = 'achievements.seen.v1';
+  static const _streakSeenKey = 'streak.celebrated.v1';
+
+  void _celebrateStreak(int days) {
+    if (!streakMilestones.contains(days) || !mounted) return;
+    final prefs = ref.read(sharedPrefsProvider);
+    final done = prefs.getStringList(_streakSeenKey) ?? const [];
+    // Once per milestone per streak (a new streak can celebrate again).
+    final id = '$days@${DateTime.now().subtract(Duration(days: days)).toIso8601String().substring(0, 10)}';
+    if (done.contains(id)) return;
+    prefs.setStringList(_streakSeenKey, [...done, id]);
+    HapticFeedback.mediumImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('🔥 $days-day streak! Keep it going.'),
+        action: SnackBarAction(
+          label: 'Share',
+          onPressed: () => context.push(Routes.shareCard, extra: ShareCardData.streak(days)),
+        ),
+        persist: false,
+      ),
+    );
+  }
 
   /// Shows a quiet notice for achievements earned since the last check. The
   /// first time, everything already earned is marked seen without a notice.
@@ -171,6 +194,7 @@ class _AppShellState extends ConsumerState<AppShell> {
     if (fresh.isEmpty) return;
     prefs.setStringList(_seenKey, {...seen, ...names}.toList());
     HapticFeedback.mediumImpact();
+    final info = fresh.first.kind.info(fresh.first.set);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -186,7 +210,16 @@ class _AppShellState extends ConsumerState<AppShell> {
             ),
           ],
         ),
-        action: SnackBarAction(label: 'View', onPressed: () => context.push(Routes.achievements)),
+        // One badge: share it. Several: see them all.
+        action: fresh.length == 1
+            ? SnackBarAction(
+                label: 'Share',
+                onPressed: () => context.push(
+                  Routes.shareCard,
+                  extra: ShareCardData.badge(title: info.title, description: info.description),
+                ),
+              )
+            : SnackBarAction(label: 'View', onPressed: () => context.push(Routes.achievements)),
         // Snackbars with an action stay until tapped by default; this one
         // must not cover buttons such as a workout's Done.
         persist: false,
@@ -204,6 +237,8 @@ class _AppShellState extends ConsumerState<AppShell> {
     ref.listen(waterGoalProvider, (_, _) => backup.schedule());
     ref.listen(computedBadgesProvider, (_, next) => ref.read(badgeVaultProvider.notifier).merge(next));
     ref.listen(achievementsProvider, (_, next) => _announce(next));
+    // Streak milestones (3, 7, 14, 30 … days): offer a share card, once each.
+    ref.listen(streakProvider.select((s) => s.current), (_, days) => _celebrateStreak(days));
     // Re-plan reminders when today's workout or water goal changes, a
     // challenge moves on, or a new day starts.
     ref.listen(

@@ -3,6 +3,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../share/share_card.dart';
+import '../streaks/daily_log_providers.dart';
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/animated_number.dart';
@@ -116,6 +118,19 @@ class TrainingDoneScreen extends ConsumerWidget {
                   ],
                   const Spacer(),
                   GradientButton(label: 'Done', onPressed: () => context.go(Routes.training)),
+                  TextButton.icon(
+                    onPressed: () => context.push(
+                      Routes.shareCard,
+                      extra: ShareCardData.workout(
+                        name: args.workout.title,
+                        seconds: args.seconds,
+                        kcal: args.kcal,
+                        streak: ref.read(streakProvider).current,
+                      ),
+                    ),
+                    icon: const Icon(Icons.ios_share_rounded),
+                    label: const Text('Share my workout'),
+                  ),
                 ],
               ),
             ),

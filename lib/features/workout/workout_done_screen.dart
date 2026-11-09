@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
+import '../share/share_card.dart';
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/animated_number.dart';
@@ -134,7 +135,18 @@ class WorkoutDoneScreen extends StatelessWidget {
                         GradientButton(label: 'Back to Friends', onPressed: () => context.go(Routes.friends))
                       else
                         GradientButton(label: 'Back to Today', onPressed: () => context.go(Routes.home)),
-                      const SizedBox(height: 4),
+                      TextButton.icon(
+                        onPressed: () => context.push(
+                          Routes.shareCard,
+                          extra: ShareCardData.workout(
+                            name: '${args.routine.name} workout',
+                            seconds: args.duration.inSeconds,
+                            kcal: (args.duration.inSeconds / 60 * 7).round(),
+                          ),
+                        ),
+                        icon: const Icon(Icons.ios_share_rounded),
+                        label: const Text('Share my workout'),
+                      ),
                       // The wake-up workout is a warm-up; offer a full session next.
                       TextButton.icon(
                         onPressed: () => context.go(Routes.training),

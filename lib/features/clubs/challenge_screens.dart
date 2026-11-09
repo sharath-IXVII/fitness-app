@@ -20,6 +20,8 @@ import 'domain/club.dart';
 import 'domain/club_challenge.dart';
 import 'domain/run_report.dart';
 import 'gps.dart';
+import 'map_picker_screen.dart';
+import 'widgets/route_map.dart';
 
 final _day = DateFormat('d MMM, h:mm a');
 
@@ -180,6 +182,7 @@ class _NewChallengeSheetState extends ConsumerState<_NewChallengeSheet> {
   }
 
   (double, double)? _start;
+  (double, double)? _finish;
   String? _error;
   bool _busy = false;
 
@@ -188,6 +191,27 @@ class _NewChallengeSheetState extends ConsumerState<_NewChallengeSheet> {
     _title.dispose();
     _place.dispose();
     super.dispose();
+  }
+
+  Future<void> _onMap() async {
+    final gps = ref.read(gpsProvider);
+    setState(() => _busy = true);
+    final problem = await gps.ensure();
+    final here = problem == null ? await gps.current() : null;
+    if (!mounted) return;
+    setState(() => _busy = false);
+    final picked = await Navigator.of(context).push<StartFinish>(
+      MaterialPageRoute(
+        builder: (_) =>
+            MapPickerScreen(around: here?.point ?? _start ?? (12.97, 77.59), start: _start, finish: _finish),
+      ),
+    );
+    if (picked == null || !mounted) return;
+    setState(() {
+      _start = picked.start;
+      _finish = picked.finish;
+      _error = null;
+    });
   }
 
   Future<void> _here() async {
@@ -223,6 +247,7 @@ class _NewChallengeSheetState extends ConsumerState<_NewChallengeSheet> {
             startsAt: _startsAt ?? now,
             endsAt: (_startsAt ?? now).add(_open),
             start: _start,
+            finish: _start == null ? null : _finish,
             startName: _start == null ? '' : _place.text,
           );
       if (mounted) Navigator.of(context).pop();
@@ -308,19 +333,33 @@ class _NewChallengeSheetState extends ConsumerState<_NewChallengeSheet> {
               ],
             ),
             const SizedBox(height: 14),
-            if (_start == null)
+            if (_start == null) ...[
+              if (hasMaps)
+                OutlinedButton.icon(
+                  onPressed: _busy ? null : _onMap,
+                  icon: const Icon(Icons.map_rounded),
+                  label: const Text('Pick start and finish on the map (optional)'),
+                ),
               OutlinedButton.icon(
                 onPressed: _busy ? null : _here,
                 icon: const Icon(Icons.my_location_rounded),
                 label: const Text('Start from where I am now (optional)'),
-              )
-            else ...[
+              ),
+            ] else ...[
               Row(
                 children: [
                   Icon(Icons.place_rounded, color: AppColors.primary),
                   const SizedBox(width: 8),
-                  Expanded(child: Text('Starts here. Members must be within 300 m to begin.', style: text.bodyMedium)),
-                  TextButton(onPressed: () => setState(() => _start = null), child: const Text('Clear')),
+                  Expanded(
+                    child: Text(
+                      _finish == null
+                          ? 'Start set. Members must be within 300 m to begin.'
+                          : 'Start and finish set. Members begin within 300 m of the start and end at the finish.',
+                      style: text.bodyMedium,
+                    ),
+                  ),
+                  if (hasMaps) TextButton(onPressed: _busy ? null : _onMap, child: const Text('Map')),
+                  TextButton(onPressed: () => setState(() => _start = _finish = null), child: const Text('Clear')),
                 ],
               ),
               TextField(
@@ -550,6 +589,12 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
   /// Time from Start to the first reading after it.
   int? _firstFixOffset;
 
+  /// Metres to the finish point, when the challenge has one.
+  double? _toFinish;
+
+  /// When the finish point was reached (challenges with a finish point).
+  DateTime? _finishAt;
+
   /// Start needs a signal at least this good.
   static const _goodEnough = 20.0;
   String _result = '';
@@ -626,8 +671,16 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
     _firstFixOffset ??= clock.now().difference(_startedAt!).inMilliseconds;
     _accuracy = f.accuracy;
     _tracker.add(f, target: c.distanceM);
+    _toFinish = c.finish == null ? null : distanceBetween(f.point, c.finish!);
     setState(() {});
-    if (_tracker.meters >= c.distanceM) _finish();
+    if (_tracker.meters >= c.distanceM) {
+      if (c.finish == null) {
+        _finish();
+      } else if (_toFinish! <= ClubChallenge.finishRadiusM) {
+        _finishAt = f.at;
+        _finish();
+      }
+    }
   }
 
   void _go() {
@@ -647,7 +700,7 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
     if (_phase != _RunPhase.running) return;
     // Time from Start to the exact moment the distance was reached, using the
     // GPS readings' own times (worked out between two readings).
-    final reached = _tracker.reachedAt(c.distanceM);
+    final reached = _finishAt ?? _tracker.reachedAt(c.distanceM);
     final time = reached != null && _tracker.firstAt != null
         ? (_firstFixOffset ?? 0) + reached.difference(_tracker.firstAt!).inMilliseconds
         : clock.now().difference(_startedAt!).inMilliseconds;
@@ -736,10 +789,25 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                const Spacer(),
+                if (_phase == _RunPhase.running || c.start != null)
+                  Expanded(
+                    flex: 3,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: RouteMap(
+                        route: [for (final p in _tracker.route) p.point],
+                        start: c.start,
+                        finish: c.finish,
+                        follow: _phase == _RunPhase.running,
+                      ),
+                    ),
+                  )
+                else
+                  const Spacer(),
+                const SizedBox(height: 16),
                 SizedBox(
-                  width: 230,
-                  height: 230,
+                  width: 190,
+                  height: 190,
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
@@ -814,6 +882,15 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
                           ]
                         : [GradientButton(label: 'Try again', icon: Icons.refresh_rounded, onPressed: _check)],
                   _RunPhase.running => [
+                    if (_toFinish != null && _tracker.meters >= c.distanceM)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Text(
+                          'Distance done! Head to the finish: ${formatKm(_toFinish!.round())} away.',
+                          style: text.titleMedium,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
                     OutlinedButton.icon(
                       onPressed: _stop,
                       icon: const Icon(Icons.stop_rounded),

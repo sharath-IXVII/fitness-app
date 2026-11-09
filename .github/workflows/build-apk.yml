@@ -22,6 +22,9 @@ jobs:
     timeout-minutes: 60
     env:
       KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      # Google Maps key (Android, restricted to this app). Without it the
+      # app draws routes without a map.
+      MAPS_API_KEY: ${{ secrets.MAPS_API_KEY }}
     steps:
       - uses: actions/checkout@v5
 
@@ -96,7 +99,7 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          flutter build apk --release --build-number=$((100 + GITHUB_RUN_NUMBER)) 2>&1 | tee build.log
+          flutter build apk --release --build-number=$((100 + GITHUB_RUN_NUMBER)) --dart-define=HAS_MAPS=${{ secrets.MAPS_API_KEY != '' }} 2>&1 | tee build.log
 
       # Surfaces the Gradle error as an annotation on the run summary, so it's
       # readable without downloading the full log.
@@ -117,7 +120,7 @@ jobs:
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         # Play needs a higher version code for every upload; the run number only goes up.
-        run: flutter build appbundle --release --build-number=$((100 + GITHUB_RUN_NUMBER))
+        run: flutter build appbundle --release --build-number=$((100 + GITHUB_RUN_NUMBER)) --dart-define=HAS_MAPS=${{ secrets.MAPS_API_KEY != '' }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

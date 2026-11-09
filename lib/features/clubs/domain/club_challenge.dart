@@ -35,8 +35,12 @@ class ClubChallenge {
     required this.startsAt,
     required this.endsAt,
     this.start,
+    this.finish,
     this.startName = '',
   });
+
+  /// How close to the finish point a member must be for it to count.
+  static const finishRadiusM = 100.0;
 
   /// How close to the start point a member must be to begin.
   static const startRadiusM = 300.0;
@@ -51,6 +55,9 @@ class ClubChallenge {
 
   /// Where it starts (latitude, longitude), or null to start anywhere.
   final (double, double)? start;
+
+  /// Where it ends, or null to end wherever the distance is reached.
+  final (double, double)? finish;
 
   /// "Lake gate", shown to members.
   final String startName;
@@ -315,6 +322,9 @@ ClubChallenge? challengeFromJson(String club, String id, Map<String, dynamic> j)
       startsAt: (j['startsAt'] as Timestamp).toDate(),
       endsAt: (j['endsAt'] as Timestamp).toDate(),
       start: start is GeoPoint ? (start.latitude, start.longitude) : null,
+      finish: j['finish'] is GeoPoint
+          ? ((j['finish'] as GeoPoint).latitude, (j['finish'] as GeoPoint).longitude)
+          : null,
       startName: j['startName'] as String? ?? '',
     );
   } catch (_) {

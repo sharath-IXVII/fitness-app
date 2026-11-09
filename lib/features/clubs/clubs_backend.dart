@@ -185,6 +185,7 @@ class ClubsBackend {
     required DateTime startsAt,
     required DateTime endsAt,
     (double, double)? start,
+    (double, double)? finish,
     String startName = '',
   }) async {
     final t = title.trim();
@@ -199,6 +200,7 @@ class ClubsBackend {
       'startsAt': Timestamp.fromDate(startsAt),
       'endsAt': Timestamp.fromDate(endsAt),
       if (start != null) 'start': GeoPoint(start.$1, start.$2),
+      if (finish != null) 'finish': GeoPoint(finish.$1, finish.$2),
       'startName': startName.trim(),
       'createdBy': uid,
       'createdAt': FieldValue.serverTimestamp(),

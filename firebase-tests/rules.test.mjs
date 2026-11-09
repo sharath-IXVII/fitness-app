@@ -334,6 +334,7 @@ test('club challenges: only the admin sets them; finishes must be real and only 
   await assertFails(setDoc(doc(as('ravi'), 'clubs/c1/challenges/x1'), { ...ch, createdBy: 'ravi' }));
   await assertFails(setDoc(doc(as('asha'), 'clubs/c1/challenges/x1'), { ...ch, title: 'go to x.com' }));
   await assertFails(setDoc(doc(as('asha'), 'clubs/c1/challenges/x1'), { ...ch, distanceM: 200 }));
+  await assertFails(setDoc(doc(as('asha'), 'clubs/c1/challenges/x0'), { ...ch, finish: 'the lake' }));
   await assertSucceeds(setDoc(doc(as('asha'), 'clubs/c1/challenges/x1'), ch));
   await assertFails(getDoc(doc(as('meera'), 'clubs/c1/challenges/x1')));
 

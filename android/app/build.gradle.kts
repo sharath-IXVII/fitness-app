@@ -41,6 +41,9 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Google Maps key from the MAPS_API_KEY environment variable (a GitHub
+        // secret in CI). Never written into the repository.
+        manifestPlaceholders["mapsApiKey"] = System.getenv("MAPS_API_KEY") ?: ""
     }
 
     signingConfigs {

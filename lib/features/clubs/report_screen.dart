@@ -16,6 +16,7 @@ import '../snaps/snap_screen.dart' show shareSnapProvider;
 import 'clubs_providers.dart';
 import 'domain/club_challenge.dart';
 import 'domain/run_report.dart';
+import 'widgets/route_map.dart';
 
 /// Saves a PNG to the phone's gallery. Overridden in tests.
 final saveImageProvider = Provider<Future<void> Function(Uint8List png, String name)>(
@@ -109,6 +110,19 @@ class _RunReportScreenState extends ConsumerState<RunReportScreen> {
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                       child: Column(
                         children: [
+                          if (hasMaps && r.route.length > 1)
+                            TextButton.icon(
+                              onPressed: () => Navigator.of(context).push(
+                                MaterialPageRoute<void>(
+                                  builder: (_) => Scaffold(
+                                    appBar: AppBar(title: Text(r.title)),
+                                    body: RouteMap(route: r.route),
+                                  ),
+                                ),
+                              ),
+                              icon: const Icon(Icons.map_rounded),
+                              label: const Text('See the route on the map'),
+                            ),
                           Text(
                             'Kept until ${DateFormat('h:mm a').format(r.expiresAt)}. Download it to keep it.',
                             style: text.bodySmall,
@@ -265,7 +279,7 @@ class RunReportCard extends StatelessWidget {
                     padding: const EdgeInsets.all(14),
                     child: r.route.length < 2
                         ? Center(child: Text('Route', style: body(11, muted)))
-                        : CustomPaint(painter: _RoutePainter(r.route, accent)),
+                        : RouteSketch(route: r.route, color: accent),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -323,49 +337,4 @@ class RunReportCard extends StatelessWidget {
       ],
     ),
   );
-}
-
-/// The route as a line, scaled to fit, north up.
-class _RoutePainter extends CustomPainter {
-  _RoutePainter(this.route, this.color);
-
-  final List<(double, double)> route;
-  final Color color;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final lat0 = route.first.$1;
-    final k = math.cos(lat0 * math.pi / 180);
-    final pts = [for (final (lat, lng) in route) Offset(lng * k, -lat)];
-    var minX = pts.first.dx, maxX = minX, minY = pts.first.dy, maxY = minY;
-    for (final p in pts) {
-      minX = math.min(minX, p.dx);
-      maxX = math.max(maxX, p.dx);
-      minY = math.min(minY, p.dy);
-      maxY = math.max(maxY, p.dy);
-    }
-    final w = math.max(maxX - minX, 1e-9), h = math.max(maxY - minY, 1e-9);
-    final scale = math.min(size.width / w, size.height / h);
-    final dx = (size.width - w * scale) / 2, dy = (size.height - h * scale) / 2;
-    Offset map(Offset p) => Offset(dx + (p.dx - minX) * scale, dy + (p.dy - minY) * scale);
-    final path = Path()..moveTo(map(pts.first).dx, map(pts.first).dy);
-    for (final p in pts.skip(1)) {
-      final m = map(p);
-      path.lineTo(m.dx, m.dy);
-    }
-    canvas.drawPath(
-      path,
-      Paint()
-        ..color = color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 3.2
-        ..strokeJoin = StrokeJoin.round
-        ..strokeCap = StrokeCap.round,
-    );
-    canvas.drawCircle(map(pts.first), 5, Paint()..color = const Color(0xFF2E8B57));
-    canvas.drawCircle(map(pts.last), 5, Paint()..color = const Color(0xFFC0392B));
-  }
-
-  @override
-  bool shouldRepaint(_RoutePainter old) => old.route != route || old.color != color;
 }

@@ -140,6 +140,7 @@ void main() {
       startsAt: DateTime(2026, 11, 9),
       endsAt: DateTime(2026, 11, 16),
       start: (12.97, 77.59),
+      finish: (12.97, 77.66),
       startName: 'Lake gate',
     );
     await expectLater(
@@ -156,6 +157,7 @@ void main() {
     );
     final ch = (await b.challenges(club.id).first).single;
     expect(ch.start, (12.97, 77.59));
+    expect(ch.finish, (12.97, 77.66));
     expect(ch.startName, 'Lake gate');
 
     expect(await b.submitResult(ch, uid: 'ravi', myName: 'Ravi', timeMs: 48 * 60000, distanceM: 8010), isTrue);

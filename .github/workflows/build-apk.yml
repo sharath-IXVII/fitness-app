@@ -65,7 +65,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release download food-detector --repo "$GITHUB_REPOSITORY" --pattern 'food_detector*' --dir assets/models \
+          gh release download food-detector --repo "$GITHUB_REPOSITORY" --pattern 'food_detector*' --pattern 'food_dish*' --dir assets/models \
             && echo "Food detector added." || echo "No food detector yet; the classifier is used."
 
       - name: Install packages

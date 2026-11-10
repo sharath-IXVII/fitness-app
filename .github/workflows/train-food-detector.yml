@@ -1,32 +1,44 @@
-name: Train food detector
+name: Train food models
 
-# Run by hand (Actions → Train food detector → Run workflow). Builds a dataset
-# from free-licence photos, labels it with OWLv2, trains a small phone model
-# and publishes it as the "food-detector" release, which the app build uses.
+# Two-step food recognition, trained from free-licence photos:
+#   1. food_detector.tflite - finds every dish on the plate (boxes)
+#   2. food_dish.tflite     - names each dish (the app's food ids)
+# tools/food_model/run.json picks "quick" (a few dishes, to test the pipeline;
+# published to the food-model-test release) or "full" (every dish; published
+# to the food-detector release, which the app build bundles).
 on:
   push:
     branches: [claude/phase-1-foundation]
-    paths: [tools/food_model/collect_and_label.py, tools/food_model/dishes.py, tools/food_model/train_food_detector.py, .github/workflows/train-food-detector.yml]
+    paths: [tools/food_model/**, .github/workflows/train-food-detector.yml]
   workflow_dispatch:
-    inputs:
-      per_dish:
-        description: Commons photos per dish
-        default: "40"
-      epochs:
-        description: Training epochs
-        default: "30"
 
 permissions:
   contents: write
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      full: ${{ steps.m.outputs.full }}
+      parts: ${{ steps.m.outputs.parts }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: m
+        run: |
+          if grep -q '"full"' tools/food_model/run.json; then
+            echo 'full=true' >> "$GITHUB_OUTPUT"; echo 'parts=[0,1,2,3,4,5,6,7]' >> "$GITHUB_OUTPUT"
+          else
+            echo 'full=false' >> "$GITHUB_OUTPUT"; echo 'parts=[0]' >> "$GITHUB_OUTPUT"
+          fi
+
   label:
+    needs: setup
     runs-on: ubuntu-latest
     timeout-minutes: 350
     strategy:
       fail-fast: false
       matrix:
-        part: [0, 1, 2, 3, 4, 5]
+        part: ${{ fromJSON(needs.setup.outputs.parts) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -35,29 +47,34 @@ jobs:
       - name: Install
         run: |
           pip install --quiet torch torchvision --index-url https://download.pytorch.org/whl/cpu
-          pip install --quiet "transformers>=4.40" datasets pillow requests scipy
+          pip install --quiet "transformers>=4.40" datasets pillow requests scipy sentencepiece protobuf
       - name: Collect photos and label them
         env:
           DATA_DIR: ${{ runner.temp }}/data
-          PER_DISH: ${{ inputs.per_dish || '40' }}
           PART: ${{ matrix.part }}
-          PARTS: "6"
-        run: python tools/food_model/collect_and_label.py
-      - name: Publish this part
+          PARTS: ${{ needs.setup.outputs.full == 'true' && '8' || '1' }}
+          PER_DISH: ${{ needs.setup.outputs.full == 'true' && '80' || '8' }}
+          ONLY: ${{ needs.setup.outputs.full == 'true' && '' || 'roti,dal,gulab_jamun,idli,rice' }}
+        run: python tools/food_model/build_dataset.py
+      - name: Save this part
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.setup.outputs.full == 'true' && 'food-dataset' || 'food-model-test' }}
         run: |
           cd "${{ runner.temp }}/data"
           zip -qr "food_part${{ matrix.part }}.zip" "part${{ matrix.part }}"
-          gh release view food-dataset --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
-            || gh release create food-dataset --repo "$GITHUB_REPOSITORY" --prerelease \
-                 --title "Food detector training data" --notes "Auto-labelled, free-licence photos. Credits in credits.csv." \
-            || true
-          gh release upload food-dataset "food_part${{ matrix.part }}.zip" --clobber --repo "$GITHUB_REPOSITORY"
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --prerelease --title "$TAG" \
+                 --notes "Food model training files (free-licence photos; credits in credits.csv)." || true
+          gh release upload "$TAG" "food_part${{ matrix.part }}.zip" --clobber --repo "$GITHUB_REPOSITORY"
 
   merge:
-    needs: label
+    needs: [setup, label]
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-latest
+    env:
+      TAG: ${{ needs.setup.outputs.full == 'true' && 'food-dataset' || 'food-model-test' }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -65,22 +82,28 @@ jobs:
           python-version: "3.11"
       - name: Merge parts
         env:
-          GH_TOKEN: ${{ github.token }}
           DATA_DIR: ${{ runner.temp }}/data
           MODE: merge
         run: |
           pip install --quiet pillow requests
           mkdir -p "$DATA_DIR" && cd "$DATA_DIR"
-          gh release download food-dataset --repo "$GITHUB_REPOSITORY" --pattern 'food_part*.zip'
-          for z in food_part*.zip; do unzip -q "$z"; done
-          cd "$GITHUB_WORKSPACE" && python tools/food_model/collect_and_label.py
-          cd "$DATA_DIR" && zip -qr food_dataset.zip train valid credits.csv
-          gh release upload food-dataset food_dataset.zip credits.csv --clobber --repo "$GITHUB_REPOSITORY"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern 'food_part*.zip'
+          for z in food_part*.zip; do unzip -qo "$z"; done
+          cd "$GITHUB_WORKSPACE" && python tools/food_model/build_dataset.py
+          cd "$DATA_DIR" && zip -qr food_dataset.zip det cls credits.csv
+          gh release upload "$TAG" food_dataset.zip credits.csv --clobber --repo "$GITHUB_REPOSITORY"
 
   train:
-    needs: merge
+    needs: [setup, merge]
     runs-on: ubuntu-latest
     timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        model: [detector, dish]
+    env:
+      TAG: ${{ needs.setup.outputs.full == 'true' && 'food-dataset' || 'food-model-test' }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -89,25 +112,32 @@ jobs:
       - name: Install
         run: pip install --quiet mediapipe-model-maker
       - name: Get dataset
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
           sudo mkdir -p /content && sudo chown "$USER" /content
-          gh release download food-dataset --repo "$GITHUB_REPOSITORY" --pattern food_dataset.zip --dir /content
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern food_dataset.zip --dir /content
           unzip -q /content/food_dataset.zip -d /content/data
-      - name: Train
+      - name: Train the detector
+        if: matrix.model == 'detector'
         env:
-          EPOCHS: ${{ inputs.epochs || '25' }}
+          DATA_DIR: /content/data/det
+          OUT_DIR: /content/out
+          EPOCHS: ${{ needs.setup.outputs.full == 'true' && '30' || '2' }}
+        run: python tools/food_model/train_food_detector.py
+      - name: Train the dish classifier
+        if: matrix.model == 'dish'
+        env:
           DATA_DIR: /content/data
           OUT_DIR: /content/out
-        run: python tools/food_model/train_food_detector.py
-      - name: Publish model
+          EPOCHS: ${{ needs.setup.outputs.full == 'true' && '20' || '2' }}
+          MIN_PHOTOS: ${{ needs.setup.outputs.full == 'true' && '8' || '3' }}
+        run: python tools/food_model/train_dish_classifier.py
+      - name: Publish
         env:
-          GH_TOKEN: ${{ github.token }}
+          OUT_TAG: ${{ needs.setup.outputs.full == 'true' && 'food-detector' || 'food-model-test' }}
         run: |
-          cp /content/data/credits.csv /content/out/food_detector_credits.csv
-          gh release view food-detector --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
-            || gh release create food-detector --repo "$GITHUB_REPOSITORY" --prerelease \
-                 --title "Food detector" --notes "Phone food detector. Built by the Train food detector workflow."
-          gh release upload food-detector /content/out/food_detector.tflite /content/out/food_detector_labels.csv \
-            /content/out/food_detector_credits.csv --clobber --repo "$GITHUB_REPOSITORY"
+          gh release view "$OUT_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create "$OUT_TAG" --repo "$GITHUB_REPOSITORY" --prerelease --title "Food models" \
+                 --notes "On-device food models built by the Train food models workflow." || true
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern credits.csv --dir /content/out --clobber
+          mv /content/out/credits.csv /content/out/food_model_credits.csv
+          gh release upload "$OUT_TAG" /content/out/food_* --clobber --repo "$GITHUB_REPOSITORY"

@@ -123,4 +123,38 @@ void main() {
     await b.deleteClub(club.id, 'asha');
     expect((await db.collection('clubCodes').get()).docs, isEmpty);
   });
+
+  test('clubs near me: nearest first, far away ones left out', () async {
+    final b = ClubsBackend(FakeFirebaseFirestore());
+    await b.create(
+      uid: 'a',
+      myName: 'A',
+      name: 'Lalbagh Walkers',
+      about: '',
+      kind: ClubKind.walking,
+      location: (12.9507, 77.5848),
+      area: 'Lalbagh',
+    );
+    await b.create(
+      uid: 'b',
+      myName: 'B',
+      name: 'Cubbon Runners',
+      about: '',
+      kind: ClubKind.running,
+      location: (12.9763, 77.5929),
+      area: 'Cubbon Park',
+    );
+    await b.create(
+      uid: 'c',
+      myName: 'C',
+      name: 'Mumbai Gym',
+      about: '',
+      kind: ClubKind.gym,
+      location: (19.0760, 72.8777),
+    );
+    await b.create(uid: 'd', myName: 'D', name: 'No place set', about: '', kind: ClubKind.other);
+    final near = await b.nearby(12.9716, 77.5946).first; // MG Road
+    expect(near.map((c) => c.name), ['Cubbon Runners', 'Lalbagh Walkers']);
+    expect(near.first.area, 'Cubbon Park');
+  });
 }

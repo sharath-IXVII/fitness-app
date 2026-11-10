@@ -150,6 +150,10 @@ void main() {
     await _wait(t);
     await t.tap(find.text('Clubs'));
     await _wait(t);
+    // Near me asks for location first; All clubs lists everything.
+    expect(find.text('Find clubs near me'), findsOneWidget);
+    await t.tap(find.text('All clubs'));
+    await _wait(t);
     expect(find.text('No clubs here yet. Start one!'), findsOneWidget);
 
     await t.tap(find.text('Create a club'));

@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -13,6 +14,8 @@ import '../friends/friends_backend.dart' show FriendsFailure;
 import '../friends/friends_providers.dart';
 import 'clubs_providers.dart';
 import 'domain/club.dart';
+import 'domain/club_challenge.dart' show distanceBetween, formatKm;
+import 'gps.dart';
 
 /// Clubs: create your own, browse and join others.
 class ClubsScreen extends ConsumerStatefulWidget {
@@ -25,6 +28,30 @@ class ClubsScreen extends ConsumerStatefulWidget {
 class _ClubsScreenState extends ConsumerState<ClubsScreen> {
   String _query = '';
   ClubKind? _kind;
+
+  /// Near me (default) or all clubs.
+  bool _near = true;
+  bool _locating = false;
+  String? _locError;
+
+  Future<void> _findMe() async {
+    setState(() {
+      _locating = true;
+      _locError = null;
+    });
+    final gps = ref.read(gpsProvider);
+    final problem = await gps.ensure();
+    final fix = problem == null ? await gps.current() : null;
+    if (!mounted) return;
+    setState(() {
+      _locating = false;
+      if (fix != null) {
+        ref.read(myAreaProvider.notifier).set(fix.point);
+      } else {
+        _locError = problem ?? tr("Couldn't find your location. Try again outside.");
+      }
+    });
+  }
 
   Future<void> _enterCode(BuildContext context) async {
     final controller = TextEditingController();
@@ -142,23 +169,80 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            all.when(
-              loading: () => const Padding(
-                padding: EdgeInsets.all(20),
-                child: Center(child: CircularProgressIndicator()),
-              ),
-              error: (_, _) => Text("Couldn't load clubs. Check your internet.", style: text.bodyMedium),
-              data: (clubs) {
-                final shown = clubs.where((c) => !mine.contains(c.id) && matches(c)).toList();
-                if (shown.isEmpty) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Text(tr('No clubs here yet. Start one!'), style: text.bodyMedium),
-                  );
-                }
-                return Column(children: [for (final c in shown) _ClubTile(club: c)]);
-              },
+            SegmentedButton<bool>(
+              segments: [
+                ButtonSegment(value: true, icon: const Icon(Icons.near_me_rounded), label: Text(tr('Near me'))),
+                ButtonSegment(value: false, icon: const Icon(Icons.public_rounded), label: Text(tr('All clubs'))),
+              ],
+              selected: {_near},
+              onSelectionChanged: (v) => setState(() => _near = v.first),
             ),
+            const SizedBox(height: 10),
+            if (_near && ref.watch(myAreaProvider) == null)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Column(
+                  children: [
+                    Text(
+                      tr('Allow location to see clubs around you.'),
+                      style: text.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    FilledButton.icon(
+                      onPressed: _locating ? null : _findMe,
+                      icon: const Icon(Icons.my_location_rounded),
+                      label: Text(_locating ? tr('Finding you…') : tr('Find clubs near me')),
+                    ),
+                    if (_locError != null) ...[
+                      const SizedBox(height: 6),
+                      Text(_locError!, style: text.bodySmall, textAlign: TextAlign.center),
+                    ],
+                  ],
+                ),
+              )
+            else
+              (_near ? ref.watch(nearbyClubsProvider) : all).when(
+                loading: () => const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Center(child: CircularProgressIndicator()),
+                ),
+                error: (_, _) => Column(
+                  children: [
+                    Text(
+                      tr("Couldn't load clubs. Check your internet and try again."),
+                      style: text.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                    TextButton(
+                      onPressed: () => ref.invalidate(_near ? nearbyClubsProvider : discoverClubsProvider),
+                      child: Text(tr('Try again')),
+                    ),
+                  ],
+                ),
+                data: (clubs) {
+                  final here = ref.watch(myAreaProvider);
+                  final shown = clubs.where((c) => !mine.contains(c.id) && matches(c)).toList();
+                  if (shown.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Text(
+                        _near ? tr('No clubs near you yet. Start one!') : tr('No clubs here yet. Start one!'),
+                        style: text.bodyMedium,
+                      ),
+                    );
+                  }
+                  return Column(
+                    children: [
+                      for (final c in shown)
+                        _ClubTile(
+                          club: c,
+                          away: here == null || c.location == null ? null : distanceBetween(here, c.location!),
+                        ),
+                    ],
+                  );
+                },
+              ),
           ],
         ),
       ),
@@ -180,11 +264,14 @@ class _MyClubTile extends ConsumerWidget {
 }
 
 class _ClubTile extends StatelessWidget {
-  const _ClubTile({required this.club, this.member = false, this.unread = 0});
+  const _ClubTile({required this.club, this.member = false, this.unread = 0, this.away});
 
   final Club club;
   final bool member;
   final int unread;
+
+  /// Metres from the user, when known.
+  final double? away;
 
   @override
   Widget build(BuildContext context) {
@@ -210,7 +297,10 @@ class _ClubTile extends StatelessWidget {
                   children: [
                     Text(club.name, style: text.titleMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
                     Text(
-                      club.about.isEmpty ? '${club.kind.label} · by ${club.ownerName}' : club.about,
+                      [
+                        if (away != null) '📍 ${formatKm(away!.round())}${club.area.isEmpty ? '' : ' · ${club.area}'}',
+                        club.about.isEmpty ? '${club.kind.label} · ${club.ownerName}' : club.about,
+                      ].join('\n'),
                       style: text.bodySmall,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -251,7 +341,30 @@ class _CreateClubSheet extends ConsumerStatefulWidget {
 class _CreateClubSheetState extends ConsumerState<_CreateClubSheet> {
   final _name = TextEditingController();
   final _about = TextEditingController();
+  final _area = TextEditingController();
   ClubKind _kind = ClubKind.gym;
+
+  /// Where the club meets, so people nearby find it.
+  (double, double)? _where;
+  bool _locating = false;
+
+  Future<void> _here() async {
+    setState(() => _locating = true);
+    final gps = ref.read(gpsProvider);
+    final problem = await gps.ensure();
+    final fix = problem == null ? await gps.current() : null;
+    if (!mounted) return;
+    setState(() {
+      _locating = false;
+      if (fix != null) {
+        _where = fix.point;
+        ref.read(myAreaProvider.notifier).set(fix.point);
+      } else {
+        _error = problem ?? tr("Couldn't find your location. Try again outside.");
+      }
+    });
+  }
+
   String? _error;
   bool _busy = false;
 
@@ -259,6 +372,7 @@ class _CreateClubSheetState extends ConsumerState<_CreateClubSheet> {
   void dispose() {
     _name.dispose();
     _about.dispose();
+    _area.dispose();
     super.dispose();
   }
 
@@ -270,7 +384,15 @@ class _CreateClubSheetState extends ConsumerState<_CreateClubSheet> {
     try {
       final club = await ref
           .read(clubsBackendProvider)!
-          .create(uid: me.uid, myName: me.name, name: _name.text, about: _about.text, kind: _kind);
+          .create(
+            uid: me.uid,
+            myName: me.name,
+            name: _name.text,
+            about: _about.text,
+            kind: _kind,
+            location: _where,
+            area: _area.text,
+          );
       if (!mounted) return;
       Navigator.of(context).pop();
       context.push(Routes.club, extra: club.id);
@@ -319,6 +441,30 @@ class _CreateClubSheetState extends ConsumerState<_CreateClubSheet> {
                 ),
             ],
           ),
+          const SizedBox(height: 14),
+          Text(tr('Where does the club meet?'), style: text.titleSmall),
+          const SizedBox(height: 6),
+          if (_where == null)
+            OutlinedButton.icon(
+              onPressed: _locating ? null : _here,
+              icon: const Icon(Icons.my_location_rounded),
+              label: Text(_locating ? tr('Finding you…') : tr('Use my location (people nearby find it)')),
+            )
+          else ...[
+            Row(
+              children: [
+                Icon(Icons.place_rounded, color: AppColors.primary),
+                const SizedBox(width: 6),
+                Expanded(child: Text(tr('Location set. Nearby people will see this club.'), style: text.bodyMedium)),
+                TextButton(onPressed: () => setState(() => _where = null), child: Text(tr('Clear'))),
+              ],
+            ),
+            TextField(
+              controller: _area,
+              maxLength: 40,
+              decoration: InputDecoration(labelText: tr('Area name'), hintText: tr('e.g. Indiranagar')),
+            ),
+          ],
           if (_error != null) ...[
             const SizedBox(height: 10),
             Text(_error!, style: text.bodySmall?.copyWith(color: AppColors.danger)),

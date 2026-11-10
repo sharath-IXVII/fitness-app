@@ -27,7 +27,15 @@ class Club {
     required this.ownerUid,
     required this.ownerName,
     this.code,
+    this.location,
+    this.area = '',
   });
+
+  /// Where the club meets (latitude, longitude), if the admin set it.
+  final (double, double)? location;
+
+  /// The area's name, e.g. "Indiranagar".
+  final String area;
 
   final String id;
   final String name;
@@ -47,6 +55,11 @@ class Club {
     ownerUid: j['ownerUid'] as String? ?? '',
     ownerName: j['ownerName'] as String? ?? '',
     code: j['code'] as String?,
+    location: switch ((j['lat'], j['lng'])) {
+      (final num a, final num b) => (a.toDouble(), b.toDouble()),
+      _ => null,
+    },
+    area: j['area'] as String? ?? '',
   );
 }
 

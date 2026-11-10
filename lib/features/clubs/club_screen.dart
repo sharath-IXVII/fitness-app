@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -302,7 +303,8 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
                 ),
         ),
         const SizedBox(height: 12),
-        Text(tr('Be kind. Chats disappear after 24 hours and links are not allowed.'),
+        Text(
+          tr('Be kind. Chats disappear after 24 hours and links are not allowed.'),
           style: text.bodySmall,
           textAlign: TextAlign.center,
         ),
@@ -335,7 +337,9 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
             children: [
               Icon(Icons.timer_outlined, size: 18, color: AppColors.primary),
               const SizedBox(width: 8),
-              Expanded(child: Text(tr('Messages disappear after 24 hours. Links are not allowed.'), style: text.bodySmall)),
+              Expanded(
+                child: Text(tr('Messages disappear after 24 hours. Links are not allowed.'), style: text.bodySmall),
+              ),
             ],
           ),
         ),

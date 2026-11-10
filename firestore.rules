@@ -218,7 +218,10 @@ service cloud.firestore {
       // Anyone signed in can browse clubs.
       allow read: if signedIn();
       allow create: if signedIn()
-        && data().keys().hasOnly(['name', 'about', 'kind', 'ownerUid', 'ownerName', 'createdAt'])
+        && data().keys().hasOnly(['name', 'about', 'kind', 'ownerUid', 'ownerName', 'createdAt', 'lat', 'lng', 'g4', 'area'])
+        && (data().get('g4', null) == null || (data().g4 is string && data().g4.size() == 4
+            && data().lat is number && data().lng is number
+            && data().area is string && data().area.size() <= 40 && noLink(data().area)))
         && data().ownerUid == me()
         && data().name is string && data().name.size() >= 3 && data().name.size() <= 40 && noLink(data().name)
         && data().about is string && data().about.size() <= 200 && noLink(data().about)

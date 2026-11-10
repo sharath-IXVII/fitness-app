@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../friends/domain/friends.dart' show newChallengeCode, normalizeCode;
 import '../friends/friends_backend.dart' show FriendsFailure;
+import '../../core/geohash.dart';
 import 'domain/club.dart';
 import 'domain/club_challenge.dart';
 
@@ -39,6 +40,15 @@ class ClubsBackend {
       .snapshots()
       .map((s) => [for (final d in s.docs) Club.fromJson(d.id, d.data())]);
 
+  /// Clubs within about 40 km of (lat, lng), nearest first.
+  Stream<List<Club>> nearby(double lat, double lng) =>
+      _clubs.where('g4', whereIn: geohashNeighbours(lat, lng).toList()).limit(100).snapshots().map((s) {
+        final list = [for (final d in s.docs) Club.fromJson(d.id, d.data())];
+        double away(Club c) => c.location == null ? 1e9 : distanceBetween((lat, lng), c.location!);
+        list.sort((a, b) => away(a).compareTo(away(b)));
+        return list;
+      });
+
   /// Ids of the clubs [uid] is in.
   Stream<Set<String>> myClubIds(String uid) => _mine(uid).snapshots().map((s) => {for (final d in s.docs) d.id});
 
@@ -53,8 +63,11 @@ class ClubsBackend {
     required String name,
     required String about,
     required ClubKind kind,
+    (double, double)? location,
+    String area = '',
   }) async {
     final problem = clubProblem(name, about);
+    if (containsLink(area)) throw const FriendsFailure('Links are not allowed in clubs.');
     if (problem != null) throw FriendsFailure(problem);
     final ref = _clubs.doc();
     final club = {
@@ -64,6 +77,13 @@ class ClubsBackend {
       'ownerUid': uid,
       'ownerName': myName,
       'createdAt': FieldValue.serverTimestamp(),
+      // Rounded to about 100 m: enough to find nearby clubs, not a doorstep.
+      if (location != null) ...{
+        'lat': (location.$1 * 1000).round() / 1000,
+        'lng': (location.$2 * 1000).round() / 1000,
+        'g4': geohash(location.$1, location.$2),
+        'area': area.trim(),
+      },
     };
     await ref.set(club);
     await join(ref.id, uid: uid, myName: myName, clubName: name.trim(), kind: kind);
@@ -79,6 +99,8 @@ class ClubsBackend {
       ownerUid: uid,
       ownerName: myName,
       code: code,
+      location: location,
+      area: area.trim(),
     );
   }
 

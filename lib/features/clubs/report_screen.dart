@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -86,7 +87,8 @@ class _RunReportScreenState extends ConsumerState<RunReportScreen> {
             ? Center(
                 child: Padding(
                   padding: const EdgeInsets.all(32),
-                  child: Text(tr('This report is gone. Reports are kept for 5 hours after a challenge.'),
+                  child: Text(
+                    tr('This report is gone. Reports are kept for 5 hours after a challenge.'),
                     style: text.bodyLarge,
                     textAlign: TextAlign.center,
                   ),
@@ -128,11 +130,11 @@ class _RunReportScreenState extends ConsumerState<RunReportScreen> {
                               label: Text(tr('See the route on the map')),
                             ),
                           if (kept)
-                          Text(
-                            'Kept until ${DateFormat('h:mm a').format(r.expiresAt)}. Download it to keep it.',
-                            style: text.bodySmall,
-                            textAlign: TextAlign.center,
-                          ),
+                            Text(
+                              'Kept until ${DateFormat('h:mm a').format(r.expiresAt)}. Download it to keep it.',
+                              style: text.bodySmall,
+                              textAlign: TextAlign.center,
+                            ),
                           const SizedBox(height: 8),
                           Row(
                             children: [

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:clock/clock.dart';
@@ -19,10 +20,44 @@ final clubsBackendProvider = Provider<ClubsBackend?>((ref) {
   return friends == null ? null : ClubsBackend(friends.db);
 });
 
+/// Errors out when the first answer takes too long (no internet, or the
+/// database isn't set up), instead of loading for ever.
+Stream<T> firstWithin<T>(Stream<T> s, {Duration limit = const Duration(seconds: 15)}) {
+  var got = false;
+  return s
+      .map((v) {
+        got = true;
+        return v;
+      })
+      .timeout(
+        limit,
+        onTimeout: (sink) {
+          if (!got) sink.addError(TimeoutException('No answer from the server'));
+        },
+      );
+}
+
 final discoverClubsProvider = StreamProvider<List<Club>>((ref) {
   final b = ref.watch(clubsBackendProvider);
   if (b == null) return Stream.value(const []);
-  return b.discover();
+  return firstWithin(b.discover());
+});
+
+/// Where this user is, for "clubs near me". Null until they allow it.
+class MyAreaNotifier extends Notifier<(double, double)?> {
+  @override
+  (double, double)? build() => null;
+
+  // ignore: use_setters_to_change_properties
+  void set((double, double) p) => state = p;
+}
+
+final myAreaProvider = NotifierProvider<MyAreaNotifier, (double, double)?>(MyAreaNotifier.new);
+
+final nearbyClubsProvider = StreamProvider<List<Club>>((ref) {
+  final b = ref.watch(clubsBackendProvider), at = ref.watch(myAreaProvider);
+  if (b == null || at == null) return Stream.value(const []);
+  return firstWithin(b.nearby(at.$1, at.$2));
 });
 
 final myClubIdsProvider = StreamProvider<Set<String>>((ref) {

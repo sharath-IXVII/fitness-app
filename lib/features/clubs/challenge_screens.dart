@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'dart:async';
 
 import 'package:clock/clock.dart';
@@ -933,7 +934,8 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
                             Icon(Icons.wrong_location_rounded, color: AppColors.amber),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: Text(tr('You are off the route. Head back to the line on the map.'),
+                              child: Text(
+                                tr('You are off the route. Head back to the line on the map.'),
                                 style: text.bodyMedium,
                               ),
                             ),

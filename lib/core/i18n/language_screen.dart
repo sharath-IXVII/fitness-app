@@ -31,6 +31,7 @@ class LanguageScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
                 Text('Choose your language', textAlign: TextAlign.center, style: text.headlineSmall),
                 Text('ನಿಮ್ಮ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ', textAlign: TextAlign.center, style: text.titleMedium),
+                Text('अपनी भाषा चुनें', textAlign: TextAlign.center, style: text.titleMedium),
                 const SizedBox(height: 28),
                 for (final l in AppLang.values)
                   Padding(

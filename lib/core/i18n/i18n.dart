@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../storage.dart';
+import 'hi.dart';
 import 'kn.dart';
 
 /// Languages the app can show.
 enum AppLang {
   en('English', 'English', Locale('en', 'IN')),
-  kn('ಕನ್ನಡ', 'Kannada', Locale('kn', 'IN'));
+  kn('ಕನ್ನಡ', 'Kannada', Locale('kn', 'IN')),
+  hi('हिन्दी', 'Hindi', Locale('hi', 'IN'));
 
   const AppLang(this.native, this.english, this.locale);
 
@@ -20,7 +22,7 @@ enum AppLang {
 /// The language now in use. Widgets read text through [tr].
 AppLang currentLang = AppLang.en;
 
-const _tables = <AppLang, Map<String, String>>{AppLang.kn: kannada};
+const _tables = <AppLang, Map<String, String>>{AppLang.kn: kannada, AppLang.hi: hindi};
 
 /// [en] in the current language, or [en] itself when there's no translation
 /// yet (so a missing line never shows as blank).

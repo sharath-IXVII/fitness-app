@@ -20,6 +20,7 @@ import '../features/friends/friends_screen.dart';
 import '../features/home/home_screen.dart';
 import '../features/myday/myday_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
+import '../features/intro/intro_screen.dart';
 import 'i18n/i18n.dart';
 import 'i18n/language_screen.dart';
 import '../features/profile/privacy_screen.dart';
@@ -67,6 +68,7 @@ abstract final class Routes {
   static const auth = '/auth';
   static const onboarding = '/onboarding';
   static const language = '/language';
+  static const intro = '/intro';
   static const languageSettings = '/language-settings';
   static const home = '/home';
   static const training = '/workouts';
@@ -125,6 +127,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.listen(profileProvider, (_, _) => refresh.value++);
   ref.listen(authProvider, (_, _) => refresh.value++);
   ref.listen(langProvider, (_, _) => refresh.value++);
+  ref.listen(introSeenProvider, (_, _) => refresh.value++);
   ref.onDispose(refresh.dispose);
 
   return GoRouter(
@@ -136,7 +139,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (loc == Routes.splash || loc == Routes.privacy || loc == Routes.terms) return null;
       // The first time: choose the language before anything else.
       if (ref.read(langProvider) == null) return loc == Routes.language ? null : Routes.language;
-      if (loc == Routes.language) return Routes.splash;
+      // Then, once, what the app can do.
+      if (!ref.read(introSeenProvider)) return loc == Routes.intro ? null : Routes.intro;
+      if (loc == Routes.language || loc == Routes.intro) return Routes.splash;
       // Signed out → auth flow. Signed in → onboarding until a profile exists.
       final inAuth = loc.startsWith(Routes.auth);
       if (ref.read(authProvider) == null) return inAuth ? null : Routes.auth;
@@ -148,6 +153,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: Routes.splash, builder: (_, _) => const SplashScreen()),
       GoRoute(path: Routes.language, builder: (_, _) => const LanguageScreen()),
+      GoRoute(path: Routes.intro, builder: (_, _) => const IntroScreen()),
       GoRoute(path: Routes.languageSettings, builder: (_, _) => const LanguageScreen(fromSettings: true)),
       GoRoute(
         path: Routes.auth,

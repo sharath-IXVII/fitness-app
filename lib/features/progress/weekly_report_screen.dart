@@ -21,7 +21,7 @@ class WeeklyReportScreen extends ConsumerWidget {
         'Workouts were the hardest to fit in. Try an earlier alarm or the Beginner routine on busy days.',
     DailyTask.water: 'Water was the goal you missed most. Turn on water reminders or keep a bottle on your desk.',
     DailyTask.steps: 'Steps were the goal you missed most. A 15-minute walk after lunch adds around 1,800 steps.',
-    DailyTask.diet: 'Meal logging slipped. Open Diet (beta) from the Meals card on Today and use "Today\'s plan" to log a whole meal in one tap.',
+    DailyTask.diet: 'Meal logging slipped. Open Diet from the Meals card on Today and snap each meal with the camera.',
     DailyTask.protein: 'Protein fell short. Add curd, paneer, dal, eggs or a shake to one meal a day.',
   };
 

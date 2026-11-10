@@ -32,7 +32,12 @@ Widget _app(SharedPreferences prefs) => ProviderScope(
 Future<void> _pickEnglish(WidgetTester t) async {
   if (find.text('Choose your language').evaluate().isEmpty) return;
   await t.tap(find.text('English'));
-  await _wait(t, 5600);
+  await _wait(t, 1500);
+  // The feature tour comes next; it can be skipped.
+  if (find.text('Fitness that feels like a game').evaluate().isNotEmpty) {
+    await t.tap(find.text('Skip'));
+    await _wait(t, 5600);
+  }
 }
 
 void main() {

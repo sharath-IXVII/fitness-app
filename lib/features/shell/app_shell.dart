@@ -330,7 +330,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                       icon: item.$1,
                       activeIcon: item.$2,
                       label: tr(item.$3),
-                      beta: item.$3 == 'Diet',
+                      beta: false,
                       active: index == i,
                       onTap: () {
                         HapticFeedback.selectionClick();

@@ -1,3 +1,4 @@
+import '../activity/widgets/activity_quick_row.dart';
 import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -64,6 +65,11 @@ class HomeScreen extends ConsumerWidget {
       _ScoreCard(score: score),
       const SizedBox(height: 12),
       _TaskGrid(log: log, targets: targets, score: score),
+      const SizedBox(height: 18),
+      // Start a run, walk, ride or skipping session straight from Today.
+      _SectionTitle(tr('Move now')),
+      const SizedBox(height: 10),
+      const ActivityQuickRow(),
       const SizedBox(height: 26),
       const _SectionTitle('Coming up'),
       const SizedBox(height: 12),

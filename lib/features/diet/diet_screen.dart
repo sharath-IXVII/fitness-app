@@ -22,7 +22,6 @@ import 'diet_providers.dart';
 import '../snaps/widgets/today_snaps.dart';
 import 'domain/food.dart';
 import 'domain/meal_log.dart';
-import 'domain/meal_plan.dart';
 import 'domain/weight_goal.dart';
 import 'widgets/food_search_sheet.dart';
 import 'widgets/goal_sheets.dart';
@@ -405,13 +404,6 @@ class _PlanCard extends ConsumerWidget {
     final kcal = plan.fold(0.0, (k, m) => k + m.macros.kcal).round();
     final protein = plan.fold(0.0, (k, m) => k + m.macros.protein).round();
 
-    Future<void> use(PlannedMeal m) async {
-      HapticFeedback.lightImpact();
-      await ref.read(mealLogProvider.notifier).addAll([
-        for (final (i, item) in m.items.indexed)
-          MealEntry.ofFood('${MealLogNotifier.newId()}$i', m.meal, item.food, item.servings, source: 'plan'),
-      ]);
-    }
 
     return GlassCard(
       child: Column(
@@ -474,10 +466,11 @@ class _PlanCard extends ConsumerWidget {
                                 child: Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 22),
                               )
                             : IconButton(
-                                tooltip: 'Log ${m.meal.label.toLowerCase()}',
+                                // The plan is a suggestion: eat it, then snap it.
+                                tooltip: 'Snap ${m.meal.label.toLowerCase()}',
                                 visualDensity: VisualDensity.compact,
-                                onPressed: () => use(m),
-                                icon: Icon(Icons.add_circle_outline_rounded, color: AppColors.primary),
+                                onPressed: () => context.push(Routes.scan, extra: m.meal),
+                                icon: Icon(Icons.photo_camera_outlined, color: AppColors.primary),
                               ),
                       ],
                     ),

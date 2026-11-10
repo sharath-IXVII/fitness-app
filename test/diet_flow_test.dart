@@ -19,7 +19,7 @@ Future<void> _wait(WidgetTester t, [int ms = 900]) async {
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
-  testWidgets('use the plan, set a goal, read an explainer; adding food is by snapping', (t) async {
+  testWidgets('see the plan, set a goal, read an explainer; adding food is by snapping', (t) async {
     t.view.physicalSize = const Size(390, 844) * 3;
     t.view.devicePixelRatio = 3;
     addTearDown(t.view.reset);
@@ -61,14 +61,10 @@ void main() {
     expect(find.text('Snap'), findsWidgets);
     expect(find.text('Add'), findsNothing);
 
-    // Log lunch straight from today's plan.
-    final logLunch = find.byTooltip('Log lunch');
-    await t.scrollUntilVisible(logLunch, 200, scrollable: find.byType(Scrollable).hitTestable().first);
-    await t.drag(find.byType(Scrollable).hitTestable().first, const Offset(0, -300));
-    await _wait(t, 300);
-    await t.tap(logLunch);
-    await _wait(t);
-    expect(find.byTooltip('Log lunch'), findsNothing);
+    // Today's plan suggests meals; each one is logged by snapping it.
+    final snapLunch = find.byTooltip('Snap lunch');
+    await t.scrollUntilVisible(snapLunch, 200, scrollable: find.byType(Scrollable).hitTestable().first);
+    expect(snapLunch, findsOneWidget);
 
     // Set a weight goal.
     final setGoal = find.text('Set a weight goal');

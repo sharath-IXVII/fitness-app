@@ -258,11 +258,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
       key: const ValueKey('pick'),
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
       children: [
-        const BetaNote(
-          text:
-              'Food scanning is in beta. It can mix up dishes or get portions wrong, so check the result and '
-              'correct it before you save.',
-        ),
+        const BetaNote(),
         const SizedBox(height: 14),
         GlassCard(
           padding: const EdgeInsets.all(24),

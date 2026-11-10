@@ -8,32 +8,17 @@ class BetaTag extends StatelessWidget {
   const BetaTag({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      label: tr('Beta'),
-      excludeSemantics: true,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-        decoration: BoxDecoration(
-          color: AppColors.amber.withValues(alpha: 0.16),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.amber.withValues(alpha: 0.5)),
-        ),
-        child: Text(tr('BETA'),
-          style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, letterSpacing: 0.8, color: AppColors.amber),
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const SizedBox.shrink();
+
 }
 
-/// A short, honest note under a beta feature's heading.
+/// A short, honest note: these numbers are estimates.
 class BetaNote extends StatelessWidget {
   const BetaNote({super.key, this.text = defaultText});
 
   static const defaultText =
-      'Diet is in beta. Food recognition and calorie estimates can be off, so please check each item and '
-      'correct it. We are improving it.';
+      'Calories and nutrients are estimates from your photo. They work well for everyday tracking but may not be '
+      'exact, so tap any dish to correct it.';
 
   final String text;
 
@@ -42,15 +27,15 @@ class BetaNote extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.amber.withValues(alpha: 0.10),
+        color: AppColors.primarySoft,
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.science_outlined, size: 18, color: AppColors.amber),
+          Icon(Icons.info_outline_rounded, size: 18, color: AppColors.primary),
           const SizedBox(width: 10),
-          Expanded(child: Text(text, style: Theme.of(context).textTheme.bodySmall)),
+          Expanded(child: Text(tr(text), style: Theme.of(context).textTheme.bodySmall)),
         ],
       ),
     );

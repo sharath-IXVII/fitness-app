@@ -4,6 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:in_app_review/in_app_review.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../teams/teams_providers.dart';
 import '../friends/friends_backend.dart';
@@ -165,6 +167,20 @@ class _AppShellState extends ConsumerState<AppShell> {
   static const _seenKey = 'achievements.seen.v1';
   static const _streakSeenKey = 'streak.celebrated.v1';
 
+  static const _reviewKey = 'review.asked.v1';
+
+  Future<void> _askForReview(SharedPreferences prefs) async {
+    final last = DateTime.tryParse(prefs.getString(_reviewKey) ?? '');
+    if (last != null && DateTime.now().difference(last).inDays < 60) return;
+    try {
+      final review = InAppReview.instance;
+      if (!await review.isAvailable()) return;
+      await prefs.setString(_reviewKey, DateTime.now().toIso8601String());
+      await Future<void>.delayed(const Duration(seconds: 2));
+      await review.requestReview();
+    } catch (_) {}
+  }
+
   void _celebrateStreak(int days) {
     if (!streakMilestones.contains(days) || !mounted) return;
     final prefs = ref.read(sharedPrefsProvider);
@@ -174,6 +190,9 @@ class _AppShellState extends ConsumerState<AppShell> {
     if (done.contains(id)) return;
     prefs.setStringList(_streakSeenKey, [...done, id]);
     HapticFeedback.mediumImpact();
+    // A happy moment: ask for a Play Store rating (Google decides whether to
+    // show it; at most every 60 days from us).
+    if (days >= 7) _askForReview(prefs);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('🔥 $days-day streak! Keep it going.'),

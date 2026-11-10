@@ -73,7 +73,10 @@ service cloud.firestore {
         allow read, delete: if me() == uid;
         allow create, update: if me() == uid
           && doc == 'state'
-          && data().keys().hasOnly(['profile', 'badges', 'firstUse', 'waterGoal', 'updatedAt'])
+          && data().keys().hasOnly(['profile', 'badges', 'firstUse', 'waterGoal', 'xpBonus', 'activities', 'body', 'updatedAt'])
+          && (data().get('xpBonus', null) == null || (data().xpBonus is map && data().xpBonus.size() <= 300))
+          && (data().get('activities', null) == null || (data().activities is list && data().activities.size() <= 100))
+          && (data().get('body', null) == null || (data().body is map && data().body.size() <= 10))
           && data().profile is map
           && data().badges is map
           && data().badges.size() <= 100

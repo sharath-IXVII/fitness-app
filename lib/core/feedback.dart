@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -12,7 +14,7 @@ Future<void> sendFeedback(BuildContext context) async {
     scheme: 'mailto',
     path: AppInfo.feedbackEmail,
     query:
-        'subject=${Uri.encodeComponent('${AppInfo.name} feedback')}&body=${Uri.encodeComponent('\n\n(Tell us what you love, what is broken or what you want next.)')}',
+        'subject=${Uri.encodeComponent('${AppInfo.name} feedback')}&body=${Uri.encodeComponent('\n\n(Tell us what you love, what is broken or what you want next.)\n\n---\n${_about()}')}',
   );
   var opened = false;
   try {
@@ -22,4 +24,13 @@ Future<void> sendFeedback(BuildContext context) async {
     await Clipboard.setData(ClipboardData(text: AppInfo.feedbackEmail));
     messenger.showSnackBar(SnackBar(content: Text('Email copied: ${AppInfo.feedbackEmail}')));
   }
+}
+
+/// The phone's system, so a bug can be reproduced. No personal data.
+String _about() {
+  var os = '';
+  try {
+    os = '${Platform.operatingSystem} ${Platform.operatingSystemVersion}';
+  } catch (_) {}
+  return '${AppInfo.name} · $os';
 }

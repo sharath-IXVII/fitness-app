@@ -4,8 +4,13 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 
+import '../features/activity/activity_providers.dart';
+import '../features/activity/domain/activity_session.dart';
+import '../features/clubs/clubs_providers.dart';
+import '../features/health/widgets/body_check_sheet.dart' show bodyCheckKey;
 import '../features/arcs/arc_providers.dart';
 import '../features/auth/auth_providers.dart';
 import '../features/auth/auth_service.dart';
@@ -172,6 +177,26 @@ class CloudBackup {
         if (best != null) await prefs.setString(_firstUseKey, DateTime.parse(best).toIso8601String());
         final goal = state['waterGoal'];
         if (goal is int && prefs.getInt('water.goal.v1') == null) await prefs.setInt('water.goal.v1', goal);
+        // Bonus XP: keep everything from both sides.
+        final xp = state['xpBonus'];
+        if (xp is Map) {
+          for (final e in xp.entries) {
+            if (e.value is num) await _ref.read(clubXpProvider.notifier).award('${e.key}', (e.value as num).toInt());
+          }
+        }
+        // Activities: add the ones this phone doesn't have.
+        final acts = state['activities'];
+        if (acts is List) {
+          final have = {for (final a in _ref.read(activitiesProvider)) a.id};
+          for (final j in acts.whereType<Map<String, dynamic>>()) {
+            final a = ActivitySession.fromJson(j);
+            if (a != null && !have.contains(a.id)) await _ref.read(activitiesProvider.notifier).add(a);
+          }
+        }
+        final body = state['body'];
+        if (body is Map && prefs.getString(bodyCheckKey) == null) {
+          await prefs.setString(bodyCheckKey, jsonEncode(body));
+        }
       }
       // Phone data and cloud data now agree on what's stored; let the app
       // re-read it. Everything restored counts as already backed up.
@@ -218,6 +243,13 @@ class CloudBackup {
         'badges': {for (final e in _ref.read(badgeVaultProvider).entries) badgeId(e.key): _dateKey.format(e.value)},
         'firstUse': _dateKey.format(first),
         'waterGoal': ?goal,
+        // Bonus XP (club challenges, invites), activity history without the
+        // map route (kept small), and body-check measurements.
+        'xpBonus': _ref.read(clubXpProvider),
+        'activities': [
+          for (final a in _ref.read(activitiesProvider).take(ActivitiesNotifier.keep)) {...a.toJson()}..remove('r'),
+        ],
+        'body': ?_bodyCheck(prefs),
       };
       final stateJson = jsonEncode(state);
 
@@ -235,6 +267,15 @@ class CloudBackup {
   }
 
   void dispose() => _timer?.cancel();
+
+  static Map<String, dynamic>? _bodyCheck(SharedPreferences prefs) {
+    try {
+      final raw = prefs.getString(bodyCheckKey);
+      return raw == null ? null : jsonDecode(raw) as Map<String, dynamic>;
+    } catch (_) {
+      return null;
+    }
+  }
 }
 
 final cloudBackupProvider = Provider<CloudBackup>((ref) {

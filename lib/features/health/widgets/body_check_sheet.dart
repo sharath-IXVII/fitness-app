@@ -12,7 +12,9 @@ import '../../profile/domain/user_profile.dart';
 import '../../profile/profile_providers.dart';
 import '../domain/body.dart';
 
-const _key = 'body.check.v1';
+/// Where body-check measurements are kept (also backed up).
+const bodyCheckKey = 'body.check.v1';
+const _key = bodyCheckKey;
 
 /// Body check: a body-fat estimate from a tape measure, healthy weight for
 /// your height and waist-to-height. Wellness estimates, not a diagnosis.

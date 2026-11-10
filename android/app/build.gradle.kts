@@ -86,4 +86,6 @@ dependencies {
 // placed in android/app/. Without it the app builds and runs in demo mode.
 if (file("google-services.json").exists()) {
     apply(plugin = "com.google.gms.google-services")
+    // Crash reports (Firebase Crashlytics) need the same Firebase config.
+    apply(plugin = "com.google.firebase.crashlytics")
 }

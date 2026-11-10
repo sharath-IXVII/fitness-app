@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io' show Platform;
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
@@ -90,6 +91,16 @@ Future<AuthService> _authService(SharedPreferences prefs) async {
   if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
     try {
       await Firebase.initializeApp().timeout(const Duration(seconds: 5));
+      // Crash reports for release builds, so problems on testers' phones
+      // can be seen and fixed. No personal data is attached.
+      if (kReleaseMode) {
+        await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
+        FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
+        PlatformDispatcher.instance.onError = (error, stack) {
+          FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+          return true;
+        };
+      }
       return FirebaseAuthService();
     } catch (e) {
       debugPrint('Firebase not configured, using demo sign-in: $e');

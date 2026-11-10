@@ -3,7 +3,6 @@ import 'dart:math' as math;
 import '../../core/i18n/i18n.dart';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -100,8 +99,6 @@ class DietScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
       ],
-      const SizedBox(height: 14),
-      const _PlanCard(),
       const SizedBox(height: 14),
       const _WeightCard(),
       const SizedBox(height: 26),
@@ -393,99 +390,6 @@ class _MealSection extends StatelessWidget {
 
 /// Today's suggested meals for the user's diet and calorie target, with
 /// "Shuffle" for another combination and one-tap logging per meal.
-class _PlanCard extends ConsumerWidget {
-  const _PlanCard();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final text = Theme.of(context).textTheme;
-    final plan = ref.watch(todayPlanProvider);
-    final logged = ref.watch(mealLogProvider).map((e) => e.meal).toSet();
-    final kcal = plan.fold(0.0, (k, m) => k + m.macros.kcal).round();
-    final protein = plan.fold(0.0, (k, m) => k + m.macros.protein).round();
-
-    return GlassCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.restaurant_menu_rounded, color: AppColors.primary),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text("Today's plan", style: text.titleMedium),
-                    Text('~$kcal kcal · $protein g protein', style: text.bodySmall),
-                  ],
-                ),
-              ),
-              IconButton(
-                tooltip: tr('Shuffle'),
-                onPressed: () {
-                  HapticFeedback.selectionClick();
-                  ref.read(planShuffleProvider.notifier).next();
-                },
-                icon: Icon(Icons.shuffle_rounded, color: AppColors.textSecondary),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 250),
-            child: Column(
-              key: ValueKey(plan.map((m) => m.items.map((i) => i.food.id).join()).join('|')),
-              children: [
-                for (final m in plan)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(width: 78, child: Text(m.meal.label, style: text.labelLarge)),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                m.items.map((i) => '${_qty(i.servings)}${i.food.name}').join(', '),
-                                style: text.bodyMedium?.copyWith(color: AppColors.textPrimary),
-                              ),
-                              Text(
-                                '${m.macros.kcal.round()} kcal · ${m.macros.protein.round()} g protein',
-                                style: text.bodySmall,
-                              ),
-                            ],
-                          ),
-                        ),
-                        logged.contains(m.meal)
-                            ? Padding(
-                                padding: EdgeInsets.all(8),
-                                child: Icon(Icons.check_circle_rounded, color: AppColors.primary, size: 22),
-                              )
-                            : IconButton(
-                                // The plan is a suggestion: eat it, then snap it.
-                                tooltip: 'Snap ${m.meal.label.toLowerCase()}',
-                                visualDensity: VisualDensity.compact,
-                                onPressed: () => context.push(Routes.scan, extra: m.meal),
-                                icon: Icon(Icons.photo_camera_outlined, color: AppColors.primary),
-                              ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  static String _qty(double s) =>
-      s == 1 ? '' : '${s == s.roundToDouble() ? s.toStringAsFixed(0) : s.toStringAsFixed(1)}× ';
-}
-
 class _GoalCard extends ConsumerWidget {
   const _GoalCard();
 

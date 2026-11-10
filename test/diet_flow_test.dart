@@ -61,14 +61,11 @@ void main() {
     expect(find.text('Snap'), findsWidgets);
     expect(find.text('Add'), findsNothing);
 
-    // Today's plan suggests meals; each one is logged by snapping it.
-    final snapLunch = find.byTooltip('Snap lunch');
-    await t.scrollUntilVisible(snapLunch, 200, scrollable: find.byType(Scrollable).hitTestable().first);
-    expect(snapLunch, findsOneWidget);
+    expect(find.text("Today's plan"), findsNothing);
 
     // Set a weight goal.
     final setGoal = find.text('Set a weight goal');
-    await t.scrollUntilVisible(setGoal, -200, scrollable: find.byType(Scrollable).hitTestable().first);
+    await t.scrollUntilVisible(setGoal, 200, scrollable: find.byType(Scrollable).hitTestable().first);
     await t.drag(find.byType(Scrollable).hitTestable().first, const Offset(0, 300));
     await _wait(t, 300);
     await t.tap(setGoal);

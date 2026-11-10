@@ -202,10 +202,18 @@ sig = AutoModel.from_pretrained("google/siglip-base-patch16-224").eval()
 FOOD_Q = ["a serving of food", "a bowl of curry", "a flatbread", "a sweet dessert", "a pile of rice",
           "a fried snack", "a piece of fruit", "a glass of drink"]
 post = getattr(owl_p, "post_process_grounded_object_detection", None) or owl_p.post_process_object_detection
+
+
+def vec(x):
+    """Features as a tensor (newer transformers wrap them in an output object)."""
+    x = getattr(x, "pooler_output", x) if not torch.is_tensor(x) else x
+    return x / x.norm(dim=-1, keepdim=True)
+
+
 with torch.no_grad():
     te = sig.get_text_features(**sig_p(text=[f"a photo of {DISHES[d][0]}, Indian food" for d in IDS],
                                        padding="max_length", return_tensors="pt"))
-    te = te / te.norm(dim=-1, keepdim=True)
+    te = vec(te)
 
 
 def food_boxes(im):
@@ -227,8 +235,7 @@ def food_boxes(im):
 
 def name_crops(crops):
     with torch.no_grad():
-        ie = sig.get_image_features(**sig_p(images=crops, return_tensors="pt"))
-        ie = ie / ie.norm(dim=-1, keepdim=True)
+        ie = vec(sig.get_image_features(**sig_p(images=crops, return_tensors="pt")))
     return (ie @ te.T * 100).softmax(dim=-1)  # rows: crops, cols: dishes
 
 

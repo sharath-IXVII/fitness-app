@@ -74,7 +74,9 @@ print("Final validation: loss", loss, " AP", coco_metrics.get("AP"), " AP50", co
 
 # Smaller and faster on phones, nearly as accurate.
 model.restore_float_ckpt()
-model.quantization_aware_training(train, valid, epochs=5, batch_size=16, learning_rate=0.3)
+model.quantization_aware_training(
+    train, valid, qat_hparams=object_detector.QATHParams(learning_rate=0.3, batch_size=16, epochs=min(5, EPOCHS))
+)
 model.export_model("food_detector.tflite", quantization_config=quantization.QuantizationConfig.for_int8(train))
 
 # Labels in the app's format: "id,name", id = the class number the model outputs.

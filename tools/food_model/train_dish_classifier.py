@@ -48,7 +48,7 @@ test = image_classifier.Dataset.from_folder(str(WORK / "test"))
 print("Train", train.size, "valid", valid.size, "test", test.size, "dishes", len(train.label_names))
 options = image_classifier.ImageClassifierOptions(
     supported_model=image_classifier.SupportedModels.EFFICIENTNET_LITE2,
-    hparams=image_classifier.HParams(export_dir=str(OUT), epochs=EPOCHS, batch_size=32, learning_rate=0.004),
+    hparams=image_classifier.HParams(export_dir=str(OUT), epochs=EPOCHS, batch_size=min(32, max(2, train.size // 2)), learning_rate=0.004),
     model_options=image_classifier.ModelOptions(dropout_rate=0.2),
 )
 model = image_classifier.ImageClassifier.create(train_data=train, validation_data=valid, options=options)

@@ -599,4 +599,9 @@ const hindi = <String, String>{
   'Saved. Find it under Templates.': 'सेव हो गया। टेम्पलेट में मिलेगा।',
   'Copy to other days': 'दूसरे दिनों पर कॉपी करें',
   'Save as template': 'टेम्पलेट सेव करें',
+  "Also on your plate? Tap to add": 'प्लेट में और भी है? जोड़ने के लिए टैप करें',
+  "Couldn't recognise this plate. Tap the dishes you see below.":
+      'यह प्लेट पहचान नहीं पाए। नीचे जो डिश दिखें उन पर टैप करें।',
+  "Gulab jamun": 'गुलाब जामुन',
+  "Gajar halwa": 'गाजर हलवा',
 };

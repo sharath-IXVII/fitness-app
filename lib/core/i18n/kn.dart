@@ -611,4 +611,9 @@ const kannada = <String, String>{
   'Saved. Find it under Templates.': 'ಉಳಿಸಲಾಗಿದೆ. ಟೆಂಪ್ಲೇಟ್‌ಗಳಲ್ಲಿ ನೋಡಿ.',
   'Copy to other days': 'ಇತರ ದಿನಗಳಿಗೆ ನಕಲಿಸಿ',
   'Save as template': 'ಟೆಂಪ್ಲೇಟ್ ಆಗಿ ಉಳಿಸಿ',
+  "Also on your plate? Tap to add": 'ನಿಮ್ಮ ತಟ್ಟೆಯಲ್ಲಿ ಇದೂ ಇದೆಯೇ? ಸೇರಿಸಲು ಟ್ಯಾಪ್ ಮಾಡಿ',
+  "Couldn't recognise this plate. Tap the dishes you see below.":
+      'ಈ ತಟ್ಟೆಯನ್ನು ಗುರುತಿಸಲಾಗಲಿಲ್ಲ. ಕೆಳಗೆ ನೀವು ನೋಡುವ ಖಾದ್ಯಗಳನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.',
+  "Gulab jamun": 'ಗುಲಾಬ್ ಜಾಮೂನ್',
+  "Gajar halwa": 'ಗಜರ್ ಹಲ್ವಾ',
 };

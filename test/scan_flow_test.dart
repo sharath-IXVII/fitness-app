@@ -32,7 +32,7 @@ Future<List<(String, double, Rect?)>> _fakeClassify(Uint8List image) async {
   await Future<void>.delayed(const Duration(milliseconds: 300));
   return const [
     ('Butter chicken', 0.71, Rect.fromLTWH(0, 0, 0.6, 0.6)),
-    ('Chicken curry', 0.12, null),
+    ('Chicken curry', 0.08, null),
     ('Chaudin', 0.05, null),
   ];
 }

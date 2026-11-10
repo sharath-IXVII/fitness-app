@@ -80,7 +80,7 @@ const scanRegions = <Rect>[
 List<(String, double, int)> mergeViews(
   List<List<(String, double)>> views, {
   double regionWeight = 0.85,
-  double minRegionScore = 0.3,
+  double minRegionScore = 0.12,
   int k = 8,
 }) {
   final best = <String, double>{};
@@ -149,6 +149,15 @@ const _exact = {
   'rice pudding': 'kheer',
   'chhena kheeri': 'kheer',
   'jalebi': 'jalebi',
+  'gulab jamun': 'gulab_jamun',
+  'gajar ka halwa': 'gajar_halwa',
+  'carrot halwa': 'gajar_halwa',
+  'halwa': 'gajar_halwa',
+  'bhindi masala': 'bhindi',
+  'aloo matar': 'aloo_sabzi',
+  'dum aloo': 'aloo_sabzi',
+  'baingan bharta': 'mixed_veg',
+  'mixed vegetable curry': 'mixed_veg',
   'chhena jalebi': 'jalebi',
   'rasgulla': 'rasgulla',
   'barfi': 'barfi',
@@ -190,6 +199,13 @@ const _contains = [
   ('omelette', 'omelette'),
   ('pancake', 'pancake'),
   ('paratha', 'paratha'),
+  ('jamun', 'gulab_jamun'),
+  ('halwa', 'gajar_halwa'),
+  ('sabzi', 'mixed_veg'),
+  ('aloo', 'aloo_sabzi'),
+  ('potato curry', 'aloo_sabzi'),
+  ('vegetable curry', 'mixed_veg'),
+  ('roti', 'roti'),
   // Breads the model often calls by another name.
   ('chapati', 'roti'),
   ('phulka', 'roti'),

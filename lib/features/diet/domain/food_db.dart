@@ -132,6 +132,8 @@ final foods = <Food>[
   _f('muesli', 'Muesli with milk', '1 bowl (60 g + milk)', _d, 330, 12, 52, 8, 6, {'breakfast'}),
   _f('kheer', 'Kheer', '1 bowl (150 g)', _d, 230, 6, 34, 8, 0),
   _f('jalebi', 'Jalebi', '2 pieces (50 g)', _d, 190, 1, 32, 7, 0),
+  _f('gulab_jamun', 'Gulab jamun', '1 piece (40 g)', _d, 150, 2, 22, 6, 0),
+  _f('gajar_halwa', 'Gajar halwa', '1/2 cup (100 g)', _d, 270, 5, 35, 13, 2),
   _f('rasgulla', 'Rasgulla', '2 pieces (100 g)', _d, 190, 4, 38, 2, 0),
   _f('barfi', 'Barfi', '2 pieces (40 g)', _d, 180, 4, 22, 9, 0),
   _f('kulfi', 'Kulfi', '1 stick (70 g)', _d, 170, 4, 20, 8, 0),

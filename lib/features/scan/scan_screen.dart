@@ -71,6 +71,10 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
     'roti',
     'rice',
     'dal',
+    'mixed_veg',
+    'aloo_sabzi',
+    'gulab_jamun',
+    'gajar_halwa',
     'rajma',
     'chole',
     'paratha',
@@ -82,7 +86,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
     'salad',
   ];
 
-  static const autoAddScore = 0.3;
+  static const autoAddScore = 0.12;
   static const maxAutoAdd = 4;
 
   Future<void> _pick(ImageSource source) async {
@@ -109,7 +113,14 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
       final seen = <String>{};
       final best = guesses
           .where((g) => g.food != null && g.score >= autoAddScore && seen.add(g.food!.id))
-          .take(maxAutoAdd);
+          .take(maxAutoAdd)
+          .toList();
+      // Nothing confident: still put the model's best food match on the plate
+      // so the user only has to confirm or change it.
+      if (best.isEmpty) {
+        final top = guesses.where((g) => g.food != null && g.score >= 0.04).firstOrNull;
+        if (top != null) best.add(top);
+      }
       setState(() {
         _guesses = guesses;
         _items = [for (final g in best) ScannedItem.fromFood(g.food!, g.score, box: g.box)];
@@ -180,6 +191,45 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
       ),
     );
     context.pushReplacement(Routes.snap, extra: SnapArgs(base, photo: _image?.bytes));
+  }
+
+  /// One tap to put a likely dish on the plate: the model's other guesses
+  /// first, then everyday Indian dishes.
+  Widget _quickAdd(TextTheme text) {
+    final byId = ref.read(allFoodsByIdProvider);
+    final have = {for (final i in _items) i.name};
+    final seen = <String>{};
+    final options = [
+      for (final g in _guesses)
+        if (g.food != null) g.food!,
+      for (final id in _commonDishes) ?byId[id],
+    ].where((f) => !have.contains(f.name) && seen.add(f.id)).take(10).toList();
+    if (options.isEmpty) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(tr('Also on your plate? Tap to add'), style: text.titleSmall),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final f in options)
+                ActionChip(
+                  avatar: const Icon(Icons.add_rounded, size: 18),
+                  label: Text(f.name),
+                  onPressed: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _items.add(ScannedItem.fromFood(f, 1)));
+                  },
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   /// Opens a dish to change what it is, how much, or remove it.
@@ -337,13 +387,14 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
                   child: Text(
-                    tr("Couldn't tell what's on the plate. Add the dishes below."),
+                    tr("Couldn't recognise this plate. Tap the dishes you see below."),
                     style: text.bodyMedium,
                     textAlign: TextAlign.center,
                   ),
                 ),
               NutritionTable(items: _items, onEdit: _editItem, onAdd: _addMissing),
               const SizedBox(height: 12),
+              _quickAdd(text),
               if (offDiet.isNotEmpty)
                 _Notice(
                   icon: Icons.eco_outlined,

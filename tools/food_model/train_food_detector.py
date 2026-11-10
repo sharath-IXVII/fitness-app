@@ -55,7 +55,7 @@ def as_model_maker_folder(split: str) -> pathlib.Path:
     return dst
 
 
-from mediapipe_model_maker import object_detector, quantization  # noqa: E402
+from mediapipe_model_maker import object_detector  # noqa: E402
 
 train_dir = as_model_maker_folder("train")
 valid_dir = as_model_maker_folder("valid")
@@ -77,7 +77,7 @@ model.restore_float_ckpt()
 model.quantization_aware_training(
     train, valid, qat_hparams=object_detector.QATHParams(learning_rate=0.3, batch_size=16, epochs=min(5, EPOCHS))
 )
-model.export_model("food_detector.tflite", quantization_config=quantization.QuantizationConfig.for_int8(train))
+model.export_model("food_detector.tflite")  # int8 from the quantization-aware training
 
 # Labels in the app's format: "id,name", id = the class number the model outputs.
 with open(OUT / "food_detector_labels.csv", "w", newline="") as f:

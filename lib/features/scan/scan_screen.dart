@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -16,7 +17,6 @@ import '../../core/widgets/form_controls.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/gradient_button.dart';
 import '../../core/widgets/page_background.dart';
-import '../../core/widgets/pressable.dart';
 import '../diet/diet_providers.dart';
 import '../diet/domain/food.dart';
 import '../diet/domain/meal_log.dart';
@@ -29,6 +29,7 @@ import '../snaps/snaps_providers.dart';
 import 'domain/recognition.dart';
 import 'domain/scan_result.dart';
 import 'food_recognizer.dart';
+import 'widgets/plate_result.dart';
 
 typedef PickedImage = ({Uint8List bytes, String mediaType});
 
@@ -130,24 +131,6 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
     _items = [];
   });
 
-  bool _isChosen(Food f) => _items.any((i) => i.name == f.name);
-
-  void _toggle(FoodGuess g) {
-    final f = g.food;
-    if (f == null) {
-      _manual(query: g.label);
-      return;
-    }
-    HapticFeedback.selectionClick();
-    setState(() {
-      if (_isChosen(f)) {
-        _items = [..._items.where((i) => i.name != f.name)];
-      } else {
-        _items = [..._items, ScannedItem.fromFood(f, g.score, box: g.box)];
-      }
-    });
-  }
-
   Future<void> _log() async {
     final base = MealLogNotifier.newId();
     // The photo stays on this phone, attached to the first item of the meal.
@@ -197,6 +180,32 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
       ),
     );
     context.pushReplacement(Routes.snap, extra: SnapArgs(base, photo: _image?.bytes));
+  }
+
+  /// Opens a dish to change what it is, how much, or remove it.
+  Future<void> _editItem(int i) async {
+    final byId = ref.read(allFoodsByIdProvider);
+    final alternatives = [
+      for (final g in _guesses)
+        if (g.food != null) g.food!,
+      for (final id in _commonDishes) ?byId[id],
+    ].fold(<Food>[], (List<Food> l, f) => l.any((x) => x.id == f.id) ? l : [...l, f]).take(10).toList();
+    final r = await SheetFrame.show<DishEdit>(context, DishEditSheet(item: _items[i], alternatives: alternatives));
+    if (r == null || !mounted) return;
+    setState(() {
+      if (r.item == null) {
+        _items.removeAt(i);
+      } else {
+        _items[i] = r.item!;
+      }
+    });
+  }
+
+  /// Adds a dish the camera didn't find.
+  Future<void> _addMissing() async {
+    final f = await pickDish(context);
+    if (f == null || !mounted) return;
+    setState(() => _items = [..._items, ScannedItem.fromFood(f, 1)]);
   }
 
   Future<void> _manual({String? query}) async {
@@ -268,8 +277,11 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
               const SizedBox(height: 16),
               Text(tr('Photograph your food'), style: text.titleLarge),
               const SizedBox(height: 6),
-              Text(tr('Shoot from above in good light with the whole plate in frame. '
-                'Recognition happens on your phone — the photo is never uploaded.'),
+              Text(
+                tr(
+                  'Shoot from above in good light with the whole plate in frame. '
+                  'Recognition happens on your phone — the photo is never uploaded.',
+                ),
                 style: text.bodyMedium,
                 textAlign: TextAlign.center,
               ),
@@ -313,10 +325,8 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
 
   Widget _resultView(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    final total = _items.fold(const Macros(), (m, i) => m + i.scaled);
     final diet = ref.watch(profileProvider)?.diet;
     final offDiet = diet == null ? const <ScannedItem>[] : _items.where((i) => !i.cls.fits(diet)).toList();
-    final recognised = _guesses.isNotEmpty;
     return Column(
       key: const ValueKey('result'),
       children: [
@@ -324,94 +334,20 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
             children: [
-              Row(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.memory(_image!.bytes, width: 84, height: 84, fit: BoxFit.cover),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _items.isNotEmpty
-                              ? '${total.kcal.round()} kcal'
-                              : recognised
-                              ? 'What\'s on your plate?'
-                              : 'Couldn\'t tell what this is',
-                          style: text.headlineSmall,
-                        ),
-                        Text(
-                          _items.isNotEmpty
-                              ? '${total.protein.round()} g protein · ${total.carbs.round()} g carbs · '
-                                    '${total.fat.round()} g fat'
-                              : recognised
-                              ? 'Tap the dish that matches. You\'ll see its calories, protein, carbs and fat.'
-                              : 'Pick it from the common dishes below, or search for it.',
-                          style: text.bodyMedium,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              if (recognised) ...[
-                const SizedBox(height: 18),
-                Text(tr('Could be'), style: text.titleSmall),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    for (final g in _guesses)
-                      _GuessChip(guess: g, selected: g.food != null && _isChosen(g.food!), onTap: () => _toggle(g)),
-                  ],
-                ),
-              ],
-              const SizedBox(height: 16),
-              Text(recognised ? 'Not there? Common dishes' : 'Common dishes', style: text.titleSmall),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  for (final id in _commonDishes)
-                    if (ref.watch(allFoodsByIdProvider)[id] case final food?)
-                      _GuessChip(
-                        guess: FoodGuess(label: food.name, score: 1, food: food),
-                        selected: _isChosen(food),
-                        showPercent: false,
-                        onTap: () => _toggle(FoodGuess(label: food.name, score: 1, food: food)),
-                      ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              for (final (i, item) in _items.indexed)
+              // The plate, with each dish marked (tap a tag to edit it).
+              PlatePhoto(image: _image!.bytes, items: _items, onTapItem: _editItem),
+              const SizedBox(height: 14),
+              if (_items.isEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 10),
-                  child: _ItemCard(
-                    item: item,
-                    onFactor: (f) => setState(() => _items[i] = item.copyWith(factor: f)),
-                    onEdit: () async {
-                      final edited = await SheetFrame.show<ScannedItem>(context, _EditItemSheet(item: item));
-                      if (edited != null) setState(() => _items[i] = edited);
-                    },
-                    onRemove: () => setState(() => _items.removeAt(i)),
-                  ).animate(delay: (i * 50).ms).fadeIn(duration: 250.ms).moveY(begin: 6, end: 0),
+                  child: Text(
+                    tr("Couldn't tell what's on the plate. Add the dishes below."),
+                    style: text.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
-              OutlinedButton.icon(
-                onPressed: () => _manual(),
-                icon: const Icon(Icons.search_rounded, size: 18),
-                label: Text(recognised ? 'Something else? Search foods' : 'Search foods'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                  side: BorderSide(color: AppColors.stroke),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-              ),
-              const SizedBox(height: 8),
+              NutritionTable(items: _items, onEdit: _editItem, onAdd: _addMissing),
+              const SizedBox(height: 12),
               if (offDiet.isNotEmpty)
                 _Notice(
                   icon: Icons.eco_outlined,
@@ -445,75 +381,6 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
           ),
         ),
       ],
-    );
-  }
-}
-
-/// One model guess: name and confidence. Guesses without nutrition data
-/// open the food search instead.
-class _GuessChip extends StatelessWidget {
-  const _GuessChip({required this.guess, required this.selected, required this.onTap, this.showPercent = true});
-
-  final FoodGuess guess;
-  final bool showPercent;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    final known = guess.food != null;
-    final m = guess.food?.macros ?? const Macros();
-    return Pressable(
-      onTap: onTap,
-      scale: 0.96,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: selected ? AppColors.primary : AppColors.surface,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: selected ? AppColors.primary : AppColors.stroke),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              selected ? Icons.check_rounded : (known ? Icons.add_rounded : Icons.search_rounded),
-              size: 16,
-              color: selected ? Colors.white : AppColors.primary,
-            ),
-            const SizedBox(width: 6),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      known ? guess.food!.name : guess.label,
-                      style: text.labelLarge?.copyWith(color: selected ? Colors.white : AppColors.textPrimary),
-                    ),
-                    if (showPercent) ...[
-                      const SizedBox(width: 6),
-                      Text(
-                        '${guess.percent}%',
-                        style: text.labelSmall?.copyWith(color: selected ? Colors.white70 : AppColors.textTertiary),
-                      ),
-                    ],
-                  ],
-                ),
-                if (known)
-                  Text(
-                    '${m.kcal.round()} kcal · P ${m.protein.round()} · C ${m.carbs.round()} · F ${m.fat.round()}',
-                    style: text.labelSmall?.copyWith(color: selected ? Colors.white70 : AppColors.textSecondary),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -566,119 +433,6 @@ class _Scanning extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _ItemCard extends StatelessWidget {
-  const _ItemCard({required this.item, required this.onFactor, required this.onEdit, required this.onRemove});
-
-  final ScannedItem item;
-  final ValueChanged<double> onFactor;
-  final VoidCallback onEdit;
-  final VoidCallback onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    final m = item.scaled;
-    final f = item.factor;
-    return GlassCard(
-      padding: const EdgeInsets.fromLTRB(16, 12, 6, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(item.name, style: text.titleSmall),
-                    Text(
-                      [if (item.portion.isNotEmpty) item.portion, if (item.grams > 0) '~${item.grams} g'].join(' · '),
-                      style: text.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-              if (item.confidence == ScanConfidence.low)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(color: AppColors.surfaceHigh, borderRadius: BorderRadius.circular(8)),
-                  child: Text(tr('Unsure'), style: text.labelSmall?.copyWith(color: AppColors.amber)),
-                ),
-              IconButton(
-                tooltip: 'Edit ${item.name}',
-                onPressed: onEdit,
-                icon: const Icon(Icons.edit_outlined, size: 20),
-              ),
-              IconButton(
-                tooltip: 'Remove ${item.name}',
-                onPressed: onRemove,
-                icon: Icon(Icons.close_rounded, size: 20, color: AppColors.textMuted),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('${m.kcal.round()} kcal', style: text.titleMedium),
-                    Text(
-                      'P ${m.protein.round()} g · C ${m.carbs.round()} g · F ${m.fat.round()} g · '
-                      'Fiber ${m.fiber.round()} g',
-                      style: text.bodySmall,
-                    ),
-                  ],
-                ),
-              ),
-              _MiniStepper(value: f, onChanged: onFactor),
-              const SizedBox(width: 6),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Portion multiplier: ½× … 3×.
-class _MiniStepper extends StatelessWidget {
-  const _MiniStepper({required this.value, required this.onChanged});
-
-  final double value;
-  final ValueChanged<double> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    Widget btn(IconData icon, double next, bool on) => Pressable(
-      onTap: on
-          ? () {
-              HapticFeedback.selectionClick();
-              onChanged(next);
-            }
-          : null,
-      child: Container(
-        width: 30,
-        height: 30,
-        decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(9)),
-        child: Icon(icon, size: 16, color: on ? AppColors.primary : AppColors.textMuted),
-      ),
-    );
-    final label = value == value.roundToDouble() ? value.toStringAsFixed(0) : value.toStringAsFixed(1);
-    return Row(
-      children: [
-        btn(Icons.remove_rounded, value - 0.5, value > 0.5),
-        SizedBox(
-          width: 38,
-          child: Text('$label×', textAlign: TextAlign.center, style: Theme.of(context).textTheme.labelLarge),
-        ),
-        btn(Icons.add_rounded, value + 0.5, value < 3),
-      ],
     );
   }
 }

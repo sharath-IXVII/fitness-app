@@ -74,9 +74,9 @@ Future<SharedPreferences> _pump(WidgetTester t, {bool model = true}) async {
     ),
   );
   await _wait(t, 5600);
-  await t.tap(find.text('Diet').last);
+  await t.tap(find.byIcon(Icons.restaurant_outlined).last);
   await _wait(t);
-  await t.tap(find.bySemanticsLabel('Scan food'));
+  await t.tap(find.byIcon(Icons.photo_camera_outlined).first);
   await _wait(t);
   return prefs;
 }
@@ -95,34 +95,39 @@ void main() {
     expect(find.text('Recognising your food…'), findsOneWidget);
     await _wait(t, 800);
 
-    // The confident guess is added; the others are offered as chips.
-    expect(find.text('Could be'), findsOneWidget);
-    expect(find.text('Common dishes'), findsNothing); // the heading says "Not there? Common dishes"
-    expect(find.text('Not there? Common dishes'), findsOneWidget);
-    expect(find.text('71%'), findsOneWidget);
-    expect(find.text('440 kcal'), findsWidgets);
+    // The template: the plate with each dish tagged, and the nutrition table.
+    expect(find.text('Detected foods & nutrition'), findsOneWidget);
+    expect(find.text('Butter chicken'), findsWidgets); // tag on the photo and row in the table
+    expect(find.text('≈ 440 kcal'), findsOneWidget);
 
-    // Add the second guess too, then remove it again.
-    await t.tap(find.text('Chicken curry').first);
+    // Edit the row: one and a half servings.
+    final list = find.byType(Scrollable).hitTestable().first;
+    await t.scrollUntilVisible(find.byIcon(Icons.edit_outlined).first, 200, scrollable: list);
+    await t.tap(find.byIcon(Icons.edit_outlined).first);
+    await _wait(t);
+    expect(find.text('How much did you eat?'), findsOneWidget);
+    await t.tap(find.byTooltip('More'));
     await _wait(t, 300);
-    expect(find.text('740 kcal'), findsOneWidget);
-    await t.tap(find.text('Chicken curry').first);
-    await _wait(t, 300);
-    expect(find.text('440 kcal'), findsWidgets);
+    await t.tap(find.text('Save'));
+    await _wait(t);
+    expect(find.text('≈ 660 kcal'), findsOneWidget);
 
-    // One and a half servings.
-    await t.scrollUntilVisible(
-      find.byTooltip('Edit Butter chicken'),
-      200,
-      scrollable: find.byType(Scrollable).hitTestable().first,
-    );
+    // Add a dish the camera missed, then remove it again.
+    await t.tap(find.text('Add a dish the camera missed'));
+    await _wait(t);
+    await t.enterText(find.byType(TextField).last, 'roti');
     await _wait(t, 300);
-    await t.tap(find.byIcon(Icons.add_rounded).hitTestable().last);
-    await _wait(t, 300);
-    await t.drag(find.byType(Scrollable).hitTestable().first, const Offset(0, 2000)); // back to the top
-    await _wait(t, 300);
-    expect(find.text('660 kcal'), findsWidgets);
+    await t.tap(find.text('Roti / chapati').last);
+    await _wait(t);
+    expect(find.text('Roti / chapati'), findsWidgets);
+    expect(find.text('≈ 660 kcal'), findsNothing);
+    await t.tap(find.text('Roti / chapati').last);
+    await _wait(t);
+    await t.tap(find.text('Remove from plate'));
+    await _wait(t);
+    expect(find.text('≈ 660 kcal'), findsOneWidget);
 
+    await t.scrollUntilVisible(find.text('Add to lunch'), 300, scrollable: list);
     await t.tap(find.text('Add to lunch'));
     await _wait(t);
     final key = prefs.getKeys().firstWhere((k) => k.startsWith('meals.v1.'));

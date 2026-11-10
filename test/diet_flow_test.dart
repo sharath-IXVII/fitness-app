@@ -4,7 +4,6 @@ import 'package:fitalarm/app.dart';
 import 'package:fitalarm/core/storage.dart';
 import 'package:fitalarm/features/auth/auth_providers.dart';
 import 'package:fitalarm/features/auth/auth_service.dart';
-import 'package:fitalarm/features/diet/widgets/food_search_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -20,7 +19,7 @@ Future<void> _wait(WidgetTester t, [int ms = 900]) async {
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
-  testWidgets('log food, use the plan, set a goal, read an explainer', (t) async {
+  testWidgets('use the plan, set a goal, read an explainer; adding food is by snapping', (t) async {
     t.view.physicalSize = const Size(390, 844) * 3;
     t.view.devicePixelRatio = 3;
     addTearDown(t.view.reset);
@@ -58,21 +57,9 @@ void main() {
     expect(find.text('Vegetarian'), findsOneWidget);
     expect(find.text('kcal left'), findsOneWidget);
 
-    // Search a veg food and add 1.5 servings to breakfast.
-    await t.tap(find.text('Add').first);
-    await _wait(t);
-    await t.enterText(find.byType(TextField), 'poha');
-    await _wait(t, 300);
-    expect(find.textContaining('Chicken'), findsNothing, reason: 'veg users only see veg foods');
-    await t.tap(find.text('Poha').last);
-    await _wait(t);
-    await t.tap(find.descendant(of: find.byType(ServingsStepper), matching: find.byIcon(Icons.add_rounded)));
-    await _wait(t, 300);
-    await t.tap(find.text('Add to breakfast'));
-    await _wait(t);
-    expect(find.text('Poha'), findsOneWidget);
-    expect(find.text('1.5 servings · 8 g protein'), findsOneWidget);
-    expect(jsonDecode(prefs.getString(prefs.getKeys().firstWhere((k) => k.startsWith('log.v1.')))!)['meals'], 1);
+    // Food is added by snapping the plate: each meal's button opens the scanner.
+    expect(find.text('Snap'), findsWidgets);
+    expect(find.text('Add'), findsNothing);
 
     // Log lunch straight from today's plan.
     final logLunch = find.byTooltip('Log lunch');
@@ -105,29 +92,5 @@ void main() {
     expect(find.text('What is protein?'), findsOneWidget);
     await t.tapAt(const Offset(200, 40)); // close the explainer
     await _wait(t);
-
-    // A custom food is saved to My foods and can be re-added from there.
-    final add = find.text('Add').hitTestable();
-    await t.scrollUntilVisible(add.first, 200, scrollable: find.byType(Scrollable).hitTestable().first);
-    await t.tap(add.first);
-    await _wait(t);
-    final custom = find.text('Add a custom food');
-    await t.scrollUntilVisible(custom, 300, scrollable: find.byType(Scrollable).hitTestable().last);
-    await t.tap(custom);
-    await _wait(t);
-    final fields = find.byType(TextField);
-    await t.enterText(fields.at(0), 'Protein bar');
-    await t.enterText(fields.at(2), '210');
-    await t.enterText(fields.at(3), '20');
-    await t.pump();
-    await t.tap(find.textContaining('Add to ').last);
-    await _wait(t);
-    expect(prefs.getString('myfoods.v1'), contains('Protein bar'));
-
-    await t.tap(find.text('Add').hitTestable().first);
-    await _wait(t);
-    await t.tap(find.text('My foods'));
-    await _wait(t, 300);
-    expect(find.text('Protein bar'), findsWidgets);
   });
 }

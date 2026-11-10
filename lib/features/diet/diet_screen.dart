@@ -51,7 +51,8 @@ class DietScreen extends ConsumerWidget {
     final entries = ref.watch(mealLogProvider);
     final totals = ref.watch(mealTotalsProvider);
 
-    void add(MealType m) => SheetFrame.show<void>(context, FoodSearchSheet(meal: m));
+    // Food is added by snapping the plate; the result can be edited there.
+    void add(MealType m) => context.push(Routes.scan, extra: m);
 
     final sections = <Widget>[
       Row(
@@ -80,16 +81,7 @@ class DietScreen extends ConsumerWidget {
               child: Icon(Icons.photo_camera_outlined, color: AppColors.primary, semanticLabel: 'Scan food'),
             ),
           ),
-          const SizedBox(width: 8),
-          Pressable(
-            onTap: () => add(_suggestedMeal()),
-            child: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(14)),
-              child: const Icon(Icons.add_rounded, color: Colors.white),
-            ),
-          ),
+
         ],
       ),
       const SizedBox(height: 14),
@@ -346,8 +338,8 @@ class _MealSection extends StatelessWidget {
               ),
               TextButton.icon(
                 onPressed: onAdd,
-                icon: const Icon(Icons.add_rounded, size: 18),
-                label: Text(tr('Add')),
+                icon: const Icon(Icons.photo_camera_outlined, size: 18),
+                label: Text(tr('Snap')),
               ),
             ],
           ),

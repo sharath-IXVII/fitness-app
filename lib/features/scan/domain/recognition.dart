@@ -228,6 +228,9 @@ const _contains = [
 /// The food in [byId] that best matches a model [label], or null.
 Food? matchFood(String label, Map<String, Food> byId) {
   final l = label.toLowerCase().trim();
+  // The app's own detector uses food ids as labels.
+  final own = byId[l];
+  if (own != null) return own;
   final exact = _exact[l];
   if (exact != null) return byId[exact];
   for (final (needle, id) in _contains) {

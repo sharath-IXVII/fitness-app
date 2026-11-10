@@ -64,9 +64,11 @@ void main() {
 
   test('breads and plain rice labels find their foods', () {
     final byId = {for (final f in foods) f.id: f};
-    for (final l in ['Chapati', 'flatbread', 'Naan', 'tortilla', 'Phulka']) {
+    for (final l in ['Chapati', 'flatbread', 'tortilla', 'Phulka']) {
       expect(matchFood(l, byId)?.id, 'roti', reason: l);
     }
+    expect(matchFood('Naan', byId)?.id, 'naan');
+    expect(matchFood('gulab_jamun', byId)?.id, 'gulab_jamun'); // the app's own detector labels
     expect(matchFood('boiled rice', byId)?.id, 'rice');
     expect(matchFood('Fish curry', byId)?.id, 'fish_curry'); // exact rules still win
     expect(matchFood('veg biryani', byId)?.id, 'veg_biryani');

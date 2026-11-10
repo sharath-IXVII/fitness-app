@@ -18,9 +18,7 @@ import re
 import time
 
 import requests
-import torch
 from PIL import Image
-from transformers import Owlv2ForObjectDetection, Owlv2Processor
 
 DATA = pathlib.Path(os.environ.get("DATA_DIR", "/content/data"))
 PER_DISH = int(os.environ.get("PER_DISH", "40"))
@@ -41,40 +39,18 @@ def get(url, **kw):
         time.sleep(5 * 2 ** attempt)
     return None
 
-# label in the app -> (what OWLv2 is asked to find, Commons searches)
-DISHES = {
-    "roti": ("a round roti flatbread", ["roti chapati", "chapati bread", "phulka"]),
-    "white rice": ("a mound of white rice", ["steamed rice India", "rice thali"]),
-    "dal": ("a bowl of yellow dal lentil curry", ["dal tadka", "dal fry", "lentil dal"]),
-    "sabzi": ("a vegetable sabzi curry", ["sabzi", "aloo sabzi", "bhindi masala", "mixed vegetable curry India"]),
-    "curd": ("a bowl of white curd yogurt", ["dahi curd", "raita"]),
-    "salad": ("sliced salad vegetables", ["kachumber salad", "Indian salad onion cucumber"]),
-    "gulab jamun": ("a gulab jamun sweet ball", ["gulab jamun"]),
-    "halwa": ("orange carrot halwa", ["gajar halwa", "halwa sweet"]),
-    "jalebi": ("orange jalebi", ["jalebi"]),
-    "idli": ("a white idli", ["idli"]),
-    "dosa": ("a dosa crepe", ["dosa", "masala dosa"]),
-    "sambar": ("a bowl of sambar", ["sambar"]),
-    "poha": ("a plate of poha", ["poha"]),
-    "upma": ("a plate of upma", ["upma"]),
-    "biryani": ("a plate of biryani", ["biryani"]),
-    "chole": ("chickpea chole curry", ["chole", "chana masala"]),
-    "rajma": ("red kidney bean rajma curry", ["rajma"]),
-    "paratha": ("a paratha flatbread", ["paratha", "aloo paratha"]),
-    "paneer curry": ("paneer curry", ["paneer butter masala", "palak paneer", "kadai paneer"]),
-    "chicken curry": ("chicken curry", ["chicken curry India", "butter chicken"]),
-    "samosa": ("a samosa", ["samosa"]),
-    "pakora": ("fried pakora fritters", ["pakora", "bhaji fritter"]),
-    "dhokla": ("yellow dhokla pieces", ["dhokla"]),
-}
-THALI_SEARCHES = ["thali", "Indian thali", "South Indian meal banana leaf", "Gujarati thali", "North Indian thali", "Indian lunch plate"]
-# CC0 Hugging Face classes we can use, with the app label.
-HF_CLASSES = {"biryani": "biryani", "dal": "dal", "dhokla": "dhokla", "dosa": "dosa", "jalebi": "jalebi",
-              "pakora": "pakora", "paneer": "paneer curry", "cholebhature": "chole", "naan": "roti"}
-FREE = re.compile(r"^(cc0|public domain|pd|cc by(-sa)? [0-9.]+)", re.I)
+import sys  # noqa: E402
 
+sys.path.insert(0, str(pathlib.Path(__file__).parent))
+from dishes import DISHES, HF_CLASSES, THALI_SEARCHES  # noqa: E402
+
+FREE = re.compile(r"^(cc0|public domain|pd|cc by(-sa)? [0-9.]+)", re.I)
+# Parallel parts: part K of N takes every Nth dish; part 0 also takes thalis
+# and the Hugging Face photos. MODE=merge combines the parts.
+PART, PARTS = int(os.environ.get("PART", "0")), int(os.environ.get("PARTS", "1"))
+MODE = os.environ.get("MODE", "label")
 LABELS = list(DISHES)
-IMG = DATA / "all"
+IMG = DATA / f"part{PART}"
 IMG.mkdir(parents=True, exist_ok=True)
 items = []  # (file, hint label or None)
 credits = []
@@ -119,16 +95,63 @@ def save(url: str, name: str) -> pathlib.Path | None:
         return None
 
 
+def merge():
+    rows = []
+    for part in sorted(DATA.glob("part*/boxes.json")):
+        for r in json.loads(part.read_text()):
+            rows.append((part.parent.name + "/" + r[0], r[1], r[2], [tuple(b) for b in r[3]]))
+    creds = []
+    for c in sorted(DATA.glob("part*/credits.csv")):
+        creds += list(csv.reader(c.open()))[1:]
+    with open(DATA / "credits.csv", "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["file", "source", "author", "licence", "page"])
+        w.writerows(creds)
+    write_coco(rows)
+
+
+def write_coco(labelled):
+    random.seed(7)
+    random.shuffle(labelled)
+    cut = max(1, len(labelled) // 8)
+    cats = [{"id": i + 1, "name": l} for i, l in enumerate(LABELS)]
+    cid = {c["name"]: c["id"] for c in cats}
+    counts = {}
+    for split, rows in [("valid", labelled[:cut]), ("train", labelled[cut:])]:
+        d = DATA / split
+        (d / "images").mkdir(parents=True, exist_ok=True)
+        coco = {"images": [], "annotations": [], "categories": cats}
+        for j, (name, w, h, boxes) in enumerate(rows):
+            flat = name.replace("/", "_")
+            (d / "images" / flat).write_bytes((DATA / name).read_bytes())
+            coco["images"].append({"id": j, "file_name": flat, "width": w, "height": h})
+            for s, lab, b in boxes:
+                counts[lab] = counts.get(lab, 0) + 1
+                coco["annotations"].append({"id": len(coco["annotations"]), "image_id": j, "category_id": cid[lab],
+                                            "bbox": [b[0], b[1], b[2] - b[0], b[3] - b[1]],
+                                            "area": (b[2] - b[0]) * (b[3] - b[1]), "iscrowd": 0})
+        (d / "labels.json").write_text(json.dumps(coco))
+    print("boxes per dish:", json.dumps(dict(sorted(counts.items(), key=lambda x: x[1])), indent=1))
+    print("dishes with no boxes:", [l for l in LABELS if l not in counts])
+    print("CHECK images train/valid:", len(labelled) - cut, cut)
+
+
+if MODE == "merge":
+    merge()
+    raise SystemExit(0)
+
 seen = set()
 n = 0
-for label, (_, searches) in DISHES.items():
+for k, (label, (_, searches)) in enumerate(DISHES.items()):
+    if k % PARTS != PART:
+        continue
     got = 0
     for q in searches:
         for url, title, lic, artist, page in commons(q, 50):
             if got >= PER_DISH or title in seen:
                 continue
             seen.add(title)
-            f = save(url, f"c{n:05d}.jpg")
+            f = save(url, f"c{PART}_{n:05d}.jpg")
             time.sleep(1.0)
             if f:
                 n += 1
@@ -136,12 +159,12 @@ for label, (_, searches) in DISHES.items():
                 items.append((f.name, label))
                 credits.append([f.name, title, artist, lic, page])
     print(label, "commons photos:", got)
-for q in THALI_SEARCHES:
+for q in THALI_SEARCHES if PART == 0 else []:
     for url, title, lic, artist, page in commons(q, 50):
         if title in seen:
             continue
         seen.add(title)
-        f = save(url, f"c{n:05d}.jpg")
+        f = save(url, f"c{PART}_{n:05d}.jpg")
         time.sleep(1.0)
         if f:
             n += 1
@@ -152,26 +175,29 @@ print("commons total:", n)
 # CC0 Hugging Face photos.
 from datasets import load_dataset  # noqa: E402
 
-ds = load_dataset("bharat-raghunathan/indian-foods-dataset", split="train")
-names = ds.features["label"].names
+ds = [] if PART != 0 else load_dataset("bharat-raghunathan/indian-foods-dataset", split="train")
+names = ds.features["label"].names if PART == 0 else []
 count = {}
-for row in ds.shuffle(seed=1):
+for row in ds.shuffle(seed=1) if PART == 0 else []:
     cls = names[row["label"]]
     if cls not in HF_CLASSES or count.get(cls, 0) >= HF_PER_CLASS:
         continue
     count[cls] = count.get(cls, 0) + 1
-    name = f"h{len(items):05d}.jpg"
+    name = f"h_{len(items):05d}.jpg"
     row["image"].convert("RGB").save(IMG / name, quality=90)
     items.append((name, HF_CLASSES[cls]))
     credits.append([name, "bharat-raghunathan/indian-foods-dataset", "", "CC0-1.0", "https://huggingface.co/datasets/bharat-raghunathan/indian-foods-dataset"])
 print("hf total:", sum(count.values()))
 
-with open(DATA / "credits.csv", "w", newline="") as fh:
+with open(IMG / "credits.csv", "w", newline="") as fh:
     w = csv.writer(fh)
     w.writerow(["file", "source", "author", "licence", "page"])
-    w.writerows(credits)
+    w.writerows([[f"{IMG.name}/{c[0]}", *c[1:]] for c in credits])
 
 # Boxes with OWLv2.
+import torch  # noqa: E402
+from transformers import Owlv2ForObjectDetection, Owlv2Processor  # noqa: E402
+
 torch.set_num_threads(os.cpu_count() or 4)
 proc = Owlv2Processor.from_pretrained("google/owlv2-base-patch16-ensemble")
 model = Owlv2ForObjectDetection.from_pretrained("google/owlv2-base-patch16-ensemble").eval()
@@ -218,24 +244,5 @@ for i, (name, hint) in enumerate(items):
     if i % 50 == 0:
         print(f"{i}/{len(items)} labelled={len(labelled)} {time.time() - t0:.0f}s", flush=True)
 
-random.seed(7)
-random.shuffle(labelled)
-cut = max(1, len(labelled) // 8)
-cats = [{"id": i + 1, "name": l} for i, l in enumerate(LABELS)]
-cid = {c["name"]: c["id"] for c in cats}
-counts = {}
-for split, rows in [("valid", labelled[:cut]), ("train", labelled[cut:])]:
-    d = DATA / split
-    (d / "images").mkdir(parents=True, exist_ok=True)
-    coco = {"images": [], "annotations": [], "categories": cats}
-    for j, (name, w, h, boxes) in enumerate(rows):
-        (d / "images" / name).write_bytes((IMG / name).read_bytes())
-        coco["images"].append({"id": j, "file_name": name, "width": w, "height": h})
-        for s, lab, b in boxes:
-            counts[lab] = counts.get(lab, 0) + 1
-            coco["annotations"].append({"id": len(coco["annotations"]), "image_id": j, "category_id": cid[lab],
-                                        "bbox": [b[0], b[1], b[2] - b[0], b[3] - b[1]],
-                                        "area": (b[2] - b[0]) * (b[3] - b[1]), "iscrowd": 0})
-    (d / "labels.json").write_text(json.dumps(coco))
-print("boxes per dish:", json.dumps(counts, indent=1))
-print("CHECK images train/valid:", len(labelled) - cut, cut)
+(IMG / "boxes.json").write_text(json.dumps(labelled))
+print("CHECK part", PART, "labelled photos:", len(labelled), "of", len(items))

@@ -6,7 +6,7 @@ name: Train food detector
 on:
   push:
     branches: [claude/phase-1-foundation]
-    paths: [tools/food_model/collect_and_label.py, tools/food_model/train_food_detector.py, .github/workflows/train-food-detector.yml]
+    paths: [tools/food_model/collect_and_label.py, tools/food_model/dishes.py, tools/food_model/train_food_detector.py, .github/workflows/train-food-detector.yml]
   workflow_dispatch:
     inputs:
       per_dish:
@@ -23,6 +23,10 @@ jobs:
   label:
     runs-on: ubuntu-latest
     timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [0, 1, 2, 3, 4, 5]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -36,20 +40,45 @@ jobs:
         env:
           DATA_DIR: ${{ runner.temp }}/data
           PER_DISH: ${{ inputs.per_dish || '40' }}
+          PART: ${{ matrix.part }}
+          PARTS: "6"
         run: python tools/food_model/collect_and_label.py
-      - name: Publish dataset
+      - name: Publish this part
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           cd "${{ runner.temp }}/data"
-          zip -qr food_dataset.zip train valid credits.csv
+          zip -qr "food_part${{ matrix.part }}.zip" "part${{ matrix.part }}"
           gh release view food-dataset --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
             || gh release create food-dataset --repo "$GITHUB_REPOSITORY" --prerelease \
-                 --title "Food detector training data" --notes "Auto-labelled, free-licence photos. Credits in credits.csv."
+                 --title "Food detector training data" --notes "Auto-labelled, free-licence photos. Credits in credits.csv." \
+            || true
+          gh release upload food-dataset "food_part${{ matrix.part }}.zip" --clobber --repo "$GITHUB_REPOSITORY"
+
+  merge:
+    needs: label
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Merge parts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DATA_DIR: ${{ runner.temp }}/data
+          MODE: merge
+        run: |
+          pip install --quiet pillow requests
+          mkdir -p "$DATA_DIR" && cd "$DATA_DIR"
+          gh release download food-dataset --repo "$GITHUB_REPOSITORY" --pattern 'food_part*.zip'
+          for z in food_part*.zip; do unzip -q "$z"; done
+          cd "$GITHUB_WORKSPACE" && python tools/food_model/collect_and_label.py
+          cd "$DATA_DIR" && zip -qr food_dataset.zip train valid credits.csv
           gh release upload food-dataset food_dataset.zip credits.csv --clobber --repo "$GITHUB_REPOSITORY"
 
   train:
-    needs: label
+    needs: merge
     runs-on: ubuntu-latest
     timeout-minutes: 350
     steps:
@@ -68,7 +97,7 @@ jobs:
           unzip -q /content/food_dataset.zip -d /content/data
       - name: Train
         env:
-          EPOCHS: ${{ inputs.epochs || '30' }}
+          EPOCHS: ${{ inputs.epochs || '25' }}
           DATA_DIR: /content/data
           OUT_DIR: /content/out
         run: python tools/food_model/train_food_detector.py

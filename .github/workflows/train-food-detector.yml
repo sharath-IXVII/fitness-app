@@ -1,0 +1,84 @@
+name: Train food detector
+
+# Run by hand (Actions → Train food detector → Run workflow). Builds a dataset
+# from free-licence photos, labels it with OWLv2, trains a small phone model
+# and publishes it as the "food-detector" release, which the app build uses.
+on:
+  push:
+    branches: [claude/phase-1-foundation]
+    paths: [tools/food_model/collect_and_label.py, tools/food_model/train_food_detector.py, .github/workflows/train-food-detector.yml]
+  workflow_dispatch:
+    inputs:
+      per_dish:
+        description: Commons photos per dish
+        default: "40"
+      epochs:
+        description: Training epochs
+        default: "30"
+
+permissions:
+  contents: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install
+        run: |
+          pip install --quiet torch torchvision --index-url https://download.pytorch.org/whl/cpu
+          pip install --quiet "transformers>=4.40" datasets pillow requests scipy
+      - name: Collect photos and label them
+        env:
+          DATA_DIR: ${{ runner.temp }}/data
+          PER_DISH: ${{ inputs.per_dish || '40' }}
+        run: python tools/food_model/collect_and_label.py
+      - name: Publish dataset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd "${{ runner.temp }}/data"
+          zip -qr food_dataset.zip train valid credits.csv
+          gh release view food-dataset --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create food-dataset --repo "$GITHUB_REPOSITORY" --prerelease \
+                 --title "Food detector training data" --notes "Auto-labelled, free-licence photos. Credits in credits.csv."
+          gh release upload food-dataset food_dataset.zip credits.csv --clobber --repo "$GITHUB_REPOSITORY"
+
+  train:
+    needs: label
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Install
+        run: pip install --quiet mediapipe-model-maker
+      - name: Get dataset
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sudo mkdir -p /content && sudo chown "$USER" /content
+          gh release download food-dataset --repo "$GITHUB_REPOSITORY" --pattern food_dataset.zip --dir /content
+          unzip -q /content/food_dataset.zip -d /content/data
+      - name: Train
+        env:
+          EPOCHS: ${{ inputs.epochs || '30' }}
+          DATA_DIR: /content/data
+          OUT_DIR: /content/out
+        run: python tools/food_model/train_food_detector.py
+      - name: Publish model
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp /content/data/credits.csv /content/out/food_detector_credits.csv
+          gh release view food-detector --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
+            || gh release create food-detector --repo "$GITHUB_REPOSITORY" --prerelease \
+                 --title "Food detector" --notes "Phone food detector. Built by the Train food detector workflow."
+          gh release upload food-detector /content/out/food_detector.tflite /content/out/food_detector_labels.csv \
+            /content/out/food_detector_credits.csv --clobber --repo "$GITHUB_REPOSITORY"

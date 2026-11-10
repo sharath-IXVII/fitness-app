@@ -38,7 +38,7 @@ void main() {
     'kn': ['ಇಂದು', 'ವ್ಯಾಯಾಮಗಳು', 'ನನ್ನ ದಿನ', 'ಅಲಾರಂ', 'ಆಹಾರ'],
     'hi': ['आज', 'वर्कआउट', 'मेरा दिन', 'अलार्म', 'डाइट'],
   };
-  for (final lang in tabs.keys)
+  for (final lang in tabs.keys) {
     for (final (size, scale) in [
       (const Size(360, 640), 1.0),
       (const Size(360, 640), 1.3),
@@ -100,4 +100,5 @@ void main() {
         await _wait(t, 3000);
       });
     }
+  }
 }

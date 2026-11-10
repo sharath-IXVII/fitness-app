@@ -137,7 +137,10 @@ jobs:
         # Play needs a higher version code for every upload; the run number only goes up.
         run: flutter build appbundle --release --build-number=$((100 + GITHUB_RUN_NUMBER))
 
+      # Build files also go on the release below (no storage limit there), so
+      # a full Actions storage quota must not fail the build.
       - name: Upload artifact
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
           name: fitalarm-test-apk
@@ -146,6 +149,7 @@ jobs:
           retention-days: 5
 
       - name: Upload App Bundle
+        continue-on-error: true
         if: ${{ env.KEYSTORE_BASE64 != '' }}
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
@@ -165,5 +169,8 @@ jobs:
           body: |
             Test build from `${{ github.ref_name }}` at ${{ github.sha }}.
             Install `app-release.apk` on an Android phone (allow "Install unknown apps" when asked).
-            Runs in demo mode until Firebase is connected: any phone number, code 123456.
-          files: build/app/outputs/flutter-apk/app-release.apk
+            For Google Play, upload `app-release.aab` (when the build was signed).
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab
+          fail_on_unmatched_files: false

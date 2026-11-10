@@ -54,7 +54,7 @@ jobs:
           PART: ${{ matrix.part }}
           PARTS: ${{ needs.setup.outputs.full == 'true' && '8' || '1' }}
           PER_DISH: ${{ needs.setup.outputs.full == 'true' && '80' || '8' }}
-          ONLY: ${{ needs.setup.outputs.full == 'true' && '' || 'roti,dal,gulab_jamun,idli,rice' }}
+          ONLY: ${{ needs.setup.outputs.full != 'true' && 'roti,dal,gulab_jamun,idli,rice' || '' }}
         run: python tools/food_model/build_dataset.py
       - name: Save this part
         env:

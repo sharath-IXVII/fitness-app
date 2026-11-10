@@ -6,6 +6,7 @@ import 'package:image/image.dart' as img;
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 import 'domain/recognition.dart';
+import 'tflite_dish_classifier.dart';
 
 /// A food detector trained for FittArc (see tools/food_model/README.md):
 /// finds each dish on the plate with an exact box. Runs on the phone.
@@ -15,7 +16,7 @@ import 'domain/recognition.dart';
 /// classes and scores can come in either order; they are told apart by
 /// their values.
 class TfliteFoodDetector {
-  TfliteFoodDetector._(this._interpreter, this._labels);
+  TfliteFoodDetector._(this._interpreter, this._labels, this._dish);
 
   static const modelAsset = 'assets/models/food_detector.tflite';
   static const labelsAsset = 'assets/models/food_detector_labels.csv';
@@ -26,13 +27,21 @@ class TfliteFoodDetector {
   final Interpreter _interpreter;
   final List<String> _labels;
 
+  /// Step 2, naming each dish; null when the detector names dishes itself.
+  final TfliteDishClassifier? _dish;
+
+  /// A detector that only finds "food" needs the dish classifier.
+  static bool findsOnlyFood(List<String> labels) => labels.where((l) => l.isNotEmpty).every((l) => l == 'food');
+
   static Future<TfliteFoodDetector?> load() async {
     if (kIsWeb) return null;
     try {
       final labels = parseLabels(await rootBundle.loadString(labelsAsset));
       final interpreter = await Interpreter.fromAsset(modelAsset, options: InterpreterOptions()..threads = 2);
       if (interpreter.getOutputTensors().length < 3) return null;
-      return TfliteFoodDetector._(interpreter, labels);
+      final dish = await TfliteDishClassifier.load();
+      if (findsOnlyFood(labels) && dish == null) return null;
+      return TfliteFoodDetector._(interpreter, labels, findsOnlyFood(labels) ? dish : null);
     } catch (_) {
       // No detector in this build: the classifier is used.
       return null;
@@ -65,6 +74,11 @@ class TfliteFoodDetector {
       [pixels],
     ], buffers);
     final parsed = parseDetections([for (var i = 0; i < outs.length; i++) buffers[i]!], minScore: minScore);
+    final dish = _dish;
+    if (dish != null) {
+      final boxes = [for (final p in keepDistinct(parsed).take(8)) p.$3];
+      return nameBoxes(boxes, await dish.classify(image, boxes));
+    }
     return [
       for (final (cls, score, box) in parsed)
         if (cls >= 0 && cls < _labels.length && _labels[cls].isNotEmpty) (_labels[cls], score, box),
@@ -130,4 +144,40 @@ List<(int, double, Rect)> parseDetections(List<Object> outputs, {double minScore
   }
   out.sort((a, b) => b.$2.compareTo(a.$2));
   return out;
+}
+
+/// Drops boxes that mostly overlap a better one (the same dish found twice).
+@visibleForTesting
+List<(int, double, Rect)> keepDistinct(List<(int, double, Rect)> best, {double maxOverlap = 0.5}) {
+  double iou(Rect a, Rect b) {
+    final i = a.intersect(b);
+    if (i.width <= 0 || i.height <= 0) return 0;
+    final inter = i.width * i.height;
+    return inter / (a.width * a.height + b.width * b.height - inter);
+  }
+
+  final out = <(int, double, Rect)>[];
+  for (final d in best) {
+    if (out.every((k) => iou(k.$3, d.$3) < maxOverlap)) out.add(d);
+  }
+  return out;
+}
+
+/// One guess per box from the dish classifier's top answer. Its second and
+/// third answers come after, scored low, so the app offers them as
+/// alternatives without putting them on the plate.
+@visibleForTesting
+List<(String, double, Rect?)> nameBoxes(List<Rect> boxes, List<List<(String, double)>> names) {
+  final top = <(String, double, Rect?)>[];
+  final alternatives = <(String, double, Rect?)>[];
+  for (var i = 0; i < boxes.length && i < names.length; i++) {
+    final n = names[i];
+    if (n.isEmpty) continue;
+    top.add((n.first.$1, n.first.$2, boxes[i]));
+    for (final alt in n.skip(1)) {
+      alternatives.add((alt.$1, alt.$2 * 0.1, boxes[i]));
+    }
+  }
+  top.sort((a, b) => b.$2.compareTo(a.$2));
+  return [...top, ...alternatives];
 }

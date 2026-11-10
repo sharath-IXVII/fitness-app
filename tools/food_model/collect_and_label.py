@@ -25,7 +25,21 @@ from transformers import Owlv2ForObjectDetection, Owlv2Processor
 DATA = pathlib.Path(os.environ.get("DATA_DIR", "/content/data"))
 PER_DISH = int(os.environ.get("PER_DISH", "40"))
 HF_PER_CLASS = int(os.environ.get("HF_PER_CLASS", "30"))
-UA = {"User-Agent": "FoodDatasetBuilder/1.0 (open-source research script)"}
+UA = {"User-Agent": "FoodDatasetBuilder/1.0 (https://github.com/sharath-IXVII; dataset script) python-requests"}
+
+
+def get(url, **kw):
+    """GET with polite retries: Wikimedia answers 429 when we go too fast."""
+    for attempt in range(6):
+        try:
+            r = requests.get(url, headers=UA, timeout=60, **kw)
+            if r.status_code == 200:
+                return r
+            print("http", r.status_code, "waiting", flush=True)
+        except requests.RequestException as e:
+            print("net", e)
+        time.sleep(5 * 2 ** attempt)
+    return None
 
 # label in the app -> (what OWLv2 is asked to find, Commons searches)
 DISHES = {
@@ -67,11 +81,17 @@ credits = []
 
 
 def commons(query: str, limit: int):
-    r = requests.get("https://commons.wikimedia.org/w/api.php", headers=UA, timeout=60, params={
+    r = get("https://commons.wikimedia.org/w/api.php", params={
         "action": "query", "format": "json", "generator": "search", "gsrnamespace": 6,
         "gsrsearch": f"{query} filetype:bitmap", "gsrlimit": limit, "prop": "imageinfo",
         "iiprop": "url|extmetadata", "iiurlwidth": 800})
-    for p in (r.json().get("query", {}).get("pages", {}) or {}).values():
+    if r is None:
+        return
+    try:
+        data = r.json()
+    except ValueError:
+        return
+    for p in (data.get("query", {}).get("pages", {}) or {}).values():  # noqa
         ii = (p.get("imageinfo") or [{}])[0]
         meta = ii.get("extmetadata", {})
         lic = meta.get("LicenseShortName", {}).get("value", "")
@@ -83,7 +103,10 @@ def commons(query: str, limit: int):
 
 def save(url: str, name: str) -> pathlib.Path | None:
     try:
-        b = requests.get(url, headers=UA, timeout=60).content
+        r = get(url)
+        if r is None:
+            return None
+        b = r.content
         im = Image.open(io.BytesIO(b)).convert("RGB")
         if min(im.size) < 200:
             return None
@@ -106,7 +129,7 @@ for label, (_, searches) in DISHES.items():
                 continue
             seen.add(title)
             f = save(url, f"c{n:05d}.jpg")
-            time.sleep(0.2)
+            time.sleep(1.0)
             if f:
                 n += 1
                 got += 1
@@ -119,7 +142,7 @@ for q in THALI_SEARCHES:
             continue
         seen.add(title)
         f = save(url, f"c{n:05d}.jpg")
-        time.sleep(0.2)
+        time.sleep(1.0)
         if f:
             n += 1
             items.append((f.name, None))

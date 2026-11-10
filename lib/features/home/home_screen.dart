@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -127,7 +128,7 @@ class _Header extends StatelessWidget {
         const SizedBox(width: 8),
         // The streak lives in the calendar card below; this opens the profile.
         Tooltip(
-          message: 'Profile',
+          message: tr('Profile'),
           child: Pressable(
             onTap: () => context.push(Routes.profile),
             child: Container(
@@ -318,14 +319,14 @@ class _TaskGrid extends ConsumerWidget {
               Expanded(
                 child: _TaskTile(
                   onTap: () => context.push(Routes.water),
-                  title: 'Water',
+                  title: tr('Water'),
                   value: '${_litres(log.waterMl)} / ${_litres(targets.waterMl)} L',
                   progress: log.waterMl / targets.waterMl,
                   color: AppColors.water,
                   icon: Icons.water_drop_rounded,
                   done: score.completed.contains(DailyTask.water),
                   action: _QuickAction(
-                    label: '+250 ml',
+                    label: tr('+250 ml'),
                     color: AppColors.water,
                     onTap: () {
                       HapticFeedback.mediumImpact();
@@ -338,7 +339,7 @@ class _TaskGrid extends ConsumerWidget {
               Expanded(
                 child: _TaskTile(
                   onTap: () => context.push(Routes.steps),
-                  title: 'Steps',
+                  title: tr('Steps'),
                   value:
                       '${NumberFormat.compact().format(log.steps)} / ${NumberFormat.compact().format(targets.steps)}',
                   progress: log.steps / targets.steps,
@@ -349,7 +350,7 @@ class _TaskGrid extends ConsumerWidget {
                   caption:
                       '${(ref.watch(stepsProvider).day.distanceMeters(targets.strideM) / 1000).toStringAsFixed(1)} km today',
                   action: _QuickAction(
-                    label: 'Track walk',
+                    label: tr('Track walk'),
                     color: AppColors.steps,
                     onTap: () => context.push(Routes.steps),
                   ),
@@ -366,7 +367,7 @@ class _TaskGrid extends ConsumerWidget {
               Expanded(
                 child: _TaskTile(
                   onTap: () => context.go(Routes.alarms),
-                  title: 'Workout',
+                  title: tr('Workout'),
                   value: log.workoutDone ? 'Completed' : 'Pending',
                   progress: log.workoutDone ? 1 : 0,
                   color: AppColors.workout,
@@ -378,7 +379,7 @@ class _TaskGrid extends ConsumerWidget {
               Expanded(
                 child: _TaskTile(
                   onTap: () => context.go(Routes.diet),
-                  title: 'Meals',
+                  title: tr('Meals'),
                   value: '${log.mealsLogged} / 3 logged',
                   progress: log.mealsLogged / 3,
                   color: AppColors.diet,
@@ -427,14 +428,13 @@ class _HealthEntry extends StatelessWidget {
                   Row(
                     children: [
                       Flexible(
-                        child: Text('Health check', style: text.titleMedium, overflow: TextOverflow.ellipsis),
+                        child: Text(tr('Health check'), style: text.titleMedium, overflow: TextOverflow.ellipsis),
                       ),
                       const SizedBox(width: 8),
                       const BetaTag(),
                     ],
                   ),
-                  Text(
-                    'Heart rate, watch, height, weight and BMI',
+                  Text(tr('Heart rate, watch, height, weight and BMI'),
                     style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -588,7 +588,7 @@ class _ProteinBar extends StatelessWidget {
             children: [
               Icon(Icons.egg_alt_rounded, color: AppColors.protein, size: 20),
               const SizedBox(width: 8),
-              Text('Protein', style: text.titleMedium),
+              Text(tr('Protein'), style: text.titleMedium),
               const Spacer(),
               Text('$current / $target g', style: text.bodySmall?.copyWith(color: AppColors.textSecondary)),
             ],
@@ -631,7 +631,7 @@ class _FriendsButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final waiting = ref.watch(challengesToDoProvider);
     return Tooltip(
-      message: 'Friends',
+      message: tr('Friends'),
       child: Pressable(
         onTap: () => context.push(Routes.friends),
         child: Badge(

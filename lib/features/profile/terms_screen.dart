@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/widgets/page_background.dart';
@@ -10,7 +11,7 @@ class TermsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Terms of use')),
+      appBar: AppBar(title: Text(tr('Terms of use'))),
       body: PageBackground(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 32),

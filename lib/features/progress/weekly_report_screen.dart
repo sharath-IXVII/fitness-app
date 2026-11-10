@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -68,29 +69,29 @@ class WeeklyReportScreen extends ConsumerWidget {
       const SizedBox(height: 12),
       Row(
         children: [
-          _Compare(label: 'Workouts', value: r.workouts, previous: r.prevWorkouts),
+          _Compare(label: tr('Workouts'), value: r.workouts, previous: r.prevWorkouts),
           const SizedBox(width: 10),
-          _Compare(label: 'Streak days', value: r.streakDays, previous: r.prevStreakDays),
+          _Compare(label: tr('Streak days'), value: r.streakDays, previous: r.prevStreakDays),
           const SizedBox(width: 10),
-          _Compare(label: 'Steps', value: r.steps, previous: r.prevSteps, compactNumber: true),
+          _Compare(label: tr('Steps'), value: r.steps, previous: r.prevSteps, compactNumber: true),
         ],
       ),
       const SizedBox(height: 22),
-      Text('Goals hit', style: text.titleMedium),
+      Text(tr('Goals hit'), style: text.titleMedium),
       const SizedBox(height: 10),
       GlassCard(
         child: Column(
           children: [
-            _Pillar(icon: Icons.fitness_center_rounded, label: 'Workout', days: r.workouts),
-            _Pillar(icon: Icons.water_drop_outlined, label: 'Water', days: r.waterDays),
-            _Pillar(icon: Icons.directions_walk_rounded, label: 'Steps', days: r.stepDays),
-            _Pillar(icon: Icons.restaurant_outlined, label: '3+ meals logged', days: r.mealDays),
-            _Pillar(icon: Icons.egg_alt_outlined, label: 'Protein', days: r.proteinDays, last: true),
+            _Pillar(icon: Icons.fitness_center_rounded, label: tr('Workout'), days: r.workouts),
+            _Pillar(icon: Icons.water_drop_outlined, label: tr('Water'), days: r.waterDays),
+            _Pillar(icon: Icons.directions_walk_rounded, label: tr('Steps'), days: r.stepDays),
+            _Pillar(icon: Icons.restaurant_outlined, label: tr('3+ meals logged'), days: r.mealDays),
+            _Pillar(icon: Icons.egg_alt_outlined, label: tr('Protein'), days: r.proteinDays, last: true),
           ],
         ),
       ),
       const SizedBox(height: 22),
-      Text('Steps', style: text.titleMedium),
+      Text(tr('Steps'), style: text.titleMedium),
       const SizedBox(height: 10),
       GlassCard(
         child: WeekBars(
@@ -112,7 +113,7 @@ class WeeklyReportScreen extends ConsumerWidget {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Your week')),
+      appBar: AppBar(title: Text(tr('Your week'))),
       body: PageBackground(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),

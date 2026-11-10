@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -43,7 +44,7 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
     final kcal = (km * (targets?.kcalPerKm ?? 35)).round();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Steps')),
+      appBar: AppBar(title: Text(tr('Steps'))),
       body: PageBackground(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
@@ -69,9 +70,9 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
             const SizedBox(height: 18),
             Row(
               children: [
-                _Stat(label: 'Distance today', value: '${km.toStringAsFixed(2)} km'),
+                _Stat(label: tr('Distance today'), value: '${km.toStringAsFixed(2)} km'),
                 const SizedBox(width: 10),
-                _Stat(label: 'Calories burned', value: '$kcal kcal'),
+                _Stat(label: tr('Calories burned'), value: '$kcal kcal'),
               ],
             ),
             if (targets != null) ...[
@@ -90,13 +91,13 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Your daily goal', style: text.titleSmall),
+                          Text(tr('Your daily goal'), style: text.titleSmall),
                           Text(
                             '${targets.walkKm.toStringAsFixed(1)} km · ${f.format(targets.steps)} steps · '
                             'about ${targets.walkKcal} kcal',
                             style: text.bodyMedium,
                           ),
-                          Text('Set from your height and weight', style: text.bodySmall),
+                          Text(tr('Set from your height and weight'), style: text.bodySmall),
                         ],
                       ),
                     ),
@@ -112,7 +113,7 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
                 final ok = await ref.read(stepsProvider.notifier).setUseLocation(v);
                 if (!ok && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Location is off or not allowed, so steps use motion sensors only.')),
+                    SnackBar(content: Text(tr('Location is off or not allowed, so steps use motion sensors only.'))),
                   );
                 }
               },
@@ -126,18 +127,17 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
                     const Icon(Icons.info_outline_rounded, color: AppColors.danger),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(
-                        'Allow "Physical activity" so FittArc can count steps all day and spot bike or car rides.',
+                      child: Text(tr('Allow "Physical activity" so FittArc can count steps all day and spot bike or car rides.'),
                         style: text.bodySmall,
                       ),
                     ),
-                    TextButton(onPressed: () => ref.read(stepsProvider.notifier).start(), child: const Text('Allow')),
+                    TextButton(onPressed: () => ref.read(stepsProvider.notifier).start(), child: Text(tr('Allow'))),
                   ],
                 ),
               ),
             ],
             const SizedBox(height: 24),
-            Text('This week', style: text.titleMedium),
+            Text(tr('This week'), style: text.titleMedium),
             const SizedBox(height: 12),
             GlassCard(
               child: WeekBars(
@@ -147,9 +147,8 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Text(
-              'Your steps combine your phone\'s step counter with its accelerometer and gyroscope. If you allow '
-              'location, GPS adds real distance too. Bumps in a vehicle or on a bike aren\'t counted.',
+            Text(tr('Your steps combine your phone\'s step counter with its accelerometer and gyroscope. If you allow '
+              'location, GPS adds real distance too. Bumps in a vehicle or on a bike aren\'t counted.'),
               style: text.bodySmall,
             ),
           ],
@@ -242,7 +241,7 @@ class _LocationCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Use GPS for better distance', style: text.titleSmall),
+                Text(tr('Use GPS for better distance'), style: text.titleSmall),
                 Text(
                   !on
                       ? 'Off: motion sensors only, best for battery'

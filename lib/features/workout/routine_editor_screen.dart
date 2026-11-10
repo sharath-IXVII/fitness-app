@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -98,17 +99,17 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                     children: [
                       TextField(
                         controller: _name,
-                        decoration: const InputDecoration(labelText: 'Name'),
+                        decoration: InputDecoration(labelText: tr('Name')),
                       ),
                       const SizedBox(height: 20),
                       Row(
                         children: [
-                          Expanded(child: Text('Exercises', style: text.titleMedium)),
+                          Expanded(child: Text(tr('Exercises'), style: text.titleMedium)),
                           Text('${_steps.length} · about ${_minutes(_steps)} min', style: text.bodySmall),
                         ],
                       ),
                       const SizedBox(height: 2),
-                      Text('Drag ⋮⋮ to reorder', style: text.bodySmall),
+                      Text(tr('Drag ⋮⋮ to reorder'), style: text.bodySmall),
                     ],
                   ),
                 ),
@@ -117,7 +118,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
                   child: OutlinedButton.icon(
                     onPressed: _addStep,
                     icon: const Icon(Icons.add_rounded),
-                    label: const Text('Add exercise'),
+                    label: Text(tr('Add exercise')),
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size.fromHeight(52),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -186,7 +187,7 @@ class _RoutineEditorScreenState extends ConsumerState<RoutineEditorScreen> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-              child: GradientButton(label: 'Save routine', onPressed: _steps.isEmpty ? null : _save),
+              child: GradientButton(label: tr('Save routine'), onPressed: _steps.isEmpty ? null : _save),
             ),
           ],
         ),
@@ -239,11 +240,11 @@ class _ExercisePicker extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 14, 8, 2),
-            child: Text('Add exercise', style: text.titleLarge),
+            child: Text(tr('Add exercise'), style: text.titleLarge),
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 0, 8, 6),
-            child: Text('Every exercise is counted by the camera.', style: text.bodySmall),
+            child: Text(tr('Every exercise is counted by the camera.'), style: text.bodySmall),
           ),
           for (final g in ExerciseGroup.values) ...[
             Padding(

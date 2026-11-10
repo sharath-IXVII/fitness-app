@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'dart:async';
 
 import 'package:clock/clock.dart';
@@ -159,11 +160,11 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (d) => AlertDialog(
-        title: const Text('Finish?'),
+        title: Text(tr('Finish?')),
         content: Text('${formatKm(_meters.round())} in ${formatDuration(_movingMs)}. Save it?'),
         actions: [
-          TextButton(onPressed: () => Navigator.of(d).pop(false), child: const Text('Keep going')),
-          TextButton(onPressed: () => Navigator.of(d).pop(true), child: const Text('Finish')),
+          TextButton(onPressed: () => Navigator.of(d).pop(false), child: Text(tr('Keep going'))),
+          TextButton(onPressed: () => Navigator.of(d).pop(true), child: Text(tr('Finish'))),
         ],
       ),
     );
@@ -212,7 +213,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                 if (_problem != null) ...[
                   Text(_problem!, style: text.bodyLarge, textAlign: TextAlign.center),
                   const SizedBox(height: 10),
-                  GradientButton(label: 'Try again', icon: Icons.refresh_rounded, onPressed: _check),
+                  GradientButton(label: tr('Try again'), icon: Icons.refresh_rounded, onPressed: _check),
                 ] else
                   ...switch (_phase) {
                     _Phase.checking => [const CircularProgressIndicator()],
@@ -225,7 +226,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                       ),
                       const SizedBox(height: 10),
                       GradientButton(
-                        label: 'Start',
+                        label: tr('Start'),
                         icon: Icons.play_arrow_rounded,
                         onPressed: (_accuracy ?? 99) <= _goodEnough ? _start : null,
                       ),
@@ -243,7 +244,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                           ),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: GradientButton(label: 'Finish', icon: Icons.flag_rounded, onPressed: _confirmFinish),
+                            child: GradientButton(label: tr('Finish'), icon: Icons.flag_rounded, onPressed: _confirmFinish),
                           ),
                         ],
                       ),
@@ -300,10 +301,10 @@ class ActivityHistoryScreen extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final total = list.fold(0, (a, s) => a + s.distanceM);
     return Scaffold(
-      appBar: AppBar(title: const Text('My activities')),
+      appBar: AppBar(title: Text(tr('My activities'))),
       body: PageBackground(
         child: list.isEmpty
-            ? Center(child: Text('Your runs, walks and rides will show here.', style: text.bodyLarge))
+            ? Center(child: Text(tr('Your runs, walks and rides will show here.'), style: text.bodyLarge))
             : ListView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                 children: [

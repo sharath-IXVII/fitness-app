@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -48,13 +49,12 @@ class _ChallengePlanScreenState extends ConsumerState<ChallengePlanScreen> {
     final done = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Rest day'),
-        content: const Text(
-          'Muscles grow while you rest. Take it easy today: a walk or the stretch session is perfect.',
+        title: Text(tr('Rest day')),
+        content: Text(tr('Muscles grow while you rest. Take it easy today: a walk or the stretch session is perfect.'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Not yet')),
-          FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Mark as done')),
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr('Not yet'))),
+          FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(tr('Mark as done'))),
         ],
       ),
     );
@@ -68,11 +68,11 @@ class _ChallengePlanScreenState extends ConsumerState<ChallengePlanScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (d) => AlertDialog(
-        title: const Text('Restart challenge?'),
-        content: const Text('Your progress in this challenge will be cleared.'),
+        title: Text(tr('Restart challenge?')),
+        content: Text(tr('Your progress in this challenge will be cleared.')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(d, false), child: const Text('Cancel')),
-          FilledButton(onPressed: () => Navigator.pop(d, true), child: const Text('Restart')),
+          TextButton(onPressed: () => Navigator.pop(d, false), child: Text(tr('Cancel'))),
+          FilledButton(onPressed: () => Navigator.pop(d, true), child: Text(tr('Restart'))),
         ],
       ),
     );
@@ -89,7 +89,7 @@ class _ChallengePlanScreenState extends ConsumerState<ChallengePlanScreen> {
         title: Text(c.title),
         actions: [
           if (p != null)
-            IconButton(tooltip: 'Restart challenge', onPressed: _restart, icon: const Icon(Icons.restart_alt_rounded)),
+            IconButton(tooltip: tr('Restart challenge'), onPressed: _restart, icon: const Icon(Icons.restart_alt_rounded)),
         ],
       ),
       body: PageBackground(
@@ -122,7 +122,7 @@ class _ChallengePlanScreenState extends ConsumerState<ChallengePlanScreen> {
                   ),
                   const SizedBox(height: 20),
                   if (p == null) ...[
-                    Text('Choose your level', style: text.titleLarge),
+                    Text(tr('Choose your level'), style: text.titleLarge),
                     const SizedBox(height: 10),
                     SegmentedPills(
                       options: [for (final l in Level.values) l.label],
@@ -137,7 +137,7 @@ class _ChallengePlanScreenState extends ConsumerState<ChallengePlanScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('How it works', style: text.titleMedium),
+                          Text(tr('How it works'), style: text.titleMedium),
                           const SizedBox(height: 8),
                           for (final line in [
                             '${Challenge.days} days, a little harder each day.',
@@ -177,7 +177,7 @@ class _ChallengePlanScreenState extends ConsumerState<ChallengePlanScreen> {
   Widget _cta(ChallengeProgress? p) {
     if (p == null) {
       return GradientButton(
-        label: 'Start challenge',
+        label: tr('Start challenge'),
         icon: Icons.flag_rounded,
         onPressed: () {
           HapticFeedback.mediumImpact();
@@ -188,7 +188,7 @@ class _ChallengePlanScreenState extends ConsumerState<ChallengePlanScreen> {
     final next = p.nextDay;
     if (next == null) {
       return GradientButton(
-        label: 'Challenge complete! Start again',
+        label: tr('Challenge complete! Start again'),
         icon: Icons.emoji_events_rounded,
         onPressed: _restart,
       );

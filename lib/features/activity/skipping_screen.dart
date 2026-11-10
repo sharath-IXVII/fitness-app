@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'dart:async';
 
 import 'package:clock/clock.dart';
@@ -82,8 +83,8 @@ class _SkippingScreenState extends ConsumerState<SkippingScreen> {
         title: Text('$count skips! 🎉'),
         content: Text('In ${formatDuration(secs * 1000)}. About ${(count * 0.12).round()} kcal.'),
         actions: [
-          TextButton(onPressed: () => Navigator.of(d).pop(false), child: const Text('Done')),
-          TextButton(onPressed: () => Navigator.of(d).pop(true), child: const Text('Share')),
+          TextButton(onPressed: () => Navigator.of(d).pop(false), child: Text(tr('Done'))),
+          TextButton(onPressed: () => Navigator.of(d).pop(true), child: Text(tr('Share'))),
         ],
       ),
     );
@@ -93,7 +94,7 @@ class _SkippingScreenState extends ConsumerState<SkippingScreen> {
         extra: ShareCardData(
           symbol: '🪢',
           headline: '$count skips',
-          subtitle: 'Rope skipping on FittArc',
+          subtitle: tr('Rope skipping on FittArc'),
           stats: [(formatDuration(secs * 1000), 'Time'), ('${(count * 0.12).round()}', 'kcal')],
           shareText: '$count skips today on FittArc 🪢 fittarc.in',
         ),
@@ -106,14 +107,13 @@ class _SkippingScreenState extends ConsumerState<SkippingScreen> {
     final text = Theme.of(context).textTheme;
     final secs = _startedAt == null || !_running ? 0 : clock.now().difference(_startedAt!).inSeconds;
     return Scaffold(
-      appBar: AppBar(title: const Text('Skipping')),
+      appBar: AppBar(title: Text(tr('Skipping'))),
       body: PageBackground(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              Text(
-                'Keep your phone in a pocket (or hold it) and skip. FittArc counts each jump.',
+              Text(tr('Keep your phone in a pocket (or hold it) and skip. FittArc counts each jump.'),
                 style: text.bodyLarge,
                 textAlign: TextAlign.center,
               ),
@@ -158,9 +158,9 @@ class _SkippingScreenState extends ConsumerState<SkippingScreen> {
                   ],
                 ),
                 const SizedBox(height: 12),
-                GradientButton(label: 'Start', icon: Icons.play_arrow_rounded, onPressed: _start),
+                GradientButton(label: tr('Start'), icon: Icons.play_arrow_rounded, onPressed: _start),
               ] else
-                GradientButton(label: 'Stop', icon: Icons.stop_rounded, onPressed: _stop),
+                GradientButton(label: tr('Stop'), icon: Icons.stop_rounded, onPressed: _stop),
             ],
           ),
         ),

@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'dart:convert';
 import 'dart:io' show Platform;
 
@@ -109,7 +110,7 @@ class RingInfo {
 
   static RingInfo fromSettings(AlarmSettings s) =>
       fromPayload(s.payload, nativeId: s.id) ??
-      RingInfo(alarmId: s.id, nativeId: s.id, routineId: Routine.beginner.id, label: 'Workout alarm');
+      RingInfo(alarmId: s.id, nativeId: s.id, routineId: Routine.beginner.id, label: tr('Workout alarm'));
 
   static RingInfo? fromPayload(String? payload, {int? nativeId}) {
     try {

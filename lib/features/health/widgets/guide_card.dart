@@ -1,3 +1,4 @@
+import '../../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -75,7 +76,7 @@ class _GuideCardState extends ConsumerState<GuideCard> {
                 ref.read(sharedPrefsProvider).setBool(_key, true);
                 setState(() => _hidden = true);
               },
-              child: const Text('Got it'),
+              child: Text(tr('Got it')),
             ),
           ),
         ],

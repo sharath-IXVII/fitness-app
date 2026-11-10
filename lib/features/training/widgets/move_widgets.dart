@@ -1,3 +1,4 @@
+import '../../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -100,11 +101,11 @@ Future<void> showMoveHowTo(BuildContext context, Move move, {WorkoutItem? item})
               child: ExerciseDemo.move(demoId: move.demo, label: move.name, height: 190),
             ),
             const SizedBox(height: 16),
-            Text('Muscles it works', style: text.titleMedium),
+            Text(tr('Muscles it works'), style: text.titleMedium),
             const SizedBox(height: 8),
             BodyMap(muscles: musclesIn(move.muscles), height: 170),
             const SizedBox(height: 16),
-            Text('How to do it', style: text.titleMedium),
+            Text(tr('How to do it'), style: text.titleMedium),
             const SizedBox(height: 8),
             for (final (i, step) in move.steps.indexed)
               Padding(
@@ -125,8 +126,7 @@ Future<void> showMoveHowTo(BuildContext context, Move move, {WorkoutItem? item})
                 ),
               ),
             if (move.perSide)
-              Text(
-                'Do both sides: the target is for each side.',
+              Text(tr('Do both sides: the target is for each side.'),
                 style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
               ),
           ],
@@ -202,7 +202,12 @@ class HeroWorkoutCard extends StatelessWidget {
                     style: text.labelSmall?.copyWith(color: AppColors.energyLight, letterSpacing: 1.2),
                   ),
                 if (eyebrow != null) const SizedBox(height: 4),
-                Text(title, style: text.headlineSmall?.copyWith(color: Colors.white)),
+                Text(
+                  title,
+                  style: text.headlineSmall?.copyWith(color: Colors.white),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 const SizedBox(height: 8),
                 DefaultTextStyle.merge(
                   style: const TextStyle(color: Colors.white70),

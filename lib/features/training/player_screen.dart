@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -198,11 +199,11 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     final quit = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('Quit workout?'),
+        title: Text(tr('Quit workout?')),
         content: const Text("You're doing great. This workout won't be saved if you quit now."),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('Quit')),
-          FilledButton(onPressed: () => Navigator.pop(c, false), child: const Text('Keep going')),
+          TextButton(onPressed: () => Navigator.pop(c, true), child: Text(tr('Quit'))),
+          FilledButton(onPressed: () => Navigator.pop(c, false), child: Text(tr('Keep going'))),
         ],
       ),
     );
@@ -277,7 +278,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
         const SizedBox(height: 8),
         _demo(),
         const Spacer(),
-        Text('GET READY', style: text.labelLarge?.copyWith(color: AppColors.energy, letterSpacing: 2)),
+        Text(tr('GET READY'), style: text.labelLarge?.copyWith(color: AppColors.energy, letterSpacing: 2)),
         const SizedBox(height: 4),
         Text(_item.move.name, style: text.headlineMedium, textAlign: TextAlign.center),
         Text(_item.label, style: text.titleMedium?.copyWith(color: AppColors.textSecondary)),
@@ -313,7 +314,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
             '×${_item.target}',
             style: text.displayMedium?.copyWith(color: AppColors.primary),
           ).animate(key: ValueKey(_index)).scale(begin: const Offset(0.8, 0.8), curve: Curves.easeOutBack),
-          if (_item.move.perSide) Text('each side', style: text.titleMedium?.copyWith(color: AppColors.textSecondary)),
+          if (_item.move.perSide) Text(tr('each side'), style: text.titleMedium?.copyWith(color: AppColors.textSecondary)),
           Text(_clock(_workSeconds), style: text.bodyMedium?.copyWith(color: AppColors.textTertiary)),
         ],
         const Spacer(),
@@ -323,7 +324,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
             children: [
               _RoundButton(
                 icon: Icons.skip_previous_rounded,
-                tooltip: 'Previous exercise',
+                tooltip: tr('Previous exercise'),
                 onTap: _index > 0 ? _previous : null,
               ),
               const Spacer(),
@@ -333,9 +334,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
                       label: _paused ? 'Resume' : 'Pause',
                       onTap: _togglePause,
                     )
-                  : _BigButton(icon: Icons.check_rounded, label: 'Done', onTap: _next),
+                  : _BigButton(icon: Icons.check_rounded, label: tr('Done'), onTap: _next),
               const Spacer(),
-              _RoundButton(icon: Icons.skip_next_rounded, tooltip: 'Skip exercise', onTap: _next),
+              _RoundButton(icon: Icons.skip_next_rounded, tooltip: tr('Skip exercise'), onTap: _next),
             ],
           ),
         ),
@@ -348,7 +349,7 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
     return Column(
       children: [
         const Spacer(),
-        Text('REST', style: text.labelLarge?.copyWith(color: AppColors.energyLight, letterSpacing: 3)),
+        Text(tr('REST'), style: text.labelLarge?.copyWith(color: AppColors.energyLight, letterSpacing: 3)),
         const SizedBox(height: 8),
         Text(
           _clock(_left),
@@ -358,9 +359,9 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _Pill(label: '+20s', onTap: () => setState(() => _left += 20)),
+            _Pill(label: tr('+20s'), onTap: () => setState(() => _left += 20)),
             const SizedBox(width: 12),
-            _Pill(label: 'Skip', filled: true, onTap: _startWork),
+            _Pill(label: tr('Skip'), filled: true, onTap: _startWork),
           ],
         ),
         const Spacer(),
@@ -430,7 +431,7 @@ class _TopBar extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            tooltip: 'Quit workout',
+            tooltip: tr('Quit workout'),
             onPressed: onClose,
             icon: Icon(Icons.close_rounded, color: fg),
           ),
@@ -461,7 +462,7 @@ class _TopBar extends StatelessWidget {
             icon: Icon(voice ? Icons.volume_up_rounded : Icons.volume_off_rounded, color: fg),
           ),
           IconButton(
-            tooltip: 'How to do it',
+            tooltip: tr('How to do it'),
             onPressed: onInfo,
             icon: Icon(Icons.info_outline_rounded, color: fg),
           ),

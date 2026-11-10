@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -208,10 +209,10 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
     final model = ref.watch(foodClassifierProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Row(mainAxisSize: MainAxisSize.min, children: [Text('Scan food'), SizedBox(width: 10), BetaTag()]),
+        title: Row(mainAxisSize: MainAxisSize.min, children: [Text(tr('Scan food')), SizedBox(width: 10), BetaTag()]),
         actions: [
           if (_phase == _Phase.result)
-            TextButton.icon(onPressed: _retake, icon: const Icon(Icons.refresh_rounded), label: const Text('Retake')),
+            TextButton.icon(onPressed: _retake, icon: const Icon(Icons.refresh_rounded), label: Text(tr('Retake'))),
         ],
       ),
       body: PageBackground(
@@ -265,17 +266,16 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
                 child: Icon(Icons.photo_camera_outlined, size: 34, color: AppColors.primary),
               ),
               const SizedBox(height: 16),
-              Text('Photograph your food', style: text.titleLarge),
+              Text(tr('Photograph your food'), style: text.titleLarge),
               const SizedBox(height: 6),
-              Text(
-                'Shoot from above in good light with the whole plate in frame. '
-                'Recognition happens on your phone — the photo is never uploaded.',
+              Text(tr('Shoot from above in good light with the whole plate in frame. '
+                'Recognition happens on your phone — the photo is never uploaded.'),
                 style: text.bodyMedium,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
               GradientButton(
-                label: 'Take photo',
+                label: tr('Take photo'),
                 icon: Icons.photo_camera_rounded,
                 onPressed: () => _pick(ImageSource.camera),
               ),
@@ -283,7 +283,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
               TextButton.icon(
                 onPressed: () => _pick(ImageSource.gallery),
                 icon: const Icon(Icons.photo_library_outlined),
-                label: const Text('Choose from gallery'),
+                label: Text(tr('Choose from gallery')),
               ),
             ],
           ),
@@ -302,10 +302,10 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
             ),
           ).animate().fadeIn(duration: 250.ms),
         ],
-        FormSection(title: 'Add to', child: _mealPills()),
+        FormSection(title: tr('Add to'), child: _mealPills()),
         const SizedBox(height: 18),
         Center(
-          child: TextButton(onPressed: () => _manual(), child: const Text('Search and add manually instead')),
+          child: TextButton(onPressed: () => _manual(), child: Text(tr('Search and add manually instead'))),
         ),
       ],
     );
@@ -359,7 +359,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
               ),
               if (recognised) ...[
                 const SizedBox(height: 18),
-                Text('Could be', style: text.titleSmall),
+                Text(tr('Could be'), style: text.titleSmall),
                 const SizedBox(height: 8),
                 Wrap(
                   spacing: 8,
@@ -427,7 +427,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
                 icon: Icons.lock_outline_rounded,
                 text: 'Recognised on your phone. The photo stays on this phone only.',
               ),
-              if (_items.isNotEmpty) FormSection(title: 'Add to', child: _mealPills()),
+              if (_items.isNotEmpty) FormSection(title: tr('Add to'), child: _mealPills()),
             ],
           ),
         ),
@@ -436,7 +436,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
             child: _items.isEmpty
-                ? GradientButton(label: 'Try another photo', icon: Icons.refresh_rounded, onPressed: _retake)
+                ? GradientButton(label: tr('Try another photo'), icon: Icons.refresh_rounded, onPressed: _retake)
                 : GradientButton(
                     label: 'Add to ${_meal.label.toLowerCase()}',
                     icon: Icons.check_rounded,
@@ -560,9 +560,9 @@ class _Scanning extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Text('Recognising your food…', style: text.titleMedium),
+            Text(tr('Recognising your food…'), style: text.titleMedium),
             const SizedBox(height: 4),
-            Text('On your phone — nothing is uploaded', style: text.bodySmall),
+            Text(tr('On your phone — nothing is uploaded'), style: text.bodySmall),
           ],
         ),
       ),
@@ -606,7 +606,7 @@ class _ItemCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(color: AppColors.surfaceHigh, borderRadius: BorderRadius.circular(8)),
-                  child: Text('Unsure', style: text.labelSmall?.copyWith(color: AppColors.amber)),
+                  child: Text(tr('Unsure'), style: text.labelSmall?.copyWith(color: AppColors.amber)),
                 ),
               IconButton(
                 tooltip: 'Edit ${item.name}',
@@ -747,7 +747,7 @@ class _EditItemSheetState extends State<_EditItemSheet> {
       ),
     );
     return SheetFrame(
-      title: 'Edit item',
+      title: tr('Edit item'),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
         child: Column(
@@ -759,7 +759,7 @@ class _EditItemSheetState extends State<_EditItemSheet> {
             const SizedBox(height: 12),
             TextField(
               controller: _name,
-              decoration: const InputDecoration(labelText: 'Name'),
+              decoration: InputDecoration(labelText: tr('Name')),
             ),
             const SizedBox(height: 12),
             Row(children: [num('kcal', 'Calories', 'kcal'), const SizedBox(width: 10), num('protein', 'Protein', 'g')]),
@@ -775,7 +775,7 @@ class _EditItemSheetState extends State<_EditItemSheet> {
             ),
             const SizedBox(height: 20),
             GradientButton(
-              label: 'Save',
+              label: tr('Save'),
               icon: Icons.check_rounded,
               onPressed: () => Navigator.pop(
                 context,
@@ -820,7 +820,7 @@ class _NotConfigured extends StatelessWidget {
                 child: Icon(Icons.no_photography_outlined, size: 32, color: AppColors.primary),
               ),
               const SizedBox(height: 16),
-              Text('Food recognition unavailable', style: text.titleLarge),
+              Text(tr('Food recognition unavailable'), style: text.titleLarge),
               const SizedBox(height: 8),
               Text(
                 "This version of the app doesn't include the food-recognition model. "
@@ -829,7 +829,7 @@ class _NotConfigured extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 20),
-              GradientButton(label: 'Add food manually', icon: Icons.search_rounded, onPressed: onManual),
+              GradientButton(label: tr('Add food manually'), icon: Icons.search_rounded, onPressed: onManual),
             ],
           ),
         ),

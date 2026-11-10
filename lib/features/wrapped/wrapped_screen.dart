@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -110,7 +111,7 @@ class _ArcWrappedScreenState extends ConsumerState<ArcWrappedScreen> {
                 children: [
                   Expanded(
                     child: GradientButton(
-                      label: 'Share this',
+                      label: tr('Share this'),
                       icon: Icons.ios_share_rounded,
                       onPressed: _busy
                           ? null
@@ -122,7 +123,7 @@ class _ArcWrappedScreenState extends ConsumerState<ArcWrappedScreen> {
                   ),
                   const SizedBox(width: 10),
                   IconButton.filledTonal(
-                    tooltip: 'Download',
+                    tooltip: tr('Download'),
                     onPressed: _busy
                         ? null
                         : () => _image(
@@ -249,8 +250,7 @@ class WrappedCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(
-                      'FittArc',
+                    Text('FittArc',
                       style: GoogleFonts.chakraPetch(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white54),
                     ),
                   ],
@@ -332,8 +332,7 @@ class WrappedReadyTile extends ConsumerWidget {
                         'Your ${period.label} Wrapped',
                         style: text.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w800),
                       ),
-                      Text(
-                        'Your season in 5 cards. Share your favourite!',
+                      Text(tr('Your season in 5 cards. Share your favourite!'),
                         style: text.bodySmall?.copyWith(color: Colors.white70),
                       ),
                     ],

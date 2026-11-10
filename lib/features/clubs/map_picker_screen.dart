@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/widgets/gradient_button.dart';
@@ -39,15 +40,15 @@ class _RoutePlannerScreenState extends State<RoutePlannerScreen> {
     final length = routeLength(_points);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Draw the route'),
+        title: Text(tr('Draw the route')),
         actions: [
           if (_points.isNotEmpty)
             IconButton(
-              tooltip: 'Undo last point',
+              tooltip: tr('Undo last point'),
               icon: const Icon(Icons.undo_rounded),
               onPressed: () => setState(_points.removeLast),
             ),
-          if (_points.isNotEmpty) TextButton(onPressed: () => setState(_points.clear), child: const Text('Clear')),
+          if (_points.isNotEmpty) TextButton(onPressed: () => setState(_points.clear), child: Text(tr('Clear'))),
         ],
       ),
       body: Column(
@@ -73,7 +74,7 @@ class _RoutePlannerScreenState extends State<RoutePlannerScreen> {
                   ),
                   const SizedBox(height: 12),
                   GradientButton(
-                    label: 'Done',
+                    label: tr('Done'),
                     icon: Icons.check_rounded,
                     onPressed: _points.isEmpty ? null : () => Navigator.of(context).pop<PlannedRoute>([..._points]),
                   ),

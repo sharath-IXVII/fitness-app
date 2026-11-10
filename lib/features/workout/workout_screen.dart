@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'dart:async';
 
 import 'package:camera/camera.dart';
@@ -404,7 +405,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                             _getReady();
                           }
                         },
-                        child: const Text('Skip'),
+                        child: Text(tr('Skip')),
                       ),
                   ],
                 ),
@@ -427,7 +428,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
-                          Text('Next', style: text.labelSmall),
+                          Text(tr('Next'), style: text.labelSmall),
                           Text(_session.next!.exercise.label, style: text.titleSmall),
                         ],
                       ),
@@ -522,16 +523,15 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
         children: [
           Icon(Icons.videocam_off_rounded, size: 56, color: AppColors.primary),
           const SizedBox(height: 16),
-          Text('Camera needed', style: text.headlineSmall),
+          Text(tr('Camera needed'), style: text.headlineSmall),
           const SizedBox(height: 8),
-          Text(
-            'The camera counts your reps. Nothing is recorded or uploaded — it all happens on your phone.',
+          Text(tr('The camera counts your reps. Nothing is recorded or uploaded — it all happens on your phone.'),
             style: text.bodyMedium,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
           GradientButton(
-            label: 'Allow camera',
+            label: tr('Allow camera'),
             onPressed: () async {
               setState(() => _phase = _Phase.starting);
               await _start();
@@ -539,9 +539,9 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
           ),
           TextButton(
             onPressed: () => StrictMode.whileAway(AppPermissions.openSettings),
-            child: const Text('Open settings'),
+            child: Text(tr('Open settings')),
           ),
-          if (!_alarmMode) TextButton(onPressed: () => context.pop(), child: const Text('Back')),
+          if (!_alarmMode) TextButton(onPressed: () => context.pop(), child: Text(tr('Back'))),
           // Without a camera the alarm can still be turned off the hard way.
           if (_alarmMode)
             TextButton(
@@ -553,7 +553,7 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
                   ring: widget.args.ring,
                 ),
               ),
-              child: const Text('No camera? Solve hard brain games instead'),
+              child: Text(tr('No camera? Solve hard brain games instead')),
             ),
         ],
       ),

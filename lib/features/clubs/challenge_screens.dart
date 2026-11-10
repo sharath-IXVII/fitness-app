@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'dart:async';
 
 import 'package:clock/clock.dart';
@@ -48,7 +49,7 @@ class ClubChallengesTab extends ConsumerWidget {
       children: [
         if (admin) ...[
           GradientButton(
-            label: 'New challenge',
+            label: tr('New challenge'),
             icon: Icons.flag_rounded,
             onPressed: () => showModalBottomSheet<void>(
               context: context,
@@ -276,7 +277,7 @@ class _NewChallengeSheetState extends ConsumerState<_NewChallengeSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text('New club challenge', style: text.titleLarge),
+            Text(tr('New club challenge'), style: text.titleLarge),
             const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -304,18 +305,18 @@ class _NewChallengeSheetState extends ConsumerState<_NewChallengeSheet> {
               controller: _title,
               maxLength: 60,
               decoration: InputDecoration(
-                labelText: 'Name (optional)',
+                labelText: tr('Name (optional)'),
                 hintText: '${_kind.label} ${formatKm(_km * 1000)} challenge',
               ),
             ),
-            Text('Starts', style: text.titleSmall),
+            Text(tr('Starts'), style: text.titleSmall),
             const SizedBox(height: 6),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
                 ChoiceChip(
-                  label: const Text('Right now'),
+                  label: Text(tr('Right now')),
                   selected: _startsAt == null,
                   onSelected: (_) => setState(() => _startsAt = null),
                 ),
@@ -328,7 +329,7 @@ class _NewChallengeSheetState extends ConsumerState<_NewChallengeSheet> {
               ],
             ),
             const SizedBox(height: 12),
-            Text('Open for', style: text.titleSmall),
+            Text(tr('Open for'), style: text.titleSmall),
             const SizedBox(height: 6),
             Wrap(
               spacing: 8,
@@ -344,12 +345,12 @@ class _NewChallengeSheetState extends ConsumerState<_NewChallengeSheet> {
                 OutlinedButton.icon(
                   onPressed: _busy ? null : _onMap,
                   icon: const Icon(Icons.map_rounded),
-                  label: const Text('Draw the route on the map (optional)'),
+                  label: Text(tr('Draw the route on the map (optional)')),
                 ),
               OutlinedButton.icon(
                 onPressed: _busy ? null : _here,
                 icon: const Icon(Icons.my_location_rounded),
-                label: const Text('Start from where I am now (optional)'),
+                label: Text(tr('Start from where I am now (optional)')),
               ),
             ] else ...[
               Row(
@@ -366,20 +367,20 @@ class _NewChallengeSheetState extends ConsumerState<_NewChallengeSheet> {
                       style: text.bodyMedium,
                     ),
                   ),
-                  if (hasMaps) TextButton(onPressed: _busy ? null : _onMap, child: const Text('Map')),
+                  if (hasMaps) TextButton(onPressed: _busy ? null : _onMap, child: Text(tr('Map'))),
                   TextButton(
                     onPressed: () => setState(() {
                       _start = _finish = null;
                       _plan = const [];
                     }),
-                    child: const Text('Clear'),
+                    child: Text(tr('Clear')),
                   ),
                 ],
               ),
               TextField(
                 controller: _place,
                 maxLength: 40,
-                decoration: const InputDecoration(labelText: 'Place name', hintText: 'Lake gate'),
+                decoration: InputDecoration(labelText: tr('Place name'), hintText: tr('Lake gate')),
               ),
             ],
             if (_error != null) ...[
@@ -415,7 +416,7 @@ class ClubChallengeScreen extends ConsumerWidget {
         actions: [
           if (admin)
             IconButton(
-              tooltip: 'Delete challenge',
+              tooltip: tr('Delete challenge'),
               icon: const Icon(Icons.delete_outline_rounded),
               onPressed: () async {
                 await ref.read(clubsBackendProvider)?.deleteChallenge(c.clubId, c.id);
@@ -480,10 +481,10 @@ class ClubChallengeScreen extends ConsumerWidget {
                 ),
               ),
             const SizedBox(height: 22),
-            Text('Ranking', style: text.titleLarge),
+            Text(tr('Ranking'), style: text.titleLarge),
             const SizedBox(height: 8),
             if (results.isEmpty)
-              Text('No one has finished yet. Be the first!', style: text.bodyLarge)
+              Text(tr('No one has finished yet. Be the first!'), style: text.bodyLarge)
             else
               for (final (i, r) in results.indexed)
                 Container(
@@ -795,11 +796,11 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (d) => AlertDialog(
-        title: const Text('Stop the challenge?'),
+        title: Text(tr('Stop the challenge?')),
         content: const Text("It won't count unless you finish the full distance."),
         actions: [
-          TextButton(onPressed: () => Navigator.of(d).pop(false), child: const Text('Keep going')),
-          TextButton(onPressed: () => Navigator.of(d).pop(true), child: const Text('Stop')),
+          TextButton(onPressed: () => Navigator.of(d).pop(false), child: Text(tr('Keep going'))),
+          TextButton(onPressed: () => Navigator.of(d).pop(true), child: Text(tr('Stop'))),
         ],
       ),
     );
@@ -870,9 +871,9 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _Stat(label: 'Time', value: formatDuration(_elapsed)),
-                    _Stat(label: 'Pace', value: formatPace(_elapsed, _tracker.meters)),
-                    _Stat(label: 'kcal', value: '${(_tracker.meters / 1000 * c.kind.kcalPerKm).round()}'),
+                    _Stat(label: tr('Time'), value: formatDuration(_elapsed)),
+                    _Stat(label: tr('Pace'), value: formatPace(_elapsed, _tracker.meters)),
+                    _Stat(label: tr('kcal'), value: '${(_tracker.meters / 1000 * c.kind.kcalPerKm).round()}'),
                   ],
                 ),
                 const Spacer(),
@@ -912,12 +913,12 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
                             ),
                             const SizedBox(height: 12),
                             GradientButton(
-                              label: 'Start',
+                              label: tr('Start'),
                               icon: Icons.play_arrow_rounded,
                               onPressed: (_accuracy ?? 99) <= _goodEnough ? _go : null,
                             ),
                           ]
-                        : [GradientButton(label: 'Try again', icon: Icons.refresh_rounded, onPressed: _check)],
+                        : [GradientButton(label: tr('Try again'), icon: Icons.refresh_rounded, onPressed: _check)],
                   _RunPhase.running => [
                     if (_offRoute)
                       Container(
@@ -932,8 +933,7 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
                             Icon(Icons.wrong_location_rounded, color: AppColors.amber),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: Text(
-                                'You are off the route. Head back to the line on the map.',
+                              child: Text(tr('You are off the route. Head back to the line on the map.'),
                                 style: text.bodyMedium,
                               ),
                             ),
@@ -952,24 +952,24 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
                     OutlinedButton.icon(
                       onPressed: _stop,
                       icon: const Icon(Icons.stop_rounded),
-                      label: const Text('Stop'),
+                      label: Text(tr('Stop')),
                       style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(56)),
                     ),
                   ],
                   _RunPhase.saving => [const CircularProgressIndicator()],
                   _RunPhase.done => [
-                    Text('Finished! 🎉', style: text.headlineMedium),
+                    Text(tr('Finished! 🎉'), style: text.headlineMedium),
                     if (_xp > 0) Text('+$_xp XP', style: text.titleLarge?.copyWith(color: AppColors.primary)),
                     Text(_result, style: text.bodyLarge, textAlign: TextAlign.center),
                     const SizedBox(height: 12),
                     if (_rank != null) Text('You are #$_rank of $_of in the club.', style: text.titleMedium),
                     const SizedBox(height: 12),
                     GradientButton(
-                      label: 'See my report',
+                      label: tr('See my report'),
                       icon: Icons.insights_rounded,
                       onPressed: () => context.pushReplacement(Routes.runReport, extra: c.id),
                     ),
-                    TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('See ranking')),
+                    TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(tr('See ranking'))),
                   ],
                 },
               ],

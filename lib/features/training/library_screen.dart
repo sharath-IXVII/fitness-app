@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -40,7 +41,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
     ];
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Exercise library')),
+      appBar: AppBar(title: Text(tr('Exercise library'))),
       body: PageBackground(
         child: Column(
           children: [
@@ -48,8 +49,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
               child: TextField(
                 onChanged: (v) => setState(() => _query = v),
-                decoration: const InputDecoration(
-                  hintText: 'Search exercises or muscles',
+                decoration: InputDecoration(
+                  hintText: tr('Search exercises or muscles'),
                   prefixIcon: Icon(Icons.search_rounded),
                 ),
               ),
@@ -70,7 +71,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
             ),
             Expanded(
               child: moves.isEmpty
-                  ? Center(child: Text('No exercises found', style: text.bodyMedium))
+                  ? Center(child: Text(tr('No exercises found'), style: text.bodyMedium))
                   : ListView(
                       physics: const BouncingScrollPhysics(),
                       padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),

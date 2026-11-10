@@ -1,3 +1,4 @@
+import '../../../core/i18n/i18n.dart';
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -109,7 +110,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
       context: context,
       builder: (c) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text('One more permission'),
+        title: Text(tr('One more permission')),
         content: Text(
           _a.isSleep
               ? 'To keep other apps blocked while you sleep, FittArc needs "Display over other apps". '
@@ -118,8 +119,8 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                     'On the next screen, find FittArc and turn it on.',
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Later')),
-          TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('Open settings')),
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr('Later'))),
+          TextButton(onPressed: () => Navigator.pop(c, true), child: Text(tr('Open settings'))),
         ],
       ),
     );
@@ -168,7 +169,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                   ),
                   if (!widget.isNew)
                     IconButton(
-                      tooltip: 'Delete',
+                      tooltip: tr('Delete'),
                       onPressed: () {
                         ref.read(alarmsProvider.notifier).delete(widget.alarm.id);
                         Navigator.pop(context);
@@ -210,7 +211,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                       ),
                     ),
                     FormSection(
-                      title: 'Repeat',
+                      title: tr('Repeat'),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -256,19 +257,19 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                     ),
                     if (!_a.isSleep)
                       FormSection(
-                        title: 'Strict mode: no cheating',
+                        title: tr('Strict mode: no cheating'),
                         child: Column(
                           children: [
                             SettingToggle(
                               icon: Icons.snooze_rounded,
-                              title: 'No snooze or emergency stop',
-                              subtitle: 'Finishing the task is the only way to turn it off',
+                              title: tr('No snooze or emergency stop'),
+                              subtitle: tr('Finishing the task is the only way to turn it off'),
                               value: _a.noEscape,
                               onChanged: _a.strict ? null : (v) => _update(_a.copyWith(hardMode: v)),
                             ),
                             SettingToggle(
                               icon: Icons.lock_outline_rounded,
-                              title: 'Strict mode',
+                              title: tr('Strict mode'),
                               subtitle:
                                   'Full volume that the buttons can\'t lower, and your phone stays on the alarm until '
                                   'you finish. In an emergency, restart your phone to leave it.',
@@ -280,12 +281,11 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                       ),
                     if (_a.isSleep)
                       FormSection(
-                        title: 'Sleep mode',
+                        title: tr('Sleep mode'),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              'When this rings, tap "Start sleep mode" and your phone settles into a calm night screen.',
+                            Text(tr('When this rings, tap "Start sleep mode" and your phone settles into a calm night screen.'),
                               style: text.bodySmall,
                             ),
                             const SizedBox(height: 10),
@@ -301,7 +301,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                                   children: [
                                     Icon(Icons.nightlight_round, color: AppColors.primary),
                                     const SizedBox(width: 12),
-                                    Expanded(child: Text('Sleep mode ends at', style: text.titleSmall)),
+                                    Expanded(child: Text(tr('Sleep mode ends at'), style: text.titleSmall)),
                                     Text(
                                       TimeOfDay(hour: _a.sleepEnd ~/ 60, minute: _a.sleepEnd % 60).format(context),
                                       style: text.titleSmall?.copyWith(color: AppColors.primary),
@@ -312,7 +312,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                             ),
                             SettingToggle(
                               icon: Icons.lock_outline_rounded,
-                              title: 'Block other apps',
+                              title: tr('Block other apps'),
                               subtitle:
                                   'Only phone calls work until it ends. In an emergency you can call, or restart your '
                                   'phone to unlock everything.',
@@ -324,7 +324,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                       ),
                     if (!_a.isSleep)
                       FormSection(
-                        title: 'Turn it off by',
+                        title: tr('Turn it off by'),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -368,7 +368,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                                             Routes.challenge,
                                             extra: ChallengeArgs(challenge: _a.challenge, level: _a.level),
                                           ),
-                                          child: const Text('Try it'),
+                                          child: Text(tr('Try it')),
                                         ),
                                       ],
                                     )
@@ -396,14 +396,14 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                         ),
                       ),
                     FormSection(
-                      title: 'Label',
+                      title: tr('Label'),
                       child: TextField(
                         controller: _label,
                         decoration: InputDecoration(hintText: _a.isSleep ? 'Bedtime' : 'Wake-up workout'),
                       ),
                     ),
                     FormSection(
-                      title: 'Sound',
+                      title: tr('Sound'),
                       child: Column(
                         children: [
                           for (final s in AlarmSound.values)
@@ -435,14 +435,14 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                           ),
                           SettingToggle(
                             icon: Icons.trending_up_rounded,
-                            title: 'Gradually increase volume',
-                            subtitle: 'Starts soft and builds up over 20 seconds',
+                            title: tr('Gradually increase volume'),
+                            subtitle: tr('Starts soft and builds up over 20 seconds'),
                             value: _a.fadeIn,
                             onChanged: (v) => _update(_a.copyWith(fadeIn: v)),
                           ),
                           SettingToggle(
                             icon: Icons.vibration_rounded,
-                            title: 'Vibrate',
+                            title: tr('Vibrate'),
                             value: _a.vibrate,
                             onChanged: (v) => _update(_a.copyWith(vibrate: v)),
                           ),
@@ -450,7 +450,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                       ),
                     ),
                     FormSection(
-                      title: 'Snooze',
+                      title: tr('Snooze'),
                       child: AnimatedOpacity(
                         duration: const Duration(milliseconds: 250),
                         opacity: _a.noEscape ? 0.4 : 1,
@@ -492,7 +492,7 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-              child: GradientButton(label: 'Save alarm', icon: Icons.check_rounded, onPressed: _save),
+              child: GradientButton(label: tr('Save alarm'), icon: Icons.check_rounded, onPressed: _save),
             ),
           ],
         ),

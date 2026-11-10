@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -251,8 +252,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         const Spacer(),
         const AppLogo(size: 64).animate().fadeIn(duration: 400.ms),
         const SizedBox(height: 28),
-        Text(
-          'Your mornings\nare about to change.',
+        Text(tr('Your mornings\nare about to change.'),
           style: text.displaySmall?.copyWith(height: 1.15),
         ).animate(delay: 150.ms).fadeIn(duration: 600.ms).slideY(begin: 0.2, curve: Curves.easeOutCubic),
         const SizedBox(height: 12),
@@ -301,15 +301,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       autofocus: false,
       textCapitalization: TextCapitalization.words,
       style: Theme.of(context).textTheme.headlineSmall,
-      decoration: const InputDecoration(hintText: 'Your name'),
+      decoration: InputDecoration(hintText: tr('Your name')),
       onChanged: (_) => setState(() {}),
       onSubmitted: (_) => _canContinue ? _go(1) : null,
     ),
   );
 
   Widget _aboutStep() => _step(
-    title: 'Tell us about you',
-    subtitle: 'This makes your calorie and protein targets accurate.',
+    title: tr('Tell us about you'),
+    subtitle: tr('This makes your calorie and protein targets accurate.'),
     child: Column(
       children: [
         Row(
@@ -338,7 +338,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         const SizedBox(height: 36),
         Align(
           alignment: Alignment.centerLeft,
-          child: Text('Age', style: Theme.of(context).textTheme.titleMedium),
+          child: Text(tr('Age'), style: Theme.of(context).textTheme.titleMedium),
         ),
         const SizedBox(height: 8),
         RulerPicker(min: 13, max: 90, value: _age, unit: 'years', onChanged: (v) => setState(() => _age = v)),
@@ -347,8 +347,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   );
 
   Widget _heightStep() => _step(
-    title: 'How tall are you?',
-    subtitle: 'Also used to measure your stride for GPS steps.',
+    title: tr('How tall are you?'),
+    subtitle: tr('Also used to measure your stride for GPS steps.'),
     child: Padding(
       padding: const EdgeInsets.only(top: 40),
       child: RulerPicker(
@@ -364,7 +364,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   Widget _weightStep() => _step(
     title: "What's your weight?",
-    subtitle: 'Only you can see this.',
+    subtitle: tr('Only you can see this.'),
     child: Column(
       children: [
         Padding(
@@ -408,26 +408,25 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   Widget _watchStep() {
     final text = Theme.of(context).textTheme;
     return _step(
-      title: 'Got a smartwatch?',
-      subtitle: 'Connect it to see your steps, heart rate and sleep in FittArc. You can do this later too.',
+      title: tr('Got a smartwatch?'),
+      subtitle: tr('Connect it to see your steps, heart rate and sleep in FittArc. You can do this later too.'),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Icon(Icons.watch_rounded, size: 84, color: _watchOn ? AppColors.primary : AppColors.textMuted),
           const SizedBox(height: 18),
           if (_watchOn)
-            Text('Connected ✓', textAlign: TextAlign.center, style: text.titleLarge?.copyWith(color: AppColors.primary))
+            Text(tr('Connected ✓'), textAlign: TextAlign.center, style: text.titleLarge?.copyWith(color: AppColors.primary))
           else
             OutlinedButton.icon(
               style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(56)),
               onPressed: _watchBusy ? null : _connectWatch,
               icon: const Icon(Icons.link_rounded),
-              label: const Text('Connect my watch'),
+              label: Text(tr('Connect my watch')),
             ),
           const SizedBox(height: 14),
-          Text(
-            'Works with watches that share data through Health Connect (Samsung, Fitbit, Noise, boAt, Amazfit '
-            'and more, through their own app). Live heart rate also works with Bluetooth straps on the Watch page.',
+          Text(tr('Works with watches that share data through Health Connect (Samsung, Fitbit, Noise, boAt, Amazfit '
+            'and more, through their own app). Live heart rate also works with Bluetooth straps on the Watch page.'),
             style: text.bodySmall,
             textAlign: TextAlign.center,
           ),
@@ -499,8 +498,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   );
 
   Widget _activityStep() => _step(
-    title: 'How active is your day?',
-    subtitle: 'Outside of planned workouts.',
+    title: tr('How active is your day?'),
+    subtitle: tr('Outside of planned workouts.'),
     child: _options(
       [
         (
@@ -552,8 +551,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       (DietType.vegan, 'Vegan', 'No animal products', '🌱'),
     ];
     return _step(
-      title: 'How do you eat?',
-      subtitle: 'Your meal plan and protein sources will match this.',
+      title: tr('How do you eat?'),
+      subtitle: tr('Your meal plan and protein sources will match this.'),
       child: GridView(
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
@@ -580,8 +579,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Widget _levelStep() => _step(
-    title: 'Your fitness level?',
-    subtitle: 'Sets the difficulty of your alarm routine. You can change it anytime.',
+    title: tr('Your fitness level?'),
+    subtitle: tr('Sets the difficulty of your alarm routine. You can change it anytime.'),
     child: _options(
       [
         (
@@ -654,8 +653,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     }
 
     return _step(
-      title: 'When does your\nday start?',
-      subtitle: 'Your first workout alarm will be set for your wake-up time. Reminders stay quiet while you sleep.',
+      title: tr('When does your\nday start?'),
+      subtitle: tr('Your first workout alarm will be set for your wake-up time. Reminders stay quiet while you sleep.'),
       child: Column(children: [card(true), const SizedBox(height: 14), card(false)]),
     );
   }
@@ -684,7 +683,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     return _step(
       title: 'Your plan is ready,\n${_draft.name.split(' ').first} 🎉',
-      subtitle: 'Built from your body, goal and lifestyle. Adjust it anytime.',
+      subtitle: tr('Built from your body, goal and lifestyle. Adjust it anytime.'),
       child: Column(
         children: [
           GlassCard(
@@ -695,7 +694,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Daily calories', style: text.bodyMedium),
+                      Text(tr('Daily calories'), style: text.bodyMedium),
                       AnimatedNumber(
                         t.calories,
                         suffix: ' kcal',

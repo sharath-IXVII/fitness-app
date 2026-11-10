@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -117,7 +118,7 @@ class TrainingDoneScreen extends ConsumerWidget {
                     ).animate(delay: 500.ms).fadeIn(),
                   ],
                   const Spacer(),
-                  GradientButton(label: 'Done', onPressed: () => context.go(Routes.training)),
+                  GradientButton(label: tr('Done'), onPressed: () => context.go(Routes.training)),
                   TextButton.icon(
                     onPressed: () => context.push(
                       Routes.shareCard,
@@ -129,7 +130,7 @@ class TrainingDoneScreen extends ConsumerWidget {
                       ),
                     ),
                     icon: const Icon(Icons.ios_share_rounded),
-                    label: const Text('Share my workout'),
+                    label: Text(tr('Share my workout')),
                   ),
                 ],
               ),

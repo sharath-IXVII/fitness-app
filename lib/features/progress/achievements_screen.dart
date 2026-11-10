@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,9 +33,9 @@ class AchievementsScreen extends ConsumerWidget {
           controller: scroll,
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
           children: [
-            Text('All levels', style: text.titleLarge),
+            Text(tr('All levels'), style: text.titleLarge),
             const SizedBox(height: 4),
-            Text('XP you need to reach each level.', style: text.bodySmall),
+            Text(tr('XP you need to reach each level.'), style: text.bodySmall),
             const SizedBox(height: 12),
             for (final l in Level.table())
               ListTile(
@@ -55,9 +56,9 @@ class AchievementsScreen extends ConsumerWidget {
                 selected: l.number == now.number,
               ),
             const Divider(height: 28),
-            Text('Badge set bonuses', style: text.titleMedium),
+            Text(tr('Badge set bonuses'), style: text.titleMedium),
             const SizedBox(height: 4),
-            Text('Finish all 12 badges of a set for bonus XP and to open the next set.', style: text.bodySmall),
+            Text(tr('Finish all 12 badges of a set for bonus XP and to open the next set.'), style: text.bodySmall),
             const SizedBox(height: 8),
             for (var i = 0; i < badgeSets; i++)
               ListTile(
@@ -82,7 +83,7 @@ class AchievementsScreen extends ConsumerWidget {
     final f = NumberFormat.decimalPattern();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Achievements')),
+      appBar: AppBar(title: Text(tr('Achievements'))),
       body: PageBackground(
         child: CustomScrollView(
           slivers: [
@@ -96,13 +97,12 @@ class AchievementsScreen extends ConsumerWidget {
                     child: TextButton.icon(
                       onPressed: () => _levels(context, level),
                       icon: const Icon(Icons.format_list_numbered_rounded, size: 18),
-                      label: const Text('All levels and XP'),
+                      label: Text(tr('All levels and XP')),
                     ),
                   ),
-                  Text(
-                    'Earn XP for every goal you hit: 10 per goal, 20 extra for a perfect day, plus a bonus for '
+                  Text(tr('Earn XP for every goal you hit: 10 per goal, 20 extra for a perfect day, plus a bonus for '
                     'each day your streak stays alive. Finishing a whole badge set pays extra, and so does finishing a '
-                    'challenge together with a friend (50 XP, up to 3 a week).',
+                    'challenge together with a friend (50 XP, up to 3 a week).'),
                     style: text.bodySmall,
                   ),
                   const SizedBox(height: 8),

@@ -1,3 +1,4 @@
+import '../../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -67,10 +68,10 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
       builder: (c) => AlertDialog(
         backgroundColor: AppColors.surface,
         title: Text('Remove ${f.name}?'),
-        content: const Text('It will no longer appear in My foods. Meals you already logged stay as they are.'),
+        content: Text(tr('It will no longer appear in My foods. Meals you already logged stay as they are.')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('Remove')),
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr('Cancel'))),
+          TextButton(onPressed: () => Navigator.pop(c, true), child: Text(tr('Remove'))),
         ],
       ),
     );
@@ -93,7 +94,7 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
       title: _custom ? 'Custom food' : (picked?.name ?? 'Add food'),
       action: picked != null || _custom
           ? IconButton(
-              tooltip: 'Back',
+              tooltip: tr('Back'),
               onPressed: () => setState(() {
                 _picked = null;
                 _custom = false;
@@ -139,7 +140,7 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
           child: TextField(
             controller: _query,
             onChanged: (_) => setState(() {}),
-            decoration: const InputDecoration(hintText: 'Search foods', prefixIcon: Icon(Icons.search_rounded)),
+            decoration: InputDecoration(hintText: tr('Search foods'), prefixIcon: Icon(Icons.search_rounded)),
           ),
         ),
         SingleChildScrollView(
@@ -200,8 +201,8 @@ class _FoodSearchSheetState extends ConsumerState<FoodSearchSheet> {
               ListTile(
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 leading: Icon(Icons.edit_note_rounded, color: AppColors.primary),
-                title: Text('Add a custom food', style: text.titleSmall),
-                subtitle: Text('Type in the calories and macros from a label', style: text.bodySmall),
+                title: Text(tr('Add a custom food'), style: text.titleSmall),
+                subtitle: Text(tr('Type in the calories and macros from a label'), style: text.bodySmall),
                 onTap: () => setState(() => _custom = true),
               ),
             ],
@@ -408,12 +409,12 @@ class _CustomFoodState extends ConsumerState<_CustomFood> {
             controller: _name,
             onChanged: (_) => setState(() {}),
             textCapitalization: TextCapitalization.sentences,
-            decoration: const InputDecoration(labelText: 'Name', hintText: 'e.g. Protein bar'),
+            decoration: InputDecoration(labelText: tr('Name'), hintText: tr('e.g. Protein bar')),
           ),
           const SizedBox(height: 12),
           TextField(
             controller: _serving,
-            decoration: const InputDecoration(labelText: 'Serving', hintText: 'e.g. 1 bar (40 g)'),
+            decoration: InputDecoration(labelText: tr('Serving'), hintText: tr('e.g. 1 bar (40 g)')),
           ),
           const SizedBox(height: 12),
           Row(children: [num('kcal', 'Calories', 'kcal'), const SizedBox(width: 10), num('protein', 'Protein', 'g')]),
@@ -430,8 +431,8 @@ class _CustomFoodState extends ConsumerState<_CustomFood> {
           const SizedBox(height: 8),
           SettingToggle(
             icon: Icons.bookmark_outline_rounded,
-            title: 'Save to My foods',
-            subtitle: 'Add it again later in one tap',
+            title: tr('Save to My foods'),
+            subtitle: tr('Add it again later in one tap'),
             value: _remember,
             onChanged: (v) => setState(() => _remember = v),
           ),
@@ -468,7 +469,7 @@ class _EntryEditSheetState extends ConsumerState<EntryEditSheet> {
     return SheetFrame(
       title: e.name,
       action: IconButton(
-        tooltip: 'Remove',
+        tooltip: tr('Remove'),
         onPressed: () {
           ref.read(mealLogProvider.notifier).remove(e.id);
           Navigator.pop(context);
@@ -498,7 +499,7 @@ class _EntryEditSheetState extends ConsumerState<EntryEditSheet> {
             MacroSummary(macros: e.perServing.scale(_servings)),
             const SizedBox(height: 20),
             GradientButton(
-              label: 'Save',
+              label: tr('Save'),
               icon: Icons.check_rounded,
               onPressed: () {
                 ref.read(mealLogProvider.notifier).replace(e.copyWith(servings: _servings, meal: _meal));

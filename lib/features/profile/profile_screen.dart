@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -66,7 +67,7 @@ class ProfileScreen extends ConsumerWidget {
     );
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(title: Text(tr('Profile'))),
       body: PageBackground(
         child: SafeArea(
           bottom: false,
@@ -100,7 +101,7 @@ class ProfileScreen extends ConsumerWidget {
                   OutlinedButton.icon(
                     onPressed: () => SheetFrame.show<void>(context, const EditProfileSheet()),
                     icon: const Icon(Icons.edit_outlined, size: 18),
-                    label: const Text('Edit'),
+                    label: Text(tr('Edit')),
                     style: OutlinedButton.styleFrom(
                       side: BorderSide(color: AppColors.stroke),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -111,7 +112,7 @@ class ProfileScreen extends ConsumerWidget {
               const SizedBox(height: 20),
               const ArcBadgeShelf(),
               const SizedBox(height: 22),
-              Text('About you', style: text.titleMedium),
+              Text(tr('About you'), style: text.titleMedium),
               const SizedBox(height: 10),
               GlassCard(
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
@@ -127,7 +128,7 @@ class ProfileScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 22),
-              Text('Daily targets', style: text.titleMedium),
+              Text(tr('Daily targets'), style: text.titleMedium),
               const SizedBox(height: 10),
               GlassCard(
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
@@ -152,7 +153,7 @@ class ProfileScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Your feedback comes first', style: text.titleSmall),
+                          Text(tr('Your feedback comes first'), style: text.titleSmall),
                           Text(
                             'Every message to ${AppInfo.feedbackEmail} is read, and it decides what we improve next.',
                             style: text.bodySmall,
@@ -160,12 +161,12 @@ class ProfileScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    TextButton(onPressed: () => sendFeedback(context), child: const Text('Write')),
+                    TextButton(onPressed: () => sendFeedback(context), child: Text(tr('Write'))),
                   ],
                 ),
               ),
               const SizedBox(height: 22),
-              Text('Account', style: text.titleMedium),
+              Text(tr('Account'), style: text.titleMedium),
               const SizedBox(height: 10),
               GlassCard(
                 child: Row(
@@ -176,47 +177,52 @@ class ProfileScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Signed in with Google', style: text.bodySmall),
+                          Text(tr('Signed in with Google'), style: text.bodySmall),
                           Text(account?.handle ?? '—', style: text.titleSmall),
                         ],
                       ),
                     ),
                     TextButton(
                       onPressed: () => ref.read(authProvider.notifier).signOut(),
-                      child: const Text('Sign out'),
+                      child: Text(tr('Sign out')),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 22),
-              Text('Data & privacy', style: text.titleMedium),
+              Text(tr('Data & privacy'), style: text.titleMedium),
               const SizedBox(height: 10),
               GlassCard(
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Column(
                   children: [
                     _Action(
+                      icon: Icons.translate_rounded,
+                      label: '${tr('Language')}: ${(ref.watch(langProvider) ?? AppLang.en).native}',
+                      onTap: () => context.push(Routes.languageSettings),
+                    ),
+                    _Action(
                       icon: Icons.mail_outline_rounded,
-                      label: 'Send feedback',
+                      label: tr('Send feedback'),
                       onTap: () => sendFeedback(context),
                     ),
                     _Action(
                       icon: Icons.shield_outlined,
-                      label: 'Privacy policy',
+                      label: tr('Privacy policy'),
                       onTap: () => context.push(Routes.privacy),
                     ),
                     _Action(
                       icon: Icons.description_outlined,
-                      label: 'Terms of use',
+                      label: tr('Terms of use'),
                       onTap: () => context.push(Routes.terms),
                     ),
                     _Action(
                       icon: Icons.restart_alt_rounded,
-                      label: 'Reset data on this device',
+                      label: tr('Reset data on this device'),
                       onTap: () async {
                         if (await _confirm(
                           context,
-                          title: 'Start over?',
+                          title: tr('Start over?'),
                           body:
                               'This clears your profile, history, meals and alarms on this device. You stay signed in.',
                           action: 'Reset',
@@ -227,12 +233,12 @@ class ProfileScreen extends ConsumerWidget {
                     ),
                     _Action(
                       icon: Icons.person_remove_outlined,
-                      label: 'Delete account',
+                      label: tr('Delete account'),
                       danger: true,
                       onTap: () async {
                         if (!await _confirm(
                           context,
-                          title: 'Delete your account?',
+                          title: tr('Delete your account?'),
                           body:
                               'This permanently deletes your sign-in and clears all FittArc data on this device. '
                               'It can\'t be undone.',
@@ -253,7 +259,7 @@ class ProfileScreen extends ConsumerWidget {
                           if (context.mounted) {
                             await _confirm(
                               context,
-                              title: 'Sign in again first',
+                              title: tr('Sign in again first'),
                               body:
                                   'For your security, deleting an account needs a fresh sign-in. '
                                   'Sign in again, then come back here and tap Delete account.',
@@ -275,7 +281,7 @@ class ProfileScreen extends ConsumerWidget {
                           }
                         } catch (_) {
                           messenger.showSnackBar(
-                            const SnackBar(content: Text('Connect to the internet to delete your account.')),
+                            SnackBar(content: Text(tr('Connect to the internet to delete your account.'))),
                           );
                           return;
                         }
@@ -312,7 +318,7 @@ Future<bool> _confirm(
         title: Text(title),
         content: Text(body),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr('Cancel'))),
           TextButton(
             onPressed: () => Navigator.pop(c, true),
             child: Text(action, style: const TextStyle(color: AppColors.danger)),

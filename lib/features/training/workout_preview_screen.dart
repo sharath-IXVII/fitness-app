@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -83,7 +84,7 @@ class WorkoutPreviewScreen extends ConsumerWidget {
                     ),
                   ],
                   const SizedBox(height: 18),
-                  Text('Exercises', style: text.titleLarge),
+                  Text(tr('Exercises'), style: text.titleLarge),
                   const SizedBox(height: 6),
                   for (final item in workout.items)
                     MoveRow(
@@ -99,7 +100,7 @@ class WorkoutPreviewScreen extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
                 child: GradientButton(
-                  label: 'Start workout',
+                  label: tr('Start workout'),
                   icon: Icons.play_arrow_rounded,
                   onPressed: () => context.push(Routes.trainingPlayer, extra: workout),
                 ),

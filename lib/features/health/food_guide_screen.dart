@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -38,15 +39,15 @@ class _FoodGuideScreenState extends ConsumerState<FoodGuideScreen> {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('Food guide')),
+      appBar: AppBar(title: Text(tr('Food guide'))),
       body: PageBackground(
         child: ListView(
           physics: const BouncingScrollPhysics(),
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
           children: [
-            const GuideCard(
+            GuideCard(
               id: 'foodguide',
-              title: 'How to use the food guide',
+              title: tr('How to use the food guide'),
               steps: [
                 'Tap a nutrient, like Protein or Carbs, to see which foods have the most in 100 g.',
                 'Tap any food to see everything in it.',
@@ -57,10 +58,9 @@ class _FoodGuideScreenState extends ConsumerState<FoodGuideScreen> {
             const SizedBox(height: 14),
             if (_mode == 0) ..._rank(text) else ..._compare(text),
             const SizedBox(height: 18),
-            Text(
-              'All amounts are per 100 g of the food as listed (raw, cooked or dry). Values are typical figures '
+            Text(tr('All amounts are per 100 g of the food as listed (raw, cooked or dry). Values are typical figures '
               'from standard food tables and are rounded. Home cooking and brands vary, so use this as a guide. '
-              'Dry foods look richer because cooking adds water.',
+              'Dry foods look richer because cooking adds water.'),
               style: text.bodySmall,
             ),
           ],
@@ -124,7 +124,7 @@ class _FoodGuideScreenState extends ConsumerState<FoodGuideScreen> {
       ),
       const SizedBox(height: 14),
       if (list.isEmpty)
-        Text('No foods match.', style: text.bodyMedium)
+        Text(tr('No foods match.'), style: text.bodyMedium)
       else
         for (final (i, f) in list.indexed) _RankRow(rank: i + 1, food: f, nutrient: _nutrient, best: best, onTap: () => _detail(f)),
     ];
@@ -167,7 +167,7 @@ class _FoodGuideScreenState extends ConsumerState<FoodGuideScreen> {
       ),
       const SizedBox(height: 14),
       if (a == null || b == null)
-        Text('Choose two foods to compare them per 100 g.', style: text.bodyMedium)
+        Text(tr('Choose two foods to compare them per 100 g.'), style: text.bodyMedium)
       else ...[
         for (final n in FactNutrient.values) _CompareRow(nutrient: n, a: a, b: b),
         if (a.state != b.state)
@@ -364,14 +364,14 @@ class _FoodPickerState extends State<_FoodPicker> {
         if (q.isEmpty || f.name.toLowerCase().contains(q)) f,
     ];
     return SheetFrame(
-      title: 'Choose a food',
+      title: tr('Choose a food'),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
             child: TextField(
-              decoration: const InputDecoration(prefixIcon: Icon(Icons.search_rounded), hintText: 'Search foods'),
+              decoration: InputDecoration(prefixIcon: Icon(Icons.search_rounded), hintText: tr('Search foods')),
               onChanged: (v) => setState(() => _q = v),
             ),
           ),

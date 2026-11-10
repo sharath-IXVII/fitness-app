@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -99,7 +100,7 @@ class _MathGameState extends State<MathGame> {
         SizedBox(
           height: 20,
           child: _wrong
-              ? Text('Not quite — try again', style: text.bodySmall?.copyWith(color: AppColors.danger))
+              ? Text(tr('Not quite — try again'), style: text.bodySmall?.copyWith(color: AppColors.danger))
               : null,
         ),
         const Spacer(),

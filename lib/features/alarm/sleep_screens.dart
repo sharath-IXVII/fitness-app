@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -141,14 +142,13 @@ class _SleepRingState extends ConsumerState<SleepRing> {
     final open = await showDialog<bool>(
       context: context,
       builder: (c) => AlertDialog(
-        title: const Text('One more permission'),
-        content: const Text(
-          'To keep other apps blocked while you sleep, FittArc needs "Display over other apps". '
-          'On the next screen, find FittArc and turn it on.',
+        title: Text(tr('One more permission')),
+        content: Text(tr('To keep other apps blocked while you sleep, FittArc needs "Display over other apps". '
+          'On the next screen, find FittArc and turn it on.'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Skip')),
-          TextButton(onPressed: () => Navigator.pop(c, true), child: const Text('Open settings')),
+          TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr('Skip'))),
+          TextButton(onPressed: () => Navigator.pop(c, true), child: Text(tr('Open settings'))),
         ],
       ),
     );
@@ -192,15 +192,14 @@ class _SleepRingState extends ConsumerState<SleepRing> {
                 style: text.displayLarge?.copyWith(fontSize: 58, color: _moon, height: 1.05),
               ),
               const SizedBox(height: 14),
-              Text('Time to sleep', style: text.headlineSmall?.copyWith(color: _moon)),
+              Text(tr('Time to sleep'), style: text.headlineSmall?.copyWith(color: _moon)),
               const SizedBox(height: 8),
-              Text(
-                'Put the day away. Tomorrow\'s you will thank you.',
+              Text(tr('Put the day away. Tomorrow\'s you will thank you.'),
                 textAlign: TextAlign.center,
                 style: text.bodyMedium?.copyWith(color: _dim),
               ),
               const Spacer(),
-              _NightButton(label: 'Start sleep mode', icon: Icons.nightlight_round, onTap: _begin),
+              _NightButton(label: tr('Start sleep mode'), icon: Icons.nightlight_round, onTap: _begin),
               const SizedBox(height: 10),
               Text(
                 info.strict
@@ -220,7 +219,7 @@ class _SleepRingState extends ConsumerState<SleepRing> {
                     ),
                   TextButton(
                     onPressed: _skip,
-                    child: const Text('Skip tonight', style: TextStyle(color: _dim)),
+                    child: Text(tr('Skip tonight'), style: TextStyle(color: _dim)),
                   ),
                 ],
               ),
@@ -295,20 +294,20 @@ class _SleepModeScreenState extends ConsumerState<SleepModeScreen> {
                 style: text.displayLarge?.copyWith(fontSize: 56, color: _moon, height: 1.05),
               ),
               const SizedBox(height: 10),
-              Text('Sleep mode', style: text.titleLarge?.copyWith(color: _moon)),
+              Text(tr('Sleep mode'), style: text.titleLarge?.copyWith(color: _moon)),
               const SizedBox(height: 4),
               Text('Until $end · $leftText', style: text.bodyMedium?.copyWith(color: _dim)),
               const Spacer(),
               if (args.block) ...[
                 _NightButton(
-                  label: 'Phone',
+                  label: tr('Phone'),
                   icon: Icons.call_rounded,
                   onTap: () => SleepMode.openDialer(),
                   outlined: true,
                 ),
                 const SizedBox(height: 10),
                 _NightButton(
-                  label: 'Emergency 112',
+                  label: tr('Emergency 112'),
                   icon: Icons.emergency_rounded,
                   onTap: () => SleepMode.openDialer('112'),
                   outlined: true,
@@ -321,7 +320,7 @@ class _SleepModeScreenState extends ConsumerState<SleepModeScreen> {
                   style: text.bodySmall?.copyWith(color: _dim),
                 ),
               ] else ...[
-                _NightButton(label: 'End sleep mode', icon: Icons.wb_sunny_outlined, onTap: _finish, outlined: true),
+                _NightButton(label: tr('End sleep mode'), icon: Icons.wb_sunny_outlined, onTap: _finish, outlined: true),
                 const SizedBox(height: 14),
                 Text(
                   'A calm screen until $end. You can leave it any time.',

@@ -1,3 +1,4 @@
+import '../../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -72,8 +73,7 @@ class SnapCard extends StatelessWidget {
                             Positioned(
                               right: 12,
                               bottom: 10,
-                              child: Text(
-                                'FittArc',
+                              child: Text('FittArc',
                                 style: sport(17).copyWith(
                                   color: Colors.white.withValues(alpha: 0.62),
                                   letterSpacing: 0.6,
@@ -92,9 +92,9 @@ class SnapCard extends StatelessWidget {
                   children: [
                     Icon(Icons.bar_chart_rounded, color: _glow, size: 16),
                     const SizedBox(width: 6),
-                    Text('Detected foods', style: body(13, _ink, FontWeight.w700)),
+                    Text(tr('Detected foods'), style: body(13, _ink, FontWeight.w700)),
                     const SizedBox(width: 4),
-                    Text('(approx.)', style: body(10, _muted)),
+                    Text(tr('(approx.)'), style: body(10, _muted)),
                   ],
                 ),
                 const SizedBox(height: 6),

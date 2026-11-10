@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'dart:async';
 
 import 'package:clock/clock.dart';
@@ -155,9 +156,9 @@ class _LiveHeartScreenState extends ConsumerState<LiveHeartScreen> {
     final text = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Row(
+        title: Row(
           mainAxisSize: MainAxisSize.min,
-          children: [Text('Live heart rate'), SizedBox(width: 10), BetaTag()],
+          children: [Text(tr('Live heart rate')), SizedBox(width: 10), BetaTag()],
         ),
       ),
       body: PageBackground(
@@ -185,7 +186,7 @@ class _LiveHeartScreenState extends ConsumerState<LiveHeartScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Connect a watch or chest strap', style: text.titleMedium),
+            Text(tr('Connect a watch or chest strap'), style: text.titleMedium),
             const SizedBox(height: 10),
             for (final s in const [
               'Turn Bluetooth on.',
@@ -205,9 +206,8 @@ class _LiveHeartScreenState extends ConsumerState<LiveHeartScreen> {
                 ),
               ),
             const SizedBox(height: 4),
-            Text(
-              'Not every watch can share its heart rate this way. If yours does not show up, use Health Connect '
-              'instead.',
+            Text(tr('Not every watch can share its heart rate this way. If yours does not show up, use Health Connect '
+              'instead.'),
               style: text.bodySmall,
             ),
           ],
@@ -255,7 +255,7 @@ class _LiveHeartScreenState extends ConsumerState<LiveHeartScreen> {
           ),
         ),
       const SizedBox(height: 6),
-      TextButton(onPressed: _scan, child: const Text('Search again')),
+      TextButton(onPressed: _scan, child: Text(tr('Search again'))),
     ],
   );
 
@@ -272,7 +272,7 @@ class _LiveHeartScreenState extends ConsumerState<LiveHeartScreen> {
           _stopLink();
           _scan();
         },
-        child: const Text('Cancel'),
+        child: Text(tr('Cancel')),
       ),
     ],
   );
@@ -297,7 +297,7 @@ class _LiveHeartScreenState extends ConsumerState<LiveHeartScreen> {
             children: [
               Icon(Icons.favorite_rounded, color: color),
               Text(_contactLost ? '--' : '${s.current ?? '--'}', style: text.displayLarge),
-              Text('bpm', style: text.bodySmall),
+              Text(tr('bpm'), style: text.bodySmall),
             ],
           ),
         ),
@@ -330,10 +330,9 @@ class _LiveHeartScreenState extends ConsumerState<LiveHeartScreen> {
           ),
         ),
         const SizedBox(height: 14),
-        GradientButton(label: 'Finish', icon: Icons.flag_rounded, onPressed: _finish),
+        GradientButton(label: tr('Finish'), icon: Icons.flag_rounded, onPressed: _finish),
         const SizedBox(height: 8),
-        Text(
-          'Moderate minutes count once and hard minutes count twice. Your top rate is estimated from your age.',
+        Text(tr('Moderate minutes count once and hard minutes count twice. Your top rate is estimated from your age.'),
           style: text.bodySmall,
           textAlign: TextAlign.center,
         ),
@@ -361,7 +360,7 @@ class _LiveHeartScreenState extends ConsumerState<LiveHeartScreen> {
               Icon(Icons.emoji_events_rounded, color: AppColors.primary, size: 30),
               const SizedBox(height: 4),
               Text(_earned.toStringAsFixed(1), style: text.displayLarge),
-              Text('Arc minutes earned', style: text.bodySmall),
+              Text(tr('Arc minutes earned'), style: text.bodySmall),
               const SizedBox(height: 14),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -379,7 +378,7 @@ class _LiveHeartScreenState extends ConsumerState<LiveHeartScreen> {
           ),
         ),
         const SizedBox(height: 14),
-        GradientButton(label: 'Done', icon: Icons.check_rounded, onPressed: () => Navigator.of(context).maybePop()),
+        GradientButton(label: tr('Done'), icon: Icons.check_rounded, onPressed: () => Navigator.of(context).maybePop()),
       ],
     );
   }
@@ -389,11 +388,11 @@ class _LiveHeartScreenState extends ConsumerState<LiveHeartScreen> {
       const SizedBox(height: 16),
       Icon(Icons.bluetooth_disabled_rounded, size: 44, color: AppColors.amber),
       const SizedBox(height: 10),
-      Text('Could not connect', style: text.titleMedium),
+      Text(tr('Could not connect'), style: text.titleMedium),
       const SizedBox(height: 6),
       Text(_error ?? 'Try again.', style: text.bodyMedium, textAlign: TextAlign.center),
       const SizedBox(height: 16),
-      GradientButton(label: 'Try again', icon: Icons.refresh_rounded, onPressed: _scan),
+      GradientButton(label: tr('Try again'), icon: Icons.refresh_rounded, onPressed: _scan),
     ],
   );
 }

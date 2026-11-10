@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -30,8 +31,8 @@ class HealthScreen extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
 
     final sections = <Widget>[
-      Text('Health', style: text.headlineMedium),
-      Text('Your heart, body and food, in one place.', style: text.bodyMedium),
+      Text(tr('Health'), style: text.headlineMedium),
+      Text(tr('Your heart, body and food, in one place.'), style: text.bodyMedium),
       const SizedBox(height: 14),
       const _HonestNote(),
       const SizedBox(height: 16),
@@ -87,9 +88,8 @@ class _FoodGuideCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Food guide', style: text.titleMedium),
-                  Text(
-                    'Which foods are rich in carbs, protein, fibre, vitamins and water, per 100 g.',
+                  Text(tr('Food guide'), style: text.titleMedium),
+                  Text(tr('Which foods are rich in carbs, protein, fibre, vitamins and water, per 100 g.'),
                     style: text.bodySmall,
                   ),
                 ],
@@ -117,9 +117,8 @@ class _HonestNote extends StatelessWidget {
           Icon(Icons.verified_user_outlined, size: 18, color: AppColors.primary),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              'Heart rate can be estimated with your camera, and it is approximate. FittArc is for general fitness '
-              'and wellness. It is not a medical device and this is not medical advice.',
+            child: Text(tr('Heart rate can be estimated with your camera, and it is approximate. FittArc is for general fitness '
+              'and wellness. It is not a medical device and this is not medical advice.'),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
@@ -153,9 +152,8 @@ class _HeartRateCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Measure heart rate', style: text.titleMedium),
-                  Text(
-                    'Press your fingertip on the back camera for 30 seconds. An approximate estimate.',
+                  Text(tr('Measure heart rate'), style: text.titleMedium),
+                  Text(tr('Press your fingertip on the back camera for 30 seconds. An approximate estimate.'),
                     style: text.bodySmall,
                   ),
                 ],
@@ -194,7 +192,7 @@ class _WatchCard extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Connect your watch', style: text.titleMedium),
+                  Text(tr('Connect your watch'), style: text.titleMedium),
                   Text(
                     week > 0
                         ? '${week.toStringAsFixed(0)} Arc minutes this week. Live heart rate and watch data.'
@@ -243,10 +241,10 @@ class _BodyCard extends ConsumerWidget {
             children: [
               Icon(Icons.straighten_rounded, color: AppColors.primary, size: 20),
               const SizedBox(width: 8),
-              Expanded(child: Text('Height and weight', style: text.titleMedium)),
+              Expanded(child: Text(tr('Height and weight'), style: text.titleMedium)),
               TextButton(
                 onPressed: () => SheetFrame.show<void>(context, const _BodySheet()),
-                child: const Text('Update'),
+                child: Text(tr('Update')),
               ),
             ],
           ),
@@ -291,7 +289,7 @@ class _BodyCard extends ConsumerWidget {
             style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(46)),
             onPressed: () => SheetFrame.show<void>(context, const BodyCheckSheet()),
             icon: const Icon(Icons.accessibility_new_rounded),
-            label: const Text('Body check: body fat and healthy weight'),
+            label: Text(tr('Body check: body fat and healthy weight')),
           ),
           if (trend.length >= 2) ...[
             const SizedBox(height: 10),
@@ -303,9 +301,8 @@ class _BodyCard extends ConsumerWidget {
             Text('Your last ${trend.length} weigh-ins', style: text.bodySmall),
           ],
           const SizedBox(height: 6),
-          Text(
-            'A phone cannot weigh or measure you, so type in your height and weight. BMI is a rough guide and '
-            'does not see muscle.',
+          Text(tr('A phone cannot weigh or measure you, so type in your height and weight. BMI is a rough guide and '
+            'does not see muscle.'),
             style: text.bodySmall?.copyWith(color: AppColors.textTertiary),
           ),
         ],
@@ -388,14 +385,13 @@ class _BodySheetState extends ConsumerState<_BodySheet> {
       onChanged: (_) => setState(() => _error = null),
     );
     return SheetFrame(
-      title: 'Height and weight',
-      footer: FilledButton(onPressed: _save, child: const Text('Save')),
+      title: tr('Height and weight'),
+      footer: FilledButton(onPressed: _save, child: Text(tr('Save'))),
       child: ListView(
         shrinkWrap: true,
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
         children: [
-          Text(
-            'Weigh yourself in the morning, before eating, for the most comparable numbers.',
+          Text(tr('Weigh yourself in the morning, before eating, for the most comparable numbers.'),
             style: text.bodyMedium,
           ),
           const SizedBox(height: 14),
@@ -494,7 +490,7 @@ class _HistorySheet extends ConsumerWidget {
       child: list.isEmpty
           ? Padding(
               padding: const EdgeInsets.all(24),
-              child: Text('No readings yet.', style: text.bodyMedium),
+              child: Text(tr('No readings yet.'), style: text.bodyMedium),
             )
           : ListView(
               shrinkWrap: true,
@@ -515,7 +511,7 @@ class _HistorySheet extends ConsumerWidget {
                     ),
                     subtitle: Text([_when(r.at)].join(' · ')),
                     trailing: IconButton(
-                      tooltip: 'Delete this reading',
+                      tooltip: tr('Delete this reading'),
                       icon: const Icon(Icons.delete_outline_rounded),
                       onPressed: () {
                         HapticFeedback.selectionClick();

@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -35,7 +36,7 @@ class ArcScreen extends ConsumerWidget {
           TextButton.icon(
             onPressed: () => context.push(Routes.wrapped, extra: arc),
             icon: const Icon(Icons.auto_awesome_rounded),
-            label: const Text('Wrapped so far'),
+            label: Text(tr('Wrapped so far')),
           ),
         ],
       ),
@@ -101,19 +102,19 @@ class ArcScreen extends ConsumerWidget {
                   _TierBar(result: r),
                   const SizedBox(height: 10),
                   Text(
-                    'An active day is one where you hit at least 3 of your 5 daily goals.'
-                    '${lateStart ? ' Your arc counts from ${dates.format(r.from)}, the day you joined.' : ''}',
+                    tr('An active day is one where you hit at least 3 of your 5 daily goals.') +
+                        (lateStart ? ' ${tr('Your arc counts from')} ${dates.format(r.from)}.' : ''),
                     style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 22),
-            Text('Badges this arc', style: text.titleLarge),
+            Text(tr('Badges this arc'), style: text.titleLarge),
             const SizedBox(height: 10),
             for (final t in ArcTier.values) ...[_TierRow(result: r, tier: t), const SizedBox(height: 10)],
             const SizedBox(height: 14),
-            Text('Your arc badges', style: text.titleLarge),
+            Text(tr('Your arc badges'), style: text.titleLarge),
             const SizedBox(height: 10),
             if (badges.isEmpty)
               Text(
@@ -139,7 +140,7 @@ class ArcScreen extends ConsumerWidget {
                 ],
               ),
             const SizedBox(height: 18),
-            Text('The year in arcs', style: text.titleLarge),
+            Text(tr('The year in arcs'), style: text.titleLarge),
             const SizedBox(height: 10),
             GlassCard(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -181,7 +182,7 @@ class ArcScreen extends ConsumerWidget {
                                 color: AppColors.primarySoft,
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: Text('Now', style: text.labelMedium?.copyWith(color: AppColors.primary)),
+                              child: Text(tr('Now'), style: text.labelMedium?.copyWith(color: AppColors.primary)),
                             ),
                         ],
                       ),

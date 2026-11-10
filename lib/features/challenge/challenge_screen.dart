@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -123,7 +124,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
     return PopScope(
       canPop: practice || _done,
       child: Scaffold(
-        appBar: practice && !_done ? AppBar(title: const Text('Try the challenge')) : null,
+        appBar: practice && !_done ? AppBar(title: Text(tr('Try the challenge'))) : null,
         body: PageBackground(
           child: SafeArea(
             child: Padding(
@@ -143,7 +144,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
                           if (_ring?.strict ?? false)
                             Padding(
                               padding: const EdgeInsets.only(top: 6),
-                              child: _Badge(icon: Icons.lock_outline_rounded, label: 'Strict mode'),
+                              child: _Badge(icon: Icons.lock_outline_rounded, label: tr('Strict mode')),
                             ),
                           const SizedBox(height: 8),
                           Text(_title(game), style: text.headlineSmall),

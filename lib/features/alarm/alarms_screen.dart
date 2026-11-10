@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -72,8 +73,8 @@ class _AlarmsScreenState extends ConsumerState<AlarmsScreen> with WidgetsBinding
       ..clearSnackBars()
       ..showSnackBar(
         SnackBar(
-          content: const Text('Alarm deleted'),
-          action: SnackBarAction(label: 'Undo', onPressed: () => notifier.restore(a)),
+          content: Text(tr('Alarm deleted')),
+          action: SnackBarAction(label: tr('Undo'), onPressed: () => notifier.restore(a)),
           persist: false,
         ),
       );
@@ -108,7 +109,7 @@ class _AlarmsScreenState extends ConsumerState<AlarmsScreen> with WidgetsBinding
           children: [
             Row(
               children: [
-                Expanded(child: Text('Alarms', style: text.headlineMedium)),
+                Expanded(child: Text(tr('Alarms'), style: text.headlineMedium)),
                 Pressable(
                   onTap: () => _edit(ref.read(alarmsProvider.notifier).draft(), isNew: true),
                   child: Container(
@@ -121,11 +122,11 @@ class _AlarmsScreenState extends ConsumerState<AlarmsScreen> with WidgetsBinding
               ],
             ),
             const SizedBox(height: 4),
-            Text('Each alarm keeps ringing until you finish its workout or brain game.', style: text.bodyMedium),
+            Text(tr('Each alarm keeps ringing until you finish its workout or brain game.'), style: text.bodyMedium),
             const SizedBox(height: 14),
-            const GuideCard(
+            GuideCard(
               id: 'alarm',
-              title: 'How your alarm works',
+              title: tr('How your alarm works'),
               steps: [
                 'Tap + to add an alarm. Set the time, the days and what you must do to switch it off.',
                 'Turn on Strict mode to make it impossible to cheat: full volume, no snooze, and the phone stays on the alarm until your workout is done.',
@@ -167,11 +168,11 @@ class _AlarmsScreenState extends ConsumerState<AlarmsScreen> with WidgetsBinding
             const SizedBox(height: 20),
             Row(
               children: [
-                Expanded(child: Text('Routines', style: text.titleLarge)),
+                Expanded(child: Text(tr('Routines'), style: text.titleLarge)),
                 TextButton.icon(
                   onPressed: () => context.push(Routes.routineEditor),
                   icon: const Icon(Icons.add_rounded, size: 18),
-                  label: const Text('Custom'),
+                  label: Text(tr('Custom')),
                 ),
               ],
             ),
@@ -292,11 +293,11 @@ class _AlarmCard extends StatelessWidget {
                     if (on && alarm.repeats)
                       skipping
                           ? const PopupMenuItem(value: _CardAction.unskip, child: Text("Don't skip"))
-                          : const PopupMenuItem(value: _CardAction.skip, child: Text('Skip next')),
-                    const PopupMenuItem(value: _CardAction.duplicate, child: Text('Duplicate')),
-                    const PopupMenuItem(
+                          : PopupMenuItem(value: _CardAction.skip, child: Text(tr('Skip next'))),
+                    PopupMenuItem(value: _CardAction.duplicate, child: Text(tr('Duplicate'))),
+                    PopupMenuItem(
                       value: _CardAction.delete,
-                      child: Text('Delete', style: TextStyle(color: AppColors.danger)),
+                      child: Text(tr('Delete'), style: TextStyle(color: AppColors.danger)),
                     ),
                   ],
                 ),
@@ -382,7 +383,7 @@ class _NextUpBannerState extends State<_NextUpBanner> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Next alarm', style: text.labelMedium?.copyWith(color: AppColors.primary)),
+                Text(tr('Next alarm'), style: text.labelMedium?.copyWith(color: AppColors.primary)),
                 Text(headline, style: text.titleLarge),
                 Text(sub, style: text.bodySmall?.copyWith(color: AppColors.textSecondary)),
               ],
@@ -414,7 +415,9 @@ class _RoutineCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text(routine.name, style: text.titleMedium),
+                    Flexible(
+                      child: Text(routine.name, style: text.titleMedium, maxLines: 1, overflow: TextOverflow.ellipsis),
+                    ),
                     if (!routine.builtIn) ...[
                       const SizedBox(width: 8),
                       Container(
@@ -423,7 +426,7 @@ class _RoutineCard extends StatelessWidget {
                           color: AppColors.gold.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: Text('Custom', style: text.labelSmall?.copyWith(color: AppColors.textPrimary)),
+                        child: Text(tr('Custom'), style: text.labelSmall?.copyWith(color: AppColors.textPrimary)),
                       ),
                     ],
                   ],
@@ -438,7 +441,7 @@ class _RoutineCard extends StatelessWidget {
               onPressed: onEdit,
               icon: Icon(Icons.edit_outlined, color: AppColors.textSecondary),
             ),
-          TextButton(onPressed: onTry, child: const Text('Try')),
+          TextButton(onPressed: onTry, child: Text(tr('Try'))),
         ],
       ),
     );
@@ -461,14 +464,14 @@ class _PermissionBanner extends StatelessWidget {
           Icon(Icons.notifications_active_outlined, color: AppColors.steps),
           const SizedBox(width: 12),
           Expanded(
-            child: Text('Allow notifications, exact alarms and camera so alarms ring on time.', style: text.bodySmall),
+            child: Text(tr('Allow notifications, exact alarms and camera so alarms ring on time.'), style: text.bodySmall),
           ),
           TextButton(
             onPressed: () async {
               await AppPermissions.requestAll();
               onFixed();
             },
-            child: const Text('Allow'),
+            child: Text(tr('Allow')),
           ),
         ],
       ),
@@ -490,11 +493,11 @@ class _EmptyAlarms extends StatelessWidget {
         children: [
           Icon(Icons.alarm_add_rounded, size: 44, color: AppColors.primary),
           const SizedBox(height: 12),
-          Text('No alarms yet', style: text.titleMedium),
+          Text(tr('No alarms yet'), style: text.titleMedium),
           const SizedBox(height: 4),
-          Text('Set one and wake up moving.', style: text.bodyMedium),
+          Text(tr('Set one and wake up moving.'), style: text.bodyMedium),
           const SizedBox(height: 12),
-          TextButton(onPressed: onAdd, child: const Text('Add alarm')),
+          TextButton(onPressed: onAdd, child: Text(tr('Add alarm'))),
         ],
       ),
     );

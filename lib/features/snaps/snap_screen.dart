@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'dart:isolate';
 import 'dart:ui' as ui;
 
@@ -112,7 +113,7 @@ class _SnapScreenState extends ConsumerState<SnapScreen> {
     final b = ref.read(snapShareBackendProvider);
     if (me == null || b == null) return;
     if (friends.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Add friends first (Friends page).')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('Add friends first (Friends page).'))));
       return;
     }
     final chosen = await showDialog<List<String>>(
@@ -121,7 +122,7 @@ class _SnapScreenState extends ConsumerState<SnapScreen> {
         final picked = <String>{};
         return StatefulBuilder(
           builder: (d, setD) => AlertDialog(
-            title: const Text('Send to friends'),
+            title: Text(tr('Send to friends')),
             content: SizedBox(
               width: double.maxFinite,
               child: ListView(
@@ -137,10 +138,10 @@ class _SnapScreenState extends ConsumerState<SnapScreen> {
               ),
             ),
             actions: [
-              TextButton(onPressed: () => Navigator.of(d).pop(), child: const Text('Cancel')),
+              TextButton(onPressed: () => Navigator.of(d).pop(), child: Text(tr('Cancel'))),
               TextButton(
                 onPressed: picked.isEmpty ? null : () => Navigator.of(d).pop(picked.toList()),
-                child: const Text('Send'),
+                child: Text(tr('Send')),
               ),
             ],
           ),
@@ -200,11 +201,11 @@ class _SnapScreenState extends ConsumerState<SnapScreen> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (d) => AlertDialog(
-        title: const Text('Delete this snap?'),
-        content: const Text('The meal stays in your diet log.'),
+        title: Text(tr('Delete this snap?')),
+        content: Text(tr('The meal stays in your diet log.')),
         actions: [
-          TextButton(onPressed: () => Navigator.of(d).pop(false), child: const Text('Keep')),
-          TextButton(onPressed: () => Navigator.of(d).pop(true), child: const Text('Delete')),
+          TextButton(onPressed: () => Navigator.of(d).pop(false), child: Text(tr('Keep'))),
+          TextButton(onPressed: () => Navigator.of(d).pop(true), child: Text(tr('Delete'))),
         ],
       ),
     );
@@ -218,11 +219,11 @@ class _SnapScreenState extends ConsumerState<SnapScreen> {
     final snap = ref.watch(snapByIdProvider(widget.args.id));
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Food snap'),
+        title: Text(tr('Food snap')),
         actions: [
           if (snap != null)
             IconButton(
-              tooltip: 'Delete snap',
+              tooltip: tr('Delete snap'),
               icon: const Icon(Icons.delete_outline_rounded),
               onPressed: () => _delete(snap),
             ),
@@ -230,7 +231,7 @@ class _SnapScreenState extends ConsumerState<SnapScreen> {
       ),
       body: PageBackground(
         child: snap == null
-            ? const Center(child: Text('This snap is no longer on this phone.'))
+            ? Center(child: Text(tr('This snap is no longer on this phone.')))
             : Column(
                 children: [
                   Expanded(
@@ -262,11 +263,10 @@ class _SnapScreenState extends ConsumerState<SnapScreen> {
                             TextButton.icon(
                               onPressed: _sharing ? null : () => _sendToFriends(snap),
                               icon: const Icon(Icons.send_rounded),
-                              label: const Text('Send to FittArc friends (24 h)'),
+                              label: Text(tr('Send to FittArc friends (24 h)')),
                             ),
                           const SizedBox(height: 4),
-                          Text(
-                            'Saved on this phone only. Sharing sends the picture to the app you pick.',
+                          Text(tr('Saved on this phone only. Sharing sends the picture to the app you pick.'),
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.bodySmall,
                           ),

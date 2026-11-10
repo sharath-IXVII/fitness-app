@@ -1,3 +1,4 @@
+import '../../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -42,24 +43,24 @@ class ConsistencyCard extends StatelessWidget {
                   icon: Icons.local_fire_department_rounded,
                   color: AppColors.steps,
                   value: current,
-                  label: 'Day streak',
+                  label: tr('Day streak'),
                 ),
                 const _Divider(),
-                _Stat(icon: Icons.emoji_events_rounded, color: AppColors.gold, value: longest, label: 'Best streak'),
+                _Stat(icon: Icons.emoji_events_rounded, color: AppColors.gold, value: longest, label: tr('Best streak')),
                 const _Divider(),
-                _Stat(icon: Icons.verified_rounded, color: AppColors.primary, value: perfect, label: 'Perfect days'),
+                _Stat(icon: Icons.verified_rounded, color: AppColors.primary, value: perfect, label: tr('Perfect days')),
               ],
             ),
           ),
           const SizedBox(height: 10),
           Tooltip(
-            message: 'Every 7 days in a row earns a streak freeze (keep up to 2). '
-                'If you miss a day, a freeze saves your streak automatically.',
+            message: tr('Every 7 days in a row earns a streak freeze (keep up to 2). '
+                'If you miss a day, a freeze saves your streak automatically.'),
             triggerMode: TooltipTriggerMode.tap,
             showDuration: const Duration(seconds: 5),
             child: Row(
               children: [
-                Text('❄️', style: Theme.of(context).textTheme.titleSmall),
+                Text(tr('❄️'), style: Theme.of(context).textTheme.titleSmall),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Text(

@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -238,7 +239,7 @@ class _GoogleButton extends StatelessWidget {
                   ),
                 ),
               const SizedBox(width: 12),
-              Text('Continue with Google', style: Theme.of(context).textTheme.titleMedium),
+              Text(tr('Continue with Google'), style: Theme.of(context).textTheme.titleMedium),
             ],
           ),
         ),
@@ -275,15 +276,15 @@ class _Agreement extends StatelessWidget {
             child: Wrap(
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Text('I agree to the ', style: text.bodySmall),
+                Text(tr('I agree to the '), style: text.bodySmall),
                 GestureDetector(
                   onTap: () => context.push(Routes.privacy),
-                  child: Text('Privacy Policy', style: link),
+                  child: Text(tr('Privacy Policy'), style: link),
                 ),
-                Text(' and ', style: text.bodySmall),
+                Text(tr(' and '), style: text.bodySmall),
                 GestureDetector(
                   onTap: () => context.push(Routes.terms),
-                  child: Text('Terms of use', style: link),
+                  child: Text(tr('Terms of use'), style: link),
                 ),
                 Text('.', style: text.bodySmall),
               ],

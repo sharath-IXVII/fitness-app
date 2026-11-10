@@ -1,3 +1,4 @@
+import '../../../core/i18n/i18n.dart';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -82,14 +83,13 @@ class _BodyCheckSheetState extends ConsumerState<BodyCheckSheet> {
     );
 
     return SheetFrame(
-      title: 'Body check',
+      title: tr('Body check'),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Use a soft tape measure, standing relaxed. These are estimates for your fitness, not a medical test.',
+            Text(tr('Use a soft tape measure, standing relaxed. These are estimates for your fitness, not a medical test.'),
               style: text.bodyMedium,
             ),
             const SizedBox(height: 14),
@@ -98,7 +98,7 @@ class _BodyCheckSheetState extends ConsumerState<BodyCheckSheet> {
             if (female) field(_hip, 'Hips', 'At the widest point'),
             const SizedBox(height: 6),
             _Result(
-              title: 'Body fat (estimate)',
+              title: tr('Body fat (estimate)'),
               value: fat == null ? '–' : '${fat.toStringAsFixed(1)} %',
               note: fat == null ? 'Add your measurements above.' : bodyFatBand(fat, female: female),
             ),
@@ -114,20 +114,19 @@ class _BodyCheckSheetState extends ConsumerState<BodyCheckSheet> {
               ),
             if (whtr != null)
               _Result(
-                title: 'Waist to height',
+                title: tr('Waist to height'),
                 value: whtr.toStringAsFixed(2),
                 note: whtr < 0.5
                     ? 'Under 0.5: a healthy sign.'
                     : 'Over 0.5. Daily walks and less fried and sugary food help bring it down.',
               ),
             const SizedBox(height: 10),
-            Text(
-              'Body fat uses the U.S. Navy tape method; it is usually within 3–4 points of a lab scan. A fitter body '
-              'is good for your heart and energy.',
+            Text(tr('Body fat uses the U.S. Navy tape method; it is usually within 3–4 points of a lab scan. A fitter body '
+              'is good for your heart and energy.'),
               style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 14),
-            GradientButton(label: 'Done', onPressed: () => Navigator.of(context).pop()),
+            GradientButton(label: tr('Done'), onPressed: () => Navigator.of(context).pop()),
           ],
         ),
       ),

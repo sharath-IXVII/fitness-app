@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -87,7 +88,7 @@ class _ArcCalendarState extends ConsumerState<ArcCalendar> {
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
-              child: Text('Go to arc', style: text.titleLarge),
+              child: Text(tr('Go to arc'), style: text.titleLarge),
             ),
             for (var i = 0; i <= maxBack; i++)
               Builder(
@@ -132,13 +133,13 @@ class _ArcCalendarState extends ConsumerState<ArcCalendar> {
           children: [
             _Arrow(
               icon: Icons.chevron_left_rounded,
-              label: 'Previous arc',
+              label: tr('Previous arc'),
               onTap: _back < maxBack ? () => _goTo(_back + 1) : null,
             ),
             Expanded(
               child: Semantics(
                 button: true,
-                label: 'Choose arc',
+                label: tr('Choose arc'),
                 child: InkWell(
                   borderRadius: BorderRadius.circular(12),
                   onTap: () => _pick(now, maxBack),
@@ -161,7 +162,7 @@ class _ArcCalendarState extends ConsumerState<ArcCalendar> {
             ),
             _Arrow(
               icon: Icons.chevron_right_rounded,
-              label: 'Next arc',
+              label: tr('Next arc'),
               onTap: _back > 0 ? () => _goTo(_back - 1) : null,
             ),
           ],

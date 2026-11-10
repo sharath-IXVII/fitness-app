@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -85,8 +86,7 @@ class _RunReportScreenState extends ConsumerState<RunReportScreen> {
             ? Center(
                 child: Padding(
                   padding: const EdgeInsets.all(32),
-                  child: Text(
-                    'This report is gone. Reports are kept for 5 hours after a challenge.',
+                  child: Text(tr('This report is gone. Reports are kept for 5 hours after a challenge.'),
                     style: text.bodyLarge,
                     textAlign: TextAlign.center,
                   ),
@@ -125,7 +125,7 @@ class _RunReportScreenState extends ConsumerState<RunReportScreen> {
                                 ),
                               ),
                               icon: const Icon(Icons.map_rounded),
-                              label: const Text('See the route on the map'),
+                              label: Text(tr('See the route on the map')),
                             ),
                           if (kept)
                           Text(
@@ -138,7 +138,7 @@ class _RunReportScreenState extends ConsumerState<RunReportScreen> {
                             children: [
                               Expanded(
                                 child: GradientButton(
-                                  label: 'Download',
+                                  label: tr('Download'),
                                   icon: Icons.download_rounded,
                                   onPressed: _busy
                                       ? null
@@ -168,7 +168,7 @@ class _RunReportScreenState extends ConsumerState<RunReportScreen> {
                                           "Couldn't share. Try again.",
                                         ),
                                   icon: const Icon(Icons.ios_share_rounded),
-                                  label: const Text('Share'),
+                                  label: Text(tr('Share')),
                                 ),
                               ),
                             ],
@@ -247,7 +247,7 @@ class RunReportCard extends StatelessWidget {
                     const SizedBox(width: 6),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 6),
-                      child: Text('km', style: body(16, muted)),
+                      child: Text(tr('km'), style: body(16, muted)),
                     ),
                     const Spacer(),
                     if (r.rank != null)
@@ -283,13 +283,13 @@ class RunReportCard extends StatelessWidget {
                     decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(18)),
                     padding: const EdgeInsets.all(14),
                     child: r.route.length < 2
-                        ? Center(child: Text('Route', style: body(11, muted)))
+                        ? Center(child: Text(tr('Route'), style: body(11, muted)))
                         : RouteSketch(route: r.route, color: accent),
                   ),
                 ),
                 const SizedBox(height: 12),
                 if (laps.isNotEmpty) ...[
-                  Text('Splits per km', style: body(11, muted, FontWeight.w600)),
+                  Text(tr('Splits per km'), style: body(11, muted, FontWeight.w600)),
                   const SizedBox(height: 4),
                   for (final (i, ms) in laps.indexed.take(6))
                     Padding(

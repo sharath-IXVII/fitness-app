@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -32,16 +33,16 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
       context: context,
       builder: (d) => StatefulBuilder(
         builder: (d, setD) => AlertDialog(
-          title: const Text('Join with a code'),
+          title: Text(tr('Join with a code')),
           content: TextField(
             controller: controller,
             autofocus: true,
             textCapitalization: TextCapitalization.characters,
             maxLength: 7,
-            decoration: InputDecoration(hintText: 'K7Q2MX', errorText: error),
+            decoration: InputDecoration(hintText: tr('K7Q2MX'), errorText: error),
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.of(d).pop(), child: const Text('Cancel')),
+            TextButton(onPressed: () => Navigator.of(d).pop(), child: Text(tr('Cancel'))),
             TextButton(
               onPressed: () async {
                 try {
@@ -53,7 +54,7 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
                   setD(() => error = "Couldn't check the code. Check your internet.");
                 }
               },
-              child: const Text('Find club'),
+              child: Text(tr('Find club')),
             ),
           ],
         ),
@@ -68,12 +69,12 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
     final text = Theme.of(context).textTheme;
     if (ref.watch(clubsBackendProvider) == null || ref.watch(myPublicProfileProvider) == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Clubs')),
+        appBar: AppBar(title: Text(tr('Clubs'))),
         body: PageBackground(
           child: Center(
             child: Padding(
               padding: const EdgeInsets.all(32),
-              child: Text('Sign in with Google to create and join clubs.', style: text.bodyLarge),
+              child: Text(tr('Sign in with Google to create and join clubs.'), style: text.bodyLarge),
             ),
           ),
         ),
@@ -86,15 +87,15 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
         (_query.isEmpty || '${c.name} ${c.about}'.toLowerCase().contains(_query.toLowerCase()));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Clubs')),
+      appBar: AppBar(title: Text(tr('Clubs'))),
       body: PageBackground(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
           children: [
-            Text('Find your gym, walking or running crew. Chats disappear after 24 hours.', style: text.bodyMedium),
+            Text(tr('Find your gym, walking or running crew. Chats disappear after 24 hours.'), style: text.bodyMedium),
             const SizedBox(height: 14),
             GradientButton(
-              label: 'Create a club',
+              label: tr('Create a club'),
               icon: Icons.add_rounded,
               onPressed: () => showModalBottomSheet<void>(
                 context: context,
@@ -107,19 +108,19 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
               style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(52)),
               onPressed: () => _enterCode(context),
               icon: const Icon(Icons.keyboard_rounded),
-              label: const Text('Enter club code'),
+              label: Text(tr('Enter club code')),
             ),
             if (mine.isNotEmpty) ...[
               const SizedBox(height: 22),
-              Text('My clubs', style: text.titleLarge),
+              Text(tr('My clubs'), style: text.titleLarge),
               const SizedBox(height: 10),
               for (final id in mine) _MyClubTile(id: id),
             ],
             const SizedBox(height: 22),
-            Text('Discover', style: text.titleLarge),
+            Text(tr('Discover'), style: text.titleLarge),
             const SizedBox(height: 10),
             TextField(
-              decoration: const InputDecoration(prefixIcon: Icon(Icons.search_rounded), hintText: 'Search clubs'),
+              decoration: InputDecoration(prefixIcon: Icon(Icons.search_rounded), hintText: tr('Search clubs')),
               onChanged: (v) => setState(() => _query = v.trim()),
             ),
             const SizedBox(height: 10),
@@ -152,7 +153,7 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
                 if (shown.isEmpty) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Text('No clubs here yet. Start one!', style: text.bodyMedium),
+                    child: Text(tr('No clubs here yet. Start one!'), style: text.bodyMedium),
                   );
                 }
                 return Column(children: [for (final c in shown) _ClubTile(club: c)]);
@@ -291,18 +292,18 @@ class _CreateClubSheetState extends ConsumerState<_CreateClubSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text('Create a club', style: text.titleLarge),
+          Text(tr('Create a club'), style: text.titleLarge),
           const SizedBox(height: 12),
           TextField(
             controller: _name,
             maxLength: ClubLimits.name.$2,
-            decoration: const InputDecoration(labelText: 'Club name', hintText: 'Morning Walkers Indiranagar'),
+            decoration: InputDecoration(labelText: tr('Club name'), hintText: tr('Morning Walkers Indiranagar')),
           ),
           TextField(
             controller: _about,
             maxLength: ClubLimits.about,
             maxLines: 2,
-            decoration: const InputDecoration(labelText: 'What is it about? (optional)'),
+            decoration: InputDecoration(labelText: tr('What is it about? (optional)')),
           ),
           const SizedBox(height: 6),
           Wrap(

@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -61,7 +62,7 @@ class DietScreen extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    Text('Diet', style: text.headlineMedium),
+                    Text(tr('Diet'), style: text.headlineMedium),
                     const SizedBox(width: 10),
                     const BetaTag(),
                   ],
@@ -121,14 +122,14 @@ class DietScreen extends ConsumerWidget {
             children: [
               Icon(Icons.restaurant_menu_rounded, color: AppColors.primary),
               const SizedBox(width: 12),
-              Expanded(child: Text('Food guide: what is in 100 g of common foods', style: text.titleSmall)),
+              Expanded(child: Text(tr('Food guide: what is in 100 g of common foods'), style: text.titleSmall)),
               Icon(Icons.chevron_right_rounded, color: AppColors.textMuted),
             ],
           ),
         ),
       ),
       const SizedBox(height: 18),
-      Text('Learn the basics', style: text.titleMedium),
+      Text(tr('Learn the basics'), style: text.titleMedium),
       const SizedBox(height: 10),
       const _LearnRow(),
       const SizedBox(height: 32),
@@ -346,7 +347,7 @@ class _MealSection extends StatelessWidget {
               TextButton.icon(
                 onPressed: onAdd,
                 icon: const Icon(Icons.add_rounded, size: 18),
-                label: const Text('Add'),
+                label: Text(tr('Add')),
               ),
             ],
           ),
@@ -438,7 +439,7 @@ class _PlanCard extends ConsumerWidget {
                 ),
               ),
               IconButton(
-                tooltip: 'Shuffle',
+                tooltip: tr('Shuffle'),
                 onPressed: () {
                   HapticFeedback.selectionClick();
                   ref.read(planShuffleProvider.notifier).next();
@@ -523,8 +524,8 @@ class _GoalCard extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Set a weight goal', style: text.titleSmall),
-                    Text('Pick a target and a date — we\'ll set a safe calorie pace.', style: text.bodySmall),
+                    Text(tr('Set a weight goal'), style: text.titleSmall),
+                    Text(tr('Pick a target and a date — we\'ll set a safe calorie pace.'), style: text.bodySmall),
                   ],
                 ),
               ),
@@ -635,7 +636,7 @@ class _WeightCard extends ConsumerWidget {
               ),
               TextButton(
                 onPressed: () => SheetFrame.show<void>(context, const WeighInSheet()),
-                child: const Text('Log weight'),
+                child: Text(tr('Log weight')),
               ),
             ],
           ),

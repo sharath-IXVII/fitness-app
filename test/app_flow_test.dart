@@ -29,6 +29,12 @@ Widget _app(SharedPreferences prefs) => ProviderScope(
   child: const FitTrackerApp(),
 );
 
+Future<void> _pickEnglish(WidgetTester t) async {
+  if (find.text('Choose your language').evaluate().isEmpty) return;
+  await t.tap(find.text('English'));
+  await _wait(t, 5600);
+}
+
 void main() {
   setUpAll(() => GoogleFonts.config.allowRuntimeFetching = false);
 
@@ -42,6 +48,9 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       await t.pumpWidget(_app(prefs));
       await _wait(t, 5600);
+      // A new install asks for the language first.
+      expect(find.text('Choose your language'), findsOneWidget);
+      await _pickEnglish(t);
 
       // Sign up with Google (demo backend).
       expect(find.text('Create your account'), findsOneWidget);
@@ -133,6 +142,7 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     await t.pumpWidget(_app(prefs));
     await _wait(t, 5600);
+    await _pickEnglish(t);
 
     await _tap(t, 'Log in');
     expect(find.text('Welcome back'), findsOneWidget);
@@ -154,6 +164,7 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     await t.pumpWidget(_app(prefs));
     await _wait(t, 5600);
+    await _pickEnglish(t);
 
     // Without the tick, the Google button does nothing.
     await t.tap(find.text('Continue with Google').last);

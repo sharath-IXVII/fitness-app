@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -81,23 +82,23 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     return SheetFrame(
-      title: 'Edit profile',
-      footer: GradientButton(label: 'Save', icon: Icons.check_rounded, onPressed: _save),
+      title: tr('Edit profile'),
+      footer: GradientButton(label: tr('Save'), icon: Icons.check_rounded, onPressed: _save),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             FormSection(
-              title: 'Name',
+              title: tr('Name'),
               child: TextField(controller: _name, textCapitalization: TextCapitalization.words),
             ),
             FormSection(
-              title: 'Body',
+              title: tr('Body'),
               child: Column(
                 children: [
                   _Stepper(
-                    label: 'Age',
+                    label: tr('Age'),
                     value: _p.age.toDouble(),
                     unit: 'years',
                     min: 13,
@@ -105,7 +106,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                     onChanged: (v) => setState(() => _p = _p.copyWith(age: v.round())),
                   ),
                   _Stepper(
-                    label: 'Height',
+                    label: tr('Height'),
                     value: _p.heightCm,
                     unit: 'cm',
                     min: 120,
@@ -113,7 +114,7 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
                     onChanged: (v) => setState(() => _p = _p.copyWith(heightCm: v)),
                   ),
                   _Stepper(
-                    label: 'Weight',
+                    label: tr('Weight'),
                     value: _p.weightKg,
                     unit: 'kg',
                     min: 30,
@@ -129,37 +130,37 @@ class _EditProfileSheetState extends ConsumerState<EditProfileSheet> {
               ),
             ),
             FormSection(
-              title: 'Goal',
+              title: tr('Goal'),
               child: _pills(goals, _p.goal, (g) => setState(() => _p = _p.copyWith(goal: g))),
             ),
             FormSection(
-              title: 'Diet',
+              title: tr('Diet'),
               child: _pills(diets, _p.diet, (d) => setState(() => _p = _p.copyWith(diet: d))),
             ),
             FormSection(
-              title: 'Activity outside workouts',
+              title: tr('Activity outside workouts'),
               child: _pills(activities, _p.activity, (a) => setState(() => _p = _p.copyWith(activity: a))),
             ),
             FormSection(
-              title: 'Fitness level',
+              title: tr('Fitness level'),
               child: _pills(levels, _p.level, (l) => setState(() => _p = _p.copyWith(level: l))),
             ),
             FormSection(
-              title: 'Your day',
+              title: tr('Your day'),
               child: Row(
                 children: [
                   Expanded(
-                    child: _TimeBox(label: 'Wake up', time: _p.wakeTime, onTap: () => _pickTime(true)),
+                    child: _TimeBox(label: tr('Wake up'), time: _p.wakeTime, onTap: () => _pickTime(true)),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: _TimeBox(label: 'Sleep', time: _p.sleepTime, onTap: () => _pickTime(false)),
+                    child: _TimeBox(label: tr('Sleep'), time: _p.sleepTime, onTap: () => _pickTime(false)),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 8),
-            Text('Calories, protein, water and step goals update from these.', style: text.bodySmall),
+            Text(tr('Calories, protein, water and step goals update from these.'), style: text.bodySmall),
           ],
         ),
       ),

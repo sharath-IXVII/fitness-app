@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -63,10 +64,10 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Start from a template', style: Theme.of(c).textTheme.titleLarge),
+              Text(tr('Start from a template'), style: Theme.of(c).textTheme.titleLarge),
               if (hasPlan) ...[
                 const SizedBox(height: 4),
-                Text('This replaces your current plan.', style: Theme.of(c).textTheme.bodySmall),
+                Text(tr('This replaces your current plan.'), style: Theme.of(c).textTheme.bodySmall),
               ],
               const SizedBox(height: 12),
               for (final t in RoutineTemplate.values)
@@ -105,7 +106,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
       ..showSnackBar(
         SnackBar(
           content: Text('${b.name} removed'),
-          action: SnackBarAction(label: 'Undo', onPressed: () => notifier.restore(b)),
+          action: SnackBarAction(label: tr('Undo'), onPressed: () => notifier.restore(b)),
           persist: false,
         ),
       );
@@ -135,9 +136,9 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                 children: [
                   Row(
                     children: [
-                      Expanded(child: Text('My Day', style: text.headlineMedium)),
+                      Expanded(child: Text(tr('My Day'), style: text.headlineMedium)),
                       IconButton(
-                        tooltip: 'Templates',
+                        tooltip: tr('Templates'),
                         onPressed: _pickTemplate,
                         icon: Icon(Icons.auto_awesome_mosaic_outlined, color: AppColors.textSecondary),
                       ),
@@ -154,7 +155,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  Text('Plan your day once — we\'ll remind you at every step.', style: text.bodyMedium),
+                  Text(tr('Plan your day once — we\'ll remind you at every step.'), style: text.bodyMedium),
                   const SizedBox(height: 16),
                   _WeekdayPicker(value: _weekday, onChanged: (d) => setState(() => _weekday = d)),
                   const SizedBox(height: 16),
@@ -182,7 +183,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 sliver: SliverToBoxAdapter(
                   child: GlassCard(
-                    child: Text('Nothing planned for this day. Tap + to add something.', style: text.bodyMedium),
+                    child: Text(tr('Nothing planned for this day. Tap + to add something.'), style: text.bodyMedium),
                   ),
                 ),
               )
@@ -528,15 +529,14 @@ class _EmptyPlan extends StatelessWidget {
             child: Icon(Icons.view_timeline_rounded, color: AppColors.primary, size: 30),
           ),
           const SizedBox(height: 14),
-          Text('Plan your day', style: text.titleLarge),
+          Text(tr('Plan your day'), style: text.titleLarge),
           const SizedBox(height: 6),
-          Text(
-            'Pick a template, then adjust the times. You\'ll get a reminder for each item.',
+          Text(tr('Pick a template, then adjust the times. You\'ll get a reminder for each item.'),
             style: text.bodyMedium,
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 18),
-          GradientButton(label: 'Choose a template', onPressed: onTemplate),
+          GradientButton(label: tr('Choose a template'), onPressed: onTemplate),
         ],
       ),
     );

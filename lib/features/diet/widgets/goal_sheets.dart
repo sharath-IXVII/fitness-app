@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -86,7 +87,7 @@ class _GoalSheetState extends ConsumerState<GoalSheet> {
     };
 
     return SheetFrame(
-      title: 'Weight goal',
+      title: tr('Weight goal'),
       action: _existing == null
           ? null
           : TextButton(
@@ -94,7 +95,7 @@ class _GoalSheetState extends ConsumerState<GoalSheet> {
                 ref.read(weightGoalProvider.notifier).set(null);
                 Navigator.pop(context);
               },
-              child: const Text('Remove'),
+              child: Text(tr('Remove')),
             ),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
@@ -103,7 +104,7 @@ class _GoalSheetState extends ConsumerState<GoalSheet> {
           children: [
             Text('Now ${_p.weightKg.toStringAsFixed(1)} kg', style: text.bodyMedium),
             FormSection(
-              title: 'Target weight',
+              title: tr('Target weight'),
               child: RulerPicker(
                 min: 30,
                 max: 180,
@@ -115,7 +116,7 @@ class _GoalSheetState extends ConsumerState<GoalSheet> {
               ),
             ),
             FormSection(
-              title: 'By when',
+              title: tr('By when'),
               child: Wrap(
                 spacing: 8,
                 runSpacing: 8,
@@ -183,7 +184,7 @@ class _WeighInSheetState extends ConsumerState<WeighInSheet> {
   @override
   Widget build(BuildContext context) {
     return SheetFrame(
-      title: 'Log weight',
+      title: tr('Log weight'),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
         child: Column(
@@ -198,14 +199,13 @@ class _WeighInSheetState extends ConsumerState<WeighInSheet> {
               onChanged: (v) => setState(() => _kg = v),
             ),
             const SizedBox(height: 12),
-            Text(
-              'Weigh in at the same time each day, ideally in the morning. Your targets update to match.',
+            Text(tr('Weigh in at the same time each day, ideally in the morning. Your targets update to match.'),
               style: Theme.of(context).textTheme.bodySmall,
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 18),
             GradientButton(
-              label: 'Save',
+              label: tr('Save'),
               icon: Icons.check_rounded,
               onPressed: () {
                 ref.read(weightLogProvider.notifier).log(_kg);

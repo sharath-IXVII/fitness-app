@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -69,7 +70,7 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
           title: Text(title),
           content: Text(body),
           actions: [
-            TextButton(onPressed: () => Navigator.of(d).pop(false), child: const Text('Cancel')),
+            TextButton(onPressed: () => Navigator.of(d).pop(false), child: Text(tr('Cancel'))),
             TextButton(onPressed: () => Navigator.of(d).pop(true), child: Text(action)),
           ],
         ),
@@ -87,13 +88,13 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
             if (mine || owner)
               ListTile(
                 leading: const Icon(Icons.delete_outline_rounded),
-                title: const Text('Delete message'),
+                title: Text(tr('Delete message')),
                 onTap: () => Navigator.of(s).pop('delete'),
               ),
             if (!mine) ...[
               ListTile(
                 leading: const Icon(Icons.flag_outlined),
-                title: const Text('Report message'),
+                title: Text(tr('Report message')),
                 onTap: () => Navigator.of(s).pop('report'),
               ),
               ListTile(
@@ -165,11 +166,11 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
     await showDialog<void>(
       context: context,
       builder: (d) => AlertDialog(
-        title: const Text('Invite people'),
+        title: Text(tr('Invite people')),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Share this code. Anyone with FittArc can join with it.'),
+            Text(tr('Share this code. Anyone with FittArc can join with it.')),
             const SizedBox(height: 14),
             SelectableText(
               code!,
@@ -184,14 +185,14 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
               Navigator.of(d).pop();
               _say('Code copied.');
             },
-            child: const Text('Copy'),
+            child: Text(tr('Copy')),
           ),
           TextButton(
             onPressed: () {
               Navigator.of(d).pop();
               ref.read(shareTextProvider)(message);
             },
-            child: const Text('Share'),
+            child: Text(tr('Share')),
           ),
         ],
       ),
@@ -206,12 +207,12 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
     final c = club.value;
     if (me == null || c == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Club')),
+        appBar: AppBar(title: Text(tr('Club'))),
         body: PageBackground(
           child: Center(
             child: club.isLoading
                 ? const CircularProgressIndicator()
-                : Text('This club is no longer here.', style: text.bodyLarge),
+                : Text(tr('This club is no longer here.'), style: text.bodyLarge),
           ),
         ),
       );
@@ -225,23 +226,23 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(c.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-            if (owner) Text('You are the admin', style: Theme.of(context).textTheme.labelSmall),
+            if (owner) Text(tr('You are the admin'), style: Theme.of(context).textTheme.labelSmall),
           ],
         ),
         actions: [
           if (member && (c.code != null || owner))
             IconButton(
-              tooltip: 'Invite people',
+              tooltip: tr('Invite people'),
               icon: const Icon(Icons.person_add_alt_1_rounded),
               onPressed: () => _invite(c),
             ),
           if (member)
             PopupMenuButton<String>(
-              tooltip: 'Club options',
+              tooltip: tr('Club options'),
               onSelected: (a) => _menu(c, me.uid, a),
               itemBuilder: (_) => [
-                if (!owner) const PopupMenuItem(value: 'leave', child: Text('Leave club')),
-                if (owner) const PopupMenuItem(value: 'delete', child: Text('Delete club')),
+                if (!owner) PopupMenuItem(value: 'leave', child: Text(tr('Leave club'))),
+                if (owner) PopupMenuItem(value: 'delete', child: Text(tr('Delete club'))),
               ],
             ),
         ],
@@ -301,8 +302,7 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
                 ),
         ),
         const SizedBox(height: 12),
-        Text(
-          'Be kind. Chats disappear after 24 hours and links are not allowed.',
+        Text(tr('Be kind. Chats disappear after 24 hours and links are not allowed.'),
           style: text.bodySmall,
           textAlign: TextAlign.center,
         ),
@@ -335,13 +335,13 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
             children: [
               Icon(Icons.timer_outlined, size: 18, color: AppColors.primary),
               const SizedBox(width: 8),
-              Expanded(child: Text('Messages disappear after 24 hours. Links are not allowed.', style: text.bodySmall)),
+              Expanded(child: Text(tr('Messages disappear after 24 hours. Links are not allowed.'), style: text.bodySmall)),
             ],
           ),
         ),
         Expanded(
           child: messages.isEmpty
-              ? Center(child: Text('Say hello to the club!', style: text.bodyLarge))
+              ? Center(child: Text(tr('Say hello to the club!'), style: text.bodyLarge))
               : ListView.builder(
                   reverse: true,
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
@@ -374,7 +374,7 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
                         maxLength: ClubLimits.message,
                         buildCounter: (_, {required currentLength, required isFocused, maxLength}) => null,
                         textCapitalization: TextCapitalization.sentences,
-                        decoration: const InputDecoration(hintText: 'Message the club'),
+                        decoration: InputDecoration(hintText: tr('Message the club')),
                         onChanged: (_) {
                           if (_error != null) setState(() => _error = null);
                         },
@@ -382,7 +382,7 @@ class _ClubScreenState extends ConsumerState<ClubScreen> {
                     ),
                     const SizedBox(width: 8),
                     IconButton.filled(
-                      tooltip: 'Send',
+                      tooltip: tr('Send'),
                       iconSize: 26,
                       onPressed: _busy ? null : _send,
                       icon: const Icon(Icons.send_rounded),

@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -37,7 +38,7 @@ class FriendsScreen extends ConsumerWidget {
     final me = ref.watch(myPublicProfileProvider);
     if (ref.watch(friendsBackendProvider) == null || me == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Friends')),
+        appBar: AppBar(title: Text(tr('Friends'))),
         body: const PageBackground(child: _Unavailable()),
       );
     }
@@ -47,12 +48,12 @@ class FriendsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Friends'),
+        title: Text(tr('Friends')),
         actions: [
           TextButton.icon(
             onPressed: () => context.push(Routes.clubs),
             icon: const Icon(Icons.groups_rounded),
-            label: const Text('Clubs'),
+            label: Text(tr('Clubs')),
           ),
         ],
       ),
@@ -68,7 +69,7 @@ class FriendsScreen extends ConsumerWidget {
               children: [
                 Expanded(
                   child: GradientButton(
-                    label: 'Challenge',
+                    label: tr('Challenge'),
                     icon: Icons.local_fire_department_rounded,
                     onPressed: () => showChallengeSheet(context, ref),
                   ),
@@ -82,7 +83,7 @@ class FriendsScreen extends ConsumerWidget {
                     ),
                     onPressed: () => _enterCode(context, ref),
                     icon: const Icon(Icons.keyboard_rounded),
-                    label: const Text('Enter code'),
+                    label: Text(tr('Enter code')),
                   ),
                 ),
               ],
@@ -91,7 +92,7 @@ class FriendsScreen extends ConsumerWidget {
             const _FriendRequests(),
             const _AddFriendsCard(),
             const SizedBox(height: 24),
-            Text('Challenges', style: text.titleLarge),
+            Text(tr('Challenges'), style: text.titleLarge),
             const SizedBox(height: 10),
             challenges.when(
               loading: () => const Padding(
@@ -106,8 +107,7 @@ class FriendsScreen extends ConsumerWidget {
                     .take(20)
                     .toList();
                 if (shown.isEmpty) {
-                  return Text(
-                    'No challenges yet. Tap Challenge, pick an exercise and send the code to a friend. Finish it together and you both earn 50 XP.',
+                  return Text(tr('No challenges yet. Tap Challenge, pick an exercise and send the code to a friend. Finish it together and you both earn 50 XP.'),
                     style: text.bodyMedium?.copyWith(color: AppColors.textSecondary),
                   );
                 }
@@ -119,7 +119,7 @@ class FriendsScreen extends ConsumerWidget {
               },
             ),
             const SizedBox(height: 18),
-            Text('Leaderboard', style: text.titleLarge),
+            Text(tr('Leaderboard'), style: text.titleLarge),
             const SizedBox(height: 4),
             Text(
               friends.isEmpty ? 'Add a friend with a code, or finish a challenge together, and they appear here.' : 'Ranked by XP',
@@ -159,12 +159,12 @@ class FriendsScreen extends ConsumerWidget {
               if (c.fromTitle != null) ...[_TitleChip(title: c.fromTitle!), const SizedBox(height: 12)],
               Text('${c.task[0].toUpperCase()}${c.task.substring(1)} for the ${c.arcLabel}.'),
               const SizedBox(height: 8),
-              const Text('The camera counts your reps. Finish it and you both become friends and earn 50 XP.'),
+              Text(tr('The camera counts your reps. Finish it and you both become friends and earn 50 XP.')),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(d, false), child: const Text('Not now')),
-            FilledButton(onPressed: () => Navigator.pop(d, true), child: const Text('Accept')),
+            TextButton(onPressed: () => Navigator.pop(d, false), child: Text(tr('Not now'))),
+            FilledButton(onPressed: () => Navigator.pop(d, true), child: Text(tr('Accept'))),
           ],
         ),
       );
@@ -281,7 +281,7 @@ class _ChallengeSheetState extends ConsumerState<_ChallengeSheet> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton.filledTonal(
-                  tooltip: 'Fewer',
+                  tooltip: tr('Fewer'),
                   onPressed: _reps - step >= (_exercise.timed ? 10 : 1) ? () => setState(() => _reps -= step) : null,
                   icon: const Icon(Icons.remove_rounded),
                 ),
@@ -294,7 +294,7 @@ class _ChallengeSheetState extends ConsumerState<_ChallengeSheet> {
                   ),
                 ),
                 IconButton.filledTonal(
-                  tooltip: 'More',
+                  tooltip: tr('More'),
                   onPressed: _reps + step <= (_exercise.timed ? 300 : 200) ? () => setState(() => _reps += step) : null,
                   icon: const Icon(Icons.add_rounded),
                 ),
@@ -340,11 +340,11 @@ class _CodeDialogState extends State<_CodeDialog> {
       autofocus: true,
       textCapitalization: TextCapitalization.characters,
       maxLength: 8,
-      decoration: const InputDecoration(hintText: 'e.g. K7Q2MX'),
+      decoration: InputDecoration(hintText: tr('e.g. K7Q2MX')),
       onSubmitted: (v) => Navigator.pop(context, v),
     ),
     actions: [
-      TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+      TextButton(onPressed: () => Navigator.pop(context), child: Text(tr('Cancel'))),
       FilledButton(onPressed: () => Navigator.pop(context, _c.text), child: Text(widget.action)),
     ],
   );
@@ -376,12 +376,12 @@ class _AddFriendsCard extends ConsumerWidget {
               if (found.title != null) ...[_TitleChip(title: found.title!), const SizedBox(height: 12)],
               Text('Level ${found.level} · ${found.streak}-day streak'),
               const SizedBox(height: 8),
-              const Text('They get a request and become your friend when they accept.'),
+              Text(tr('They get a request and become your friend when they accept.')),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(d, false), child: const Text('Cancel')),
-            FilledButton(onPressed: () => Navigator.pop(d, true), child: const Text('Send request')),
+            TextButton(onPressed: () => Navigator.pop(d, false), child: Text(tr('Cancel'))),
+            FilledButton(onPressed: () => Navigator.pop(d, true), child: Text(tr('Send request'))),
           ],
         ),
       );
@@ -404,7 +404,7 @@ class _AddFriendsCard extends ConsumerWidget {
   Future<void> _redeem(BuildContext context, WidgetRef ref) async {
     final typed = await showDialog<String>(
       context: context,
-      builder: (_) => const _CodeDialog(title: 'Who invited you? Enter their code', action: 'Claim'),
+      builder: (_) => _CodeDialog(title: tr('Who invited you? Enter their code'), action: 'Claim'),
     );
     if (typed == null || !context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
@@ -433,7 +433,7 @@ class _AddFriendsCard extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Add friends', style: text.titleMedium),
+          Text(tr('Add friends'), style: text.titleMedium),
           const SizedBox(height: 2),
           Text(
             'Share your code: when a new friend joins with it, you both get ${FriendsBackend.inviteXp} XP. '
@@ -449,7 +449,7 @@ class _AddFriendsCard extends ConsumerWidget {
                   decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(14)),
                   child: code.when(
                     loading: () => Text('…', style: text.titleLarge),
-                    error: (_, _) => Text('Unavailable', style: text.bodyMedium),
+                    error: (_, _) => Text(tr('Unavailable'), style: text.bodyMedium),
                     data: (c) => Text(
                       c ?? '',
                       style: text.titleLarge?.copyWith(letterSpacing: 4, color: AppColors.primary),
@@ -458,17 +458,17 @@ class _AddFriendsCard extends ConsumerWidget {
                 ),
               ),
               IconButton(
-                tooltip: 'Copy my code',
+                tooltip: tr('Copy my code'),
                 onPressed: code.value == null
                     ? null
                     : () {
                         Clipboard.setData(ClipboardData(text: code.value!));
-                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Code copied')));
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('Code copied'))));
                       },
                 icon: const Icon(Icons.copy_rounded),
               ),
               IconButton(
-                tooltip: 'Share my code',
+                tooltip: tr('Share my code'),
                 onPressed: code.value == null
                     ? null
                     : () => SharePlus.instance.share(
@@ -535,7 +535,7 @@ class _FriendRequests extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Friend requests', style: text.titleMedium),
+            Text(tr('Friend requests'), style: text.titleMedium),
             const SizedBox(height: 8),
             for (final r in list)
               Padding(
@@ -557,13 +557,13 @@ class _FriendRequests extends ConsumerWidget {
                       ),
                     ),
                     IconButton(
-                      tooltip: 'Decline',
+                      tooltip: tr('Decline'),
                       onPressed: () => run(() => b.declineRequest(me.uid, r.fromUid), 'Request removed'),
                       icon: const Icon(Icons.close_rounded),
                     ),
                     FilledButton(
                       onPressed: () => run(() => b.acceptRequest(me.uid, r), 'You and ${r.name} are friends'),
-                      child: const Text('Accept'),
+                      child: Text(tr('Accept')),
                     ),
                   ],
                 ),
@@ -589,10 +589,9 @@ class _Unavailable extends StatelessWidget {
           children: [
             Icon(Icons.group_rounded, size: 56, color: AppColors.primary),
             const SizedBox(height: 14),
-            Text('Friends is almost here', style: text.headlineSmall, textAlign: TextAlign.center),
+            Text(tr('Friends is almost here'), style: text.headlineSmall, textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            Text(
-              'Challenges and the leaderboard need an online account. They turn on in the next update.',
+            Text(tr('Challenges and the leaderboard need an online account. They turn on in the next update.'),
               style: text.bodyMedium?.copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
@@ -741,7 +740,7 @@ class _ChallengeCard extends StatelessWidget {
           ),
           if (c.status == ChallengeStatus.open && mine)
             IconButton(
-              tooltip: 'Share code again',
+              tooltip: tr('Share code again'),
               icon: const Icon(Icons.share_rounded),
               onPressed: () => SharePlus.instance.share(ShareParams(text: c.inviteMessage(AppInfo.storeUrl))),
             )
@@ -751,7 +750,7 @@ class _ChallengeCard extends StatelessWidget {
                 HapticFeedback.mediumImpact();
                 startChallengeWorkout(context, c);
               },
-              child: const Text('Go'),
+              child: Text(tr('Go')),
             ),
         ],
       ),
@@ -850,7 +849,7 @@ class FriendProfileScreen extends ConsumerWidget {
           title: Text(title),
           content: Text(body),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(d, false), child: const Text('Cancel')),
+            TextButton(onPressed: () => Navigator.pop(d, false), child: Text(tr('Cancel'))),
             FilledButton(onPressed: () => Navigator.pop(d, true), child: Text(verb)),
           ],
         ),
@@ -886,10 +885,10 @@ class FriendProfileScreen extends ConsumerWidget {
               if (p != null)
                 PopupMenuButton<String>(
                   onSelected: (a) => menu(a, p),
-                  itemBuilder: (_) => const [
-                    PopupMenuItem(value: 'remove', child: Text('Remove friend')),
-                    PopupMenuItem(value: 'block', child: Text('Block')),
-                    PopupMenuItem(value: 'report', child: Text('Report')),
+                  itemBuilder: (_) => [
+                    PopupMenuItem(value: 'remove', child: Text(tr('Remove friend'))),
+                    PopupMenuItem(value: 'block', child: Text(tr('Block'))),
+                    PopupMenuItem(value: 'report', child: Text(tr('Report'))),
                   ],
                 ),
             ],
@@ -916,11 +915,11 @@ class FriendProfileScreen extends ConsumerWidget {
                       const SizedBox(height: 10),
                       Center(
                         child: PopupMenuButton<FriendTag?>(
-                          tooltip: 'Tag this friend',
+                          tooltip: tr('Tag this friend'),
                           onSelected: (t) => ref.read(friendTagsProvider.notifier).set(uid, t),
                           itemBuilder: (_) => [
                             for (final t in FriendTag.values) PopupMenuItem(value: t, child: Text('${t.emoji} ${t.label}')),
-                            const PopupMenuItem(value: null, child: Text('No tag')),
+                            PopupMenuItem(value: null, child: Text(tr('No tag'))),
                           ],
                           child: Chip(
                             avatar: const Icon(Icons.label_outline_rounded, size: 18),
@@ -936,10 +935,10 @@ class FriendProfileScreen extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         child: Row(
                           children: [
-                            _Stat(value: '${p.level}', label: 'Level'),
-                            _Stat(value: '${p.xp}', label: 'XP'),
-                            _Stat(value: '${p.streak}', label: 'Day streak'),
-                            _Stat(value: '${p.bestStreak}', label: 'Best'),
+                            _Stat(value: '${p.level}', label: tr('Level')),
+                            _Stat(value: '${p.xp}', label: tr('XP')),
+                            _Stat(value: '${p.streak}', label: tr('Day streak')),
+                            _Stat(value: '${p.bestStreak}', label: tr('Best')),
                           ],
                         ),
                       ),
@@ -953,7 +952,7 @@ class FriendProfileScreen extends ConsumerWidget {
                             const SizedBox(height: 4),
                             Text('${p.arcActive} active days so far', style: text.bodyMedium),
                             const SizedBox(height: 10),
-                            Text('Workouts this week', style: text.titleSmall),
+                            Text(tr('Workouts this week'), style: text.titleSmall),
                             const SizedBox(height: 4),
                             Text('${p.workoutsWeek} guided workouts', style: text.bodyMedium),
                           ],

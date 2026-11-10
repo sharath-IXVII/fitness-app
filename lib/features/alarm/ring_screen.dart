@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -145,9 +146,9 @@ class _RingScreenState extends ConsumerState<RingScreen> {
                           ),
                           const Spacer(),
                           if (info.strict)
-                            _Tag(icon: Icons.lock_outline_rounded, label: 'Strict mode')
+                            _Tag(icon: Icons.lock_outline_rounded, label: tr('Strict mode'))
                           else if (info.hardMode)
-                            _Tag(icon: Icons.local_fire_department_outlined, label: 'No snooze'),
+                            _Tag(icon: Icons.local_fire_department_outlined, label: tr('No snooze')),
                         ],
                       ),
                       const SizedBox(height: 6),
@@ -178,8 +179,7 @@ class _RingScreenState extends ConsumerState<RingScreen> {
                           ),
                       if (info.strict) ...[
                         const SizedBox(height: 8),
-                        Text(
-                          'Emergency? Restarting your phone ends strict mode and stops this alarm.',
+                        Text(tr('Emergency? Restarting your phone ends strict mode and stops this alarm.'),
                           style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
                         ),
                       ],
@@ -216,7 +216,7 @@ class _RingScreenState extends ConsumerState<RingScreen> {
                         child: OutlinedButton.icon(
                           onPressed: _stop,
                           icon: const Icon(Icons.alarm_off_rounded, size: 18),
-                          label: const Text('Stop'),
+                          label: Text(tr('Stop')),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: AppColors.textPrimary,
                             backgroundColor: AppColors.surface,

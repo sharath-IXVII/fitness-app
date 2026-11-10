@@ -1,3 +1,4 @@
+import '../../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -63,8 +64,7 @@ class DemoNote extends StatelessWidget {
         Icon(Icons.info_outline_rounded, size: 18, color: AppColors.amber),
         const SizedBox(width: 10),
         Expanded(
-          child: Text(
-            'Demo mode — sign-in is simulated until Firebase is connected. SMS code: 123456.',
+          child: Text(tr('Demo mode — sign-in is simulated until Firebase is connected. SMS code: 123456.'),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.amber),
           ),
         ),

@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -81,7 +82,7 @@ class _DailyReportScreenState extends ConsumerState<DailyReportScreen> {
                             children: [
                               Expanded(
                                 child: GradientButton(
-                                  label: 'Share',
+                                  label: tr('Share'),
                                   icon: Icons.ios_share_rounded,
                                   onPressed: _busy
                                       ? null
@@ -111,7 +112,7 @@ class _DailyReportScreenState extends ConsumerState<DailyReportScreen> {
                                           'Saved to your gallery.',
                                         ),
                                   icon: const Icon(Icons.download_rounded),
-                                  label: const Text('Download'),
+                                  label: Text(tr('Download')),
                                 ),
                               ),
                             ],
@@ -120,14 +121,14 @@ class _DailyReportScreenState extends ConsumerState<DailyReportScreen> {
                             contentPadding: EdgeInsets.zero,
                             value: settings.enabled,
                             onChanged: (v) => ref.read(reportSettingsProvider.notifier).set(enabled: v),
-                            title: Text('Evening reminder', style: text.titleSmall),
+                            title: Text(tr('Evening reminder'), style: text.titleSmall),
                             subtitle: Text(
                               'Every day at ${DateFormat.jm().format(DateTime(2026, 1, 1, settings.minute ~/ 60, settings.minute % 60))}. '
                               'Tap to change the time.',
                               style: text.bodySmall,
                             ),
                             secondary: IconButton(
-                              tooltip: 'Change time',
+                              tooltip: tr('Change time'),
                               icon: const Icon(Icons.schedule_rounded),
                               onPressed: () async {
                                 final t = await showTimePicker(
@@ -187,7 +188,7 @@ class DailyReportCard extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Text('My day', style: body(15, ink, FontWeight.w700)),
+                    Text(tr('My day'), style: body(15, ink, FontWeight.w700)),
                     const Spacer(),
                     Text('FittArc', style: sport(14).copyWith(color: muted.withValues(alpha: 0.7))),
                   ],
@@ -213,7 +214,7 @@ class DailyReportCard extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text('${r.score}', style: sport(48)),
-                              Text('out of 100', style: body(10, muted)),
+                              Text(tr('out of 100'), style: body(10, muted)),
                             ],
                           ),
                         ),
@@ -356,7 +357,7 @@ class TodayReportTile extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text("Today's report", style: text.titleMedium),
-                    Text('Your score, goals and food for today. Share it!', style: text.bodySmall),
+                    Text(tr('Your score, goals and food for today. Share it!'), style: text.bodySmall),
                   ],
                 ),
               ),

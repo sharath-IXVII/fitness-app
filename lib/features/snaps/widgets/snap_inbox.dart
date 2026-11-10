@@ -1,3 +1,4 @@
+import '../../../core/i18n/i18n.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,7 +27,7 @@ class SnapInbox extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Snaps from friends', style: text.titleLarge),
+          Text(tr('Snaps from friends'), style: text.titleLarge),
           const SizedBox(height: 8),
           SizedBox(
             height: 112,
@@ -91,7 +92,7 @@ class _SnapViewer extends ConsumerWidget {
               final nav = Navigator.of(context);
               if (a == 'report' && me != null) {
                 await ref.read(snapShareBackendProvider)?.report(me, snap).catchError((_) {});
-                messenger.showSnackBar(const SnackBar(content: Text('Thanks. We will review it.')));
+                messenger.showSnackBar(SnackBar(content: Text(tr('Thanks. We will review it.'))));
               } else if (a == 'block' && me != null) {
                 await ref.read(hiddenPeopleProvider.notifier).hide(snap.from);
                 await ref.read(friendsBackendProvider)?.block(me, snap.from).catchError((_) {});
@@ -99,7 +100,7 @@ class _SnapViewer extends ConsumerWidget {
               }
             },
             itemBuilder: (_) => [
-              const PopupMenuItem(value: 'report', child: Text('Report')),
+              PopupMenuItem(value: 'report', child: Text(tr('Report'))),
               PopupMenuItem(value: 'block', child: Text('Block ${snap.fromName}')),
             ],
           ),

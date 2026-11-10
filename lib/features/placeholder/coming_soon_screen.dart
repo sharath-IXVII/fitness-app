@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
@@ -50,7 +51,7 @@ class ComingSoonScreen extends StatelessWidget {
                     color: color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: Text('Coming next', style: text.labelMedium?.copyWith(color: color)),
+                  child: Text(tr('Coming next'), style: text.labelMedium?.copyWith(color: color)),
                 ),
               ],
             ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.05),

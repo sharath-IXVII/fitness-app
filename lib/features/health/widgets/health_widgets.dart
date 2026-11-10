@@ -1,3 +1,4 @@
+import '../../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -45,7 +46,7 @@ class Sparkline extends StatelessWidget {
         height: height,
         child: Align(
           alignment: Alignment.centerLeft,
-          child: Text('Add another reading to see a trend', style: Theme.of(context).textTheme.bodySmall),
+          child: Text(tr('Add another reading to see a trend'), style: Theme.of(context).textTheme.bodySmall),
         ),
       );
     }

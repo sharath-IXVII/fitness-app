@@ -1,3 +1,4 @@
+import '../i18n/i18n.dart';
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -9,7 +10,7 @@ class BetaTag extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Semantics(
-      label: 'Beta',
+      label: tr('Beta'),
       excludeSemantics: true,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
@@ -18,8 +19,7 @@ class BetaTag extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           border: Border.all(color: AppColors.amber.withValues(alpha: 0.5)),
         ),
-        child: Text(
-          'BETA',
+        child: Text(tr('BETA'),
           style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.w800, letterSpacing: 0.8, color: AppColors.amber),
         ),
       ),

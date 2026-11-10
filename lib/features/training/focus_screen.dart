@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -33,17 +34,16 @@ class FocusScreen extends ConsumerWidget {
           children: [
             HeroWorkoutCard(demo: focus.demo, eyebrow: 'Body part', title: focus.label, child: Text(focus.blurb)),
             const SizedBox(height: 22),
-            Text('Choose your level', style: text.titleLarge),
+            Text(tr('Choose your level'), style: text.titleLarge),
             const SizedBox(height: 10),
             for (final level in Level.values) ...[
               _LevelCard(workout: focusWorkout(focus, level), level: level, weight: weight),
               const SizedBox(height: 10),
             ],
             const SizedBox(height: 14),
-            Text('Exercises', style: text.titleLarge),
+            Text(tr('Exercises'), style: text.titleLarge),
             const SizedBox(height: 4),
-            Text(
-              'Tap any exercise to see how to do it.',
+            Text(tr('Tap any exercise to see how to do it.'),
               style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 8),

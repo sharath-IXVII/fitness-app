@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,9 +35,9 @@ class TrainingScreen extends ConsumerWidget {
     final sections = <Widget>[
       Row(
         children: [
-          Expanded(child: Text('Workouts', style: text.headlineMedium)),
+          Expanded(child: Text(tr('Workouts'), style: text.headlineMedium)),
           IconButton(
-            tooltip: 'Workout reminder',
+            tooltip: tr('Workout reminder'),
             onPressed: () => _reminderSheet(context, ref),
             icon: Icon(
               ref.watch(workoutReminderProvider).enabled
@@ -48,14 +49,14 @@ class TrainingScreen extends ConsumerWidget {
         ],
       ),
       const SizedBox(height: 2),
-      Text('Home workouts, no gym needed', style: text.bodyMedium?.copyWith(color: AppColors.textSecondary)),
+      Text(tr('Home workouts, no gym needed'), style: text.bodyMedium?.copyWith(color: AppColors.textSecondary)),
       const SizedBox(height: 16),
       _WeekCard(workouts: week.workouts, minutes: week.minutes, kcal: week.kcal),
       const SizedBox(height: 24),
       Row(
         children: [
           const Expanded(child: _Title('Run · Walk · Cycle')),
-          TextButton(onPressed: () => context.push(Routes.activities), child: const Text('History')),
+          TextButton(onPressed: () => context.push(Routes.activities), child: Text(tr('History'))),
         ],
       ),
       const SizedBox(height: 8),
@@ -98,7 +99,7 @@ class TrainingScreen extends ConsumerWidget {
                     children: [
                       Icon(Icons.sports_gymnastics_rounded, color: AppColors.primary, size: 30),
                       const SizedBox(height: 6),
-                      Text('Skipping', style: text.titleSmall),
+                      Text(tr('Skipping'), style: text.titleSmall),
                     ],
                   ),
                 ),
@@ -111,7 +112,7 @@ class TrainingScreen extends ConsumerWidget {
       const _Title('30-day challenges'),
       const SizedBox(height: 12),
       SizedBox(
-        height: 168,
+        height: currentLang == AppLang.en ? 168 : 232,
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           clipBehavior: Clip.none,
@@ -134,7 +135,7 @@ class TrainingScreen extends ConsumerWidget {
                     Text(c.blurb, maxLines: 1, overflow: TextOverflow.ellipsis),
                     const SizedBox(height: 14),
                     if (p == null)
-                      Text('Start now  →', style: text.labelLarge?.copyWith(color: AppColors.energyLight))
+                      Text(tr('Start now  →'), style: text.labelLarge?.copyWith(color: AppColors.energyLight))
                     else ...[
                       Text(
                         p.nextDay == null ? 'Completed!' : 'Day ${p.nextDay} of ${Challenge.days}',
@@ -192,7 +193,7 @@ class TrainingScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Exercise library', style: text.titleSmall),
+                    Text(tr('Exercise library'), style: text.titleSmall),
                     Text(
                       '${Moves.all.length} exercises with how-to animations',
                       style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
@@ -384,23 +385,22 @@ Future<void> _reminderSheet(BuildContext context, WidgetRef ref) => showModalBot
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Workout reminder', style: text.titleLarge),
+              Text(tr('Workout reminder'), style: text.titleLarge),
               const SizedBox(height: 4),
-              Text(
-                'A daily nudge that names your next challenge day. Quiet on days you have already worked out.',
+              Text(tr('A daily nudge that names your next challenge day. Quiet on days you have already worked out.'),
                 style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 12),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Remind me'),
+                title: Text(tr('Remind me')),
                 value: s.enabled,
                 onChanged: (v) => n.set(enabled: v),
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 enabled: s.enabled,
-                title: const Text('Time'),
+                title: Text(tr('Time')),
                 trailing: Text(s.time.format(c), style: text.titleMedium?.copyWith(color: AppColors.primary)),
                 onTap: () async {
                   final t = await showTimePicker(context: c, initialTime: s.time);

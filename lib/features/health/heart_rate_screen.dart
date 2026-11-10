@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -108,7 +109,7 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
         .add(HealthReading.single(kind: ReadingKind.pulse, at: DateTime.now(), value: bpm));
     if (!mounted) return;
     setState(() => _saved = true);
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Saved to your readings')));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('Saved to your readings'))));
   }
 
   @override
@@ -116,7 +117,7 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
     final text = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
-        title: const Row(mainAxisSize: MainAxisSize.min, children: [Text('Heart rate'), SizedBox(width: 10), BetaTag()]),
+        title: Row(mainAxisSize: MainAxisSize.min, children: [Text(tr('Heart rate')), SizedBox(width: 10), BetaTag()]),
       ),
       body: PageBackground(
         child: ListView(
@@ -136,9 +137,8 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
               _Stage.error => _message(text, Icons.error_outline_rounded, 'Could not start', _error ?? 'Try again.'),
             },
             const SizedBox(height: 18),
-            Text(
-              'This is an estimate from the camera and can be off by a few beats. It is not a medical measurement. '
-              'For an accurate reading use a pulse oximeter or a smartwatch, and see a doctor if you feel unwell.',
+            Text(tr('This is an estimate from the camera and can be off by a few beats. It is not a medical measurement. '
+              'For an accurate reading use a pulse oximeter or a smartwatch, and see a doctor if you feel unwell.'),
               style: text.bodySmall,
             ),
           ],
@@ -155,7 +155,7 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Measure your pulse in 30 seconds', style: text.titleMedium),
+            Text(tr('Measure your pulse in 30 seconds'), style: text.titleMedium),
             const SizedBox(height: 12),
             for (final (i, s) in const [
               'Sit down and rest for a minute. Stay still and quiet.',
@@ -184,7 +184,7 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
         ),
       ),
       const SizedBox(height: 18),
-      GradientButton(label: 'Start', icon: Icons.favorite_rounded, onPressed: _start),
+      GradientButton(label: tr('Start'), icon: Icons.favorite_rounded, onPressed: _start),
     ],
   );
 
@@ -213,7 +213,7 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
                 live != null && m.fingerOn ? '${live.bpm.round()}' : '--',
                 style: text.displayMedium,
               ),
-              Text('bpm (estimating)', style: text.bodySmall),
+              Text(tr('bpm (estimating)'), style: text.bodySmall),
             ],
           ),
         ),
@@ -231,7 +231,7 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
             _end();
             setState(() => _stage = _Stage.intro);
           },
-          child: const Text('Cancel'),
+          child: Text(tr('Cancel')),
         ),
       ],
     );
@@ -249,14 +249,13 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
             children: [
               Icon(Icons.favorite_rounded, color: AppColors.primary, size: 28),
               Text('$bpm', style: text.displayLarge),
-              Text('beats per minute (about)', style: text.bodySmall),
+              Text(tr('beats per minute (about)'), style: text.bodySmall),
               const SizedBox(height: 12),
               RatingChip(rating: rating),
               const SizedBox(height: 10),
               Text(rating.advice, style: text.bodyMedium, textAlign: TextAlign.center),
               const SizedBox(height: 6),
-              Text(
-                'Judged as a resting pulse. If you had just moved, it will read higher.',
+              Text(tr('Judged as a resting pulse. If you had just moved, it will read higher.'),
                 style: text.bodySmall,
                 textAlign: TextAlign.center,
               ),
@@ -269,7 +268,7 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
           icon: _saved ? Icons.check_rounded : Icons.bookmark_add_rounded,
           onPressed: _saved ? null : () => _save(bpm),
         ),
-        TextButton(onPressed: _start, child: const Text('Measure again')),
+        TextButton(onPressed: _start, child: Text(tr('Measure again'))),
       ],
     );
   }
@@ -283,7 +282,7 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
       const SizedBox(height: 6),
       Text(body, style: text.bodyMedium, textAlign: TextAlign.center),
       const SizedBox(height: 16),
-      GradientButton(label: 'Try again', icon: Icons.refresh_rounded, onPressed: _start),
+      GradientButton(label: tr('Try again'), icon: Icons.refresh_rounded, onPressed: _start),
     ],
   );
 }

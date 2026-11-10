@@ -1,5 +1,6 @@
 import 'dart:ui' as ui;
 
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -99,8 +100,7 @@ class ShareCard extends StatelessWidget {
                       style: GoogleFonts.inter(fontSize: 11, color: muted),
                     ),
                     const Spacer(),
-                    Text(
-                      'FittArc',
+                    Text('FittArc',
                       style: GoogleFonts.chakraPetch(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -199,7 +199,7 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Share')),
+    appBar: AppBar(title: Text(tr('Share'))),
     body: PageBackground(
       child: Column(
         children: [
@@ -225,7 +225,7 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
                 children: [
                   Expanded(
                     child: GradientButton(
-                      label: 'Share',
+                      label: tr('Share'),
                       icon: Icons.ios_share_rounded,
                       onPressed: _busy
                           ? null
@@ -247,7 +247,7 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
                               'Saved to your gallery.',
                             ),
                       icon: const Icon(Icons.download_rounded),
-                      label: const Text('Download'),
+                      label: Text(tr('Download')),
                     ),
                   ),
                 ],

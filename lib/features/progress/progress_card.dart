@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -44,7 +45,7 @@ class ProgressCard extends ConsumerWidget {
                 child: TextButton.icon(
                   onPressed: () => context.push(Routes.report),
                   icon: const Icon(Icons.insights_rounded, size: 18),
-                  label: const Text('Your week'),
+                  label: Text(tr('Your week')),
                 ),
               ),
             ],

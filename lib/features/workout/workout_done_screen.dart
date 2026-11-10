@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
@@ -132,9 +133,9 @@ class WorkoutDoneScreen extends StatelessWidget {
                       ).animate(delay: 500.ms).fadeIn(),
                       const Spacer(),
                       if (args.challenge != null)
-                        GradientButton(label: 'Back to Friends', onPressed: () => context.go(Routes.friends))
+                        GradientButton(label: tr('Back to Friends'), onPressed: () => context.go(Routes.friends))
                       else
-                        GradientButton(label: 'Back to Today', onPressed: () => context.go(Routes.home)),
+                        GradientButton(label: tr('Back to Today'), onPressed: () => context.go(Routes.home)),
                       TextButton.icon(
                         onPressed: () => context.push(
                           Routes.shareCard,
@@ -145,13 +146,13 @@ class WorkoutDoneScreen extends StatelessWidget {
                           ),
                         ),
                         icon: const Icon(Icons.ios_share_rounded),
-                        label: const Text('Share my workout'),
+                        label: Text(tr('Share my workout')),
                       ),
                       // The wake-up workout is a warm-up; offer a full session next.
                       TextButton.icon(
                         onPressed: () => context.go(Routes.training),
                         icon: const Icon(Icons.fitness_center_rounded),
-                        label: const Text('Keep going: full workouts'),
+                        label: Text(tr('Keep going: full workouts')),
                       ),
                     ],
                   ),

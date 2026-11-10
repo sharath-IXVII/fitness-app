@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -31,7 +32,7 @@ class TeamsSection extends ConsumerWidget {
           decoration: InputDecoration(hintText: hint),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(d).pop(), child: const Text('Cancel')),
+          TextButton(onPressed: () => Navigator.of(d).pop(), child: Text(tr('Cancel'))),
           TextButton(onPressed: () => Navigator.of(d).pop(c.text), child: Text(action)),
         ],
       ),
@@ -60,10 +61,9 @@ class TeamsSection extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Team streaks', style: text.titleLarge),
+        Text(tr('Team streaks'), style: text.titleLarge),
         const SizedBox(height: 2),
-        Text(
-          'Up to 6 friends. A day counts only when everyone hits their goals. One miss and the team streak is gone!',
+        Text(tr('Up to 6 friends. A day counts only when everyone hits their goals. One miss and the team streak is gone!'),
           style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
         ),
         const SizedBox(height: 10),
@@ -77,7 +77,7 @@ class TeamsSection extends ConsumerWidget {
                   if (name != null && context.mounted) await _run(context, () => b.create(me.uid, me.name, name));
                 },
                 icon: const Icon(Icons.group_add_rounded),
-                label: const Text('Create team'),
+                label: Text(tr('Create team')),
               ),
             ),
             const SizedBox(width: 10),
@@ -88,7 +88,7 @@ class TeamsSection extends ConsumerWidget {
                   if (code != null && context.mounted) await _run(context, () => b.join(me.uid, me.name, code));
                 },
                 icon: const Icon(Icons.keyboard_rounded),
-                label: const Text('Join team'),
+                label: Text(tr('Join team')),
               ),
             ),
           ],
@@ -164,7 +164,7 @@ class TeamScreen extends ConsumerWidget {
     if (team == null || me == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: const Center(child: Text('You are not in this team.')),
+        body: Center(child: Text(tr('You are not in this team.'))),
       );
     }
     final days = ref.watch(teamDaysProvider(id)).value ?? const {};
@@ -182,7 +182,7 @@ class TeamScreen extends ConsumerWidget {
               await ref.read(teamsBackendProvider)?.leave(team.id, me);
               if (context.mounted) Navigator.of(context).pop();
             },
-            itemBuilder: (_) => const [PopupMenuItem(value: 'leave', child: Text('Leave team'))],
+            itemBuilder: (_) => [PopupMenuItem(value: 'leave', child: Text(tr('Leave team')))],
           ),
         ],
       ),
@@ -195,7 +195,7 @@ class TeamScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   Text('🔥 $streak', style: text.displaySmall),
-                  Text('day team streak', style: text.titleMedium),
+                  Text(tr('day team streak'), style: text.titleMedium),
                   const SizedBox(height: 8),
                   Text(
                     badge != null
@@ -209,7 +209,7 @@ class TeamScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Text('Today', style: text.titleLarge),
+            Text(tr('Today'), style: text.titleLarge),
             const SizedBox(height: 8),
             for (final m in team.members)
               ListTile(
@@ -222,7 +222,7 @@ class TeamScreen extends ConsumerWidget {
                 subtitle: Text(today.contains(m) ? 'Goals done' : 'Not yet'),
               ),
             if (team.members.length < 2)
-              Text('Invite at least one friend: team streaks need 2 or more.', style: text.bodyMedium),
+              Text(tr('Invite at least one friend: team streaks need 2 or more.'), style: text.bodyMedium),
             const SizedBox(height: 16),
             if (team.code != null && team.members.length < Team.maxMembers)
               GradientButton(
@@ -238,17 +238,17 @@ class TeamScreen extends ConsumerWidget {
               TextButton.icon(
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: team.code!));
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Code copied')));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(tr('Code copied'))));
                 },
                 icon: const Icon(Icons.copy_rounded),
-                label: const Text('Copy code'),
+                label: Text(tr('Copy code')),
               ),
             SwitchListTile(
               contentPadding: EdgeInsets.zero,
               value: ref.watch(nudgesProvider),
               onChanged: (v) => ref.read(nudgesProvider.notifier).set(v),
-              title: const Text('Nudges'),
-              subtitle: const Text('A friendly push when teammates are done and you are not. Turn off any time.'),
+              title: Text(tr('Nudges')),
+              subtitle: Text(tr('A friendly push when teammates are done and you are not. Turn off any time.')),
             ),
           ],
         ),

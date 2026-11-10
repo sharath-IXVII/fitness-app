@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,16 +46,16 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
     final ml = await showDialog<int>(
       context: context,
       builder: (d) => AlertDialog(
-        title: const Text('Add water'),
+        title: Text(tr('Add water')),
         content: TextField(
           controller: c,
           autofocus: true,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(hintText: 'Amount', suffixText: 'ml'),
+          decoration: InputDecoration(hintText: tr('Amount'), suffixText: 'ml'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(d), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(d, int.tryParse(c.text.trim())), child: const Text('Add')),
+          TextButton(onPressed: () => Navigator.pop(d), child: Text(tr('Cancel'))),
+          TextButton(onPressed: () => Navigator.pop(d, int.tryParse(c.text.trim())), child: Text(tr('Add'))),
         ],
       ),
     );
@@ -66,17 +67,17 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
     final result = await showDialog<int?>(
       context: context,
       builder: (d) => AlertDialog(
-        title: const Text('Daily water goal'),
+        title: Text(tr('Daily water goal')),
         content: TextField(
           controller: c,
           autofocus: true,
           keyboardType: TextInputType.number,
-          decoration: const InputDecoration(hintText: 'Goal', suffixText: 'ml'),
+          decoration: InputDecoration(hintText: tr('Goal'), suffixText: 'ml'),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(d), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(d, -1), child: const Text('Use automatic')),
-          TextButton(onPressed: () => Navigator.pop(d, int.tryParse(c.text.trim())), child: const Text('Save')),
+          TextButton(onPressed: () => Navigator.pop(d), child: Text(tr('Cancel'))),
+          TextButton(onPressed: () => Navigator.pop(d, -1), child: Text(tr('Use automatic'))),
+          TextButton(onPressed: () => Navigator.pop(d, int.tryParse(c.text.trim())), child: Text(tr('Save'))),
         ],
       ),
     );
@@ -103,10 +104,10 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Water'),
+        title: Text(tr('Water')),
         actions: [
           if (_added.isNotEmpty)
-            TextButton.icon(onPressed: _undo, icon: const Icon(Icons.undo_rounded), label: const Text('Undo')),
+            TextButton.icon(onPressed: _undo, icon: const Icon(Icons.undo_rounded), label: Text(tr('Undo'))),
         ],
       ),
       body: PageBackground(
@@ -165,8 +166,8 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
                         children: [
                           Icon(Icons.edit_outlined, color: AppColors.primary),
                           const SizedBox(height: 6),
-                          Text('Custom', style: text.titleSmall),
-                          Text('Any ml', style: text.bodySmall),
+                          Text(tr('Custom'), style: text.titleSmall),
+                          Text(tr('Any ml'), style: text.bodySmall),
                         ],
                       ),
                     ),
@@ -175,7 +176,7 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
               ],
             ),
             const SizedBox(height: 22),
-            Text('Reminders', style: text.titleMedium),
+            Text(tr('Reminders'), style: text.titleMedium),
             const SizedBox(height: 10),
             GlassCard(
               child: Column(
@@ -183,7 +184,7 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
                 children: [
                   SettingToggle(
                     icon: Icons.notifications_none_rounded,
-                    title: 'Remind me to drink',
+                    title: tr('Remind me to drink'),
                     subtitle: profile == null
                         ? null
                         : 'Between ${profile.wakeTime.format(context)} and ${profile.sleepTime.format(context)}, '
@@ -204,7 +205,7 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
               ),
             ),
             const SizedBox(height: 22),
-            Text('This week', style: text.titleMedium),
+            Text(tr('This week'), style: text.titleMedium),
             const SizedBox(height: 10),
             GlassCard(
               child: WeekBars(

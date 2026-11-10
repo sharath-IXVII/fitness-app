@@ -1,3 +1,4 @@
+import '../../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -64,7 +65,7 @@ class _BlockEditorSheetState extends ConsumerState<BlockEditorSheet> {
                   Expanded(child: Text(widget.isNew ? 'Add to your day' : 'Edit item', style: text.titleLarge)),
                   if (!widget.isNew)
                     IconButton(
-                      tooltip: 'Delete',
+                      tooltip: tr('Delete'),
                       onPressed: () {
                         ref.read(myDayProvider.notifier).delete(widget.block.id);
                         Navigator.pop(context);
@@ -81,7 +82,7 @@ class _BlockEditorSheetState extends ConsumerState<BlockEditorSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     FormSection(
-                      title: 'What',
+                      title: tr('What'),
                       child: Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -96,14 +97,14 @@ class _BlockEditorSheetState extends ConsumerState<BlockEditorSheet> {
                       ),
                     ),
                     FormSection(
-                      title: 'Name (optional)',
+                      title: tr('Name (optional)'),
                       child: TextField(
                         controller: _title,
                         decoration: InputDecoration(hintText: _b.kind.label),
                       ),
                     ),
                     FormSection(
-                      title: 'When',
+                      title: tr('When'),
                       child: SizedBox(
                         height: 150,
                         child: ClockWheels(
@@ -113,7 +114,7 @@ class _BlockEditorSheetState extends ConsumerState<BlockEditorSheet> {
                       ),
                     ),
                     FormSection(
-                      title: 'How long',
+                      title: tr('How long'),
                       child: Wrap(
                         spacing: 8,
                         runSpacing: 8,
@@ -128,7 +129,7 @@ class _BlockEditorSheetState extends ConsumerState<BlockEditorSheet> {
                       ),
                     ),
                     FormSection(
-                      title: 'Repeat on',
+                      title: tr('Repeat on'),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -171,14 +172,14 @@ class _BlockEditorSheetState extends ConsumerState<BlockEditorSheet> {
                       ),
                     ),
                     FormSection(
-                      title: 'Reminder',
+                      title: tr('Reminder'),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SettingToggle(
                             icon: Icons.notifications_none_rounded,
-                            title: 'Remind me',
-                            subtitle: 'With Done and Snooze buttons in the notification',
+                            title: tr('Remind me'),
+                            subtitle: tr('With Done and Snooze buttons in the notification'),
                             value: _b.remind,
                             onChanged: (v) => _set(_b.copyWith(remind: v)),
                           ),
@@ -190,7 +191,7 @@ class _BlockEditorSheetState extends ConsumerState<BlockEditorSheet> {
                               onChanged: (i) => _set(_b.copyWith(leadMinutes: const [0, 5, 10, 15][i])),
                             ),
                             const SizedBox(height: 4),
-                            Text('How early to remind you', style: text.bodySmall),
+                            Text(tr('How early to remind you'), style: text.bodySmall),
                           ],
                         ],
                       ),

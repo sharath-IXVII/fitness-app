@@ -1,3 +1,4 @@
+import '../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
@@ -119,7 +120,7 @@ class _AppShellState extends ConsumerState<AppShell> {
             children: [
               Icon(Icons.notifications_active_rounded, color: AppColors.primary, size: 36),
               const SizedBox(height: 12),
-              Text('Never miss a beat', style: text.headlineSmall),
+              Text(tr('Never miss a beat'), style: text.headlineSmall),
               const SizedBox(height: 8),
               for (final line in [
                 'Your wake-up alarm rings even when the app is closed',
@@ -140,10 +141,10 @@ class _AppShellState extends ConsumerState<AppShell> {
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
-                child: FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('Allow')),
+                child: FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(tr('Allow'))),
               ),
               Center(
-                child: TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('Not now')),
+                child: TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr('Not now'))),
               ),
             ],
           ),
@@ -177,7 +178,7 @@ class _AppShellState extends ConsumerState<AppShell> {
       SnackBar(
         content: Text('🔥 $days-day streak! Keep it going.'),
         action: SnackBarAction(
-          label: 'Share',
+          label: tr('Share'),
           onPressed: () => context.push(Routes.shareCard, extra: ShareCardData.streak(days)),
         ),
         persist: false,
@@ -218,13 +219,13 @@ class _AppShellState extends ConsumerState<AppShell> {
         // One badge: share it. Several: see them all.
         action: fresh.length == 1
             ? SnackBarAction(
-                label: 'Share',
+                label: tr('Share'),
                 onPressed: () => context.push(
                   Routes.shareCard,
                   extra: ShareCardData.badge(title: info.title, description: info.description),
                 ),
               )
-            : SnackBarAction(label: 'View', onPressed: () => context.push(Routes.achievements)),
+            : SnackBarAction(label: tr('View'), onPressed: () => context.push(Routes.achievements)),
         // Snackbars with an action stay until tapped by default; this one
         // must not cover buttons such as a workout's Done.
         persist: false,
@@ -309,7 +310,7 @@ class _AppShellState extends ConsumerState<AppShell> {
                     child: _NavItem(
                       icon: item.$1,
                       activeIcon: item.$2,
-                      label: item.$3,
+                      label: tr(item.$3),
                       beta: item.$3 == 'Diet',
                       active: index == i,
                       onTap: () {
@@ -399,7 +400,11 @@ class _NavItem extends StatelessWidget {
                 fontWeight: active ? FontWeight.w600 : FontWeight.w500,
                 color: active ? AppColors.textPrimary : AppColors.textTertiary,
               ),
-              child: Text(label),
+              // Longer words (Kannada) shrink to fit on one line.
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(label, maxLines: 1),
+              ),
             ),
           ],
         ),

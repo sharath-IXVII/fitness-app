@@ -3,11 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/app_info.dart';
 import 'core/resume_refresher.dart';
+import 'core/i18n/i18n.dart';
 import 'core/router.dart';
 import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'features/alarm/alarm_ring_listener.dart';
 import 'features/arcs/arc_providers.dart';
+
+/// The language shown last, to notice a change.
+AppLang? _lastLang;
 
 class FitTrackerApp extends ConsumerWidget {
   const FitTrackerApp({super.key});
@@ -17,6 +21,13 @@ class FitTrackerApp extends ConsumerWidget {
     // The look follows the seasonal arc. Colours are read straight from
     // AppColors, so when the season changes every widget is rebuilt.
     final season = ref.watch(themeSeasonProvider);
+    // A new language rebuilds every screen so all text switches at once.
+    final lang = ref.watch(langProvider) ?? AppLang.en;
+    if (lang != _lastLang) {
+      final first = _lastLang == null;
+      _lastLang = lang;
+      if (!first) WidgetsBinding.instance.addPostFrameCallback((_) => _rebuildAll(context));
+    }
     if (!identical(AppColors.palette, season.palette)) {
       AppColors.use(season.palette);
       WidgetsBinding.instance.addPostFrameCallback((_) => _rebuildAll(context));

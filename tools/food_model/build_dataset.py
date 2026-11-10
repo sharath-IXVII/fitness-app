@@ -39,6 +39,8 @@ HF_PER_CLASS = int(os.environ.get("HF_PER_CLASS", "120"))
 PART, PARTS = int(os.environ.get("PART", "0")), int(os.environ.get("PARTS", "1"))
 MODE = os.environ.get("MODE", "label")
 ONLY = [d for d in os.environ.get("ONLY", "").split(",") if d]  # quick test runs
+# What this part collects: its share of the dishes, thali photos, the CC0 set.
+TASKS = set(os.environ.get("TASKS", "dishes,thali,hf").split(","))
 UA = {"User-Agent": "FoodDatasetBuilder/1.0 (https://github.com/sharath-IXVII; dataset script) python-requests"}
 FREE = re.compile(r"^(cc0|public domain|pd|cc by(-sa)? [0-9.]+)", re.I)
 IDS = list(DISHES)
@@ -156,7 +158,7 @@ def keep_photo(url, title, lic, artist, page, hint):
     return True
 
 
-mine = [d for k, d in enumerate(IDS) if k % PARTS == PART and (not ONLY or d in ONLY)]
+mine = [d for k, d in enumerate(IDS) if "dishes" in TASKS and k % PARTS == PART and (not ONLY or d in ONLY)]
 for dish in mine:
     got = 0
     for q in DISHES[dish][1]:
@@ -165,10 +167,11 @@ for dish in mine:
                 break
             got += keep_photo(*hit, dish)
     print(dish, "photos:", got, flush=True)
-if PART == 0 and not ONLY:
+if "thali" in TASKS and (PART == 0 and not ONLY or PART >= PARTS):
     for q in THALI_SEARCHES:
         for hit in commons(q):
             keep_photo(*hit, None)
+if "hf" in TASKS and (PART == 0 and not ONLY or PART >= PARTS):
     from datasets import load_dataset
 
     ds = load_dataset("bharat-raghunathan/indian-foods-dataset", split="train").shuffle(seed=1)

@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -43,7 +44,8 @@ class FocusScreen extends ConsumerWidget {
             const SizedBox(height: 14),
             Text(tr('Exercises'), style: text.titleLarge),
             const SizedBox(height: 4),
-            Text(tr('Tap any exercise to see how to do it.'),
+            Text(
+              tr('Tap any exercise to see how to do it.'),
               style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 8),

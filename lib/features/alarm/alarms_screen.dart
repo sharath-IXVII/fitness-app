@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -464,7 +465,10 @@ class _PermissionBanner extends StatelessWidget {
           Icon(Icons.notifications_active_outlined, color: AppColors.steps),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(tr('Allow notifications, exact alarms and camera so alarms ring on time.'), style: text.bodySmall),
+            child: Text(
+              tr('Allow notifications, exact alarms and camera so alarms ring on time.'),
+              style: text.bodySmall,
+            ),
           ),
           TextButton(
             onPressed: () async {

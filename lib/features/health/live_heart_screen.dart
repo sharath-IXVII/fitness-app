@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'dart:async';
 
 import 'package:clock/clock.dart';
@@ -206,8 +207,11 @@ class _LiveHeartScreenState extends ConsumerState<LiveHeartScreen> {
                 ),
               ),
             const SizedBox(height: 4),
-            Text(tr('Not every watch can share its heart rate this way. If yours does not show up, use Health Connect '
-              'instead.'),
+            Text(
+              tr(
+                'Not every watch can share its heart rate this way. If yours does not show up, use Health Connect '
+                'instead.',
+              ),
               style: text.bodySmall,
             ),
           ],
@@ -332,7 +336,8 @@ class _LiveHeartScreenState extends ConsumerState<LiveHeartScreen> {
         const SizedBox(height: 14),
         GradientButton(label: tr('Finish'), icon: Icons.flag_rounded, onPressed: _finish),
         const SizedBox(height: 8),
-        Text(tr('Moderate minutes count once and hard minutes count twice. Your top rate is estimated from your age.'),
+        Text(
+          tr('Moderate minutes count once and hard minutes count twice. Your top rate is estimated from your age.'),
           style: text.bodySmall,
           textAlign: TextAlign.center,
         ),

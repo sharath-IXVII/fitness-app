@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -89,7 +90,8 @@ class _FoodGuideCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(tr('Food guide'), style: text.titleMedium),
-                  Text(tr('Which foods are rich in carbs, protein, fibre, vitamins and water, per 100 g.'),
+                  Text(
+                    tr('Which foods are rich in carbs, protein, fibre, vitamins and water, per 100 g.'),
                     style: text.bodySmall,
                   ),
                 ],
@@ -117,8 +119,11 @@ class _HonestNote extends StatelessWidget {
           Icon(Icons.verified_user_outlined, size: 18, color: AppColors.primary),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(tr('Heart rate can be estimated with your camera, and it is approximate. FittArc is for general fitness '
-              'and wellness. It is not a medical device and this is not medical advice.'),
+            child: Text(
+              tr(
+                'Heart rate can be estimated with your camera, and it is approximate. FittArc is for general fitness '
+                'and wellness. It is not a medical device and this is not medical advice.',
+              ),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
@@ -153,7 +158,8 @@ class _HeartRateCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(tr('Measure heart rate'), style: text.titleMedium),
-                  Text(tr('Press your fingertip on the back camera for 30 seconds. An approximate estimate.'),
+                  Text(
+                    tr('Press your fingertip on the back camera for 30 seconds. An approximate estimate.'),
                     style: text.bodySmall,
                   ),
                 ],
@@ -301,8 +307,11 @@ class _BodyCard extends ConsumerWidget {
             Text('Your last ${trend.length} weigh-ins', style: text.bodySmall),
           ],
           const SizedBox(height: 6),
-          Text(tr('A phone cannot weigh or measure you, so type in your height and weight. BMI is a rough guide and '
-            'does not see muscle.'),
+          Text(
+            tr(
+              'A phone cannot weigh or measure you, so type in your height and weight. BMI is a rough guide and '
+              'does not see muscle.',
+            ),
             style: text.bodySmall?.copyWith(color: AppColors.textTertiary),
           ),
         ],
@@ -391,7 +400,8 @@ class _BodySheetState extends ConsumerState<_BodySheet> {
         shrinkWrap: true,
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
         children: [
-          Text(tr('Weigh yourself in the morning, before eating, for the most comparable numbers.'),
+          Text(
+            tr('Weigh yourself in the morning, before eating, for the most comparable numbers.'),
             style: text.bodyMedium,
           ),
           const SizedBox(height: 14),

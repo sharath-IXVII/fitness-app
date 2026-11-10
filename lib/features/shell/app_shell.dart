@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
@@ -420,10 +421,7 @@ class _NavItem extends StatelessWidget {
                 color: active ? AppColors.textPrimary : AppColors.textTertiary,
               ),
               // Longer words (Kannada) shrink to fit on one line.
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(label, maxLines: 1),
-              ),
+              child: FittedBox(fit: BoxFit.scaleDown, child: Text(label, maxLines: 1)),
             ),
           ],
         ),

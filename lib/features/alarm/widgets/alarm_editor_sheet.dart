@@ -1,4 +1,5 @@
 import '../../../core/i18n/i18n.dart';
+
 import 'dart:async';
 
 import 'package:audioplayers/audioplayers.dart';
@@ -285,7 +286,10 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(tr('When this rings, tap "Start sleep mode" and your phone settles into a calm night screen.'),
+                            Text(
+                              tr(
+                                'When this rings, tap "Start sleep mode" and your phone settles into a calm night screen.',
+                              ),
                               style: text.bodySmall,
                             ),
                             const SizedBox(height: 10),

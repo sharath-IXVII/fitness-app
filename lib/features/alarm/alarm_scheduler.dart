@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'dart:convert';
 import 'dart:io' show Platform;
 
@@ -151,6 +152,7 @@ abstract final class AlarmScheduler {
 
   /// Snoozed rings use their own id so a sync can't overwrite them.
   static int snoozeIdFor(int alarmId) => 10000 + alarmId;
+
   /// How long someone can stop moving (or never start) before the alarm
   /// rings again, at full volume.
   static const idleTimeout = Duration(seconds: 60);

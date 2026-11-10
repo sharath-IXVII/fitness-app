@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:fitalarm/app.dart';
+import 'package:fitalarm/core/share_to.dart';
 import 'package:fitalarm/core/storage.dart';
 import 'package:fitalarm/features/auth/auth_providers.dart';
 import 'package:fitalarm/features/auth/auth_service.dart';
@@ -68,6 +69,7 @@ Future<SharedPreferences> _pump(WidgetTester t, {bool model = true}) async {
         authServiceProvider.overrideWithValue(DemoAuthService(prefs)),
         foodClassifierProvider.overrideWith((ref) async => model ? _fakeClassify : null),
         shareSnapProvider.overrideWithValue((png, text) async => shared.add((png, text))),
+        shareToAppProvider.overrideWithValue((png, text, app) async => shared.add((png, text))),
         pickImageProvider.overrideWithValue((_) async => (bytes: _png, mediaType: 'image/png')),
       ],
       child: const FitTrackerApp(),

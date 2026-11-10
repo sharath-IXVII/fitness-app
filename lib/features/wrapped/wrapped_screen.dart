@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -14,6 +15,7 @@ import '../../core/widgets/gradient_button.dart';
 import '../arcs/domain/arc.dart';
 import '../clubs/report_screen.dart' show saveImageProvider;
 import '../snaps/snap_screen.dart' show shareSnapProvider;
+import '../../core/share_to.dart';
 import 'domain/arc_wrapped.dart';
 import 'wrapped_providers.dart';
 
@@ -107,30 +109,45 @@ class _ArcWrappedScreenState extends ConsumerState<ArcWrappedScreen> {
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 10, 20, 12),
-              child: Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: GradientButton(
-                      label: tr('Share this'),
-                      icon: Icons.ios_share_rounded,
-                      onPressed: _busy
-                          ? null
-                          : () => _image(
-                              (png) => ref.read(shareSnapProvider)(png, 'My ${w.period.label} on FittArc ✨ fittarc.in'),
-                              '',
-                            ),
+                  ShareRow(
+                    apps: const [ShareApp.whatsapp, ShareApp.instagram],
+                    busy: _busy,
+                    onShare: (app) => _image(
+                      (png) => ref.read(shareToAppProvider)(png, 'My ${w.period.label} on FittArc ✨ fittarc.in', app),
+                      '',
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  IconButton.filledTonal(
-                    tooltip: tr('Download'),
-                    onPressed: _busy
-                        ? null
-                        : () => _image(
-                            (png) => ref.read(saveImageProvider)(png, 'fittarc-wrapped-${w.period.label}-$_page'),
-                            'Saved to your gallery.',
-                          ),
-                    icon: const Icon(Icons.download_rounded),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GradientButton(
+                          label: tr('Share this'),
+                          icon: Icons.ios_share_rounded,
+                          onPressed: _busy
+                              ? null
+                              : () => _image(
+                                  (png) =>
+                                      ref.read(shareSnapProvider)(png, 'My ${w.period.label} on FittArc ✨ fittarc.in'),
+                                  '',
+                                ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      IconButton.filledTonal(
+                        tooltip: tr('Download'),
+                        onPressed: _busy
+                            ? null
+                            : () => _image(
+                                (png) => ref.read(saveImageProvider)(png, 'fittarc-wrapped-${w.period.label}-$_page'),
+                                'Saved to your gallery.',
+                              ),
+                        icon: const Icon(Icons.download_rounded),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -250,7 +267,8 @@ class WrappedCard extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text('FittArc',
+                    Text(
+                      'FittArc',
                       style: GoogleFonts.chakraPetch(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white54),
                     ),
                   ],
@@ -332,7 +350,8 @@ class WrappedReadyTile extends ConsumerWidget {
                         'Your ${period.label} Wrapped',
                         style: text.titleMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.w800),
                       ),
-                      Text(tr('Your season in 5 cards. Share your favourite!'),
+                      Text(
+                        tr('Your season in 5 cards. Share your favourite!'),
                         style: text.bodySmall?.copyWith(color: Colors.white70),
                       ),
                     ],

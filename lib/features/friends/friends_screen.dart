@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -107,7 +108,10 @@ class FriendsScreen extends ConsumerWidget {
                     .take(20)
                     .toList();
                 if (shown.isEmpty) {
-                  return Text(tr('No challenges yet. Tap Challenge, pick an exercise and send the code to a friend. Finish it together and you both earn 50 XP.'),
+                  return Text(
+                    tr(
+                      'No challenges yet. Tap Challenge, pick an exercise and send the code to a friend. Finish it together and you both earn 50 XP.',
+                    ),
                     style: text.bodyMedium?.copyWith(color: AppColors.textSecondary),
                   );
                 }
@@ -122,7 +126,9 @@ class FriendsScreen extends ConsumerWidget {
             Text(tr('Leaderboard'), style: text.titleLarge),
             const SizedBox(height: 4),
             Text(
-              friends.isEmpty ? 'Add a friend with a code, or finish a challenge together, and they appear here.' : 'Ranked by XP',
+              friends.isEmpty
+                  ? 'Add a friend with a code, or finish a challenge together, and they appear here.'
+                  : 'Ranked by XP',
               style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 10),
@@ -409,9 +415,7 @@ class _AddFriendsCard extends ConsumerWidget {
     if (typed == null || !context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     try {
-      final inviter = await ref
-          .read(friendsBackendProvider)!
-          .redeemInvite(ref.read(myPublicProfileProvider)!, typed);
+      final inviter = await ref.read(friendsBackendProvider)!.redeemInvite(ref.read(myPublicProfileProvider)!, typed);
       await ref.read(clubXpProvider.notifier).award('ref-joined', FriendsBackend.inviteXp);
       ref.invalidate(wasInvitedProvider);
       messenger.showSnackBar(
@@ -450,10 +454,8 @@ class _AddFriendsCard extends ConsumerWidget {
                   child: code.when(
                     loading: () => Text('…', style: text.titleLarge),
                     error: (_, _) => Text(tr('Unavailable'), style: text.bodyMedium),
-                    data: (c) => Text(
-                      c ?? '',
-                      style: text.titleLarge?.copyWith(letterSpacing: 4, color: AppColors.primary),
-                    ),
+                    data: (c) =>
+                        Text(c ?? '', style: text.titleLarge?.copyWith(letterSpacing: 4, color: AppColors.primary)),
                   ),
                 ),
               ),
@@ -522,7 +524,8 @@ class _FriendRequests extends ConsumerWidget {
         if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.message)));
       } catch (_) {
         if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Couldn't do that. Check your internet.")));
+          ScaffoldMessenger.of(context)
+              .showSnackBar(const SnackBar(content: Text("Couldn't do that. Check your internet.")));
         }
       }
     }
@@ -544,7 +547,10 @@ class _FriendRequests extends ConsumerWidget {
                   children: [
                     CircleAvatar(
                       backgroundColor: AppColors.primarySoft,
-                      child: Text(r.name.isEmpty ? '?' : r.name[0].toUpperCase(), style: TextStyle(color: AppColors.primary)),
+                      child: Text(
+                        r.name.isEmpty ? '?' : r.name[0].toUpperCase(),
+                        style: TextStyle(color: AppColors.primary),
+                      ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -591,7 +597,8 @@ class _Unavailable extends StatelessWidget {
             const SizedBox(height: 14),
             Text(tr('Friends is almost here'), style: text.headlineSmall, textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            Text(tr('Challenges and the leaderboard need an online account. They turn on in the next update.'),
+            Text(
+              tr('Challenges and the leaderboard need an online account. They turn on in the next update.'),
               style: text.bodyMedium?.copyWith(color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
@@ -918,7 +925,8 @@ class FriendProfileScreen extends ConsumerWidget {
                           tooltip: tr('Tag this friend'),
                           onSelected: (t) => ref.read(friendTagsProvider.notifier).set(uid, t),
                           itemBuilder: (_) => [
-                            for (final t in FriendTag.values) PopupMenuItem(value: t, child: Text('${t.emoji} ${t.label}')),
+                            for (final t in FriendTag.values)
+                              PopupMenuItem(value: t, child: Text('${t.emoji} ${t.label}')),
                             PopupMenuItem(value: null, child: Text(tr('No tag'))),
                           ],
                           child: Chip(

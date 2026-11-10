@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -179,7 +180,8 @@ class _RingScreenState extends ConsumerState<RingScreen> {
                           ),
                       if (info.strict) ...[
                         const SizedBox(height: 8),
-                        Text(tr('Emergency? Restarting your phone ends strict mode and stops this alarm.'),
+                        Text(
+                          tr('Emergency? Restarting your phone ends strict mode and stops this alarm.'),
                           style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
                         ),
                       ],

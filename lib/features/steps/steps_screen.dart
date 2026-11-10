@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -127,7 +128,8 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
                     const Icon(Icons.info_outline_rounded, color: AppColors.danger),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: Text(tr('Allow "Physical activity" so FittArc can count steps all day and spot bike or car rides.'),
+                      child: Text(
+                        tr('Allow "Physical activity" so FittArc can count steps all day and spot bike or car rides.'),
                         style: text.bodySmall,
                       ),
                     ),
@@ -147,8 +149,11 @@ class _StepsScreenState extends ConsumerState<StepsScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Text(tr('Your steps combine your phone\'s step counter with its accelerometer and gyroscope. If you allow '
-              'location, GPS adds real distance too. Bumps in a vehicle or on a bike aren\'t counted.'),
+            Text(
+              tr(
+                'Your steps combine your phone\'s step counter with its accelerometer and gyroscope. If you allow '
+                'location, GPS adds real distance too. Bumps in a vehicle or on a bike aren\'t counted.',
+              ),
               style: text.bodySmall,
             ),
           ],

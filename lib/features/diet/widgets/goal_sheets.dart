@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import '../../../core/i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -199,7 +200,8 @@ class _WeighInSheetState extends ConsumerState<WeighInSheet> {
               onChanged: (v) => setState(() => _kg = v),
             ),
             const SizedBox(height: 12),
-            Text(tr('Weigh in at the same time each day, ideally in the morning. Your targets update to match.'),
+            Text(
+              tr('Weigh in at the same time each day, ideally in the morning. Your targets update to match.'),
               style: Theme.of(context).textTheme.bodySmall,
               textAlign: TextAlign.center,
             ),

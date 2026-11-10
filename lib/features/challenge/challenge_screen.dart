@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';

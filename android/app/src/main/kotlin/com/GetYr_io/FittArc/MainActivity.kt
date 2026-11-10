@@ -103,6 +103,29 @@ class MainActivity : FlutterFragmentActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        // Share a picture straight into one app (WhatsApp, Instagram).
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fittarc/share").setMethodCallHandler { call, result ->
+            if (call.method != "shareTo") {
+                result.notImplemented()
+                return@setMethodCallHandler
+            }
+            try {
+                val file = java.io.File(call.argument<String>("path")!!)
+                val uri = androidx.core.content.FileProvider.getUriForFile(this, "${packageName}.fittarc.files", file)
+                val intent = Intent(Intent.ACTION_SEND).apply {
+                    type = "image/png"
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    call.argument<String>("text")?.let { putExtra(Intent.EXTRA_TEXT, it) }
+                    setPackage(call.argument<String>("package"))
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                startActivity(intent)
+                result.success(true)
+            } catch (e: Exception) {
+                // App not installed (or no permission): Dart falls back to the share sheet.
+                result.success(false)
+            }
+        }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "fittiepi/strict").setMethodCallHandler { call, result ->
             when (call.method) {
                 "engage" -> {

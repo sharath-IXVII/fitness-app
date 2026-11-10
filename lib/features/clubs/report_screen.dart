@@ -15,6 +15,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/widgets/gradient_button.dart';
 import '../../core/widgets/page_background.dart';
 import '../snaps/snap_screen.dart' show shareSnapProvider;
+import '../../core/share_to.dart';
 import 'clubs_providers.dart';
 import 'domain/club_challenge.dart';
 import 'domain/run_report.dart';
@@ -136,6 +137,21 @@ class _RunReportScreenState extends ConsumerState<RunReportScreen> {
                               textAlign: TextAlign.center,
                             ),
                           const SizedBox(height: 8),
+                          ShareRow(
+                            apps: const [ShareApp.whatsapp, ShareApp.instagram],
+                            busy: _busy,
+                            onShare: (app) => _do(
+                              (png) => ref.read(shareToAppProvider)(
+                                png,
+                                '${r.title}: ${formatKm(r.distanceM)} in ${formatDuration(r.timeMs)}. '
+                                'Tracked with FittArc, fittarc.in',
+                                app,
+                              ),
+                              '',
+                              "Couldn't share. Try again.",
+                            ),
+                          ),
+                          const SizedBox(height: 10),
                           Row(
                             children: [
                               Expanded(

@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -13,6 +14,7 @@ import '../../core/widgets/gradient_button.dart';
 import '../../core/widgets/page_background.dart';
 import '../clubs/report_screen.dart' show saveImageProvider;
 import '../snaps/snap_screen.dart' show shareSnapProvider;
+import '../../core/share_to.dart';
 
 /// What a share card says: a big symbol, a headline and a few numbers.
 class ShareCardData {
@@ -100,7 +102,8 @@ class ShareCard extends StatelessWidget {
                       style: GoogleFonts.inter(fontSize: 11, color: muted),
                     ),
                     const Spacer(),
-                    Text('FittArc',
+                    Text(
+                      'FittArc',
                       style: GoogleFonts.chakraPetch(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
@@ -221,34 +224,48 @@ class _ShareCardScreenState extends ConsumerState<ShareCardScreen> {
             top: false,
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
-              child: Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: GradientButton(
-                      label: tr('Share'),
-                      icon: Icons.ios_share_rounded,
-                      onPressed: _busy
-                          ? null
-                          : () => _image((png) => ref.read(shareSnapProvider)(png, widget.data.shareText), ''),
-                    ),
+                  ShareRow(
+                    apps: const [ShareApp.whatsapp, ShareApp.instagram],
+                    busy: _busy,
+                    onShare: (app) =>
+                        _image((png) => ref.read(shareToAppProvider)(png, widget.data.shareText, app), ''),
                   ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(60),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                  const SizedBox(height: 10),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: GradientButton(
+                          label: tr('Share'),
+                          icon: Icons.ios_share_rounded,
+                          onPressed: _busy
+                              ? null
+                              : () => _image((png) => ref.read(shareSnapProvider)(png, widget.data.shareText), ''),
+                        ),
                       ),
-                      onPressed: _busy
-                          ? null
-                          : () => _image(
-                              (png) =>
-                                  ref.read(saveImageProvider)(png, 'fittarc-${DateTime.now().millisecondsSinceEpoch}'),
-                              'Saved to your gallery.',
-                            ),
-                      icon: const Icon(Icons.download_rounded),
-                      label: Text(tr('Download')),
-                    ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size.fromHeight(60),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                          ),
+                          onPressed: _busy
+                              ? null
+                              : () => _image(
+                                  (png) => ref.read(saveImageProvider)(
+                                    png,
+                                    'fittarc-${DateTime.now().millisecondsSinceEpoch}',
+                                  ),
+                                  'Saved to your gallery.',
+                                ),
+                          icon: const Icon(Icons.download_rounded),
+                          label: Text(tr('Download')),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

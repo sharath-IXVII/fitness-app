@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -80,7 +81,6 @@ class DietScreen extends ConsumerWidget {
               child: Icon(Icons.photo_camera_outlined, color: AppColors.primary, semanticLabel: 'Scan food'),
             ),
           ),
-
         ],
       ),
       const SizedBox(height: 14),
@@ -403,7 +403,6 @@ class _PlanCard extends ConsumerWidget {
     final logged = ref.watch(mealLogProvider).map((e) => e.meal).toSet();
     final kcal = plan.fold(0.0, (k, m) => k + m.macros.kcal).round();
     final protein = plan.fold(0.0, (k, m) => k + m.macros.protein).round();
-
 
     return GlassCard(
       child: Column(

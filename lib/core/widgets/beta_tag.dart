@@ -1,4 +1,5 @@
 import '../i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -9,7 +10,6 @@ class BetaTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const SizedBox.shrink();
-
 }
 
 /// A short, honest note: these numbers are estimates.
@@ -26,10 +26,7 @@ class BetaNote extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.primarySoft,
-        borderRadius: BorderRadius.circular(14),
-      ),
+      decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(14)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

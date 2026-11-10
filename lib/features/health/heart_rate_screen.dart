@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -137,8 +138,11 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
               _Stage.error => _message(text, Icons.error_outline_rounded, 'Could not start', _error ?? 'Try again.'),
             },
             const SizedBox(height: 18),
-            Text(tr('This is an estimate from the camera and can be off by a few beats. It is not a medical measurement. '
-              'For an accurate reading use a pulse oximeter or a smartwatch, and see a doctor if you feel unwell.'),
+            Text(
+              tr(
+                'This is an estimate from the camera and can be off by a few beats. It is not a medical measurement. '
+                'For an accurate reading use a pulse oximeter or a smartwatch, and see a doctor if you feel unwell.',
+              ),
               style: text.bodySmall,
             ),
           ],
@@ -209,10 +213,7 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(Icons.favorite_rounded, color: AppColors.primary),
-              Text(
-                live != null && m.fingerOn ? '${live.bpm.round()}' : '--',
-                style: text.displayMedium,
-              ),
+              Text(live != null && m.fingerOn ? '${live.bpm.round()}' : '--', style: text.displayMedium),
               Text(tr('bpm (estimating)'), style: text.bodySmall),
             ],
           ),
@@ -255,7 +256,8 @@ class _HeartRateScreenState extends ConsumerState<HeartRateScreen> {
               const SizedBox(height: 10),
               Text(rating.advice, style: text.bodyMedium, textAlign: TextAlign.center),
               const SizedBox(height: 6),
-              Text(tr('Judged as a resting pulse. If you had just moved, it will read higher.'),
+              Text(
+                tr('Judged as a resting pulse. If you had just moved, it will read higher.'),
                 style: text.bodySmall,
                 textAlign: TextAlign.center,
               ),

@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,8 +51,7 @@ class _ChallengePlanScreenState extends ConsumerState<ChallengePlanScreen> {
       context: context,
       builder: (c) => AlertDialog(
         title: Text(tr('Rest day')),
-        content: Text(tr('Muscles grow while you rest. Take it easy today: a walk or the stretch session is perfect.'),
-        ),
+        content: Text(tr('Muscles grow while you rest. Take it easy today: a walk or the stretch session is perfect.')),
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr('Not yet'))),
           FilledButton(onPressed: () => Navigator.pop(c, true), child: Text(tr('Mark as done'))),
@@ -89,7 +89,11 @@ class _ChallengePlanScreenState extends ConsumerState<ChallengePlanScreen> {
         title: Text(c.title),
         actions: [
           if (p != null)
-            IconButton(tooltip: tr('Restart challenge'), onPressed: _restart, icon: const Icon(Icons.restart_alt_rounded)),
+            IconButton(
+              tooltip: tr('Restart challenge'),
+              onPressed: _restart,
+              icon: const Icon(Icons.restart_alt_rounded),
+            ),
         ],
       ),
       body: PageBackground(

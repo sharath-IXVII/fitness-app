@@ -533,13 +533,15 @@ const kannada = <String, String>{
   'Remove from plate': 'ತಟ್ಟೆಯಿಂದ ತೆಗೆಯಿರಿ',
   'Choose a dish': 'ಖಾದ್ಯ ಆಯ್ಕೆಮಾಡಿ',
   'Snap': 'ಸ್ನ್ಯಾಪ್',
-  'Couldn\'t tell what\'s on the plate. Add the dishes below.': 'ತಟ್ಟೆಯಲ್ಲಿ ಏನಿದೆ ಎಂದು ತಿಳಿಯಲಿಲ್ಲ. ಕೆಳಗೆ ಖಾದ್ಯಗಳನ್ನು ಸೇರಿಸಿ.',
+  'Couldn\'t tell what\'s on the plate. Add the dishes below.':
+      'ತಟ್ಟೆಯಲ್ಲಿ ಏನಿದೆ ಎಂದು ತಿಳಿಯಲಿಲ್ಲ. ಕೆಳಗೆ ಖಾದ್ಯಗಳನ್ನು ಸೇರಿಸಿ.',
   'Near me': 'ನನ್ನ ಹತ್ತಿರ',
   'All clubs': 'ಎಲ್ಲಾ ಕ್ಲಬ್‌ಗಳು',
   'Allow location to see clubs around you.': 'ನಿಮ್ಮ ಸುತ್ತಲಿನ ಕ್ಲಬ್‌ಗಳನ್ನು ನೋಡಲು ಸ್ಥಳ ಅನುಮತಿಸಿ.',
   'Finding you…': 'ನಿಮ್ಮನ್ನು ಹುಡುಕಲಾಗುತ್ತಿದೆ…',
   'Find clubs near me': 'ನನ್ನ ಹತ್ತಿರದ ಕ್ಲಬ್‌ಗಳನ್ನು ಹುಡುಕಿ',
-  'Couldn\'t load clubs. Check your internet and try again.': 'ಕ್ಲಬ್‌ಗಳನ್ನು ತೆರೆಯಲು ಆಗಲಿಲ್ಲ. ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+  'Couldn\'t load clubs. Check your internet and try again.':
+      'ಕ್ಲಬ್‌ಗಳನ್ನು ತೆರೆಯಲು ಆಗಲಿಲ್ಲ. ಇಂಟರ್ನೆಟ್ ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
   'No clubs near you yet. Start one!': 'ನಿಮ್ಮ ಹತ್ತಿರ ಇನ್ನೂ ಕ್ಲಬ್‌ಗಳಿಲ್ಲ. ಒಂದನ್ನು ಆರಂಭಿಸಿ!',
   'Couldn\'t find your location. Try again outside.': 'ನಿಮ್ಮ ಸ್ಥಳ ಸಿಗಲಿಲ್ಲ. ಹೊರಗೆ ಹೋಗಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
   'Where does the club meet?': 'ಕ್ಲಬ್ ಎಲ್ಲಿ ಸೇರುತ್ತದೆ?',
@@ -550,31 +552,40 @@ const kannada = <String, String>{
   'Move now': 'ಈಗ ಚಲಿಸಿ',
   'Get started': 'ಆರಂಭಿಸೋಣ',
   'Fitness that feels like a game': 'ಆಟದಂತೆ ಅನಿಸುವ ಫಿಟ್‌ನೆಸ್',
-  'Seasonal Arcs, XP, levels, badges and streaks. Every goal you hit moves you up.': 'ಋತುವಿನ ಆರ್ಕ್‌ಗಳು, XP, ಹಂತಗಳು, ಬ್ಯಾಡ್ಜ್‌ಗಳು ಮತ್ತು ಸರಣಿಗಳು. ತಲುಪುವ ಪ್ರತಿ ಗುರಿ ನಿಮ್ಮನ್ನು ಮೇಲಕ್ಕೆ ಕೊಂಡೊಯ್ಯುತ್ತದೆ.',
-  'Winter, Summer, Thunder and more Arcs, each with its own look': 'ಚಳಿಗಾಲ, ಬೇಸಿಗೆ, ಗುಡುಗು ಮತ್ತು ಇತರ ಆರ್ಕ್‌ಗಳು, ಪ್ರತಿಯೊಂದಕ್ಕೂ ತನ್ನದೇ ರೂಪ',
+  'Seasonal Arcs, XP, levels, badges and streaks. Every goal you hit moves you up.':
+      'ಋತುವಿನ ಆರ್ಕ್‌ಗಳು, XP, ಹಂತಗಳು, ಬ್ಯಾಡ್ಜ್‌ಗಳು ಮತ್ತು ಸರಣಿಗಳು. ತಲುಪುವ ಪ್ರತಿ ಗುರಿ ನಿಮ್ಮನ್ನು ಮೇಲಕ್ಕೆ ಕೊಂಡೊಯ್ಯುತ್ತದೆ.',
+  'Winter, Summer, Thunder and more Arcs, each with its own look':
+      'ಚಳಿಗಾಲ, ಬೇಸಿಗೆ, ಗುಡುಗು ಮತ್ತು ಇತರ ಆರ್ಕ್‌ಗಳು, ಪ್ರತಿಯೊಂದಕ್ಕೂ ತನ್ನದೇ ರೂಪ',
   'Festival themes like Diwali, Eid and Christmas': 'ದೀಪಾವಳಿ, ಈದ್, ಕ್ರಿಸ್‌ಮಸ್‌ನಂತಹ ಹಬ್ಬದ ಥೀಮ್‌ಗಳು',
   'Wake up moving': 'ಚಲಿಸುತ್ತಾ ಎದ್ದೇಳಿ',
-  'Alarms that ring until you do a quick workout or brain game. The camera counts your reps.': 'ಸಣ್ಣ ವ್ಯಾಯಾಮ ಅಥವಾ ಮೆದುಳಿನ ಆಟ ಮುಗಿಸುವವರೆಗೆ ಬಾರಿಸುವ ಅಲಾರಂಗಳು. ಕ್ಯಾಮೆರಾ ಪುನರಾವರ್ತನೆ ಎಣಿಸುತ್ತದೆ.',
+  'Alarms that ring until you do a quick workout or brain game. The camera counts your reps.':
+      'ಸಣ್ಣ ವ್ಯಾಯಾಮ ಅಥವಾ ಮೆದುಳಿನ ಆಟ ಮುಗಿಸುವವರೆಗೆ ಬಾರಿಸುವ ಅಲಾರಂಗಳು. ಕ್ಯಾಮೆರಾ ಪುನರಾವರ್ತನೆ ಎಣಿಸುತ್ತದೆ.',
   'Workouts for every level, at home, no gym': 'ಪ್ರತಿ ಮಟ್ಟಕ್ಕೂ ಮನೆಯಲ್ಲೇ ವ್ಯಾಯಾಮ, ಜಿಮ್ ಬೇಡ',
   'Body map shows which muscles each move works': 'ಪ್ರತಿ ವ್ಯಾಯಾಮ ಯಾವ ಸ್ನಾಯುಗಳಿಗೆ ಎಂದು ದೇಹದ ನಕ್ಷೆ ತೋರಿಸುತ್ತದೆ',
   'Run, walk, cycle, skip': 'ಓಡಿ, ನಡೆಯಿರಿ, ಸೈಕಲ್, ಜಿಗಿಯಿರಿ',
-  'Track your route on the map with accurate GPS: distance, pace, time and calories.': 'ನಿಖರ GPS ಮೂಲಕ ನಕ್ಷೆಯಲ್ಲಿ ದಾರಿ ದಾಖಲಿಸಿ: ದೂರ, ವೇಗ, ಸಮಯ ಮತ್ತು ಕ್ಯಾಲೊರಿ.',
+  'Track your route on the map with accurate GPS: distance, pace, time and calories.':
+      'ನಿಖರ GPS ಮೂಲಕ ನಕ್ಷೆಯಲ್ಲಿ ದಾರಿ ದಾಖಲಿಸಿ: ದೂರ, ವೇಗ, ಸಮಯ ಮತ್ತು ಕ್ಯಾಲೊರಿ.',
   'Steps counted all day': 'ದಿನವಿಡೀ ಹೆಜ್ಜೆ ಎಣಿಕೆ',
   'Rope skipping counted by your phone': 'ಹಗ್ಗದ ಜಿಗಿತವನ್ನು ನಿಮ್ಮ ಫೋನ್ ಎಣಿಸುತ್ತದೆ',
   'Snap your food': 'ನಿಮ್ಮ ಆಹಾರದ ಫೋಟೋ ತೆಗೆಯಿರಿ',
-  'Take a photo of your plate: FittArc finds each dish and shows calories, protein, carbs and fibre.': 'ತಟ್ಟೆಯ ಫೋಟೋ ತೆಗೆಯಿರಿ: FittArc ಪ್ರತಿ ಖಾದ್ಯ ಗುರುತಿಸಿ ಕ್ಯಾಲೊರಿ, ಪ್ರೋಟೀನ್, ಕಾರ್ಬ್ಸ್ ಮತ್ತು ನಾರು ತೋರಿಸುತ್ತದೆ.',
+  'Take a photo of your plate: FittArc finds each dish and shows calories, protein, carbs and fibre.':
+      'ತಟ್ಟೆಯ ಫೋಟೋ ತೆಗೆಯಿರಿ: FittArc ಪ್ರತಿ ಖಾದ್ಯ ಗುರುತಿಸಿ ಕ್ಯಾಲೊರಿ, ಪ್ರೋಟೀನ್, ಕಾರ್ಬ್ಸ್ ಮತ್ತು ನಾರು ತೋರಿಸುತ್ತದೆ.',
   'Edit any dish in one tap': 'ಯಾವುದೇ ಖಾದ್ಯವನ್ನು ಒಂದೇ ಟ್ಯಾಪ್‌ನಲ್ಲಿ ತಿದ್ದಿ',
   'Water and meal reminders': 'ನೀರು ಮತ್ತು ಊಟದ ಜ್ಞಾಪನೆಗಳು',
   'Health and your watch': 'ಆರೋಗ್ಯ ಮತ್ತು ನಿಮ್ಮ ವಾಚ್',
-  'Heart rate with your camera, height, weight, BMI and a body check. Connect your smartwatch too.': 'ಕ್ಯಾಮೆರಾದಿಂದ ಹೃದಯ ಬಡಿತ, ಎತ್ತರ, ತೂಕ, BMI ಮತ್ತು ದೇಹ ಪರೀಕ್ಷೆ. ಸ್ಮಾರ್ಟ್‌ವಾಚ್ ಕೂಡ ಸಂಪರ್ಕಿಸಿ.',
+  'Heart rate with your camera, height, weight, BMI and a body check. Connect your smartwatch too.':
+      'ಕ್ಯಾಮೆರಾದಿಂದ ಹೃದಯ ಬಡಿತ, ಎತ್ತರ, ತೂಕ, BMI ಮತ್ತು ದೇಹ ಪರೀಕ್ಷೆ. ಸ್ಮಾರ್ಟ್‌ವಾಚ್ ಕೂಡ ಸಂಪರ್ಕಿಸಿ.',
   'Sleep alarm and sleep mode': 'ನಿದ್ರೆ ಅಲಾರಂ ಮತ್ತು ನಿದ್ರೆ ಮೋಡ್',
   'Approximate wellness estimates, not medical tests': 'ಅಂದಾಜು ಆರೋಗ್ಯ ಸೂಚನೆಗಳು, ವೈದ್ಯಕೀಯ ಪರೀಕ್ಷೆಗಳಲ್ಲ',
   'Better together': 'ಒಟ್ಟಿಗೆ ಇನ್ನಷ್ಟು ಉತ್ತಮ',
-  'Add friends, join clubs near you, run club challenges and keep team streaks alive.': 'ಸ್ನೇಹಿತರನ್ನು ಸೇರಿಸಿ, ಹತ್ತಿರದ ಕ್ಲಬ್ ಸೇರಿ, ಕ್ಲಬ್ ಸವಾಲು ಮಾಡಿ ಮತ್ತು ತಂಡದ ಸರಣಿ ಉಳಿಸಿ.',
-  'Rankings, chat and food snaps that disappear in 24 hours': 'ಶ್ರೇಣಿ, ಚಾಟ್ ಮತ್ತು 24 ಗಂಟೆಯಲ್ಲಿ ಮಾಯವಾಗುವ ಆಹಾರ ಸ್ನ್ಯಾಪ್‌ಗಳು',
+  'Add friends, join clubs near you, run club challenges and keep team streaks alive.':
+      'ಸ್ನೇಹಿತರನ್ನು ಸೇರಿಸಿ, ಹತ್ತಿರದ ಕ್ಲಬ್ ಸೇರಿ, ಕ್ಲಬ್ ಸವಾಲು ಮಾಡಿ ಮತ್ತು ತಂಡದ ಸರಣಿ ಉಳಿಸಿ.',
+  'Rankings, chat and food snaps that disappear in 24 hours':
+      'ಶ್ರೇಣಿ, ಚಾಟ್ ಮತ್ತು 24 ಗಂಟೆಯಲ್ಲಿ ಮಾಯವಾಗುವ ಆಹಾರ ಸ್ನ್ಯಾಪ್‌ಗಳು',
   'Nudges when friends finish their goals': 'ಸ್ನೇಹಿತರು ಗುರಿ ಮುಗಿಸಿದಾಗ ಪ್ರೇರಣೆ ಸಂದೇಶ',
   'See your progress': 'ನಿಮ್ಮ ಪ್ರಗತಿ ನೋಡಿ',
-  'A daily report every evening, Arc Wrapped each season, and cards to share on Instagram and WhatsApp.': 'ಪ್ರತಿ ಸಂಜೆ ದೈನಂದಿನ ವರದಿ, ಪ್ರತಿ ಋತುವಿಗೆ ಆರ್ಕ್ ಸಾರಾಂಶ, ಮತ್ತು Instagram, WhatsApp ನಲ್ಲಿ ಹಂಚಲು ಕಾರ್ಡ್‌ಗಳು.',
+  'A daily report every evening, Arc Wrapped each season, and cards to share on Instagram and WhatsApp.':
+      'ಪ್ರತಿ ಸಂಜೆ ದೈನಂದಿನ ವರದಿ, ಪ್ರತಿ ಋತುವಿಗೆ ಆರ್ಕ್ ಸಾರಾಂಶ, ಮತ್ತು Instagram, WhatsApp ನಲ್ಲಿ ಹಂಚಲು ಕಾರ್ಡ್‌ಗಳು.',
   'Your progress is backed up to your account': 'ನಿಮ್ಮ ಪ್ರಗತಿ ನಿಮ್ಮ ಖಾತೆಯಲ್ಲಿ ಸುರಕ್ಷಿತ',
   'Works in English, ಕನ್ನಡ and हिन्दी': 'English, ಕನ್ನಡ ಮತ್ತು हिन्दी ಯಲ್ಲಿ ಲಭ್ಯ',
   'Run': 'ಓಟ',

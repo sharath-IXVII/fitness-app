@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'dart:async';
 
 import 'package:clock/clock.dart';
@@ -113,7 +114,8 @@ class _SkippingScreenState extends ConsumerState<SkippingScreen> {
           padding: const EdgeInsets.all(24),
           child: Column(
             children: [
-              Text(tr('Keep your phone in a pocket (or hold it) and skip. FittArc counts each jump.'),
+              Text(
+                tr('Keep your phone in a pocket (or hold it) and skip. FittArc counts each jump.'),
                 style: text.bodyLarge,
                 textAlign: TextAlign.center,
               ),

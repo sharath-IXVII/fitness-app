@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -63,7 +64,10 @@ class TeamsSection extends ConsumerWidget {
       children: [
         Text(tr('Team streaks'), style: text.titleLarge),
         const SizedBox(height: 2),
-        Text(tr('Up to 6 friends. A day counts only when everyone hits their goals. One miss and the team streak is gone!'),
+        Text(
+          tr(
+            'Up to 6 friends. A day counts only when everyone hits their goals. One miss and the team streak is gone!',
+          ),
           style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
         ),
         const SizedBox(height: 10),

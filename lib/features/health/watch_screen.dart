@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -102,7 +103,8 @@ class WatchScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(tr('Live heart rate'), style: text.titleMedium),
-                          Text(tr('Connect a watch or chest strap by Bluetooth and earn Arc minutes as you train.'),
+                          Text(
+                            tr('Connect a watch or chest strap by Bluetooth and earn Arc minutes as you train.'),
                             style: text.bodySmall,
                           ),
                         ],
@@ -116,8 +118,11 @@ class WatchScreen extends ConsumerWidget {
             const SizedBox(height: 14),
             const _HealthConnectCard(),
             const SizedBox(height: 14),
-            Text(tr('Reminders and alarms already show on a paired watch, because the watch mirrors your phone\'s '
-              'notifications. Heart rate and steps from a watch are not medical measurements.'),
+            Text(
+              tr(
+                'Reminders and alarms already show on a paired watch, because the watch mirrors your phone\'s '
+                'notifications. Heart rate and steps from a watch are not medical measurements.',
+              ),
               style: text.bodySmall,
             ),
           ],
@@ -165,8 +170,11 @@ class _HealthConnectCard extends ConsumerWidget {
             ),
             error: (_, _) => Text(tr('Could not check Health Connect.'), style: text.bodyMedium),
             data: (s) => switch (s.status) {
-              WatchStatus.unavailable => Text(tr('Health Connect is not available on this phone, so watch data cannot be read. Live heart rate by '
-                'Bluetooth above still works.'),
+              WatchStatus.unavailable => Text(
+                tr(
+                  'Health Connect is not available on this phone, so watch data cannot be read. Live heart rate by '
+                  'Bluetooth above still works.',
+                ),
                 style: text.bodyMedium,
               ),
               WatchStatus.needsInstall => Column(
@@ -184,9 +192,12 @@ class _HealthConnectCard extends ConsumerWidget {
               WatchStatus.notAllowed => Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(tr('Most watch apps (Fitbit, Samsung Health, Mi Fitness, Zepp, Noise, boAt, Garmin and others) can '
-                    'share with Health Connect. Turn that on in your watch app, then allow FittArc to read steps, '
-                    'heart rate and sleep. FittArc only reads, and keeps it on this phone.'),
+                  Text(
+                    tr(
+                      'Most watch apps (Fitbit, Samsung Health, Mi Fitness, Zepp, Noise, boAt, Garmin and others) can '
+                      'share with Health Connect. Turn that on in your watch app, then allow FittArc to read steps, '
+                      'heart rate and sleep. FittArc only reads, and keeps it on this phone.',
+                    ),
                     style: text.bodyMedium,
                   ),
                   const SizedBox(height: 12),
@@ -215,7 +226,8 @@ class _Snapshot extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     if (data.isEmpty) {
-      return Text(tr('Connected, but nothing has arrived yet. Open your watch app, let it sync, then refresh.'),
+      return Text(
+        tr('Connected, but nothing has arrived yet. Open your watch app, let it sync, then refresh.'),
         style: text.bodyMedium,
       );
     }

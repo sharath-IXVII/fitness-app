@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -182,10 +183,7 @@ class ProfileScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    TextButton(
-                      onPressed: () => ref.read(authProvider.notifier).signOut(),
-                      child: Text(tr('Sign out')),
-                    ),
+                    TextButton(onPressed: () => ref.read(authProvider.notifier).signOut(), child: Text(tr('Sign out'))),
                   ],
                 ),
               ),
@@ -275,7 +273,10 @@ class ProfileScreen extends ConsumerWidget {
                           if (friends != null && uid != null) {
                             await ref.read(clubsBackendProvider)?.deleteMe(uid).timeout(const Duration(seconds: 20));
                             await ref.read(teamsBackendProvider)?.leaveAll(uid).timeout(const Duration(seconds: 20));
-                            await ref.read(snapShareBackendProvider)?.deleteMine(uid).timeout(const Duration(seconds: 20));
+                            await ref
+                                .read(snapShareBackendProvider)
+                                ?.deleteMine(uid)
+                                .timeout(const Duration(seconds: 20));
                             await friends.deleteMe(uid).timeout(const Duration(seconds: 20));
                             await ref.read(cloudStoreProvider)?.delete(uid).timeout(const Duration(seconds: 20));
                           }

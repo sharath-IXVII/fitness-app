@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -168,7 +169,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with SingleTickerPr
                             ),
                           ),
                           const SizedBox(height: 14),
-                          Text(tr('SPONSORED BY'),
+                          Text(
+                            tr('SPONSORED BY'),
                             style: text.labelSmall?.copyWith(color: const Color(0xFF7C8AA3), letterSpacing: 3.2),
                           ),
                           const SizedBox(height: 4),

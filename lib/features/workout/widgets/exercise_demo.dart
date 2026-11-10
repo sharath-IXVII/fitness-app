@@ -447,11 +447,7 @@ class _DemoPainter extends CustomPainter {
       canvas.drawArc(Rect.fromCircle(center: head, radius: 5.9), math.pi * 0.9, math.pi * 1.25, true, hair);
     }
     // A touch of light on the head.
-    canvas.drawCircle(
-      head.translate(-1.8, -2),
-      1.5,
-      Paint()..color = Colors.white.withValues(alpha: 0.28),
-    );
+    canvas.drawCircle(head.translate(-1.8, -2), 1.5, Paint()..color = Colors.white.withValues(alpha: 0.28));
     canvas.restore();
   }
 

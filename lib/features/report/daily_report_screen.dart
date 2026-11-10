@@ -1,6 +1,7 @@
 import 'dart:ui' as ui;
 
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -15,6 +16,7 @@ import '../../core/widgets/gradient_button.dart';
 import '../../core/widgets/page_background.dart';
 import '../clubs/report_screen.dart' show saveImageProvider;
 import '../snaps/snap_screen.dart' show shareSnapProvider;
+import '../../core/share_to.dart';
 import 'domain/daily_report.dart';
 import 'report_providers.dart';
 
@@ -78,6 +80,19 @@ class _DailyReportScreenState extends ConsumerState<DailyReportScreen> {
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
                       child: Column(
                         children: [
+                          ShareRow(
+                            apps: const [ShareApp.whatsapp, ShareApp.instagram],
+                            busy: _busy,
+                            onShare: (app) => _image(
+                              (png) => ref.read(shareToAppProvider)(
+                                png,
+                                'My day on FittArc: ${r.score}/100. fittarc.in',
+                                app,
+                              ),
+                              '',
+                            ),
+                          ),
+                          const SizedBox(height: 10),
                           Row(
                             children: [
                               Expanded(

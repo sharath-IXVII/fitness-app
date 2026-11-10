@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'dart:async';
 
 import 'package:camera/camera.dart';
@@ -525,7 +526,8 @@ class _WorkoutScreenState extends ConsumerState<WorkoutScreen> {
           const SizedBox(height: 16),
           Text(tr('Camera needed'), style: text.headlineSmall),
           const SizedBox(height: 8),
-          Text(tr('The camera counts your reps. Nothing is recorded or uploaded — it all happens on your phone.'),
+          Text(
+            tr('The camera counts your reps. Nothing is recorded or uploaded — it all happens on your phone.'),
             style: text.bodyMedium,
             textAlign: TextAlign.center,
           ),

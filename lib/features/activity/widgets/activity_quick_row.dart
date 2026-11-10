@@ -26,7 +26,10 @@ class ActivityQuickRow extends StatelessWidget {
               children: [
                 Icon(icon, color: AppColors.primary, size: 30),
                 const SizedBox(height: 6),
-                FittedBox(fit: BoxFit.scaleDown, child: Text(tr(label), style: text.titleSmall, maxLines: 1)),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(tr(label), style: text.titleSmall, maxLines: 1),
+                ),
               ],
             ),
           ),

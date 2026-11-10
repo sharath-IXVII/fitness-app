@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'dart:isolate';
 import 'dart:ui' as ui;
 
@@ -15,6 +16,7 @@ import '../../core/widgets/gradient_button.dart';
 import '../../core/widgets/page_background.dart';
 import '../friends/friends_providers.dart';
 import 'domain/food_snap.dart';
+import '../../core/share_to.dart';
 import 'snap_share_backend.dart';
 import 'snap_share_providers.dart';
 import 'snaps_providers.dart';
@@ -174,17 +176,19 @@ class _SnapScreenState extends ConsumerState<SnapScreen> {
     }
   }
 
-  Future<void> _share(FoodSnap snap) async {
+  Future<void> _share(FoodSnap snap, [ShareApp app = ShareApp.more]) async {
     if (_sharing) return;
     setState(() => _sharing = true);
     HapticFeedback.selectionClick();
     try {
       final png = await _png();
       if (png != null) {
-        await ref.read(shareSnapProvider)(
-          png,
-          '${snap.meal.label}: about ${snap.total.kcal.round()} kcal. Snapped with FittArc, fittarc.in',
-        );
+        final text = '${snap.meal.label}: about ${snap.total.kcal.round()} kcal. Snapped with FittArc, fittarc.in';
+        if (app == ShareApp.more) {
+          await ref.read(shareSnapProvider)(png, text);
+        } else {
+          await ref.read(shareToAppProvider)(png, text, app);
+        }
       }
     } catch (e) {
       debugPrint('snap share failed: $e');
@@ -254,6 +258,12 @@ class _SnapScreenState extends ConsumerState<SnapScreen> {
                       padding: const EdgeInsets.fromLTRB(20, 4, 20, 12),
                       child: Column(
                         children: [
+                          ShareRow(
+                            apps: const [ShareApp.whatsapp, ShareApp.instagram],
+                            busy: _sharing,
+                            onShare: (app) => _share(snap, app),
+                          ),
+                          const SizedBox(height: 10),
                           GradientButton(
                             label: _sharing ? 'Preparing…' : 'Share to story or other apps',
                             icon: Icons.ios_share_rounded,
@@ -266,7 +276,8 @@ class _SnapScreenState extends ConsumerState<SnapScreen> {
                               label: Text(tr('Send to FittArc friends (24 h)')),
                             ),
                           const SizedBox(height: 4),
-                          Text(tr('Saved on this phone only. Sharing sends the picture to the app you pick.'),
+                          Text(
+                            tr('Saved on this phone only. Sharing sends the picture to the app you pick.'),
                             textAlign: TextAlign.center,
                             style: Theme.of(context).textTheme.bodySmall,
                           ),

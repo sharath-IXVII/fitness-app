@@ -225,13 +225,45 @@ class BrandMarkPainter extends CustomPainter {
 
   static const _blocks = <List<List<Offset>>>[
     [
-      [Offset(560.9, 467.7), Offset(577.4, 482), Offset(628, 531.2), Offset(629.9, 388.2), Offset(865.7, 388.2), Offset(913, 386.8), Offset(848.7, 316), Offset(561.8, 316), Offset(560.4, 318.8)],
+      [
+        Offset(560.9, 467.7),
+        Offset(577.4, 482),
+        Offset(628, 531.2),
+        Offset(629.9, 388.2),
+        Offset(865.7, 388.2),
+        Offset(913, 386.8),
+        Offset(848.7, 316),
+        Offset(561.8, 316),
+        Offset(560.4, 318.8),
+      ],
     ],
     [
-      [Offset(788, 436), Offset(645.9, 436.4), Offset(646.4, 569.3), Offset(645, 575.3), Offset(588.9, 527), Offset(588.9, 609.3), Offset(636.7, 656.7), Offset(700.2, 725.6), Offset(700.6, 492.5), Offset(749.8, 491.2)],
+      [
+        Offset(788, 436),
+        Offset(645.9, 436.4),
+        Offset(646.4, 569.3),
+        Offset(645, 575.3),
+        Offset(588.9, 527),
+        Offset(588.9, 609.3),
+        Offset(636.7, 656.7),
+        Offset(700.2, 725.6),
+        Offset(700.6, 492.5),
+        Offset(749.8, 491.2),
+      ],
     ],
     [
-      [Offset(837.2, 398.8), Offset(787.5, 472.3), Offset(718.1, 567.9), Offset(718.6, 686.5), Offset(743.9, 653), Offset(837.6, 519.2), Offset(925.5, 656.7), Offset(974.2, 726.5), Offset(975.1, 598.3), Offset(880.9, 458.1)],
+      [
+        Offset(837.2, 398.8),
+        Offset(787.5, 472.3),
+        Offset(718.1, 567.9),
+        Offset(718.6, 686.5),
+        Offset(743.9, 653),
+        Offset(837.6, 519.2),
+        Offset(925.5, 656.7),
+        Offset(974.2, 726.5),
+        Offset(975.1, 598.3),
+        Offset(880.9, 458.1),
+      ],
       [Offset(781.1, 636), Offset(893.3, 636), Offset(857.9, 579.4), Offset(854.7, 579), Offset(817, 579.4)],
     ],
   ];

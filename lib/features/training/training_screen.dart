@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -340,7 +341,8 @@ Future<void> _reminderSheet(BuildContext context, WidgetRef ref) => showModalBot
             children: [
               Text(tr('Workout reminder'), style: text.titleLarge),
               const SizedBox(height: 4),
-              Text(tr('A daily nudge that names your next challenge day. Quiet on days you have already worked out.'),
+              Text(
+                tr('A daily nudge that names your next challenge day. Quiet on days you have already worked out.'),
                 style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
               ),
               const SizedBox(height: 12),

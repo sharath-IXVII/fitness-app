@@ -1,4 +1,5 @@
 import '../../../core/i18n/i18n.dart';
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -91,7 +92,10 @@ class _BodyCheckSheetState extends ConsumerState<BodyCheckSheet> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(tr('Use a soft tape measure, standing relaxed. These are estimates for your fitness, not a medical test.'),
+            Text(
+              tr(
+                'Use a soft tape measure, standing relaxed. These are estimates for your fitness, not a medical test.',
+              ),
               style: text.bodyMedium,
             ),
             const SizedBox(height: 14),
@@ -123,8 +127,11 @@ class _BodyCheckSheetState extends ConsumerState<BodyCheckSheet> {
                     : 'Over 0.5. Daily walks and less fried and sugary food help bring it down.',
               ),
             const SizedBox(height: 10),
-            Text(tr('Body fat uses the U.S. Navy tape method; it is usually within 3–4 points of a lab scan. A fitter body '
-              'is good for your heart and energy.'),
+            Text(
+              tr(
+                'Body fat uses the U.S. Navy tape method; it is usually within 3–4 points of a lab scan. A fitter body '
+                'is good for your heart and energy.',
+              ),
               style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
             ),
             const SizedBox(height: 14),

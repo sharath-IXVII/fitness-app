@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -54,13 +55,20 @@ class _FoodGuideScreenState extends ConsumerState<FoodGuideScreen> {
                 'Switch to Compare to put two foods side by side, for example watermelon and sunflower seeds.',
               ],
             ),
-            SegmentedPills(options: const ['Rank foods', 'Compare'], index: _mode, onChanged: (i) => setState(() => _mode = i)),
+            SegmentedPills(
+              options: const ['Rank foods', 'Compare'],
+              index: _mode,
+              onChanged: (i) => setState(() => _mode = i),
+            ),
             const SizedBox(height: 14),
             if (_mode == 0) ..._rank(text) else ..._compare(text),
             const SizedBox(height: 18),
-            Text(tr('All amounts are per 100 g of the food as listed (raw, cooked or dry). Values are typical figures '
-              'from standard food tables and are rounded. Home cooking and brands vary, so use this as a guide. '
-              'Dry foods look richer because cooking adds water.'),
+            Text(
+              tr(
+                'All amounts are per 100 g of the food as listed (raw, cooked or dry). Values are typical figures '
+                'from standard food tables and are rounded. Home cooking and brands vary, so use this as a guide. '
+                'Dry foods look richer because cooking adds water.',
+              ),
               style: text.bodySmall,
             ),
           ],
@@ -126,7 +134,8 @@ class _FoodGuideScreenState extends ConsumerState<FoodGuideScreen> {
       if (list.isEmpty)
         Text(tr('No foods match.'), style: text.bodyMedium)
       else
-        for (final (i, f) in list.indexed) _RankRow(rank: i + 1, food: f, nutrient: _nutrient, best: best, onTap: () => _detail(f)),
+        for (final (i, f) in list.indexed)
+          _RankRow(rank: i + 1, food: f, nutrient: _nutrient, best: best, onTap: () => _detail(f)),
     ];
   }
 
@@ -188,10 +197,17 @@ class _FoodGuideScreenState extends ConsumerState<FoodGuideScreen> {
 
 String _fmt(double v) => v == v.roundToDouble() ? v.round().toString() : v.toString();
 
-String _value(FactNutrient n, double v) => '${v >= 100 || v == v.roundToDouble() ? v.round() : v.toStringAsFixed(1)} ${n.unit}';
+String _value(FactNutrient n, double v) =>
+    '${v >= 100 || v == v.roundToDouble() ? v.round() : v.toStringAsFixed(1)} ${n.unit}';
 
 class _RankRow extends StatelessWidget {
-  const _RankRow({required this.rank, required this.food, required this.nutrient, required this.best, required this.onTap});
+  const _RankRow({
+    required this.rank,
+    required this.food,
+    required this.nutrient,
+    required this.best,
+    required this.onTap,
+  });
 
   final int rank;
   final FoodFact food;
@@ -210,14 +226,19 @@ class _RankRow extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 7),
         child: Row(
           children: [
-            SizedBox(width: 26, child: Text('$rank', style: text.labelMedium?.copyWith(color: AppColors.textMuted))),
+            SizedBox(
+              width: 26,
+              child: Text('$rank', style: text.labelMedium?.copyWith(color: AppColors.textMuted)),
+            ),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      Flexible(child: Text(food.name, style: text.titleSmall, overflow: TextOverflow.ellipsis)),
+                      Flexible(
+                        child: Text(food.name, style: text.titleSmall, overflow: TextOverflow.ellipsis),
+                      ),
                       const SizedBox(width: 6),
                       Text(food.state.label, style: text.bodySmall?.copyWith(color: AppColors.textTertiary)),
                     ],

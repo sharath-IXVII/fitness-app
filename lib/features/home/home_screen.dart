@@ -1,5 +1,6 @@
 import '../activity/widgets/activity_quick_row.dart';
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -440,7 +441,8 @@ class _HealthEntry extends StatelessWidget {
                       const BetaTag(),
                     ],
                   ),
-                  Text(tr('Heart rate, watch, height, weight and BMI'),
+                  Text(
+                    tr('Heart rate, watch, height, weight and BMI'),
                     style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,

@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -143,8 +144,11 @@ class _SleepRingState extends ConsumerState<SleepRing> {
       context: context,
       builder: (c) => AlertDialog(
         title: Text(tr('One more permission')),
-        content: Text(tr('To keep other apps blocked while you sleep, FittArc needs "Display over other apps". '
-          'On the next screen, find FittArc and turn it on.'),
+        content: Text(
+          tr(
+            'To keep other apps blocked while you sleep, FittArc needs "Display over other apps". '
+            'On the next screen, find FittArc and turn it on.',
+          ),
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(c, false), child: Text(tr('Skip'))),
@@ -194,7 +198,8 @@ class _SleepRingState extends ConsumerState<SleepRing> {
               const SizedBox(height: 14),
               Text(tr('Time to sleep'), style: text.headlineSmall?.copyWith(color: _moon)),
               const SizedBox(height: 8),
-              Text(tr('Put the day away. Tomorrow\'s you will thank you.'),
+              Text(
+                tr('Put the day away. Tomorrow\'s you will thank you.'),
                 textAlign: TextAlign.center,
                 style: text.bodyMedium?.copyWith(color: _dim),
               ),
@@ -320,7 +325,12 @@ class _SleepModeScreenState extends ConsumerState<SleepModeScreen> {
                   style: text.bodySmall?.copyWith(color: _dim),
                 ),
               ] else ...[
-                _NightButton(label: tr('End sleep mode'), icon: Icons.wb_sunny_outlined, onTap: _finish, outlined: true),
+                _NightButton(
+                  label: tr('End sleep mode'),
+                  icon: Icons.wb_sunny_outlined,
+                  onTap: _finish,
+                  outlined: true,
+                ),
                 const SizedBox(height: 14),
                 Text(
                   'A calm screen until $end. You can leave it any time.',

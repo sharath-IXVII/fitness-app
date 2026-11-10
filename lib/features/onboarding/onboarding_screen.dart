@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -252,7 +253,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         const Spacer(),
         const AppLogo(size: 64).animate().fadeIn(duration: 400.ms),
         const SizedBox(height: 28),
-        Text(tr('Your mornings\nare about to change.'),
+        Text(
+          tr('Your mornings\nare about to change.'),
           style: text.displaySmall?.copyWith(height: 1.15),
         ).animate(delay: 150.ms).fadeIn(duration: 600.ms).slideY(begin: 0.2, curve: Curves.easeOutCubic),
         const SizedBox(height: 12),
@@ -370,15 +372,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         Padding(
           padding: const EdgeInsets.only(top: 40),
           child: RulerPicker(
-        min: 30,
-        max: 180,
-        step: 0.5,
-        decimals: 1,
-        value: _weight,
-        unit: 'kg',
-        color: AppColors.water,
-        onChanged: (v) => setState(() => _weight = v),
-      ),
+            min: 30,
+            max: 180,
+            step: 0.5,
+            decimals: 1,
+            value: _weight,
+            unit: 'kg',
+            color: AppColors.water,
+            onChanged: (v) => setState(() => _weight = v),
+          ),
         ),
         _healthyHint(),
       ],
@@ -416,7 +418,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           Icon(Icons.watch_rounded, size: 84, color: _watchOn ? AppColors.primary : AppColors.textMuted),
           const SizedBox(height: 18),
           if (_watchOn)
-            Text(tr('Connected ✓'), textAlign: TextAlign.center, style: text.titleLarge?.copyWith(color: AppColors.primary))
+            Text(
+              tr('Connected ✓'),
+              textAlign: TextAlign.center,
+              style: text.titleLarge?.copyWith(color: AppColors.primary),
+            )
           else
             OutlinedButton.icon(
               style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(56)),
@@ -425,8 +431,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               label: Text(tr('Connect my watch')),
             ),
           const SizedBox(height: 14),
-          Text(tr('Works with watches that share data through Health Connect (Samsung, Fitbit, Noise, boAt, Amazfit '
-            'and more, through their own app). Live heart rate also works with Bluetooth straps on the Watch page.'),
+          Text(
+            tr(
+              'Works with watches that share data through Health Connect (Samsung, Fitbit, Noise, boAt, Amazfit '
+              'and more, through their own app). Live heart rate also works with Bluetooth straps on the Watch page.',
+            ),
             style: text.bodySmall,
             textAlign: TextAlign.center,
           ),

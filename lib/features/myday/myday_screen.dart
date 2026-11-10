@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -531,7 +532,8 @@ class _EmptyPlan extends StatelessWidget {
           const SizedBox(height: 14),
           Text(tr('Plan your day'), style: text.titleLarge),
           const SizedBox(height: 6),
-          Text(tr('Pick a template, then adjust the times. You\'ll get a reminder for each item.'),
+          Text(
+            tr('Pick a template, then adjust the times. You\'ll get a reminder for each item.'),
             style: text.bodyMedium,
             textAlign: TextAlign.center,
           ),

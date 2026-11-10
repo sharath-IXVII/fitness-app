@@ -1,4 +1,5 @@
 import '../../../core/i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -126,7 +127,8 @@ Future<void> showMoveHowTo(BuildContext context, Move move, {WorkoutItem? item})
                 ),
               ),
             if (move.perSide)
-              Text(tr('Do both sides: the target is for each side.'),
+              Text(
+                tr('Do both sides: the target is for each side.'),
                 style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
               ),
           ],

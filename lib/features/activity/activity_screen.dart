@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'dart:async';
 
 import 'package:clock/clock.dart';
@@ -244,7 +245,11 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                           ),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: GradientButton(label: tr('Finish'), icon: Icons.flag_rounded, onPressed: _confirmFinish),
+                            child: GradientButton(
+                              label: tr('Finish'),
+                              icon: Icons.flag_rounded,
+                              onPressed: _confirmFinish,
+                            ),
                           ),
                         ],
                       ),

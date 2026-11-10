@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -314,7 +315,8 @@ class _PlayerScreenState extends ConsumerState<PlayerScreen> {
             '×${_item.target}',
             style: text.displayMedium?.copyWith(color: AppColors.primary),
           ).animate(key: ValueKey(_index)).scale(begin: const Offset(0.8, 0.8), curve: Curves.easeOutBack),
-          if (_item.move.perSide) Text(tr('each side'), style: text.titleMedium?.copyWith(color: AppColors.textSecondary)),
+          if (_item.move.perSide)
+            Text(tr('each side'), style: text.titleMedium?.copyWith(color: AppColors.textSecondary)),
           Text(_clock(_workSeconds), style: text.bodyMedium?.copyWith(color: AppColors.textTertiary)),
         ],
         const Spacer(),

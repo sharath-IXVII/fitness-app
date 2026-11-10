@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -100,9 +101,12 @@ class AchievementsScreen extends ConsumerWidget {
                       label: Text(tr('All levels and XP')),
                     ),
                   ),
-                  Text(tr('Earn XP for every goal you hit: 10 per goal, 20 extra for a perfect day, plus a bonus for '
-                    'each day your streak stays alive. Finishing a whole badge set pays extra, and so does finishing a '
-                    'challenge together with a friend (50 XP, up to 3 a week).'),
+                  Text(
+                    tr(
+                      'Earn XP for every goal you hit: 10 per goal, 20 extra for a perfect day, plus a bonus for '
+                      'each day your streak stays alive. Finishing a whole badge set pays extra, and so does finishing a '
+                      'challenge together with a friend (50 XP, up to 3 a week).',
+                    ),
                     style: text.bodySmall,
                   ),
                   const SizedBox(height: 8),

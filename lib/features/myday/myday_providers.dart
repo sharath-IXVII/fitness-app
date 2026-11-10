@@ -38,6 +38,24 @@ class MyDayNotifier extends Notifier<List<DayBlock>> {
     await _set(exists ? [for (final x in state) x.id == b.id ? b : x] : [...state, b]);
   }
 
+  /// Puts [blocks] (their times and details) on [days], replacing whatever
+  /// those days had. Other days are left alone.
+  Future<void> putOnDays(List<DayBlock> blocks, Set<int> days) async {
+    if (days.isEmpty) return;
+    final kept = [
+      for (final b in state)
+        if (!b.days.every(days.contains)) b.copyWith(days: b.days.difference(days)),
+    ];
+    var id = [...kept, ...state].fold(0, (m, b) => b.id > m ? b.id : m);
+    await _set([
+      ...kept,
+      for (final b in blocks) b.copyWith(id: ++id, days: {...days}),
+    ]);
+  }
+
+  /// Copies everything on [from] to [to].
+  Future<void> copyDay(int from, Set<int> to) => putOnDays(blocksFor(state, from), to.difference({from}));
+
   Future<void> delete(int id) => _set(state.where((b) => b.id != id).toList());
 
   Future<void> restore(DayBlock b) => save(b);
@@ -54,6 +72,57 @@ class MyDayNotifier extends Notifier<List<DayBlock>> {
 }
 
 final myDayProvider = NotifierProvider<MyDayNotifier, List<DayBlock>>(MyDayNotifier.new);
+
+/// A day plan the user saved under their own name.
+class MyTemplate {
+  const MyTemplate(this.name, this.blocks);
+
+  final String name;
+  final List<DayBlock> blocks;
+
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'blocks': [for (final b in blocks) b.toJson()],
+  };
+
+  factory MyTemplate.fromJson(Map<String, dynamic> j) => MyTemplate(j['name'] as String, [
+    for (final b in j['blocks'] as List) DayBlock.fromJson(b as Map<String, dynamic>),
+  ]);
+}
+
+class MyTemplatesNotifier extends Notifier<List<MyTemplate>> {
+  static const _tKey = 'myday.templates.v1';
+
+  @override
+  List<MyTemplate> build() {
+    final raw = ref.read(sharedPrefsProvider).getString(_tKey);
+    if (raw == null) return const [];
+    try {
+      return [for (final t in jsonDecode(raw) as List) MyTemplate.fromJson(t as Map<String, dynamic>)];
+    } catch (_) {
+      return const [];
+    }
+  }
+
+  /// Saves [blocks] as [name]; a template with the same name is replaced.
+  Future<void> save(String name, List<DayBlock> blocks) => _set([
+    for (final t in state)
+      if (t.name.toLowerCase() != name.trim().toLowerCase()) t,
+    MyTemplate(name.trim(), [for (final b in blocks) b.copyWith(days: const {})]),
+  ]);
+
+  Future<void> delete(String name) => _set([
+    for (final t in state)
+      if (t.name != name) t,
+  ]);
+
+  Future<void> _set(List<MyTemplate> list) async {
+    state = list;
+    await ref.read(sharedPrefsProvider).setString(_tKey, jsonEncode([for (final t in list) t.toJson()]));
+  }
+}
+
+final myTemplatesProvider = NotifierProvider<MyTemplatesNotifier, List<MyTemplate>>(MyTemplatesNotifier.new);
 
 /// Master switch for My Day reminders.
 class MyDayRemindersNotifier extends Notifier<bool> {

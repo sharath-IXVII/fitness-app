@@ -52,7 +52,7 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
   Future<void> _pickTemplate() async {
     final profile = ref.read(profileProvider);
     final hasPlan = ref.read(myDayProvider).isNotEmpty;
-    final t = await showModalBottomSheet<RoutineTemplate>(
+    final t = await showModalBottomSheet<Object>(
       context: context,
       useRootNavigator: true,
       backgroundColor: AppColors.surface,
@@ -71,6 +71,42 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                 Text(tr('This replaces your current plan.'), style: Theme.of(c).textTheme.bodySmall),
               ],
               const SizedBox(height: 12),
+              Consumer(
+                builder: (c, ref, _) {
+                  final mine = ref.watch(myTemplatesProvider);
+                  if (mine.isEmpty) return const SizedBox.shrink();
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(tr('My templates'), style: Theme.of(c).textTheme.titleMedium),
+                      Text(tr('Apply to any days you choose.'), style: Theme.of(c).textTheme.bodySmall),
+                      for (final m in mine)
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              color: AppColors.primarySoft,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(Icons.bookmark_rounded, color: AppColors.primary),
+                          ),
+                          title: Text(m.name),
+                          subtitle: Text('${m.blocks.length} ${tr('items')}'),
+                          trailing: IconButton(
+                            tooltip: tr('Delete template'),
+                            icon: const Icon(Icons.delete_outline_rounded),
+                            onPressed: () => ref.read(myTemplatesProvider.notifier).delete(m.name),
+                          ),
+                          onTap: () => Navigator.pop(c, m),
+                        ),
+                      const Divider(height: 24),
+                      Text(tr('Ready-made'), style: Theme.of(c).textTheme.titleMedium),
+                    ],
+                  );
+                },
+              ),
               for (final t in RoutineTemplate.values)
                 ListTile(
                   contentPadding: EdgeInsets.zero,
@@ -89,7 +125,14 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
         ),
       ),
     );
-    if (t == null) return;
+    if (t is MyTemplate) {
+      final days = await _pickDays(tr('Apply "{name}" to').replaceAll('{name}', t.name), {_weekday});
+      if (days == null || days.isEmpty) return;
+      await ref.read(myDayProvider.notifier).putOnDays(t.blocks, days);
+      _toast(tr('Template applied.'));
+      return;
+    }
+    if (t is! RoutineTemplate) return;
     await ref
         .read(myDayProvider.notifier)
         .applyTemplate(
@@ -97,6 +140,103 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
           profile?.wakeTime ?? const TimeOfDay(hour: 6, minute: 30),
           profile?.sleepTime ?? const TimeOfDay(hour: 22, minute: 30),
         );
+  }
+
+  void _toast(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(SnackBar(content: Text(msg)));
+  }
+
+  /// Lets the user tick any days of the week.
+  Future<Set<int>?> _pickDays(String title, Set<int> initial) {
+    final today = DateTime.now();
+    final monday = DateTime(today.year, today.month, today.day - (today.weekday - 1));
+    String name(int d) => DateFormat.EEEE().format(monday.add(Duration(days: d - 1)));
+    var picked = {...initial};
+    return showModalBottomSheet<Set<int>>(
+      context: context,
+      useRootNavigator: true,
+      backgroundColor: AppColors.surface,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (c) => StatefulBuilder(
+        builder: (c, set) => SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: Theme.of(c).textTheme.titleLarge),
+                const SizedBox(height: 4),
+                Text(tr('What those days have now is replaced.'), style: Theme.of(c).textTheme.bodySmall),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    for (final (label, days) in [
+                      (tr('Weekdays'), weekdaySets.weekdays),
+                      (tr('Weekend'), weekdaySets.weekend),
+                      (tr('Every day'), weekdaySets.all),
+                    ])
+                      ActionChip(label: Text(label), onPressed: () => set(() => picked = {...days})),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                for (var d = 1; d <= 7; d++)
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: picked.contains(d),
+                    title: Text(name(d)),
+                    onChanged: (v) => set(() => v == true ? picked.add(d) : picked.remove(d)),
+                  ),
+                const SizedBox(height: 8),
+                GradientButton(
+                  label: tr('Apply'),
+                  icon: Icons.check_rounded,
+                  onPressed: picked.isEmpty ? null : () => Navigator.pop(c, picked),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _copyDay() async {
+    final days = await _pickDays(tr('Copy this day to'), {});
+    if (days == null || days.isEmpty) return;
+    await ref.read(myDayProvider.notifier).copyDay(_weekday, days);
+    _toast(tr('Copied.'));
+  }
+
+  Future<void> _saveTemplate() async {
+    final ctrl = TextEditingController();
+    final name = await showDialog<String>(
+      context: context,
+      useRootNavigator: true,
+      builder: (c) => AlertDialog(
+        title: Text(tr('Save as my template')),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          maxLength: 30,
+          decoration: InputDecoration(hintText: tr('e.g. Gym day')),
+          onSubmitted: (v) => Navigator.pop(c, v),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(c), child: Text(tr('Cancel'))),
+          FilledButton(onPressed: () => Navigator.pop(c, ctrl.text), child: Text(tr('Save'))),
+        ],
+      ),
+    );
+    if (name == null || name.trim().isEmpty) return;
+    await ref.read(myTemplatesProvider.notifier).save(name, blocksFor(ref.read(myDayProvider), _weekday));
+    _toast(tr('Saved. Find it under Templates.'));
   }
 
   void _deleteWithUndo(DayBlock b) {
@@ -159,6 +299,27 @@ class _MyDayScreenState extends ConsumerState<MyDayScreen> {
                   Text(tr('Plan your day once — we\'ll remind you at every step.'), style: text.bodyMedium),
                   const SizedBox(height: 16),
                   _WeekdayPicker(value: _weekday, onChanged: (d) => setState(() => _weekday = d)),
+                  if (blocks.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextButton.icon(
+                            onPressed: _copyDay,
+                            icon: const Icon(Icons.copy_rounded, size: 18),
+                            label: FittedBox(fit: BoxFit.scaleDown, child: Text(tr('Copy to other days'))),
+                          ),
+                        ),
+                        Expanded(
+                          child: TextButton.icon(
+                            onPressed: _saveTemplate,
+                            icon: const Icon(Icons.bookmark_add_outlined, size: 18),
+                            label: FittedBox(fit: BoxFit.scaleDown, child: Text(tr('Save as template'))),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   if (all.isNotEmpty)
                     _Summary(

@@ -30,7 +30,10 @@ jobs:
           # the other parts are already saved in the food-dataset release.
           echo 'models=["detector","dish"]' >> "$GITHUB_OUTPUT"
           # "more" adds Openverse photos for every dish (parts 10-17) and retrains the dish model.
-          if grep -q '"more"' tools/food_model/run.json; then
+          # "train" only retrains both models on the data already collected.
+          if grep -q '"train"' tools/food_model/run.json; then
+            echo 'full=true' >> "$GITHUB_OUTPUT"; echo 'parts=[]' >> "$GITHUB_OUTPUT"
+          elif grep -q '"more"' tools/food_model/run.json; then
             echo 'full=true' >> "$GITHUB_OUTPUT"
             echo 'parts=[{"part":10,"split":"0"},{"part":11,"split":"1"},{"part":12,"split":"2"},{"part":13,"split":"3"},{"part":14,"split":"4"},{"part":15,"split":"5"},{"part":16,"split":"6"},{"part":17,"split":"7"}]' >> "$GITHUB_OUTPUT"
             echo 'tasks=openverse' >> "$GITHUB_OUTPUT"
@@ -47,6 +50,7 @@ jobs:
 
   label:
     needs: setup
+    if: needs.setup.outputs.parts != '[]'
     runs-on: ubuntu-latest
     timeout-minutes: 350
     strategy:
@@ -86,7 +90,7 @@ jobs:
 
   merge:
     needs: [setup, label]
-    if: ${{ !cancelled() }}
+    if: ${{ !cancelled() && needs.setup.outputs.parts != '[]' }}
     runs-on: ubuntu-latest
     env:
       TAG: ${{ needs.setup.outputs.full == 'true' && 'food-dataset' || 'food-model-test' }}
@@ -112,6 +116,7 @@ jobs:
 
   train:
     needs: [setup, merge]
+    if: ${{ !cancelled() && needs.setup.outputs.full != '' && needs.merge.result != 'failure' }}
     runs-on: ubuntu-latest
     timeout-minutes: 350
     strategy:
@@ -138,16 +143,16 @@ jobs:
         env:
           DATA_DIR: /content/data/det
           OUT_DIR: /content/out
-          EPOCHS: ${{ needs.setup.outputs.full == 'true' && '30' || '2' }}
+          EPOCHS: ${{ needs.setup.outputs.full == 'true' && '12' || '2' }}
         run: python tools/food_model/train_food_detector.py
       - name: Train the dish classifier
         if: matrix.model == 'dish'
         env:
           DATA_DIR: /content/data
           OUT_DIR: /content/out
-          EPOCHS: ${{ needs.setup.outputs.full == 'true' && '30' || '2' }}
+          EPOCHS: ${{ needs.setup.outputs.full == 'true' && '14' || '2' }}
           MIN_PHOTOS: ${{ needs.setup.outputs.full == 'true' && '8' || '3' }}
-        run: python tools/food_model/train_dish_classifier.py
+        run: python tools/food_model/train_dish_keras.py
       - name: Publish
         env:
           OUT_TAG: ${{ needs.setup.outputs.full == 'true' && 'food-detector' || 'food-model-test' }}

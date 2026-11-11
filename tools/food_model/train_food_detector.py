@@ -65,7 +65,7 @@ print("Train images:", train.size, " Valid images:", valid.size)
 print("Dishes:", train.label_names)
 
 options = object_detector.ObjectDetectorOptions(
-    supported_model=object_detector.SupportedModels.MOBILENET_MULTI_AVG_I384,
+    supported_model=getattr(object_detector.SupportedModels, os.environ.get("DET_MODEL", "MOBILENET_V2_I320")),
     hparams=object_detector.HParams(export_dir=str(OUT), epochs=EPOCHS, batch_size=16, learning_rate=0.3),
 )
 model = object_detector.ObjectDetector.create(train_data=train, validation_data=valid, options=options)
@@ -75,7 +75,7 @@ print("Final validation: loss", loss, " AP", coco_metrics.get("AP"), " AP50", co
 # Smaller and faster on phones, nearly as accurate.
 model.restore_float_ckpt()
 model.quantization_aware_training(
-    train, valid, qat_hparams=object_detector.QATHParams(learning_rate=0.3, batch_size=16, epochs=min(5, EPOCHS))
+    train, valid, qat_hparams=object_detector.QATHParams(learning_rate=0.3, batch_size=16, epochs=min(2, EPOCHS))
 )
 model.export_model("food_detector.tflite")  # int8 from the quantization-aware training
 

@@ -21,13 +21,21 @@ jobs:
     outputs:
       full: ${{ steps.m.outputs.full }}
       parts: ${{ steps.m.outputs.parts }}
+      models: ${{ steps.m.outputs.models }}
     steps:
       - uses: actions/checkout@v4
       - id: m
         run: |
           # "resume" redoes only part 0, split three ways (it is the biggest);
           # the other parts are already saved in the food-dataset release.
-          if grep -q '"resume"' tools/food_model/run.json; then
+          echo 'models=["detector","dish"]' >> "$GITHUB_OUTPUT"
+          # "more" adds Openverse photos for every dish (parts 10-17) and retrains the dish model.
+          if grep -q '"more"' tools/food_model/run.json; then
+            echo 'full=true' >> "$GITHUB_OUTPUT"
+            echo 'parts=[{"part":10,"split":"0"},{"part":11,"split":"1"},{"part":12,"split":"2"},{"part":13,"split":"3"},{"part":14,"split":"4"},{"part":15,"split":"5"},{"part":16,"split":"6"},{"part":17,"split":"7"}]' >> "$GITHUB_OUTPUT"
+            echo 'tasks=openverse' >> "$GITHUB_OUTPUT"
+            echo 'models=["dish"]' >> "$GITHUB_OUTPUT"
+          elif grep -q '"resume"' tools/food_model/run.json; then
             echo 'full=true' >> "$GITHUB_OUTPUT"
             echo 'parts=[{"part":0,"tasks":"dishes"},{"part":8,"tasks":"thali"},{"part":9,"tasks":"hf"}]' >> "$GITHUB_OUTPUT"
           elif grep -q '"full"' tools/food_model/run.json; then
@@ -58,9 +66,10 @@ jobs:
         env:
           DATA_DIR: ${{ runner.temp }}/data
           PART: ${{ matrix.job.part }}
-          TASKS: ${{ matrix.job.tasks }}
+          SPLIT: ${{ matrix.job.split || matrix.job.part }}
+          TASKS: ${{ matrix.job.tasks || 'openverse' }}
           PARTS: ${{ needs.setup.outputs.full == 'true' && '8' || '1' }}
-          PER_DISH: ${{ needs.setup.outputs.full == 'true' && '80' || '8' }}
+          PER_DISH: ${{ needs.setup.outputs.full == 'true' && '120' || '8' }}
           ONLY: ${{ needs.setup.outputs.full != 'true' && 'roti,dal,gulab_jamun,idli,rice' || '' }}
         run: python tools/food_model/build_dataset.py
       - name: Save this part
@@ -108,7 +117,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        model: [detector, dish]
+        model: ${{ fromJSON(needs.setup.outputs.models) }}
     env:
       TAG: ${{ needs.setup.outputs.full == 'true' && 'food-dataset' || 'food-model-test' }}
       GH_TOKEN: ${{ github.token }}
@@ -136,7 +145,7 @@ jobs:
         env:
           DATA_DIR: /content/data
           OUT_DIR: /content/out
-          EPOCHS: ${{ needs.setup.outputs.full == 'true' && '20' || '2' }}
+          EPOCHS: ${{ needs.setup.outputs.full == 'true' && '30' || '2' }}
           MIN_PHOTOS: ${{ needs.setup.outputs.full == 'true' && '8' || '3' }}
         run: python tools/food_model/train_dish_classifier.py
       - name: Publish
@@ -146,6 +155,12 @@ jobs:
           gh release view "$OUT_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1 \
             || gh release create "$OUT_TAG" --repo "$GITHUB_REPOSITORY" --prerelease --title "Food models" \
                  --notes "On-device food models built by the Train food models workflow." || true
+          # Keep the first dish model as a backup before it is replaced.
+          if [ "${{ matrix.model }}" = dish ] && ! gh release view food-model-v1 --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            mkdir -p /tmp/v1 && gh release download "$OUT_TAG" --repo "$GITHUB_REPOSITORY" --pattern 'food_dish*' --dir /tmp/v1 \
+              && gh release create food-model-v1 --repo "$GITHUB_REPOSITORY" --prerelease --title "Food dish model v1 (backup)" \
+                   --notes "First 112-dish model: top-1 53%, top-3 72% on held-out photos." /tmp/v1/* || true
+          fi
           gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern credits.csv --dir /content/out --clobber
           mv /content/out/credits.csv /content/out/food_model_credits.csv
           gh release upload "$OUT_TAG" /content/out/food_* --clobber --repo "$GITHUB_REPOSITORY"

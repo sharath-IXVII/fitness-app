@@ -41,6 +41,8 @@ MODE = os.environ.get("MODE", "label")
 ONLY = [d for d in os.environ.get("ONLY", "").split(",") if d]  # quick test runs
 # What this part collects: its share of the dishes, thali photos, the CC0 set.
 TASKS = set(os.environ.get("TASKS", "dishes,thali,hf").split(","))
+# Which share of the dishes this part takes (defaults to PART).
+SPLIT = int(os.environ.get("SPLIT", str(PART)))
 UA = {"User-Agent": "FoodDatasetBuilder/1.0 (https://github.com/sharath-IXVII; dataset script) python-requests"}
 FREE = re.compile(r"^(cc0|public domain|pd|cc by(-sa)? [0-9.]+)", re.I)
 IDS = list(DISHES)
@@ -78,6 +80,27 @@ def commons(query, limit=50):
             continue
         artist = re.sub("<[^>]+>", "", meta.get("Artist", {}).get("value", "")).strip()
         yield ii.get("thumburl") or ii.get("url"), p.get("title"), lic, artist, ii.get("descriptionurl")
+
+
+def openverse(query, pages=3):
+    """Creative Commons photos from Openverse (Flickr and others). Only
+    licences that allow commercial use; Wikimedia is skipped (we search it
+    directly)."""
+    for page in range(1, pages + 1):
+        r = get("https://api.openverse.org/v1/images/", params={
+            "q": query, "license": "cc0,pdm,by,by-sa", "page_size": 20, "page": page, "mature": "false"})
+        try:
+            results = r.json().get("results", []) if r else []
+        except ValueError:
+            results = []
+        if not results:
+            return
+        for x in results:
+            if x.get("source") == "wikimedia" or not x.get("url"):
+                continue
+            lic = f"{x.get('license', '')} {x.get('license_version', '')}".strip().upper().replace("PDM", "Public domain")
+            yield x["url"], f"openverse:{x.get('id')}", lic, x.get("creator") or "", x.get("foreign_landing_url") or ""
+        time.sleep(3.5)  # Openverse allows about 20 requests a minute without a key
 
 
 def iou(a, b):
@@ -158,14 +181,21 @@ def keep_photo(url, title, lic, artist, page, hint):
     return True
 
 
-mine = [d for k, d in enumerate(IDS) if "dishes" in TASKS and k % PARTS == PART and (not ONLY or d in ONLY)]
+mine = [d for k, d in enumerate(IDS) if TASKS & {"dishes", "openverse"} and k % PARTS == SPLIT and (not ONLY or d in ONLY)]
 for dish in mine:
     got = 0
-    for q in DISHES[dish][1]:
-        for hit in commons(q):
-            if got >= PER_DISH:
-                break
-            got += keep_photo(*hit, dish)
+    if "dishes" in TASKS:
+        for q in DISHES[dish][1]:
+            for hit in commons(q):
+                if got >= PER_DISH:
+                    break
+                got += keep_photo(*hit, dish)
+    if "openverse" in TASKS:
+        for q in [f"{q} food" for q in DISHES[dish][1]]:
+            for hit in openverse(q):
+                if got >= PER_DISH:
+                    break
+                got += keep_photo(*hit, dish)
     print(dish, "photos:", got, flush=True)
 if "thali" in TASKS and (PART == 0 and not ONLY or PART >= PARTS):
     for q in THALI_SEARCHES:

@@ -1,4 +1,5 @@
 import 'dart:isolate';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -16,19 +17,29 @@ import 'tflite_dish_classifier.dart';
 /// classes and scores can come in either order; they are told apart by
 /// their values.
 class TfliteFoodDetector {
-  TfliteFoodDetector._(this._interpreter, this._labels, this._dish);
+  TfliteFoodDetector._(this._interpreter, this._labels, this._dish, this._anchors);
 
   static const modelAsset = 'assets/models/food_detector.tflite';
   static const labelsAsset = 'assets/models/food_detector_labels.csv';
 
+  /// SSD anchors (x, y, w, h as float32) for models exported without the
+  /// box-decoding step (Model Maker leaves that to MediaPipe).
+  static const anchorsAsset = 'assets/models/food_detector_anchors.bin';
+
   /// Detections less sure than this are left out.
   static const minScore = 0.35;
+
+  /// The same for raw SSD outputs, whose scores run lower.
+  static const rawMinScore = 0.25;
 
   final Interpreter _interpreter;
   final List<String> _labels;
 
   /// Step 2, naming each dish; null when the detector names dishes itself.
   final TfliteDishClassifier? _dish;
+
+  /// Non-null when the model gives raw SSD outputs that we decode ourselves.
+  final Float32List? _anchors;
 
   /// A detector that only finds "food" needs the dish classifier.
   static bool findsOnlyFood(List<String> labels) => labels.where((l) => l.isNotEmpty).every((l) => l == 'food');
@@ -38,10 +49,20 @@ class TfliteFoodDetector {
     try {
       final labels = parseLabels(await rootBundle.loadString(labelsAsset));
       final interpreter = await Interpreter.fromAsset(modelAsset, options: InterpreterOptions()..threads = 2);
-      if (interpreter.getOutputTensors().length < 3) return null;
+      final outs = interpreter.getOutputTensors();
+      Float32List? anchors;
+      if (outs.length == 2) {
+        // Raw SSD outputs: boxes [1, N, 4] and class scores [1, N, C].
+        final data = await rootBundle.load(anchorsAsset);
+        anchors = data.buffer.asFloat32List(data.offsetInBytes, data.lengthInBytes ~/ 4);
+        final n = outs.firstWhere((t) => t.shape.last == 4).shape[1];
+        if (anchors.length != n * 4) return null;
+      } else if (outs.length < 3) {
+        return null;
+      }
       final dish = await TfliteDishClassifier.load();
       if (findsOnlyFood(labels) && dish == null) return null;
-      return TfliteFoodDetector._(interpreter, labels, findsOnlyFood(labels) ? dish : null);
+      return TfliteFoodDetector._(interpreter, labels, findsOnlyFood(labels) ? dish : null, anchors);
     } catch (_) {
       // No detector in this build: the classifier is used.
       return null;
@@ -62,6 +83,43 @@ class TfliteFoodDetector {
       }),
     );
     final outs = _interpreter.getOutputTensors();
+    final anchors = _anchors;
+    if (anchors != null) {
+      _interpreter.runForMultipleInputs([
+        [pixels],
+      ], {});
+      final bi = outs.indexWhere((t) => t.shape.last == 4);
+      final si = 1 - bi;
+      List<double> values(Tensor t) {
+        final q = t.params;
+        final quantized = t.type != TensorType.float32 && q.scale != 0;
+        if (t.type == TensorType.float32) {
+          return t.data.buffer.asFloat32List(t.data.offsetInBytes, t.data.lengthInBytes ~/ 4);
+        }
+        if (t.type == TensorType.int8) {
+          return [
+            for (final b in t.data.buffer.asInt8List(t.data.offsetInBytes, t.data.lengthInBytes))
+              quantized ? (b - q.zeroPoint) * q.scale : b.toDouble(),
+          ];
+        }
+        return [for (final b in t.data) quantized ? (b - q.zeroPoint) * q.scale : b.toDouble()];
+      }
+
+      final found = decodeSsd(
+        values(_interpreter.getOutputTensor(bi)),
+        values(_interpreter.getOutputTensor(si)),
+        anchors,
+        classes: outs[si].shape.last,
+        minScore: rawMinScore,
+      );
+      final dish = _dish;
+      final boxes = [for (final f in found.take(8)) f.$3];
+      if (dish != null) return nameBoxes(boxes, await dish.classify(image, boxes));
+      return [
+        for (final (cls, score, box) in found)
+          if (cls < _labels.length && _labels[cls].isNotEmpty) (_labels[cls], score, box),
+      ];
+    }
     final buffers = <int, Object>{
       for (final (i, t) in outs.indexed)
         i: t.shape.length == 3
@@ -180,4 +238,46 @@ List<(String, double, Rect?)> nameBoxes(List<Rect> boxes, List<List<(String, dou
   }
   top.sort((a, b) => b.$2.compareTo(a.$2));
   return [...top, ...alternatives];
+}
+
+/// Decodes raw SSD outputs the way MediaPipe does: [raw] holds (dy, dx, dh, dw)
+/// per anchor, [scores] one score per class per anchor (class 0 is
+/// background), [anchors] (x, y, w, h) per anchor. Returns (class, score, box)
+/// best first, overlapping boxes removed.
+@visibleForTesting
+List<(int, double, Rect)> decodeSsd(
+  List<double> raw,
+  List<double> scores,
+  List<double> anchors, {
+  required int classes,
+  double minScore = 0.25,
+  double maxOverlap = 0.5,
+  int maxResults = 10,
+}) {
+  final n = anchors.length ~/ 4;
+  final found = <(int, double, Rect)>[];
+  for (var i = 0; i < n; i++) {
+    var best = 0, bestScore = 0.0;
+    for (var c = 1; c < classes; c++) {
+      final s = scores[i * classes + c];
+      if (s > bestScore) {
+        bestScore = s;
+        best = c;
+      }
+    }
+    if (bestScore < minScore) continue;
+    final ax = anchors[i * 4], ay = anchors[i * 4 + 1], aw = anchors[i * 4 + 2], ah = anchors[i * 4 + 3];
+    final yc = raw[i * 4] * ah + ay, xc = raw[i * 4 + 1] * aw + ax;
+    final h = math.exp(raw[i * 4 + 2]) * ah, w = math.exp(raw[i * 4 + 3]) * aw;
+    final box = Rect.fromLTRB(
+      (xc - w / 2).clamp(0.0, 1.0),
+      (yc - h / 2).clamp(0.0, 1.0),
+      (xc + w / 2).clamp(0.0, 1.0),
+      (yc + h / 2).clamp(0.0, 1.0),
+    );
+    if (box.width <= 0.02 || box.height <= 0.02) continue;
+    found.add((best, bestScore, box));
+  }
+  found.sort((a, b) => b.$2.compareTo(a.$2));
+  return keepDistinct(found, maxOverlap: maxOverlap).take(maxResults).toList();
 }

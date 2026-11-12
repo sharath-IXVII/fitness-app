@@ -92,3 +92,27 @@ interp = tf.lite.Interpreter(model_path=str(OUT / "food_detector.tflite"))
 print("CHECK input:", [(d["shape"].tolist(), d["dtype"].__name__) for d in interp.get_input_details()])
 print("CHECK outputs:", [(d["name"], d["shape"].tolist()) for d in interp.get_output_details()])
 print("Done. Download food_detector.tflite and food_detector_labels.csv from", OUT)
+
+# The app decodes the raw SSD outputs itself: save the anchors (x, y, w, h,
+# float32) from the model's metadata as food_detector_anchors.bin. Commit it to
+# assets/models/ if the detector's input size or architecture changes.
+import numpy as np  # noqa: E402
+from mediapipe.tasks.metadata import metadata_schema_py_generated as M  # noqa: E402
+from mediapipe.tasks.metadata import object_detector_metadata_schema_py_generated as O  # noqa: E402
+from mediapipe.tasks.metadata import schema_py_generated as S  # noqa: E402
+
+buf = (OUT / "food_detector.tflite").read_bytes()
+tfl = S.Model.GetRootAsModel(buf, 0)
+for i in range(tfl.MetadataLength()):
+    md = tfl.Metadata(i)
+    if md.Name().decode() != "TFLITE_METADATA":
+        continue
+    data = tfl.Buffers(md.Buffer()).DataAsNumpy().tobytes()
+    sg = M.ModelMetadata.GetRootAsModelMetadata(data, 0).SubgraphMetadata(0)
+    for j in range(sg.CustomMetadataLength()):
+        od = O.ObjectDetectorOptions.GetRootAsObjectDetectorOptions(bytes(sg.CustomMetadata(j).DataAsNumpy()), 0)
+        fa = od.SsdAnchorsOptions().FixedAnchorsSchema()
+        a = np.array([[fa.Anchors(k).XCenter(), fa.Anchors(k).YCenter(), fa.Anchors(k).Width(), fa.Anchors(k).Height()]
+                      for k in range(fa.AnchorsLength())], dtype="<f4")
+        a.tofile(OUT / "food_detector_anchors.bin")
+        print("CHECK anchors:", a.shape)

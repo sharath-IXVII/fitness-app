@@ -607,4 +607,12 @@ const hindi = <String, String>{
   'THIS PLATE': 'यह प्लेट',
   'Snapped with FittArc · fittarc.in': 'FittArc से स्नैप किया · fittarc.in',
   'Estimates': 'अनुमान',
+  'Breakfast, sorted.': 'नाश्ता तैयार।',
+  'Lunch, sorted.': 'लंच तैयार।',
+  'Snack o\'clock.': 'स्नैक टाइम।',
+  'Dinner, done right.': 'डिनर, एकदम सही।',
+  'HIGH PROTEIN': 'हाई प्रोटीन',
+  'FIBRE RICH': 'फाइबर से भरपूर',
+  'LIGHT MEAL': 'हल्का खाना',
+  'HOME STYLE': 'घर जैसा',
 };

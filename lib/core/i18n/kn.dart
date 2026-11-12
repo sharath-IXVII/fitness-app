@@ -619,4 +619,12 @@ const kannada = <String, String>{
   'THIS PLATE': 'ಈ ತಟ್ಟೆ',
   'Snapped with FittArc · fittarc.in': 'FittArc ನಲ್ಲಿ ಸ್ನ್ಯಾಪ್ ಮಾಡಲಾಗಿದೆ · fittarc.in',
   'Estimates': 'ಅಂದಾಜುಗಳು',
+  'Breakfast, sorted.': 'ಬೆಳಗಿನ ಉಪಾಹಾರ ಸಿದ್ಧ.',
+  'Lunch, sorted.': 'ಊಟ ಸಿದ್ಧ.',
+  'Snack o\'clock.': 'ಸ್ನ್ಯಾಕ್ ಸಮಯ.',
+  'Dinner, done right.': 'ರಾತ್ರಿ ಊಟ ಸರಿಯಾಗಿ.',
+  'HIGH PROTEIN': 'ಹೆಚ್ಚು ಪ್ರೋಟೀನ್',
+  'FIBRE RICH': 'ನಾರಿನಂಶ ಹೆಚ್ಚು',
+  'LIGHT MEAL': 'ಹಗುರ ಊಟ',
+  'HOME STYLE': 'ಮನೆ ಶೈಲಿ',
 };

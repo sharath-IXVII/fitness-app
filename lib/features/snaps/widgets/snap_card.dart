@@ -6,6 +6,8 @@ import 'package:intl/intl.dart';
 
 import '../../../core/i18n/i18n.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../diet/domain/food.dart' show Macros;
+import '../../diet/domain/meal_log.dart' show MealType;
 import '../../scan/domain/recognition.dart' show scanRegions;
 import '../domain/food_snap.dart';
 
@@ -398,8 +400,8 @@ class SnapCard extends StatelessWidget {
     final accent = AppColors.primary;
     Color tint(Color c) => Color.lerp(AppColors.surface, c, 0.24)!;
     Color deep(Color c) => Color.lerp(c, Colors.black, 0.35)!;
-    return ColoredBox(
-      color: paper,
+    return CustomPaint(
+      painter: _Dots(paper, accent.withValues(alpha: 0.09)),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
         child: Column(
@@ -419,25 +421,56 @@ class SnapCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 16),
-            Center(
-              child: Transform.rotate(
-                angle: -0.035,
-                child: Container(
-                  padding: const EdgeInsets.fromLTRB(9, 9, 9, 30),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(6),
-                    boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 18, offset: Offset(0, 8))],
+            // The print, taped to the page, with a caption and a sticker.
+            SizedBox(
+              height: 334,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.topCenter,
+                children: [
+                  Transform.rotate(
+                    angle: -0.035,
+                    child: Container(
+                      padding: const EdgeInsets.fromLTRB(9, 9, 9, 0),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(6),
+                        boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 18, offset: Offset(0, 8))],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: 280,
+                            height: 280,
+                            child: ClipRRect(borderRadius: BorderRadius.circular(3), child: _photoWithMarks(280, 280)),
+                          ),
+                          SizedBox(
+                            height: 34,
+                            child: Center(
+                              child: Text(
+                                _caption,
+                                style: _body(
+                                  13,
+                                  const Color(0xFF3A3F45),
+                                  FontWeight.w600,
+                                ).copyWith(fontStyle: FontStyle.italic, letterSpacing: 0.3),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  child: SizedBox(
-                    width: 280,
-                    height: 280,
-                    child: ClipRRect(borderRadius: BorderRadius.circular(3), child: _photoWithMarks(280, 280)),
-                  ),
-                ),
+                  // Washi tape on the two top corners.
+                  Positioned(left: 22, top: -8, child: _tape(accent, -0.6)),
+                  Positioned(right: 22, top: -8, child: _tape(AppColors.gold, 0.55)),
+                  // A round sticker that sums the plate up.
+                  Positioned(right: -6, bottom: 22, child: _sticker(_badge(total), accent)),
+                ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 14),
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -485,6 +518,52 @@ class SnapCard extends StatelessWidget {
       ),
     );
   }
+
+  /// A friendly line for the bottom of the print.
+  String get _caption => switch (snap.meal) {
+    MealType.breakfast => tr('Breakfast, sorted.'),
+    MealType.lunch => tr('Lunch, sorted.'),
+    MealType.snack => tr('Snack o\'clock.'),
+    MealType.dinner => tr('Dinner, done right.'),
+  };
+
+  /// What the sticker says about the plate (plain description, not advice).
+  static String _badge(Macros m) {
+    if (m.kcal > 0 && m.protein * 4 / m.kcal >= 0.2) return tr('HIGH PROTEIN');
+    if (m.fiber >= 8) return tr('FIBRE RICH');
+    if (m.kcal > 0 && m.kcal < 400) return tr('LIGHT MEAL');
+    return tr('HOME STYLE');
+  }
+
+  static Widget _tape(Color color, double angle) => Transform.rotate(
+    angle: angle,
+    child: Container(
+      width: 62,
+      height: 20,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.55),
+        borderRadius: BorderRadius.circular(2),
+        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 2, offset: Offset(0, 1))],
+      ),
+    ),
+  );
+
+  static Widget _sticker(String text, Color color) => Transform.rotate(
+    angle: 0.22,
+    child: Container(
+      width: 78,
+      height: 78,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+        border: Border.all(color: Colors.white, width: 3),
+        boxShadow: const [BoxShadow(color: Color(0x40000000), blurRadius: 10, offset: Offset(0, 4))],
+      ),
+      alignment: Alignment.center,
+      padding: const EdgeInsets.all(8),
+      child: Text(text, textAlign: TextAlign.center, style: _sport(12.5).copyWith(height: 1.0, letterSpacing: 0.4)),
+    ),
+  );
 
   static Widget _pastel(String label, String value, Color bg, Color fg) => Expanded(
     child: Container(
@@ -710,4 +789,26 @@ class _Brackets extends CustomPainter {
 
   @override
   bool shouldRepaint(_Brackets old) => old.color != color;
+}
+
+/// A soft dotted paper background.
+class _Dots extends CustomPainter {
+  const _Dots(this.paper, this.dot);
+
+  final Color paper;
+  final Color dot;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.drawRect(Offset.zero & size, Paint()..color = paper);
+    final p = Paint()..color = dot;
+    for (var y = 10.0; y < size.height; y += 18) {
+      for (var x = (y ~/ 18).isEven ? 10.0 : 19.0; x < size.width; x += 18) {
+        canvas.drawCircle(Offset(x, y), 1.4, p);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_Dots old) => old.paper != paper || old.dot != dot;
 }

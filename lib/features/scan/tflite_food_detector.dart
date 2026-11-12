@@ -42,7 +42,8 @@ class TfliteFoodDetector {
   final Float32List? _anchors;
 
   /// A detector that only finds "food" needs the dish classifier.
-  static bool findsOnlyFood(List<String> labels) => labels.where((l) => l.isNotEmpty).every((l) => l == 'food');
+  static bool findsOnlyFood(List<String> labels) =>
+      labels.where((l) => l.isNotEmpty && l != 'background').every((l) => l == 'food');
 
   static Future<TfliteFoodDetector?> load() async {
     if (kIsWeb) return null;

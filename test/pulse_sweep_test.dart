@@ -10,7 +10,12 @@ List<PulseSample> fake(double bpm, double noise, int seed, {double seconds = 24,
   while (t < seconds) {
     final f = bpm / 60;
     final wave = math.sin(2 * math.pi * f * t) + h2 * math.sin(4 * math.pi * f * t + 0.8);
-    out.add(PulseSample((t * 1e6).round(), 120 + 8 * math.sin(2 * math.pi * 0.05 * t) + 0.3 * t + wave + (rnd.nextDouble() - 0.5) * 2 * noise));
+    out.add(
+      PulseSample(
+        (t * 1e6).round(),
+        120 + 8 * math.sin(2 * math.pi * 0.05 * t) + 0.3 * t + wave + (rnd.nextDouble() - 0.5) * 2 * noise,
+      ),
+    );
     t += (1 / 30) * (0.8 + rnd.nextDouble() * 0.4);
   }
   return out;
@@ -31,7 +36,10 @@ void main() {
           }
           if ((e.bpm - bpm).abs() > 3) {
             bad++;
-            if (worst.length < 12) worst.add('$bpm noise $noise seed $seed -> ${e.bpm.toStringAsFixed(1)} conf ${e.confidence.toStringAsFixed(2)}');
+            if (worst.length < 12)
+              worst.add(
+                '$bpm noise $noise seed $seed -> ${e.bpm.toStringAsFixed(1)} conf ${e.confidence.toStringAsFixed(2)}',
+              );
           }
         }
       }

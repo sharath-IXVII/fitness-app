@@ -42,6 +42,7 @@ void main() {
   test('a detector that only finds food needs the dish model', () {
     expect(TfliteFoodDetector.findsOnlyFood(['food']), isTrue);
     expect(TfliteFoodDetector.findsOnlyFood(['', 'food']), isTrue);
+    expect(TfliteFoodDetector.findsOnlyFood(['background', 'food']), isTrue); // Model Maker's labels
     expect(TfliteFoodDetector.findsOnlyFood(['roti', 'dal']), isFalse);
   });
 

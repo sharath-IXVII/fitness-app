@@ -12,7 +12,11 @@ void main() {
     ('badge', ShareCardData.badge(title: 'Master of Winter 2026', description: 'Every daily goal in the Winter Arc')),
   ]) {
     testWidgets('the $name card fits', (t) async {
-      await t.pumpWidget(MaterialApp(home: Center(child: ShareCard(data: data))));
+      await t.pumpWidget(
+        MaterialApp(
+          home: Center(child: ShareCard(data: data)),
+        ),
+      );
       expect(t.takeException(), isNull);
       expect(find.text(data.headline), findsOneWidget);
     });

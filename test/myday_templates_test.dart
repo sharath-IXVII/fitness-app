@@ -15,8 +15,13 @@ void main() {
     return ProviderContainer(overrides: [sharedPrefsProvider.overrideWithValue(prefs)]);
   }
 
-  DayBlock b(int id, BlockKind k, int h, Set<int> days) =>
-      DayBlock(id: id, kind: k, time: TimeOfDay(hour: h, minute: 0), days: days, remind: false);
+  DayBlock b(int id, BlockKind k, int h, Set<int> days) => DayBlock(
+    id: id,
+    kind: k,
+    time: TimeOfDay(hour: h, minute: 0),
+    days: days,
+    remind: false,
+  );
 
   test('copy Monday to Wednesday replaces Wednesday only', () async {
     final c = await make();

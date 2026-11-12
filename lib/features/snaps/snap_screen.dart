@@ -247,7 +247,7 @@ class _SnapScreenState extends ConsumerState<SnapScreen> {
                           borderRadius: BorderRadius.circular(22),
                           child: RepaintBoundary(
                             key: _boundary,
-                            child: SnapCard(snap: snap, photo: _photo, weather: ref.watch(themeSeasonProvider).effect),
+                            child: SnapCard(snap: snap, photo: _photo, season: ref.watch(themeSeasonProvider)),
                           ),
                         ),
                       ),

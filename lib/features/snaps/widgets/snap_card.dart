@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import '../../../core/i18n/i18n.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/page_background.dart' show ArcWeather;
-import '../../arcs/domain/arc.dart' show ArcEffect;
+import '../../arcs/domain/arc.dart' show Season;
 import '../../scan/domain/recognition.dart' show scanRegions;
 import '../domain/food_snap.dart';
 
@@ -28,12 +28,13 @@ enum SnapStyle {
 }
 
 class SnapCard extends StatelessWidget {
-  const SnapCard({super.key, required this.snap, this.photo, this.style = SnapStyle.polaroid, this.weather});
+  const SnapCard({super.key, required this.snap, this.photo, this.style = SnapStyle.polaroid, this.season});
 
   final SnapStyle style;
 
-  /// The app's seasonal weather (snow, petals, sun, rain), drawn softly behind.
-  final ArcEffect? weather;
+  /// The arc the app is in (Winter Arc, Rise of Revolution, Summer Arc,
+  /// Thunder Arc): the card takes its colours, weather and name, like the app.
+  final Season? season;
 
   /// The wordmark stays faint so the food is the star.
   static const _markAlpha = 0.38;
@@ -59,7 +60,18 @@ class SnapCard extends StatelessWidget {
       GoogleFonts.inter(fontSize: size, fontWeight: w, color: c, height: 1.2);
 
   @override
-  Widget build(BuildContext context) => Material(
+  Widget build(BuildContext context) {
+    // Draw in the arc's own palette, then give the app's palette back.
+    final before = AppColors.palette;
+    if (season case final a?) AppColors.use(a.palette);
+    try {
+      return _build();
+    } finally {
+      AppColors.use(before);
+    }
+  }
+
+  Widget _build() => Material(
     type: MaterialType.transparency,
     child: SizedBox.fromSize(
       size: size,
@@ -421,26 +433,44 @@ class SnapCard extends StatelessWidget {
             ),
           ),
         ),
-        if (weather case final w?) Positioned.fill(child: ArcWeather(effect: w, count: 26)),
+        if (season case final a?) Positioned.fill(child: ArcWeather(effect: a.effect, count: 22)),
         Padding(
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: Text(
-                      _when,
-                      style: _body(10, soft, FontWeight.w600).copyWith(letterSpacing: 1.4),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (season case final a?)
+                          Row(
+                            children: [
+                              Icon(a.icon, size: 13, color: accent),
+                              const SizedBox(width: 5),
+                              Text(
+                                tr(a.title).toUpperCase(),
+                                style: _body(10, accent, FontWeight.w700).copyWith(letterSpacing: 1.4),
+                              ),
+                            ],
+                          ),
+                        if (season != null) const SizedBox(height: 4),
+                        Text(
+                          _when,
+                          style: _body(10, soft, FontWeight.w600).copyWith(letterSpacing: 1.4),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
                     ),
                   ),
                   _wordmark(ink, 16),
                 ],
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
               // The photo in a white frame.
               Container(
                 padding: const EdgeInsets.all(8),
@@ -511,6 +541,8 @@ class SnapCard extends StatelessWidget {
             ],
           ),
         ),
+        // A few particles drift over the content too, as on the app's pages.
+        if (season case final a?) Positioned.fill(child: ArcWeather(effect: a.effect, foreground: true, count: 8)),
       ],
     );
   }

@@ -725,4 +725,5 @@ const hindi = <String, String>{
   'steadiness': 'स्थिरता',
   'taps': 'टैप',
   'taps in': 'टैप, समय',
+  "Today's plates": 'आज की प्लेटें',
 };

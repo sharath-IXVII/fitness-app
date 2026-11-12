@@ -62,6 +62,9 @@ class ShareRow extends StatelessWidget {
   final List<ShareApp> apps;
   final bool busy;
 
+  /// A darker shade of [c], readable on its pale tint.
+  static Color _deep(Color c) => Color.lerp(c, Colors.black, 0.28)!;
+
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
@@ -71,12 +74,18 @@ class ShareRow extends StatelessWidget {
           if (i > 0) const SizedBox(width: 8),
           Expanded(
             child: FilledButton.icon(
+              // Light, soft buttons: a pale tint of the app's colour with its
+              // colour for the icon and text.
               style: FilledButton.styleFrom(
-                backgroundColor: app.color ?? AppColors.primary,
-                foregroundColor: Colors.white,
+                backgroundColor: Color.lerp(Colors.white, app.color ?? AppColors.primary, 0.14),
+                foregroundColor: _deep(app.color ?? AppColors.primary),
                 minimumSize: const Size.fromHeight(52),
                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(color: (app.color ?? AppColors.primary).withValues(alpha: 0.35)),
+                ),
               ),
               onPressed: busy ? null : () => onShare(app),
               icon: Icon(switch (app) {
@@ -88,7 +97,7 @@ class ShareRow extends StatelessWidget {
                 fit: BoxFit.scaleDown,
                 child: Text(
                   app == ShareApp.more ? tr('More') : app.label,
-                  style: text.labelLarge?.copyWith(color: Colors.white),
+                  style: text.labelLarge?.copyWith(color: _deep(app.color ?? AppColors.primary)),
                 ),
               ),
             ),

@@ -736,4 +736,5 @@ const kannada = <String, String>{
   'steadiness': 'ಸ್ಥಿರತೆ',
   'taps': 'ಟ್ಯಾಪ್‌ಗಳು',
   'taps in': 'ಟ್ಯಾಪ್‌ಗಳು ಇಷ್ಟರಲ್ಲಿ',
+  "Today's plates": 'ಇಂದಿನ ತಟ್ಟೆಗಳು',
 };

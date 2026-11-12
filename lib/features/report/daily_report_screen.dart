@@ -16,6 +16,9 @@ import '../../core/widgets/gradient_button.dart';
 import '../../core/widgets/page_background.dart';
 import '../clubs/report_screen.dart' show saveImageProvider;
 import '../snaps/snap_screen.dart' show shareSnapProvider;
+import '../snaps/snaps_providers.dart' show todaySnapsProvider;
+import '../snaps/domain/food_snap.dart' show FoodSnap;
+import '../../core/photo_store.dart';
 import '../../core/share_to.dart';
 import 'domain/daily_report.dart';
 import 'report_providers.dart';
@@ -31,6 +34,20 @@ class DailyReportScreen extends ConsumerStatefulWidget {
 class _DailyReportScreenState extends ConsumerState<DailyReportScreen> {
   final _boundary = GlobalKey();
   bool _busy = false;
+
+  /// Photo files of today's snaps, by snap id (loaded once).
+  final _photos = <String, ImageProvider>{};
+
+  Future<void> _loadPhotos(List<FoodSnap> snaps) async {
+    for (final s in snaps) {
+      if (_photos.containsKey(s.id) || s.photo == null || !PhotoStore.supported) continue;
+      final f = await PhotoStore.file(s.photo!);
+      if (f == null || !mounted) continue;
+      final img = ResizeImage(FileImage(f), width: 240);
+      await precacheImage(img, context);
+      if (mounted) setState(() => _photos[s.id] = img);
+    }
+  }
 
   Future<void> _image(Future<void> Function(Uint8List) use, String done) async {
     setState(() => _busy = true);
@@ -51,6 +68,10 @@ class _DailyReportScreenState extends ConsumerState<DailyReportScreen> {
   @override
   Widget build(BuildContext context) {
     final r = ref.watch(dailyReportProvider);
+    final snaps = ref.watch(todaySnapsProvider);
+    if (snaps.any((s) => s.photo != null && !_photos.containsKey(s.id))) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadPhotos(snaps));
+    }
     final settings = ref.watch(reportSettingsProvider);
     final text = Theme.of(context).textTheme;
     return Scaffold(
@@ -68,7 +89,13 @@ class _DailyReportScreenState extends ConsumerState<DailyReportScreen> {
                           borderRadius: BorderRadius.circular(22),
                           child: RepaintBoundary(
                             key: _boundary,
-                            child: DailyReportCard(report: r),
+                            child: DailyReportCard(
+                              report: r,
+                              plates: [
+                                for (final snap in ref.watch(todaySnapsProvider))
+                                  (meal: tr(snap.meal.label), kcal: snap.total.kcal.round(), photo: _photos[snap.id]),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -169,11 +196,14 @@ class _DailyReportScreenState extends ConsumerState<DailyReportScreen> {
 
 /// The report as a story-sized card (360 × 640, saved at 1080 × 1920).
 class DailyReportCard extends StatelessWidget {
-  const DailyReportCard({super.key, required this.report});
+  const DailyReportCard({super.key, required this.report, this.plates = const []});
 
   static const size = Size(360, 640);
 
   final DailyReport report;
+
+  /// Today's food snaps: meal, calories and photo (if any).
+  final List<({String meal, int kcal, ImageProvider? photo})> plates;
 
   @override
   Widget build(BuildContext context) {
@@ -209,11 +239,11 @@ class DailyReportCard extends StatelessWidget {
                   ],
                 ),
                 Text(DateFormat('EEEE, d MMMM').format(r.day), style: body(10.5, muted)),
-                const SizedBox(height: 18),
+                SizedBox(height: plates.isEmpty ? 18 : 10),
                 Center(
                   child: SizedBox(
-                    width: 150,
-                    height: 150,
+                    width: plates.isEmpty ? 150 : 128,
+                    height: plates.isEmpty ? 150 : 128,
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
@@ -273,6 +303,51 @@ class DailyReportCard extends StatelessWidget {
                     if (r.clubKm > 0) _chip(r.clubKm.toStringAsFixed(1), 'club km', body),
                   ],
                 ),
+                if (plates.isNotEmpty) ...[
+                  const SizedBox(height: 10),
+                  Text(tr("Today's plates"), style: body(11, ink, FontWeight.w700)),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      for (final (i, p) in plates.take(4).indexed) ...[
+                        if (i > 0) const SizedBox(width: 8),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              SizedBox(
+                                height: 50,
+                                width: double.infinity,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: p.photo != null
+                                      ? Image(image: p.photo!, fit: BoxFit.cover, gaplessPlayback: true)
+                                      : ColoredBox(
+                                          color: AppColors.primarySoft,
+                                          child: Icon(Icons.restaurant_rounded, color: accent, size: 22),
+                                        ),
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                p.meal,
+                                style: body(9, muted, FontWeight.w600),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text('${p.kcal} kcal', style: body(9.5, ink, FontWeight.w700), maxLines: 1),
+                            ],
+                          ),
+                        ),
+                      ],
+                      // Keep thumbnails the same size with fewer than four plates.
+                      for (var i = plates.length; i < 4; i++) ...[
+                        const SizedBox(width: 8),
+                        const Expanded(child: SizedBox()),
+                      ],
+                    ],
+                  ),
+                ],
                 const Spacer(),
                 if (r.tip case final tip?) Text(tip, style: body(11, muted)),
               ],
@@ -291,7 +366,7 @@ class DailyReportCard extends StatelessWidget {
     TextStyle Function(double, [Color?, FontWeight]) body,
     Color accent,
   ) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 5),
+    padding: const EdgeInsets.symmetric(vertical: 4),
     child: Column(
       children: [
         Row(

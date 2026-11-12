@@ -11,6 +11,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/router.dart';
+import '../../core/widgets/page_background.dart' show ArcWeather;
 import '../../core/widgets/gradient_button.dart';
 import '../arcs/domain/arc.dart';
 import '../clubs/report_screen.dart' show saveImageProvider;
@@ -63,10 +64,11 @@ class _ArcWrappedScreenState extends ConsumerState<ArcWrappedScreen> {
     final cards = wrappedCards(w);
     final p = widget.period.season.palette;
     return Scaffold(
-      backgroundColor: p.ink,
+      backgroundColor: p.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        foregroundColor: p.textPrimary,
         title: Text('${widget.period.label} Wrapped'),
       ),
       body: Column(
@@ -99,7 +101,7 @@ class _ArcWrappedScreenState extends ConsumerState<ArcWrappedScreen> {
                   width: i == _page ? 18 : 7,
                   height: 7,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: i == _page ? 0.95 : 0.4),
+                    color: p.primary.withValues(alpha: i == _page ? 0.9 : 0.25),
                     borderRadius: BorderRadius.circular(4),
                   ),
                 ),
@@ -165,6 +167,8 @@ List<Widget> wrappedCards(ArcWrapped w) {
   return [
     WrappedCard(
       period: w.period,
+      icon: Icons.calendar_month_rounded,
+      progress: w.period.totalDays == 0 ? null : (w.activeDays / w.period.totalDays).clamp(0.0, 1.0),
       kicker: 'YOUR SEASON',
       big: '${w.activeDays}',
       unit: w.activeDays == 1 ? 'active day' : 'active days',
@@ -175,6 +179,7 @@ List<Widget> wrappedCards(ArcWrapped w) {
     ),
     WrappedCard(
       period: w.period,
+      icon: Icons.fitness_center_rounded,
       kicker: 'WORKOUTS',
       big: '${w.workouts}',
       unit: w.workouts == 1 ? 'workout' : 'workouts',
@@ -182,6 +187,7 @@ List<Widget> wrappedCards(ArcWrapped w) {
     ),
     WrappedCard(
       period: w.period,
+      icon: Icons.directions_walk_rounded,
       kicker: 'ON YOUR FEET',
       big: n.format(w.steps),
       unit: 'steps',
@@ -193,6 +199,7 @@ List<Widget> wrappedCards(ArcWrapped w) {
     ),
     WrappedCard(
       period: w.period,
+      icon: Icons.restaurant_rounded,
       kicker: 'ON YOUR PLATE',
       big: '${w.meals}',
       unit: w.meals == 1 ? 'meal logged' : 'meals logged',
@@ -202,18 +209,20 @@ List<Widget> wrappedCards(ArcWrapped w) {
     ),
     WrappedCard(
       period: w.period,
+      icon: Icons.local_fire_department_rounded,
       kicker: 'STREAK',
       big: '${w.bestStreak}',
       unit: 'day best streak',
       lines: [
-        if (w.tier != null) 'Badge earned: ${w.period.badgeName(w.tier!)} 🏅' else 'Next season, chase the badge!',
+        if (w.tier != null) 'Badge earned: ${w.period.badgeName(w.tier!)}' else 'Next season, chase the badge!',
         'See you in the next Arc.',
       ],
     ),
   ];
 }
 
-/// One Wrapped story card, in the season's colours (360 × 640).
+/// One Wrapped story card in the arc's own look (360 × 640): its colours and
+/// falling weather, a big icon, the number, and the details in a white card.
 class WrappedCard extends StatelessWidget {
   const WrappedCard({
     super.key,
@@ -222,6 +231,8 @@ class WrappedCard extends StatelessWidget {
     required this.big,
     required this.unit,
     this.lines = const [],
+    this.icon = Icons.bolt_rounded,
+    this.progress,
   });
 
   static const size = Size(360, 640);
@@ -231,89 +242,152 @@ class WrappedCard extends StatelessWidget {
   final String big;
   final String unit;
   final List<String> lines;
+  final IconData icon;
+
+  /// Shown as a ring around the icon (0–1), e.g. active days of the arc.
+  final double? progress;
 
   @override
   Widget build(BuildContext context) {
     final p = period.season.palette;
+    TextStyle inter(double s, Color c, [FontWeight w = FontWeight.w500]) =>
+        GoogleFonts.inter(fontSize: s, fontWeight: w, color: c, height: 1.3);
     return Material(
       type: MaterialType.transparency,
       child: SizedBox.fromSize(
         size: size,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [p.ink, p.inkSoft, p.primaryDeep],
+        child: Stack(
+          children: [
+            Positioned.fill(child: ColoredBox(color: p.background)),
+            Positioned(
+              left: 0,
+              right: 0,
+              top: 0,
+              height: 300,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [p.primarySoft, p.primarySoft.withValues(alpha: 0)],
+                  ),
+                ),
+              ),
             ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(26, 26, 26, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(period.season.icon, color: p.energyLight, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        period.label.toUpperCase(),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.4,
-                          color: Colors.white70,
+            Positioned.fill(child: ArcWeather(effect: period.season.effect, count: 24)),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(26, 26, 26, 22),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(period.season.icon, color: p.primary, size: 16),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          period.label.toUpperCase(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: inter(10.5, p.primary, FontWeight.w700).copyWith(letterSpacing: 1.4),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'FittArc',
-                      style: GoogleFonts.chakraPetch(fontSize: 15, fontWeight: FontWeight.w700, color: Colors.white54),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                Text(
-                  kicker,
-                  style: GoogleFonts.inter(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 2,
-                    color: p.energyLight,
+                      Text(
+                        'FittArc',
+                        style: GoogleFonts.chakraPetch(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: p.textPrimary.withValues(alpha: 0.35),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 6),
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    big,
-                    style: GoogleFonts.chakraPetch(
-                      fontSize: 88,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                      height: 1,
+                  const Spacer(),
+                  // The big icon, with a progress ring when there is one.
+                  SizedBox(
+                    width: 112,
+                    height: 112,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        if (progress != null)
+                          CircularProgressIndicator(
+                            value: progress,
+                            strokeWidth: 7,
+                            strokeCap: StrokeCap.round,
+                            color: p.primary,
+                            backgroundColor: p.primary.withValues(alpha: 0.15),
+                          ),
+                        Padding(
+                          padding: EdgeInsets.all(progress != null ? 14 : 4),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white,
+                              boxShadow: [BoxShadow(color: p.primary.withValues(alpha: 0.18), blurRadius: 22)],
+                            ),
+                            child: Icon(icon, color: p.primary, size: 40),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-                Text(
-                  unit,
-                  style: GoogleFonts.inter(fontSize: 20, fontWeight: FontWeight.w600, color: Colors.white),
-                ),
-                const SizedBox(height: 22),
-                for (final l in lines)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: Text(l, style: GoogleFonts.inter(fontSize: 15, color: Colors.white.withValues(alpha: 0.88))),
+                  const SizedBox(height: 22),
+                  Text(kicker, style: inter(11.5, p.textSecondary, FontWeight.w700).copyWith(letterSpacing: 2)),
+                  const SizedBox(height: 4),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      big,
+                      style: GoogleFonts.chakraPetch(
+                        fontSize: 80,
+                        fontWeight: FontWeight.w700,
+                        color: p.textPrimary,
+                        height: 1,
+                      ),
+                    ),
                   ),
-                const Spacer(),
-              ],
+                  Text(unit, style: inter(18, p.textPrimary, FontWeight.w600)),
+                  const SizedBox(height: 18),
+                  if (lines.isNotEmpty)
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: const [BoxShadow(color: Color(0x12000000), blurRadius: 18, offset: Offset(0, 6))],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          for (final l in lines)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                    margin: const EdgeInsets.only(top: 6, right: 10),
+                                    width: 6,
+                                    height: 6,
+                                    decoration: BoxDecoration(color: p.primary, shape: BoxShape.circle),
+                                  ),
+                                  Expanded(child: Text(l, style: inter(13.5, p.textPrimary))),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  const Spacer(),
+                  Text('fittarc.in', style: inter(10, p.textSecondary.withValues(alpha: 0.7))),
+                ],
+              ),
             ),
-          ),
+            Positioned.fill(child: ArcWeather(effect: period.season.effect, foreground: true, count: 7)),
+          ],
         ),
       ),
     );

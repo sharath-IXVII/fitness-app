@@ -25,7 +25,8 @@ class TfliteDishClassifier {
       final labels = parseLabels(await rootBundle.loadString(labelsAsset));
       final interpreter = await Interpreter.fromAsset(modelAsset, options: InterpreterOptions()..threads = 2);
       return TfliteDishClassifier._(interpreter, labels);
-    } catch (_) {
+    } catch (e) {
+      noteFoodModel('dish model load', e);
       return null;
     }
   }

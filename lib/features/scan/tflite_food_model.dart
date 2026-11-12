@@ -19,8 +19,10 @@ Future<Future<List<(String, double, Rect?)>> Function(Uint8List)?> loadFoodModel
     try {
       final found = await detector.detect(image);
       if (found.isNotEmpty || classifier == null) return found;
+      noteFoodModel('detector', 'found nothing');
     } catch (e) {
       debugPrint('food detector failed, using the classifier: $e');
+      noteFoodModel('detector run', e);
       if (classifier == null) rethrow;
     }
     return classifier.classify(image);
@@ -50,6 +52,7 @@ class TfliteFoodRecognizer {
       return TfliteFoodRecognizer._(interpreter, labels);
     } catch (e) {
       debugPrint('Food model not available: $e');
+      noteFoodModel('classifier load', e);
       return null;
     }
   }

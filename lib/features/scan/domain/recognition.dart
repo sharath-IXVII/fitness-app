@@ -242,3 +242,13 @@ Food? matchFood(String label, Map<String, Food> byId) {
   }
   return null;
 }
+
+/// Short notes on why a food model didn't load or run, shown on the scan
+/// screen when nothing is recognised (helps fix problems on real phones).
+final foodModelNotes = <String>[];
+
+void noteFoodModel(String what, Object error) {
+  final text = '$what: $error'.replaceAll('\n', ' ');
+  foodModelNotes.add(text.length > 160 ? '${text.substring(0, 160)}…' : text);
+  if (foodModelNotes.length > 6) foodModelNotes.removeAt(0);
+}

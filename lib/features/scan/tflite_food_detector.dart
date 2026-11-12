@@ -56,15 +56,22 @@ class TfliteFoodDetector {
         final data = await rootBundle.load(anchorsAsset);
         anchors = data.buffer.asFloat32List(data.offsetInBytes, data.lengthInBytes ~/ 4);
         final n = outs.firstWhere((t) => t.shape.last == 4).shape[1];
-        if (anchors.length != n * 4) return null;
+        if (anchors.length != n * 4) {
+          noteFoodModel('detector', 'anchors ${anchors.length ~/ 4} vs boxes $n');
+          return null;
+        }
       } else if (outs.length < 3) {
         return null;
       }
       final dish = await TfliteDishClassifier.load();
-      if (findsOnlyFood(labels) && dish == null) return null;
+      if (findsOnlyFood(labels) && dish == null) {
+        noteFoodModel('detector', 'dish model missing');
+        return null;
+      }
       return TfliteFoodDetector._(interpreter, labels, findsOnlyFood(labels) ? dish : null, anchors);
-    } catch (_) {
+    } catch (e) {
       // No detector in this build: the classifier is used.
+      noteFoodModel('detector load', e);
       return null;
     }
   }

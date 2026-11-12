@@ -392,6 +392,17 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ),
+              if (_items.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Text(
+                    foodModelNotes.isEmpty
+                        ? 'Model: loaded, ${_guesses.length} guesses${_guesses.isEmpty ? '' : ' (best: ${_guesses.first.label} ${(_guesses.first.score * 100).round()}%)'}'
+                        : 'Model: ${foodModelNotes.join(' | ')}',
+                    style: text.bodySmall?.copyWith(color: AppColors.textMuted, fontSize: 11),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               NutritionTable(items: _items, onEdit: _editItem, onAdd: _addMissing),
               const SizedBox(height: 12),
               _quickAdd(text),

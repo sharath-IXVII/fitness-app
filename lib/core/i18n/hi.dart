@@ -726,4 +726,5 @@ const hindi = <String, String>{
   'taps': 'टैप',
   'taps in': 'टैप, समय',
   "Today's plates": 'आज की प्लेटें',
+  'Your heart, breath, body and food, in one place.': 'आपका दिल, साँस, शरीर और खाना, एक ही जगह।',
 };

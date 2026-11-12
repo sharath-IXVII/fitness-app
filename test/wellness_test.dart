@@ -33,18 +33,6 @@ void main() {
     return c;
   }
 
-  testWidgets('a mood check-in is saved with its energy', (t) async {
-    final c = await pump(t, const MoodScreen());
-    await t.tap(find.text('🙂'));
-    await t.pump();
-    await t.tap(find.text('Save check-in'));
-    await t.pump(const Duration(milliseconds: 300));
-    final e = c.read(wellnessProvider).single;
-    expect((e.kind, e.value, e.extra), ('mood', 4, 3));
-    await t.pumpWidget(const SizedBox());
-    await t.pump(const Duration(seconds: 5));
-  });
-
   testWidgets('breathing logs whole minutes when stopped', (t) async {
     final c = await pump(t, const BreathingScreen());
     await t.scrollUntilVisible(find.text('Start'), 200, scrollable: find.byType(Scrollable).first);
@@ -59,15 +47,6 @@ void main() {
     expect(c.read(calmMinutesWeekProvider), 1);
     await t.pumpWidget(const SizedBox());
     await t.pump(const Duration(seconds: 5));
-  });
-
-  test('height from an A4 sheet on the wall', () {
-    // Paper spans 0.30–0.40 of the photo, the person 0.05–0.62: 5.7 papers tall.
-    final cm = heightFromMarks(refTop: 0.30, refBottom: 0.40, head: 0.05, feet: 0.62, refCm: 29.7);
-    expect(cm, closeTo(169.29, 0.01));
-    // On a 4000 px photo, a few pixels off on each mark is about 2 cm.
-    final err = heightError(refPx: 400, personPx: 2280, heightCm: cm);
-    expect(err, inInclusiveRange(1.5, 4.5));
   });
 
   test('steadiness drops as the phone sways more', () {

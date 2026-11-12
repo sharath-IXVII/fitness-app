@@ -36,7 +36,7 @@ class HealthScreen extends ConsumerWidget {
 
     final sections = <Widget>[
       Text(tr('Health'), style: text.headlineMedium),
-      Text(tr('Your heart, breath, mood, body and food, in one place.'), style: text.bodyMedium),
+      Text(tr('Your heart, breath, body and food, in one place.'), style: text.bodyMedium),
       const SizedBox(height: 14),
       const _HonestNote(),
       const SizedBox(height: 16),
@@ -138,7 +138,7 @@ class _HonestNote extends StatelessWidget {
   }
 }
 
-/// Breathing, breathing rate and mood: simple wellness tools.
+/// Breathing and breathing rate, plus quick reaction and balance tests.
 class _WellnessTools extends ConsumerWidget {
   const _WellnessTools();
 
@@ -187,8 +187,6 @@ class _WellnessTools extends ConsumerWidget {
             ),
             const SizedBox(width: 10),
             tile(Icons.waves_rounded, tr('Breathing rate'), tr('Tap each breath'), const BreathingRateScreen()),
-            const SizedBox(width: 10),
-            tile(Icons.mood_rounded, tr('Mood'), tr('Mood & energy'), const MoodScreen()),
           ],
         ),
         const SizedBox(height: 16),
@@ -197,8 +195,6 @@ class _WellnessTools extends ConsumerWidget {
         const SizedBox(height: 10),
         Row(
           children: [
-            tile(Icons.height_rounded, tr('Height'), tr('With an A4 sheet, no tape'), const HeightTestScreen()),
-            const SizedBox(width: 10),
             tile(Icons.bolt_rounded, tr('Reaction'), tr('Tap when it turns green'), const ReactionTestScreen()),
             const SizedBox(width: 10),
             tile(Icons.accessibility_new_rounded, tr('Balance'), tr('Stand on one leg'), const BalanceTestScreen()),

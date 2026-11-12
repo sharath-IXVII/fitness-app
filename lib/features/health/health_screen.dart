@@ -23,6 +23,7 @@ import 'widgets/body_check_sheet.dart';
 import 'widgets/health_widgets.dart';
 import '../wellness/wellness.dart';
 import '../wellness/fitness_tests.dart';
+import '../wellness/mind_games.dart';
 import '../wellness/wellness_screens.dart';
 
 /// Health: the camera heart-rate estimate, a watch, height, weight and BMI,
@@ -138,7 +139,7 @@ class _HonestNote extends StatelessWidget {
   }
 }
 
-/// Breathing and breathing rate, plus quick reaction and balance tests.
+/// Breathing and breathing rate, plus short mind games.
 class _WellnessTools extends ConsumerWidget {
   const _WellnessTools();
 
@@ -190,14 +191,22 @@ class _WellnessTools extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 16),
-        Text(tr('Quick tests'), style: text.titleMedium),
-        Text(tr('Each test ends with a report you can track over time.'), style: text.bodySmall),
+        Text(tr('Mind games'), style: text.titleMedium),
+        Text(tr('A minute for your brain. Each game shows your score and best.'), style: text.bodySmall),
         const SizedBox(height: 10),
         Row(
           children: [
             tile(Icons.bolt_rounded, tr('Reaction'), tr('Tap when it turns green'), const ReactionTestScreen()),
             const SizedBox(width: 10),
-            tile(Icons.accessibility_new_rounded, tr('Balance'), tr('Stand on one leg'), const BalanceTestScreen()),
+            tile(Icons.grid_view_rounded, tr('Memory'), tr('Repeat the pattern'), const MemoryGameScreen()),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            tile(Icons.pin_rounded, tr('Focus'), tr('Tap 1 to 25 in order'), const FocusGameScreen()),
+            const SizedBox(width: 10),
+            tile(Icons.palette_rounded, tr('Colour clash'), tr('Tap the ink, not the word'), const ColourGameScreen()),
           ],
         ),
       ],

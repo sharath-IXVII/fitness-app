@@ -56,7 +56,7 @@ const privacySections = <(String, String)>[
   ),
   (
     'Data stored on your phone',
-    'Alarms, routines, your My Day plan, weigh-ins, weight goal, saved foods, meal photos, and the pulse, breathing and test '
+    'Alarms, routines, your My Day plan, weigh-ins, weight goal, saved foods, meal photos, and the pulse, breathing and game '
         'records you save in the Health tab are stored only on your device and are not backed up, so they are not restored on a new phone. Your progress backup (above) '
         'is kept in your account. Uninstalling the app or using "Reset data on this device" removes what is on the '
         'phone.',
@@ -64,7 +64,7 @@ const privacySections = <(String, String)>[
   (
     'Health readings',
     'The Health tab keeps the resting pulse you save from the camera heart-rate estimate, your breathing-exercise '
-        'minutes, breathing-rate checks (you tap each breath), and reaction-time and balance test results. These are approximate '
+        'minutes, breathing-rate checks (you tap each breath), and your mind-game scores (reaction, memory, focus, colour). These are approximate '
         'wellness records for your own tracking, not medical measurements, and FittArc does not diagnose anything. '
         'They stay on your phone, are never uploaded, and are removed when you delete your account or reset data.',
   ),

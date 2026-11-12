@@ -6,16 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:sensors_plus/sensors_plus.dart';
 
 import '../../core/i18n/i18n.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/glass_card.dart';
-import '../../core/widgets/gradient_button.dart';
 import '../../core/widgets/page_background.dart';
 import 'wellness.dart';
 
-Widget _page(String title, Widget body) => PageBackground(
+Widget testPage(String title, Widget body) => PageBackground(
   child: Scaffold(
     backgroundColor: Colors.transparent,
     appBar: AppBar(title: Text(title), backgroundColor: Colors.transparent, surfaceTintColor: Colors.transparent),
@@ -91,7 +89,7 @@ class TestReportScreen extends ConsumerWidget {
         ),
       ),
     );
-    return _page(
+    return testPage(
       tr('Your report'),
       ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
@@ -180,11 +178,12 @@ class TestReportScreen extends ConsumerWidget {
   }
 }
 
-void _showReport(BuildContext context, TestReport r, Widget Function() retake) => Navigator.of(context).pushReplacement(
-  MaterialPageRoute<void>(
-    builder: (_) => TestReportScreen(report: r, retake: retake),
-  ),
-);
+void showTestReport(BuildContext context, TestReport r, Widget Function() retake) => Navigator.of(context)
+    .pushReplacement(
+      MaterialPageRoute<void>(
+        builder: (_) => TestReportScreen(report: r, retake: retake),
+      ),
+    );
 
 // ===================================================================== reaction
 
@@ -246,7 +245,7 @@ class _ReactionTestScreenState extends ConsumerState<ReactionTestScreen> {
         : avg < 350
         ? tr('Typical. Most people tap in 250–350 ms.')
         : tr('A bit slower than typical. Sleep, focus and practice all help.');
-    _showReport(
+    showTestReport(
       context,
       TestReport(
         title: tr('Reaction time'),
@@ -283,7 +282,7 @@ class _ReactionTestScreenState extends ConsumerState<ReactionTestScreen> {
       _RState.go => (const Color(0xFF2E8B57), tr('TAP!')),
       _RState.early => (const Color(0xFFD9A100), tr('Too soon! Tap to try again')),
     };
-    return _page(
+    return testPage(
       tr('Reaction time'),
       Padding(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
@@ -315,149 +314,6 @@ class _ReactionTestScreenState extends ConsumerState<ReactionTestScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ===================================================================== balance
-
-/// Phone movement while balancing (user acceleration, m/s²). Overridden in tests.
-final balanceSensorProvider = Provider<Stream<(double, double, double)>>(
-  (ref) => userAccelerometerEventStream(samplingPeriod: SensorInterval.gameInterval).map((e) => (e.x, e.y, e.z)),
-);
-
-/// Steadiness 0–100 from the root-mean-square sway in m/s².
-int steadiness(double rmsSway) => (100 - rmsSway * 55).clamp(0, 100).round();
-
-/// One-leg balance: hold the phone to your chest and stand on one leg.
-class BalanceTestScreen extends ConsumerStatefulWidget {
-  const BalanceTestScreen({super.key});
-
-  @override
-  ConsumerState<BalanceTestScreen> createState() => _BalanceTestScreenState();
-}
-
-class _BalanceTestScreenState extends ConsumerState<BalanceTestScreen> {
-  static const limit = 60;
-  StreamSubscription<(double, double, double)>? _sub;
-  Timer? _timer;
-  int _countdown = 0;
-  double _secs = 0;
-  double _sumSq = 0;
-  int _n = 0;
-  bool _running = false;
-
-  void _start() {
-    setState(() => _countdown = 3);
-    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      HapticFeedback.selectionClick();
-      if (_countdown > 1) {
-        setState(() => _countdown--);
-        return;
-      }
-      t.cancel();
-      HapticFeedback.heavyImpact();
-      setState(() {
-        _countdown = 0;
-        _running = true;
-        _secs = 0;
-        _sumSq = 0;
-        _n = 0;
-      });
-      _sub = ref.read(balanceSensorProvider).listen((v) {
-        _sumSq += v.$1 * v.$1 + v.$2 * v.$2 + v.$3 * v.$3;
-        _n++;
-      });
-      _timer = Timer.periodic(const Duration(milliseconds: 100), (_) {
-        setState(() => _secs += 0.1);
-        if (_secs >= limit) _stop();
-      });
-    });
-  }
-
-  void _stop() {
-    _timer?.cancel();
-    _sub?.cancel();
-    if (!_running) return;
-    _running = false;
-    final held = _secs.round();
-    final rms = _n == 0 ? 0.0 : math.sqrt(_sumSq / _n);
-    final steady = steadiness(rms);
-    ref.read(wellnessProvider.notifier).add('balance', held, extra: steady);
-    _showReport(
-      context,
-      TestReport(
-        title: tr('One-leg balance'),
-        value: '$held',
-        unit: tr('seconds'),
-        summary: '${tr('Steadiness')}: $steady / 100',
-        meaning: held >= 30
-            ? tr('Strong balance. Many adults under 60 can hold 30 seconds or more.')
-            : held >= 10
-            ? tr('Fair balance. With practice most people reach 30 seconds.')
-            : tr('Balance can improve quickly with a few minutes of practice a day.'),
-        accuracy: tr(
-          'Time is exact to about a tenth of a second. Steadiness comes from the phone\'s motion sensor held to your chest, so compare results taken the same way.',
-        ),
-        tips: [
-          tr('Stand near a wall or chair for safety.'),
-          tr('Fix your eyes on one point in front of you.'),
-          tr('Test each leg and practise the weaker one.'),
-        ],
-        kind: 'balance',
-        format: (e) => '${e.value} s · ${tr('steadiness')} ${e.extra}',
-      ),
-      () => const BalanceTestScreen(),
-    );
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    _sub?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return _page(
-      tr('One-leg balance'),
-      ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-        children: [
-          Text(
-            tr(
-              'Hold the phone flat against your chest. Stand on one leg and tap Stop (or put your foot down) when you lose balance. Up to 60 seconds.',
-            ),
-            style: text.bodyMedium,
-          ),
-          const SizedBox(height: 24),
-          Center(
-            child: Container(
-              width: 220,
-              height: 220,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: AppColors.primarySoft,
-                border: Border.all(color: AppColors.primary, width: 3),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                _countdown > 0 ? '$_countdown' : (_running ? _secs.toStringAsFixed(1) : '0.0'),
-                style: text.displayMedium?.copyWith(color: AppColors.primary, fontWeight: FontWeight.w700),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          if (_running)
-            GradientButton(label: tr('Stop'), icon: Icons.stop_rounded, onPressed: _stop)
-          else if (_countdown == 0)
-            GradientButton(label: tr('Start'), icon: Icons.accessibility_new_rounded, onPressed: _start),
-          const SizedBox(height: 14),
-          Text(tr('Stand near a wall or chair for safety.'), style: text.bodySmall, textAlign: TextAlign.center),
-        ],
       ),
     );
   }

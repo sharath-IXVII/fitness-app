@@ -79,5 +79,7 @@ void main() {
     ]) {
       expect(find.text(gone), findsNothing);
     }
+    // Let the cards' fade-in animations finish.
+    await _wait(t, 1000);
   });
 }

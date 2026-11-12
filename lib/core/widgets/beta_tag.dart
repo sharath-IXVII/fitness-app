@@ -4,12 +4,30 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 
-/// A small "BETA" pill for features that are still being improved.
+/// A small "BETA" pill for features that are still being improved. Shown
+/// only where [visible] is set (today: Diet and food scanning, which learn
+/// from users' corrections).
 class BetaTag extends StatelessWidget {
-  const BetaTag({super.key});
+  const BetaTag({super.key, this.visible = false});
+
+  final bool visible;
 
   @override
-  Widget build(BuildContext context) => const SizedBox.shrink();
+  Widget build(BuildContext context) {
+    if (!visible) return const SizedBox.shrink();
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.primarySoft,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.5)),
+      ),
+      child: Text(
+        tr('BETA'),
+        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, letterSpacing: 1, color: AppColors.primary),
+      ),
+    );
+  }
 }
 
 /// A short, honest note: these numbers are estimates.

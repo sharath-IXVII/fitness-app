@@ -29,6 +29,7 @@ import '../snaps/snaps_providers.dart';
 import 'domain/recognition.dart';
 import 'domain/scan_result.dart';
 import 'food_recognizer.dart';
+import 'food_samples.dart';
 import 'widgets/plate_result.dart';
 
 typedef PickedImage = ({Uint8List bytes, String mediaType});
@@ -181,6 +182,15 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
             ],
           ),
         );
+    // With the user's permission, the confirmed dishes help train the next model.
+    final send = ref.read(foodSampleSenderProvider);
+    if (send != null && ref.read(foodSamplesOptInProvider) && _image != null) {
+      unawaited(
+        send(_image!.bytes, [
+          for (final item in _items) (name: item.name, box: item.box, confidence: item.confidence.name),
+        ]).catchError((Object e) => debugPrint('food samples not sent: $e')),
+      );
+    }
     HapticFeedback.mediumImpact();
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -268,7 +278,10 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
     final model = ref.watch(foodClassifierProvider);
     return Scaffold(
       appBar: AppBar(
-        title: Row(mainAxisSize: MainAxisSize.min, children: [Text(tr('Scan food')), SizedBox(width: 10), BetaTag()]),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [Text(tr('Scan food')), const SizedBox(width: 10), const BetaTag(visible: true)],
+        ),
         actions: [
           if (_phase == _Phase.result)
             TextButton.icon(onPressed: _retake, icon: const Icon(Icons.refresh_rounded), label: Text(tr('Retake'))),
@@ -326,7 +339,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
               Text(
                 tr(
                   'Shoot from above in good light with the whole plate in frame. '
-                  'Recognition happens on your phone — the photo is never uploaded.',
+                  'Recognition happens on your phone — the full photo is never uploaded.',
                 ),
                 style: text.bodyMedium,
                 textAlign: TextAlign.center,
@@ -392,17 +405,6 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
                     textAlign: TextAlign.center,
                   ),
                 ),
-              if (_items.isEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Text(
-                    foodModelNotes.isEmpty
-                        ? 'Model: loaded, ${_guesses.length} guesses${_guesses.isEmpty ? '' : ' (best: ${_guesses.first.label} ${(_guesses.first.score * 100).round()}%)'}'
-                        : 'Model: ${foodModelNotes.join(' | ')}',
-                    style: text.bodySmall?.copyWith(color: AppColors.textMuted, fontSize: 11),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
               NutritionTable(items: _items, onEdit: _editItem, onAdd: _addMissing),
               const SizedBox(height: 12),
               _quickAdd(text),
@@ -417,10 +419,25 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
                     'Check the portion: set how many servings you ate with − and +. A photo can\'t measure '
                     'amounts exactly.',
               ),
-              const _Notice(
+              _Notice(
                 icon: Icons.lock_outline_rounded,
-                text: 'Recognised on your phone. The photo stays on this phone only.',
+                text: ref.watch(foodSamplesOptInProvider) && ref.watch(foodSampleSenderProvider) != null
+                    ? 'Recognised on your phone. Only small dish cut-outs are shared, because you chose to help.'
+                    : 'Recognised on your phone. The photo stays on this phone only.',
               ),
+              if (_items.isNotEmpty && ref.watch(foodSampleSenderProvider) != null)
+                SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  value: ref.watch(foodSamplesOptInProvider),
+                  onChanged: (v) => ref.read(foodSamplesOptInProvider.notifier).set(v),
+                  title: Text(tr('Help improve food recognition')),
+                  subtitle: Text(
+                    tr(
+                      'Shares a small cut-out of each dish with the name you confirm. Never the full photo or your location. You can turn this off any time.',
+                    ),
+                    style: text.bodySmall,
+                  ),
+                ),
               if (_items.isNotEmpty) FormSection(title: tr('Add to'), child: _mealPills()),
             ],
           ),

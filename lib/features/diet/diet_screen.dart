@@ -64,7 +64,7 @@ class DietScreen extends ConsumerWidget {
                   children: [
                     Text(tr('Diet'), style: text.headlineMedium),
                     const SizedBox(width: 10),
-                    const BetaTag(),
+                    const BetaTag(visible: true),
                   ],
                 ),
                 Text(dietLabels[profile.diet]!, style: text.bodyMedium),

@@ -400,6 +400,19 @@ service cloud.firestore {
       allow delete: if me() == uid;
     }
 
+    // Food samples users chose to share to improve recognition: a small dish
+    // cut-out and the name they confirmed. Write-only; read by the owner from
+    // the console or an admin export for training.
+    match /foodSamples/{id} {
+      allow create: if signedIn()
+        && data().keys().hasOnly(['uid', 'name', 'confidence', 'image', 'at'])
+        && data().uid == me()
+        && shortText(data().name, 60)
+        && data().confidence in ['high', 'medium', 'low']
+        && data().image is bytes && data().image.size() <= 102400
+        && data().at == request.time;
+    }
+
     // Reports of abuse: write-only, reviewed in the console.
     match /reports/{id} {
       allow create: if signedIn() && data().by == me() && data().about is string

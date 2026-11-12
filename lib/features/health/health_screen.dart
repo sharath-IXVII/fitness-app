@@ -21,6 +21,8 @@ import 'domain/health.dart';
 import 'health_providers.dart';
 import 'widgets/body_check_sheet.dart';
 import 'widgets/health_widgets.dart';
+import '../wellness/wellness.dart';
+import '../wellness/wellness_screens.dart';
 
 /// Health: the camera heart-rate estimate, a watch, height, weight and BMI,
 /// and the food guide. A wellness page: no medical values are logged.
@@ -33,13 +35,15 @@ class HealthScreen extends ConsumerWidget {
 
     final sections = <Widget>[
       Text(tr('Health'), style: text.headlineMedium),
-      Text(tr('Your heart, body and food, in one place.'), style: text.bodyMedium),
+      Text(tr('Your heart, breath, mood, body and food, in one place.'), style: text.bodyMedium),
       const SizedBox(height: 14),
       const _HonestNote(),
       const SizedBox(height: 16),
       const _HeartRateCard(),
       const SizedBox(height: 12),
       const _WatchCard(),
+      const SizedBox(height: 12),
+      const _WellnessTools(),
       const SizedBox(height: 12),
       const _BodyCard(),
       const SizedBox(height: 12),
@@ -129,6 +133,55 @@ class _HonestNote extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Breathing, breathing rate and mood: simple wellness tools.
+class _WellnessTools extends ConsumerWidget {
+  const _WellnessTools();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final text = Theme.of(context).textTheme;
+    final calm = ref.watch(calmMinutesWeekProvider);
+    void open(Widget page) => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
+    Widget tile(IconData icon, String title, String sub, Widget page) => Expanded(
+      child: Pressable(
+        onTap: () => open(page),
+        child: GlassCard(
+          padding: const EdgeInsets.fromLTRB(12, 14, 12, 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(color: AppColors.primarySoft, borderRadius: BorderRadius.circular(12)),
+                child: Icon(icon, color: AppColors.primary, size: 20),
+              ),
+              const SizedBox(height: 10),
+              Text(title, style: text.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+              const SizedBox(height: 2),
+              Text(sub, style: text.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
+            ],
+          ),
+        ),
+      ),
+    );
+    return Row(
+      children: [
+        tile(
+          Icons.air_rounded,
+          tr('Breathe'),
+          calm > 0 ? '$calm ${tr('calm min this week')}' : tr('Guided, 1–10 min'),
+          const BreathingScreen(),
+        ),
+        const SizedBox(width: 10),
+        tile(Icons.waves_rounded, tr('Breathing rate'), tr('Tap each breath'), const BreathingRateScreen()),
+        const SizedBox(width: 10),
+        tile(Icons.mood_rounded, tr('Mood'), tr('Mood & energy check-in'), const MoodScreen()),
+      ],
     );
   }
 }

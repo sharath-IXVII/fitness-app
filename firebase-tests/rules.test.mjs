@@ -422,3 +422,18 @@ test('snap shares: sender writes, only recipients read, small and short-lived', 
   await assertFails(deleteDoc(doc(as('ravi'), 'snapShares/s1')));
   await assertSucceeds(deleteDoc(doc(as('asha'), 'snapShares/s1')));
 });
+
+test('food samples: only with your own id, small, and nobody can read them back', async () => {
+  const { Bytes } = await import('firebase/firestore');
+  const sample = (over = {}) => ({
+    uid: 'asha', name: 'Roti / chapati', confidence: 'high',
+    image: Bytes.fromUint8Array(new Uint8Array(20000)), at: serverTimestamp(), ...over,
+  });
+  await assertSucceeds(setDoc(doc(as('asha'), 'foodSamples/f1'), sample()));
+  await assertFails(setDoc(doc(as('asha'), 'foodSamples/f2'), sample({ uid: 'ravi' })));
+  await assertFails(setDoc(doc(as('asha'), 'foodSamples/f3'), sample({ image: Bytes.fromUint8Array(new Uint8Array(200000)) })));
+  await assertFails(setDoc(doc(as('asha'), 'foodSamples/f4'), sample({ confidence: 'sure' })));
+  await assertFails(setDoc(doc(as('asha'), 'foodSamples/f5'), sample({ location: 'Bengaluru' })));
+  await assertFails(getDoc(doc(as('asha'), 'foodSamples/f1')));
+  await assertFails(deleteDoc(doc(as('asha'), 'foodSamples/f1')));
+});

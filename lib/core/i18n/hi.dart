@@ -604,4 +604,7 @@ const hindi = <String, String>{
       'यह प्लेट पहचान नहीं पाए। नीचे जो डिश दिखें उन पर टैप करें।',
   "Gulab jamun": 'गुलाब जामुन',
   "Gajar halwa": 'गाजर हलवा',
+  'THIS PLATE': 'यह प्लेट',
+  'Snapped with FittArc · fittarc.in': 'FittArc से स्नैप किया · fittarc.in',
+  'Estimates': 'अनुमान',
 };

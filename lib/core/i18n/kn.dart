@@ -616,4 +616,7 @@ const kannada = <String, String>{
       'ಈ ತಟ್ಟೆಯನ್ನು ಗುರುತಿಸಲಾಗಲಿಲ್ಲ. ಕೆಳಗೆ ನೀವು ನೋಡುವ ಖಾದ್ಯಗಳನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.',
   "Gulab jamun": 'ಗುಲಾಬ್ ಜಾಮೂನ್',
   "Gajar halwa": 'ಗಜರ್ ಹಲ್ವಾ',
+  'THIS PLATE': 'ಈ ತಟ್ಟೆ',
+  'Snapped with FittArc · fittarc.in': 'FittArc ನಲ್ಲಿ ಸ್ನ್ಯಾಪ್ ಮಾಡಲಾಗಿದೆ · fittarc.in',
+  'Estimates': 'ಅಂದಾಜುಗಳು',
 };

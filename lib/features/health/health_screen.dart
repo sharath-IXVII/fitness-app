@@ -22,6 +22,7 @@ import 'health_providers.dart';
 import 'widgets/body_check_sheet.dart';
 import 'widgets/health_widgets.dart';
 import '../wellness/wellness.dart';
+import '../wellness/fitness_tests.dart';
 import '../wellness/wellness_screens.dart';
 
 /// Health: the camera heart-rate estimate, a watch, height, weight and BMI,
@@ -161,7 +162,11 @@ class _WellnessTools extends ConsumerWidget {
                 child: Icon(icon, color: AppColors.primary, size: 20),
               ),
               const SizedBox(height: 10),
-              Text(title, style: text.titleSmall, maxLines: 1, overflow: TextOverflow.ellipsis),
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(title, style: text.titleSmall, maxLines: 1),
+              ),
               const SizedBox(height: 2),
               Text(sub, style: text.bodySmall, maxLines: 2, overflow: TextOverflow.ellipsis),
             ],
@@ -169,18 +174,36 @@ class _WellnessTools extends ConsumerWidget {
         ),
       ),
     );
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        tile(
-          Icons.air_rounded,
-          tr('Breathe'),
-          calm > 0 ? '$calm ${tr('calm min this week')}' : tr('Guided, 1–10 min'),
-          const BreathingScreen(),
+        Row(
+          children: [
+            tile(
+              Icons.air_rounded,
+              tr('Breathe'),
+              calm > 0 ? '$calm ${tr('calm min this week')}' : tr('Guided, 1–10 min'),
+              const BreathingScreen(),
+            ),
+            const SizedBox(width: 10),
+            tile(Icons.waves_rounded, tr('Breathing rate'), tr('Tap each breath'), const BreathingRateScreen()),
+            const SizedBox(width: 10),
+            tile(Icons.mood_rounded, tr('Mood'), tr('Mood & energy'), const MoodScreen()),
+          ],
         ),
-        const SizedBox(width: 10),
-        tile(Icons.waves_rounded, tr('Breathing rate'), tr('Tap each breath'), const BreathingRateScreen()),
-        const SizedBox(width: 10),
-        tile(Icons.mood_rounded, tr('Mood'), tr('Mood & energy check-in'), const MoodScreen()),
+        const SizedBox(height: 16),
+        Text(tr('Quick tests'), style: text.titleMedium),
+        Text(tr('Each test ends with a report you can track over time.'), style: text.bodySmall),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            tile(Icons.height_rounded, tr('Height'), tr('With an A4 sheet, no tape'), const HeightTestScreen()),
+            const SizedBox(width: 10),
+            tile(Icons.bolt_rounded, tr('Reaction'), tr('Tap when it turns green'), const ReactionTestScreen()),
+            const SizedBox(width: 10),
+            tile(Icons.accessibility_new_rounded, tr('Balance'), tr('Stand on one leg'), const BalanceTestScreen()),
+          ],
+        ),
       ],
     );
   }

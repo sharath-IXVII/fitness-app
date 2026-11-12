@@ -11,12 +11,15 @@ import '../../core/theme/app_colors.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/gradient_button.dart';
 import '../../core/widgets/page_background.dart';
+import 'fitness_tests.dart';
 import 'wellness.dart';
 
-Widget _scaffold(BuildContext context, String title, Widget body) => Scaffold(
-  backgroundColor: Colors.transparent,
-  appBar: AppBar(title: Text(title), backgroundColor: Colors.transparent),
-  body: PageBackground(child: SafeArea(child: body)),
+Widget _scaffold(BuildContext context, String title, Widget body) => PageBackground(
+  child: Scaffold(
+    backgroundColor: Colors.transparent,
+    appBar: AppBar(title: Text(title), backgroundColor: Colors.transparent, surfaceTintColor: Colors.transparent),
+    body: SafeArea(child: body),
+  ),
 );
 
 // ---------------------------------------------------------------- breathing
@@ -212,7 +215,34 @@ class _BreathingRateScreenState extends ConsumerState<BreathingRateScreen> {
     _start = null;
     final r = breathsPerMinute(_taps);
     setState(() => _result = r);
-    if (r != null) await ref.read(wellnessProvider.notifier).add('rate', r);
+    if (r == null) return;
+    await ref.read(wellnessProvider.notifier).add('rate', r);
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(
+        builder: (_) => TestReportScreen(
+          report: TestReport(
+            title: tr('Breathing rate'),
+            value: '$r',
+            unit: tr('breaths a minute'),
+            summary: '${_taps.length} ${tr('taps in')} ${_taps.last.round()} s',
+            meaning: tr(
+              'Many adults breathe about 12–20 times a minute when resting. Slower, calm breathing often comes with relaxation and fitness. Compare your own results over time.',
+            ),
+            accuracy: tr(
+              'As exact as your taps: missing one breath changes the result by about 1. Sit still for a minute first, and breathe without thinking about it.',
+            ),
+            tips: [
+              tr('Measure sitting, after resting for a few minutes.'),
+              tr('Try the Breathe exercise and measure again.'),
+            ],
+            kind: 'rate',
+            format: (e) => '${e.value} ${tr('breaths a minute')}',
+          ),
+          retake: () => const BreathingRateScreen(),
+        ),
+      ),
+    );
   }
 
   @override

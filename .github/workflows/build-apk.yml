@@ -47,13 +47,16 @@ jobs:
 
       # On-device food recognition: Google AIY Food V1 (Apache-2.0), bundled
       # into the app so scanning is free and works offline.
+      # Google's backup food classifier. The app's own models come from the
+      # food-detector release below, so a network hiccup here mustn't stop the build.
       - name: Download food model
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
-          curl -fsSL --retry 3 -o assets/models/food_v1.tflite \
+          curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 -o assets/models/food_v1.tflite \
             "https://tfhub.dev/google/lite-model/aiy/vision/classifier/food_V1/1?lite-format=tflite"
-          curl -fsSL --retry 3 "https://www.gstatic.com/aihub/tfhub/labelmaps/aiy_food_V1_labelmap.csv" \
+          curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 "https://www.gstatic.com/aihub/tfhub/labelmaps/aiy_food_V1_labelmap.csv" \
             | tr -d '\r' > assets/models/food_labels.csv
           test "$(stat -c %s assets/models/food_v1.tflite)" -gt 1000000
           test "$(wc -l < assets/models/food_labels.csv)" -gt 2000

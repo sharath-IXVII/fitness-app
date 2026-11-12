@@ -168,7 +168,10 @@ List<Widget> wrappedCards(ArcWrapped w) {
       kicker: 'YOUR SEASON',
       big: '${w.activeDays}',
       unit: w.activeDays == 1 ? 'active day' : 'active days',
-      lines: ['${w.period.label} is a wrap.', 'Here is how you moved.'],
+      lines: [
+        DateTime.now().isBefore(w.period.end) ? '${w.period.label} so far.' : '${w.period.label} is a wrap.',
+        'Here is how you moved.',
+      ],
     ),
     WrappedCard(
       period: w.period,

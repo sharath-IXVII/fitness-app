@@ -149,6 +149,10 @@ void main() {
     expect(find.text('24.4'), findsOneWidget); // 64 / 1.62^2
     expect(find.text('Overweight'), findsOneWidget);
 
+    // Bring the card clear of the bottom bar before tapping.
+    await t.scrollUntilVisible(find.text('Update'), 200, scrollable: page);
+    await t.drag(page, const Offset(0, -250));
+    await _wait(t, 300);
     await t.tap(find.text('Update'));
     await _wait(t);
     await t.enterText(find.byType(TextField).at(0), '400');

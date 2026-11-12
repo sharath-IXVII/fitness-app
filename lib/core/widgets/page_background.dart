@@ -24,7 +24,8 @@ class PageBackground extends ConsumerWidget {
         fit: StackFit.passthrough,
         children: [
           Positioned.fill(child: ArcWeather(effect: effect)),
-          child,
+          // A see-through Material so list rows show their tap ripples here.
+          Material(type: MaterialType.transparency, child: child),
           // A few particles drift in front of the content too, so the
           // weather feels like it is falling over the whole screen.
           Positioned.fill(child: ArcWeather(effect: effect, foreground: true, count: 9)),

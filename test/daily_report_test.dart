@@ -49,7 +49,7 @@ void main() {
     expect(none.tip, contains('workout'));
   });
 
-  testWidgets('the report card fits, even with big numbers', (t) async {
+  testWidgets('the report card fits, even with big numbers and four plates', (t) async {
     GoogleFonts.config.allowRuntimeFetching = false;
     final r = DailyReport.of(
       DailyLog(date: DateTime(2026, 11, 9), waterMl: 4250, steps: 23456, mealsLogged: 5, proteinG: 120),
@@ -61,10 +61,24 @@ void main() {
     );
     await t.pumpWidget(
       MaterialApp(
-        home: Center(child: DailyReportCard(report: r)),
+        home: Center(
+          child: DailyReportCard(
+            report: r,
+            plates: [
+              for (final (meal, dishes) in [
+                ('Breakfast', 'Masala dosa, Coconut chutney, Sambar'),
+                ('Lunch', 'Roti, Dal makhani, Paneer butter masala, Jeera rice'),
+                ('Snacks', 'Banana'),
+                ('Dinner', 'Chicken biryani, Raita, Gulab jamun'),
+              ])
+                (meal: meal, dishes: dishes, kcal: 650, photo: null),
+            ],
+          ),
+        ),
       ),
     );
     expect(t.takeException(), isNull);
     expect(find.text('${r.score}'), findsOneWidget);
+    expect(find.text('Roti, Dal makhani, Paneer butter masala, Jeera rice'), findsOneWidget); // what they ate
   });
 }

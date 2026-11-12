@@ -93,7 +93,12 @@ class _DailyReportScreenState extends ConsumerState<DailyReportScreen> {
                               report: r,
                               plates: [
                                 for (final snap in ref.watch(todaySnapsProvider))
-                                  (meal: tr(snap.meal.label), kcal: snap.total.kcal.round(), photo: _photos[snap.id]),
+                                  (
+                                    meal: tr(snap.meal.label),
+                                    dishes: snap.items.map((i) => i.name.split(' / ').first).join(', '),
+                                    kcal: snap.total.kcal.round(),
+                                    photo: _photos[snap.id],
+                                  ),
                               ],
                             ),
                           ),
@@ -203,7 +208,7 @@ class DailyReportCard extends StatelessWidget {
   final DailyReport report;
 
   /// Today's food snaps: meal, calories and photo (if any).
-  final List<({String meal, int kcal, ImageProvider? photo})> plates;
+  final List<({String meal, String dishes, int kcal, ImageProvider? photo})> plates;
 
   @override
   Widget build(BuildContext context) {
@@ -242,8 +247,8 @@ class DailyReportCard extends StatelessWidget {
                 SizedBox(height: plates.isEmpty ? 18 : 10),
                 Center(
                   child: SizedBox(
-                    width: plates.isEmpty ? 150 : 128,
-                    height: plates.isEmpty ? 150 : 128,
+                    width: plates.isEmpty ? 150 : 116,
+                    height: plates.isEmpty ? 150 : 116,
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
@@ -304,7 +309,7 @@ class DailyReportCard extends StatelessWidget {
                   ],
                 ),
                 if (plates.isNotEmpty) ...[
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 6),
                   Text(tr("Today's plates"), style: body(11, ink, FontWeight.w700)),
                   const SizedBox(height: 6),
                   Row(
@@ -335,6 +340,12 @@ class DailyReportCard extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
+                              Text(
+                                p.dishes,
+                                style: body(9, ink, FontWeight.w500),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                               Text('${p.kcal} kcal', style: body(9.5, ink, FontWeight.w700), maxLines: 1),
                             ],
                           ),
@@ -349,7 +360,8 @@ class DailyReportCard extends StatelessWidget {
                   ),
                 ],
                 const Spacer(),
-                if (r.tip case final tip?) Text(tip, style: body(11, muted)),
+                // With plates to show, the tip makes room for them.
+                if (r.tip case final tip? when plates.isEmpty) Text(tip, style: body(11, muted)),
               ],
             ),
           ),
@@ -366,7 +378,7 @@ class DailyReportCard extends StatelessWidget {
     TextStyle Function(double, [Color?, FontWeight]) body,
     Color accent,
   ) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 4),
+    padding: const EdgeInsets.symmetric(vertical: 3.5),
     child: Column(
       children: [
         Row(

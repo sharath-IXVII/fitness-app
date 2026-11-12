@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -11,8 +13,25 @@ import '../domain/food_snap.dart';
 /// each dish marked with corner brackets and a name tag, fading into a dark
 /// panel with the calories, macro bars and the dishes. Drawn at 360 × 640 and
 /// saved at 3× (1080 × 1920).
+/// Looks for the food snap card.
+enum SnapStyle {
+  night('Night'),
+  glass('Glass'),
+  polaroid('Polaroid'),
+  plate('Plate');
+
+  const SnapStyle(this.label);
+
+  final String label;
+}
+
 class SnapCard extends StatelessWidget {
-  const SnapCard({super.key, required this.snap, this.photo});
+  const SnapCard({super.key, required this.snap, this.photo, this.style = SnapStyle.night});
+
+  final SnapStyle style;
+
+  /// The wordmark stays faint so the food is the star.
+  static const _markAlpha = 0.38;
 
   static const size = Size(360, 640);
 
@@ -35,7 +54,22 @@ class SnapCard extends StatelessWidget {
       GoogleFonts.inter(fontSize: size, fontWeight: w, color: c, height: 1.2);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) => Material(
+    type: MaterialType.transparency,
+    child: SizedBox.fromSize(
+      size: size,
+      child: ClipRect(
+        child: switch (style) {
+          SnapStyle.night => _nightStyle(),
+          SnapStyle.glass => _glassStyle(),
+          SnapStyle.polaroid => _polaroid(),
+          SnapStyle.plate => _plate(),
+        },
+      ),
+    ),
+  );
+
+  Widget _nightStyle() {
     final items = snap.items.take(4).toList();
     final more = snap.items.length - items.length;
     final total = snap.total;
@@ -44,188 +78,501 @@ class SnapCard extends StatelessWidget {
     final macroKcal = (total.protein + total.carbs) * 4;
     double share(double grams) => macroKcal <= 0 ? 0 : (grams * 4 / macroKcal).clamp(0.04, 1.0);
 
-    // Material gives the text its normal style when the card is drawn outside
-    // a page (for the saved picture).
-    return Material(
-      type: MaterialType.transparency,
-      child: SizedBox.fromSize(
-        size: size,
-        child: ClipRect(
-          child: Stack(
+    return Stack(
+      children: [
+        const Positioned.fill(child: ColoredBox(color: _night)),
+        // A soft glow in the app's (seasonal) colour behind the panel.
+        Positioned(
+          left: -80,
+          right: -80,
+          bottom: -140,
+          height: 360,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: RadialGradient(colors: [accent.withValues(alpha: 0.38), accent.withValues(alpha: 0)]),
+            ),
+          ),
+        ),
+        // The plate, edge to edge, with each dish marked.
+        Positioned(
+          left: 0,
+          right: 0,
+          top: 0,
+          height: _photoHeight,
+          child: LayoutBuilder(
+            builder: (context, c) {
+              // The photo is square; it covers the area, centred.
+              final side = c.maxWidth > c.maxHeight ? c.maxWidth : c.maxHeight;
+              final dx = (c.maxWidth - side) / 2, dy = (c.maxHeight - side) / 2;
+              return Stack(
+                fit: StackFit.expand,
+                children: [
+                  if (photo != null)
+                    Image(image: photo!, fit: BoxFit.cover, gaplessPlayback: true)
+                  else
+                    ColoredBox(color: accent.withValues(alpha: 0.25)),
+                  for (final item in items)
+                    if (_area(item.box, side) case final r?)
+                      ..._mark(item.name, r.shift(Offset(dx, dy)), accent, c.maxWidth),
+                  // Fade into the panel.
+                  const DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        stops: [0, 0.18, 0.62, 1],
+                        colors: [Color(0x80000000), Color(0x00000000), Color(0x00000000), _night],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        // Top: meal and time, and the wordmark.
+        Positioned(
+          left: 18,
+          right: 18,
+          top: 18,
+          child: Row(
             children: [
-              const Positioned.fill(child: ColoredBox(color: _night)),
-              // A soft glow in the app's (seasonal) colour behind the panel.
-              Positioned(
-                left: -80,
-                right: -80,
-                bottom: -140,
-                height: 360,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: RadialGradient(colors: [accent.withValues(alpha: 0.38), accent.withValues(alpha: 0)]),
+              Flexible(
+                child: _glass(
+                  Text(
+                    '${tr(snap.meal.label).toUpperCase()}  ·  ${DateFormat('d MMM, h:mm a').format(snap.at)}',
+                    style: _body(10, _ink, FontWeight.w700).copyWith(letterSpacing: 0.8),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ),
-              // The plate, edge to edge, with each dish marked.
-              Positioned(
-                left: 0,
-                right: 0,
-                top: 0,
-                height: _photoHeight,
-                child: LayoutBuilder(
-                  builder: (context, c) {
-                    // The photo is square; it covers the area, centred.
-                    final side = c.maxWidth > c.maxHeight ? c.maxWidth : c.maxHeight;
-                    final dx = (c.maxWidth - side) / 2, dy = (c.maxHeight - side) / 2;
-                    return Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        if (photo != null)
-                          Image(image: photo!, fit: BoxFit.cover, gaplessPlayback: true)
-                        else
-                          ColoredBox(color: accent.withValues(alpha: 0.25)),
-                        for (final item in items)
-                          if (_area(item.box, side) case final r?)
-                            ..._mark(item.name, r.shift(Offset(dx, dy)), accent, c.maxWidth),
-                        // Fade into the panel.
-                        const DecoratedBox(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              stops: [0, 0.18, 0.62, 1],
-                              colors: [Color(0x80000000), Color(0x00000000), Color(0x00000000), _night],
-                            ),
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
+              const SizedBox(width: 12),
+              Text('FittArc', style: _sport(20, _ink.withValues(alpha: _markAlpha)).copyWith(letterSpacing: 0.8)),
+            ],
+          ),
+        ),
+        // Dishes seen only in the whole photo: tags along the bottom of the photo.
+        Positioned(
+          left: 18,
+          right: 18,
+          top: _photoHeight - 104,
+          child: Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              for (final item in items)
+                if (_area(item.box, 1) == null) _tag(item.name, accent),
+            ],
+          ),
+        ),
+        // The panel: calories, macros and the dishes.
+        Positioned(
+          left: 22,
+          right: 22,
+          top: _photoHeight - 52,
+          bottom: 18,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(tr('THIS PLATE'), style: _body(10, _muted, FontWeight.w700).copyWith(letterSpacing: 2)),
+              const SizedBox(height: 4),
+              Text('≈ ${total.kcal.round()} kcal', style: _sport(36)),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _macro(tr('Protein'), total.protein, share(total.protein), _protein),
+                  const SizedBox(width: 12),
+                  _macro(tr('Carbs'), total.carbs, share(total.carbs), _carbs),
+                  const SizedBox(width: 12),
+                  _macro(tr('Fibre'), total.fiber, (total.fiber / 30).clamp(0.04, 1.0), _fibre),
+                ],
               ),
-              // Top: meal and time, and the wordmark.
-              Positioned(
-                left: 18,
-                right: 18,
-                top: 18,
-                child: Row(
-                  children: [
-                    Flexible(
-                      child: _glass(
-                        Text(
-                          '${tr(snap.meal.label).toUpperCase()}  ·  ${DateFormat('d MMM, h:mm a').format(snap.at)}',
-                          style: _body(10, _ink, FontWeight.w700).copyWith(letterSpacing: 0.8),
+              const SizedBox(height: 14),
+              for (final item in items)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          item.name,
+                          style: _body(12.5, _ink, FontWeight.w600),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'FittArc',
-                      style: _sport(
-                        20,
-                      ).copyWith(letterSpacing: 0.8, shadows: const [Shadow(color: Color(0x99000000), blurRadius: 10)]),
-                    ),
-                  ],
-                ),
-              ),
-              // Dishes seen only in the whole photo: tags along the bottom of the photo.
-              Positioned(
-                left: 18,
-                right: 18,
-                top: _photoHeight - 104,
-                child: Wrap(
-                  spacing: 6,
-                  runSpacing: 6,
-                  children: [
-                    for (final item in items)
-                      if (_area(item.box, 1) == null) _tag(item.name, accent),
-                  ],
-                ),
-              ),
-              // The panel: calories, macros and the dishes.
-              Positioned(
-                left: 22,
-                right: 22,
-                top: _photoHeight - 52,
-                bottom: 18,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(tr('THIS PLATE'), style: _body(10, _muted, FontWeight.w700).copyWith(letterSpacing: 2)),
-                    const SizedBox(height: 4),
-                    Text('≈ ${total.kcal.round()} kcal', style: _sport(36)),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        _macro(tr('Protein'), total.protein, share(total.protein), _protein),
-                        const SizedBox(width: 12),
-                        _macro(tr('Carbs'), total.carbs, share(total.carbs), _carbs),
-                        const SizedBox(width: 12),
-                        _macro(tr('Fibre'), total.fiber, (total.fiber / 30).clamp(0.04, 1.0), _fibre),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    for (final item in items)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 6),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                item.name,
-                                style: _body(12.5, _ink, FontWeight.w600),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            Text(item.portion, style: _body(10.5, _muted), maxLines: 1),
-                            const SizedBox(width: 10),
-                            SizedBox(
-                              width: 64,
-                              child: Text(
-                                '${item.macros.kcal.round()} kcal',
-                                style: _body(11, _ink, FontWeight.w700),
-                                textAlign: TextAlign.right,
-                                maxLines: 1,
-                              ),
-                            ),
-                          ],
+                      Text(item.portion, style: _body(10.5, _muted), maxLines: 1),
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        width: 64,
+                        child: Text(
+                          '${item.macros.kcal.round()} kcal',
+                          style: _body(11, _ink, FontWeight.w700),
+                          textAlign: TextAlign.right,
+                          maxLines: 1,
                         ),
                       ),
-                    if (more > 0) Text('+ $more more', style: _body(10.5, _muted)),
-                    const Spacer(),
-                    Row(
-                      children: [
-                        Icon(Icons.bolt_rounded, size: 14, color: accent),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            tr('Snapped with FittArc · fittarc.in'),
-                            style: _body(9.5, _muted),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        Text(tr('Estimates'), style: _body(9.5, _muted)),
-                      ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+              if (more > 0) Text('+ $more more', style: _body(10.5, _muted)),
+              const Spacer(),
+              Row(
+                children: [
+                  Icon(Icons.bolt_rounded, size: 14, color: accent),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      tr('Snapped with FittArc · fittarc.in'),
+                      style: _body(9.5, _muted),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Text(tr('Estimates'), style: _body(9.5, _muted)),
+                ],
               ),
             ],
           ),
         ),
+      ],
+    );
+  }
+
+  // ------------------------------------------------------------- shared
+
+  List<SnapItem> get _shown => snap.items.take(4).toList();
+  String get _when => '${tr(snap.meal.label).toUpperCase()}  ·  ${DateFormat('d MMM, h:mm a').format(snap.at)}';
+  static String _g(double v) => v >= 10 ? '${v.round()} g' : '${v.toStringAsFixed(1)} g';
+
+  Widget _photoWithMarks(double width, double height, {bool marks = true}) {
+    final side = width > height ? width : height;
+    final dx = (width - side) / 2, dy = (height - side) / 2;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (photo != null)
+          Image(image: photo!, fit: BoxFit.cover, gaplessPlayback: true)
+        else
+          ColoredBox(color: AppColors.primary.withValues(alpha: 0.25)),
+        if (marks)
+          for (final item in _shown)
+            if (_area(item.box, side) case final r?)
+              ..._mark(item.name, r.shift(Offset(dx, dy)), AppColors.primary, width),
+      ],
+    );
+  }
+
+  static Widget _wordmark(Color color, [double size = 18]) =>
+      Text('FittArc', style: _sport(size, color.withValues(alpha: _markAlpha)).copyWith(letterSpacing: 0.8));
+
+  // ------------------------------------------------------------- glass
+  /// The photo fills the whole story; a frosted card floats at the bottom.
+  Widget _glassStyle() {
+    final total = snap.total;
+    return Stack(
+      children: [
+        Positioned.fill(child: _photoWithMarks(size.width, size.height)),
+        const Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: [0, 0.2, 0.55, 1],
+                colors: [Color(0x66000000), Color(0x00000000), Color(0x00000000), Color(0x99000000)],
+              ),
+            ),
+          ),
+        ),
+        Positioned(
+          left: 18,
+          right: 18,
+          top: 18,
+          child: Row(
+            children: [
+              Flexible(
+                child: _glass(
+                  Text(
+                    _when,
+                    style: _body(10, _ink, FontWeight.w700).copyWith(letterSpacing: 0.8),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              _wordmark(Colors.white),
+            ],
+          ),
+        ),
+        Positioned(
+          left: 14,
+          right: 14,
+          bottom: 14,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(26),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(18, 16, 18, 14),
+                decoration: BoxDecoration(
+                  color: const Color(0x33FFFFFF),
+                  borderRadius: BorderRadius.circular(26),
+                  border: Border.all(color: const Color(0x55FFFFFF)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text('≈ ${total.kcal.round()} kcal', style: _sport(32)),
+                        const Spacer(),
+                        Text(tr('Estimates'), style: _body(9.5, _muted)),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        _chip('${_g(total.protein)} ${tr('Protein').toLowerCase()}', _protein),
+                        const SizedBox(width: 6),
+                        _chip('${_g(total.carbs)} ${tr('Carbs').toLowerCase()}', _carbs),
+                        const SizedBox(width: 6),
+                        _chip('${_g(total.fiber)} ${tr('Fibre').toLowerCase()}', _fibre),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    for (final item in _shown)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 5),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                item.name,
+                                style: _body(12, _ink, FontWeight.w600),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Text('${item.macros.kcal.round()} kcal', style: _body(11, _muted, FontWeight.w600)),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  static Widget _chip(String text, Color color) => Container(
+    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: 0.28),
+      borderRadius: BorderRadius.circular(20),
+      border: Border.all(color: color.withValues(alpha: 0.7)),
+    ),
+    child: Text(text, style: _body(10.5, _ink, FontWeight.w700)),
+  );
+
+  // ------------------------------------------------------------- polaroid
+  /// A light, warm card: the photo as a tilted print, the numbers below.
+  Widget _polaroid() {
+    final total = snap.total;
+    const paper = Color(0xFFF6F1E9), ink = Color(0xFF1E2329), soft = Color(0xFF6B7178);
+    final accent = AppColors.primary;
+    return ColoredBox(
+      color: paper,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _when,
+                    style: _body(10, soft, FontWeight.w700).copyWith(letterSpacing: 1.2),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                _wordmark(ink),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Center(
+              child: Transform.rotate(
+                angle: -0.035,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(9, 9, 9, 30),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(6),
+                    boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 18, offset: Offset(0, 8))],
+                  ),
+                  child: SizedBox(
+                    width: 280,
+                    height: 280,
+                    child: ClipRRect(borderRadius: BorderRadius.circular(3), child: _photoWithMarks(280, 280)),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text('≈ ${total.kcal.round()} kcal', style: _sport(34, ink)),
+                const Spacer(),
+                Text(tr('Estimates'), style: _body(9.5, soft)),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                _pastel(tr('Protein'), _g(total.protein), const Color(0xFFDCEFFA), const Color(0xFF1F6E96)),
+                const SizedBox(width: 8),
+                _pastel(tr('Carbs'), _g(total.carbs), const Color(0xFFFCEBD0), const Color(0xFF9A6413)),
+                const SizedBox(width: 8),
+                _pastel(tr('Fibre'), _g(total.fiber), const Color(0xFFDDF3E2), const Color(0xFF2E7A40)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            for (final item in _shown)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 5),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        item.name,
+                        style: _body(12, ink, FontWeight.w600),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text('${item.macros.kcal.round()} kcal', style: _body(11, soft, FontWeight.w600)),
+                  ],
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
+
+  static Widget _pastel(String label, String value, Color bg, Color fg) => Expanded(
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(14)),
+      child: Column(
+        children: [
+          Text(value, style: _sport(16, fg)),
+          Text(label, style: _body(9.5, fg)),
+        ],
+      ),
+    ),
+  );
+
+  // ------------------------------------------------------------- plate
+  /// Bold colour, the plate as a big circle, a giant calorie number.
+  Widget _plate() {
+    final total = snap.total;
+    final accent = AppColors.primary;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color.lerp(accent, Colors.black, 0.15)!, Color.lerp(accent, Colors.black, 0.55)!],
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _when,
+                    style: _body(10, _muted, FontWeight.w700).copyWith(letterSpacing: 1.2),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                _wordmark(Colors.white),
+              ],
+            ),
+            const SizedBox(height: 18),
+            Container(
+              width: 270,
+              height: 270,
+              padding: const EdgeInsets.all(7),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.35), blurRadius: 30, offset: const Offset(0, 14)),
+                ],
+              ),
+              child: ClipOval(child: _photoWithMarks(256, 256, marks: false)),
+            ),
+            const SizedBox(height: 14),
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 6,
+              runSpacing: 6,
+              children: [for (final item in _shown) _tag(item.name, Colors.white)],
+            ),
+            const Spacer(),
+            Text('${total.kcal.round()}', style: _sport(64).copyWith(height: 0.95)),
+            Text(tr('kcal on this plate'), style: _body(12, _muted, FontWeight.w600)),
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                _stat(tr('Protein'), _g(total.protein)),
+                _stat(tr('Carbs'), _g(total.carbs)),
+                _stat(tr('Fibre'), _g(total.fiber)),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text(tr('Estimates · fittarc.in'), style: _body(9, _muted)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Widget _stat(String label, String value) => Expanded(
+    child: Column(
+      children: [
+        Text(value, style: _sport(18)),
+        Text(label, style: _body(10, _muted)),
+      ],
+    ),
+  );
 
   /// Where to mark a dish on a [side]-wide square photo, or null when it was
   /// seen only in the whole photo. A rough area from the classifier is large

@@ -150,7 +150,7 @@ jobs:
         env:
           DATA_DIR: /content/data
           OUT_DIR: /content/out
-          EPOCHS: ${{ needs.setup.outputs.full == 'true' && '14' || '2' }}
+          EPOCHS: ${{ needs.setup.outputs.full == 'true' && '30' || '2' }}
           MIN_PHOTOS: ${{ needs.setup.outputs.full == 'true' && '8' || '3' }}
         run: python tools/food_model/train_dish_keras.py
       - name: Publish

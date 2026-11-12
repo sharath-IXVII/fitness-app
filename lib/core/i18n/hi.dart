@@ -615,4 +615,5 @@ const hindi = <String, String>{
   'FIBRE RICH': 'फाइबर से भरपूर',
   'LIGHT MEAL': 'हल्का खाना',
   'HOME STYLE': 'घर जैसा',
+  'Total energy': 'कुल ऊर्जा',
 };

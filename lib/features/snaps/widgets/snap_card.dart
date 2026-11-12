@@ -6,8 +6,8 @@ import 'package:intl/intl.dart';
 
 import '../../../core/i18n/i18n.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../diet/domain/food.dart' show Macros;
-import '../../diet/domain/meal_log.dart' show MealType;
+import '../../../core/widgets/page_background.dart' show ArcWeather;
+import '../../arcs/domain/arc.dart' show ArcEffect;
 import '../../scan/domain/recognition.dart' show scanRegions;
 import '../domain/food_snap.dart';
 
@@ -28,9 +28,12 @@ enum SnapStyle {
 }
 
 class SnapCard extends StatelessWidget {
-  const SnapCard({super.key, required this.snap, this.photo, this.style = SnapStyle.polaroid});
+  const SnapCard({super.key, required this.snap, this.photo, this.style = SnapStyle.polaroid, this.weather});
 
   final SnapStyle style;
+
+  /// The app's seasonal weather (snow, petals, sun, rain), drawn softly behind.
+  final ArcEffect? weather;
 
   /// The wordmark stays faint so the food is the star.
   static const _markAlpha = 0.38;
@@ -391,179 +394,126 @@ class SnapCard extends StatelessWidget {
   );
 
   // ------------------------------------------------------------- polaroid
-  /// A light, warm card: the photo as a tilted print, the numbers below.
+  /// Clean and calm, in the app's theme: the photo in a white frame on the
+  /// theme's background with its seasonal weather, the numbers below.
   Widget _polaroid() {
     final total = snap.total;
-    // The app's current (seasonal) palette, so the card matches the app.
-    final paper = Color.lerp(AppColors.background, AppColors.primarySoft, 0.45)!;
     final ink = AppColors.textPrimary, soft = AppColors.textSecondary;
     final accent = AppColors.primary;
-    Color tint(Color c) => Color.lerp(AppColors.surface, c, 0.24)!;
-    Color deep(Color c) => Color.lerp(c, Colors.black, 0.35)!;
-    return CustomPaint(
-      painter: _Dots(paper, accent.withValues(alpha: 0.09)),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(22, 22, 22, 18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _when,
-                    style: _body(10, soft, FontWeight.w700).copyWith(letterSpacing: 1.2),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                _wordmark(ink),
-              ],
+    Color tint(Color c) => Color.lerp(AppColors.surface, c, 0.14)!;
+    Color deep(Color c) => Color.lerp(c, Colors.black, 0.3)!;
+    return Stack(
+      children: [
+        Positioned.fill(child: ColoredBox(color: AppColors.background)),
+        // A soft wash of the theme colour at the top, like the app's pages.
+        Positioned(
+          left: 0,
+          right: 0,
+          top: 0,
+          height: 260,
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [AppColors.primarySoft, AppColors.primarySoft.withValues(alpha: 0)],
+              ),
             ),
-            const SizedBox(height: 16),
-            // The print, taped to the page, with a caption and a sticker.
-            SizedBox(
-              height: 334,
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.topCenter,
+          ),
+        ),
+        if (weather case final w?) Positioned.fill(child: ArcWeather(effect: w, count: 26)),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  Transform.rotate(
-                    angle: -0.035,
-                    child: Container(
-                      padding: const EdgeInsets.fromLTRB(9, 9, 9, 0),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(6),
-                        boxShadow: const [BoxShadow(color: Color(0x33000000), blurRadius: 18, offset: Offset(0, 8))],
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SizedBox(
-                            width: 280,
-                            height: 280,
-                            child: ClipRRect(borderRadius: BorderRadius.circular(3), child: _photoWithMarks(280, 280)),
-                          ),
-                          SizedBox(
-                            height: 34,
-                            child: Center(
-                              child: Text(
-                                _caption,
-                                style: _body(
-                                  13,
-                                  const Color(0xFF3A3F45),
-                                  FontWeight.w600,
-                                ).copyWith(fontStyle: FontStyle.italic, letterSpacing: 0.3),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                  Expanded(
+                    child: Text(
+                      _when,
+                      style: _body(10, soft, FontWeight.w600).copyWith(letterSpacing: 1.4),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  // Washi tape on the two top corners.
-                  Positioned(left: 22, top: -8, child: _tape(accent, -0.6)),
-                  Positioned(right: 22, top: -8, child: _tape(AppColors.gold, 0.55)),
-                  // A round sticker that sums the plate up.
-                  Positioned(right: -6, bottom: 22, child: _sticker(_badge(total), accent)),
+                  _wordmark(ink, 16),
                 ],
               ),
-            ),
-            const SizedBox(height: 14),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                Text('≈ ${total.kcal.round()} kcal', style: _sport(34, ink)),
-                const Spacer(),
-                Text(tr('Estimates'), style: _body(9.5, soft)),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                _pastel(tr('Protein'), _g(total.protein), tint(accent), deep(accent)),
-                const SizedBox(width: 8),
-                _pastel(tr('Carbs'), _g(total.carbs), tint(AppColors.gold), deep(AppColors.gold)),
-                const SizedBox(width: 8),
-                _pastel(tr('Fibre'), _g(total.fiber), tint(AppColors.accent), deep(AppColors.accent)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            for (final item in _shown)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 5),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        item.name,
-                        style: _body(12, ink, FontWeight.w600),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Text('${item.macros.kcal.round()} kcal', style: _body(11, soft, FontWeight.w600)),
-                  ],
+              const SizedBox(height: 18),
+              // The photo in a white frame.
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 26, offset: Offset(0, 6))],
+                ),
+                child: AspectRatio(
+                  aspectRatio: 1,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: LayoutBuilder(builder: (context, c) => _photoWithMarks(c.maxWidth, c.maxHeight)),
+                  ),
                 ),
               ),
-          ],
+              const SizedBox(height: 22),
+              Text(tr('Total energy'), style: _body(10, soft, FontWeight.w600).copyWith(letterSpacing: 1.4)),
+              const SizedBox(height: 2),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text('≈ ${total.kcal.round()} kcal', style: _sport(32, ink)),
+                  const Spacer(),
+                  Text(tr('Estimates'), style: _body(9.5, soft)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  _pastel(tr('Protein'), _g(total.protein), tint(accent), deep(accent)),
+                  const SizedBox(width: 8),
+                  _pastel(tr('Carbs'), _g(total.carbs), tint(accent), deep(accent)),
+                  const SizedBox(width: 8),
+                  _pastel(tr('Fibre'), _g(total.fiber), tint(accent), deep(accent)),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Container(height: 1, color: AppColors.stroke),
+              const SizedBox(height: 10),
+              for (final item in _shown)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          item.name,
+                          style: _body(12, ink, FontWeight.w600),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Text(item.portion, style: _body(10.5, soft), maxLines: 1),
+                      const SizedBox(width: 12),
+                      SizedBox(
+                        width: 58,
+                        child: Text(
+                          '${item.macros.kcal.round()} kcal',
+                          style: _body(11, ink, FontWeight.w600),
+                          textAlign: TextAlign.right,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
-
-  /// A friendly line for the bottom of the print.
-  String get _caption => switch (snap.meal) {
-    MealType.breakfast => tr('Breakfast, sorted.'),
-    MealType.lunch => tr('Lunch, sorted.'),
-    MealType.snack => tr('Snack o\'clock.'),
-    MealType.dinner => tr('Dinner, done right.'),
-  };
-
-  /// What the sticker says about the plate (plain description, not advice).
-  static String _badge(Macros m) {
-    if (m.kcal > 0 && m.protein * 4 / m.kcal >= 0.2) return tr('HIGH PROTEIN');
-    if (m.fiber >= 8) return tr('FIBRE RICH');
-    if (m.kcal > 0 && m.kcal < 400) return tr('LIGHT MEAL');
-    return tr('HOME STYLE');
-  }
-
-  static Widget _tape(Color color, double angle) => Transform.rotate(
-    angle: angle,
-    child: Container(
-      width: 62,
-      height: 20,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.55),
-        borderRadius: BorderRadius.circular(2),
-        boxShadow: const [BoxShadow(color: Color(0x14000000), blurRadius: 2, offset: Offset(0, 1))],
-      ),
-    ),
-  );
-
-  static Widget _sticker(String text, Color color) => Transform.rotate(
-    angle: 0.22,
-    child: Container(
-      width: 78,
-      height: 78,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: color,
-        border: Border.all(color: Colors.white, width: 3),
-        boxShadow: const [BoxShadow(color: Color(0x40000000), blurRadius: 10, offset: Offset(0, 4))],
-      ),
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(8),
-      child: Text(text, textAlign: TextAlign.center, style: _sport(12.5).copyWith(height: 1.0, letterSpacing: 0.4)),
-    ),
-  );
 
   static Widget _pastel(String label, String value, Color bg, Color fg) => Expanded(
     child: Container(
@@ -789,26 +739,4 @@ class _Brackets extends CustomPainter {
 
   @override
   bool shouldRepaint(_Brackets old) => old.color != color;
-}
-
-/// A soft dotted paper background.
-class _Dots extends CustomPainter {
-  const _Dots(this.paper, this.dot);
-
-  final Color paper;
-  final Color dot;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    canvas.drawRect(Offset.zero & size, Paint()..color = paper);
-    final p = Paint()..color = dot;
-    for (var y = 10.0; y < size.height; y += 18) {
-      for (var x = (y ~/ 18).isEven ? 10.0 : 19.0; x < size.width; x += 18) {
-        canvas.drawCircle(Offset(x, y), 1.4, p);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(_Dots old) => old.paper != paper || old.dot != dot;
 }

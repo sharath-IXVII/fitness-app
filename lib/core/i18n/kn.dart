@@ -627,4 +627,5 @@ const kannada = <String, String>{
   'FIBRE RICH': 'ನಾರಿನಂಶ ಹೆಚ್ಚು',
   'LIGHT MEAL': 'ಹಗುರ ಊಟ',
   'HOME STYLE': 'ಮನೆ ಶೈಲಿ',
+  'Total energy': 'ಒಟ್ಟು ಶಕ್ತಿ',
 };

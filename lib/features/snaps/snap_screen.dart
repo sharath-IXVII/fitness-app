@@ -21,6 +21,7 @@ import 'snap_share_backend.dart';
 import 'snap_share_providers.dart';
 import 'snaps_providers.dart';
 import 'widgets/snap_card.dart';
+import '../arcs/arc_providers.dart' show themeSeasonProvider;
 
 /// Which snap to show; [photo] skips reading the file when the photo was
 /// just taken (it may still be being written).
@@ -246,7 +247,7 @@ class _SnapScreenState extends ConsumerState<SnapScreen> {
                           borderRadius: BorderRadius.circular(22),
                           child: RepaintBoundary(
                             key: _boundary,
-                            child: SnapCard(snap: snap, photo: _photo),
+                            child: SnapCard(snap: snap, photo: _photo, weather: ref.watch(themeSeasonProvider).effect),
                           ),
                         ),
                       ),

@@ -36,10 +36,11 @@ void main() {
           }
           if ((e.bpm - bpm).abs() > 3) {
             bad++;
-            if (worst.length < 12)
+            if (worst.length < 12) {
               worst.add(
                 '$bpm noise $noise seed $seed -> ${e.bpm.toStringAsFixed(1)} conf ${e.confidence.toStringAsFixed(2)}',
               );
+            }
           }
         }
       }

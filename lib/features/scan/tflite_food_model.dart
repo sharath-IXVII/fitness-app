@@ -11,8 +11,21 @@ import 'tflite_food_detector.dart';
 /// Loads the bundled food model; null when there is none. A trained food
 /// detector (exact boxes around each dish) is used when the build has one;
 /// otherwise the dish classifier, which marks rough areas.
-Future<Future<List<(String, double, Rect?)>> Function(Uint8List)?> loadFoodModel() async =>
-    (await TfliteFoodDetector.load())?.detect ?? (await TfliteFoodRecognizer.load())?.classify;
+Future<Future<List<(String, double, Rect?)>> Function(Uint8List)?> loadFoodModel() async {
+  final detector = await TfliteFoodDetector.load();
+  final classifier = await TfliteFoodRecognizer.load();
+  if (detector == null) return classifier?.classify;
+  return (Uint8List image) async {
+    try {
+      final found = await detector.detect(image);
+      if (found.isNotEmpty || classifier == null) return found;
+    } catch (e) {
+      debugPrint('food detector failed, using the classifier: $e');
+      if (classifier == null) rethrow;
+    }
+    return classifier.classify(image);
+  };
+}
 
 /// Recognises the food in a photo, entirely on the phone. Free, offline and
 /// private: the photo never leaves the device.

@@ -85,9 +85,10 @@ class TfliteFoodDetector {
     final outs = _interpreter.getOutputTensors();
     final anchors = _anchors;
     if (anchors != null) {
-      _interpreter.runForMultipleInputs([
+      // Outputs are read from the tensors directly below.
+      _interpreter.runInference([
         [pixels],
-      ], {});
+      ]);
       final bi = outs.indexWhere((t) => t.shape.last == 4);
       final si = 1 - bi;
       List<double> values(Tensor t) {

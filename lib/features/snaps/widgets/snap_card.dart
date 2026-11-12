@@ -26,7 +26,7 @@ enum SnapStyle {
 }
 
 class SnapCard extends StatelessWidget {
-  const SnapCard({super.key, required this.snap, this.photo, this.style = SnapStyle.night});
+  const SnapCard({super.key, required this.snap, this.photo, this.style = SnapStyle.polaroid});
 
   final SnapStyle style;
 
@@ -392,8 +392,12 @@ class SnapCard extends StatelessWidget {
   /// A light, warm card: the photo as a tilted print, the numbers below.
   Widget _polaroid() {
     final total = snap.total;
-    const paper = Color(0xFFF6F1E9), ink = Color(0xFF1E2329), soft = Color(0xFF6B7178);
+    // The app's current (seasonal) palette, so the card matches the app.
+    final paper = Color.lerp(AppColors.background, AppColors.primarySoft, 0.45)!;
+    final ink = AppColors.textPrimary, soft = AppColors.textSecondary;
     final accent = AppColors.primary;
+    Color tint(Color c) => Color.lerp(AppColors.surface, c, 0.24)!;
+    Color deep(Color c) => Color.lerp(c, Colors.black, 0.35)!;
     return ColoredBox(
       color: paper,
       child: Padding(
@@ -445,11 +449,11 @@ class SnapCard extends StatelessWidget {
             const SizedBox(height: 10),
             Row(
               children: [
-                _pastel(tr('Protein'), _g(total.protein), const Color(0xFFDCEFFA), const Color(0xFF1F6E96)),
+                _pastel(tr('Protein'), _g(total.protein), tint(accent), deep(accent)),
                 const SizedBox(width: 8),
-                _pastel(tr('Carbs'), _g(total.carbs), const Color(0xFFFCEBD0), const Color(0xFF9A6413)),
+                _pastel(tr('Carbs'), _g(total.carbs), tint(AppColors.gold), deep(AppColors.gold)),
                 const SizedBox(width: 8),
-                _pastel(tr('Fibre'), _g(total.fiber), const Color(0xFFDDF3E2), const Color(0xFF2E7A40)),
+                _pastel(tr('Fibre'), _g(total.fiber), tint(AppColors.accent), deep(AppColors.accent)),
               ],
             ),
             const SizedBox(height: 12),

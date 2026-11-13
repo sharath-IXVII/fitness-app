@@ -21,7 +21,7 @@ extension ArcLock on Season {
     Season.winter => 'break the ice',
     Season.spring => 'let it bloom',
     Season.summer => 'let the sun shine',
-    Season.monsoon => 'make it rain',
+    Season.monsoon => 'break the storm',
   };
 
   String get lockedLabel => switch (this) {
@@ -380,7 +380,6 @@ class _CellPainter extends CustomPainter {
   void _unlocked(Canvas canvas, Size size) {
     final fill = p.heat[(count + 1).clamp(2, 4)];
     canvas.drawRect(Offset.zero & size, Paint()..color = fill);
-    if (season == Season.monsoon) _bolt(canvas, size);
     if (count == 5) {
       // Perfect day: a small star in the corner.
       _star(canvas, Offset(size.width * 0.8, size.height * 0.2), size.width * 0.12, p.energyLight);
@@ -505,48 +504,35 @@ class _CellPainter extends CustomPainter {
     canvas.drawCircle(c, r, Paint()..color = color);
   }
 
-  /// Thunder Arc: a soft grey-blue tile with a cloud; rain starts with each
-  /// goal (3 makes it rain).
+  /// Thunder Arc: a plain grey-blue tile with a small bolt in the corner.
+  /// It grows darker with each goal, like a storm building, until it breaks.
   void _soil(Canvas canvas, Size size) {
-    _tile(canvas, size, const [Color(0xFFF4F6FB), Color(0xFFDCE2F0), Color(0xFFC8D1E6)], const Color(0xFFAAB6D6));
-    final w = size.width, h = size.height;
-    final cloud = Paint()..color = const Color(0xFF96A5C8);
-    final c = Offset(w * 0.6, h * 0.46), s = w * 0.27;
-    for (final (dx, dy, r) in [(-0.45, 0.1, 0.32), (0.0, -0.08, 0.42), (0.45, 0.1, 0.32)]) {
-      canvas.drawCircle(c + Offset(dx * s, dy * s), r * s, cloud);
-    }
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTRB(c.dx - 0.75 * s, c.dy + 0.05 * s, c.dx + 0.75 * s, c.dy + 0.42 * s),
-        Radius.circular(0.18 * s),
-      ),
-      cloud,
-    );
-    final drop = Paint()
-      ..color = const Color(0xFF5A8CDC)
-      ..strokeWidth = math.max(1, w * 0.04)
-      ..strokeCap = StrokeCap.round;
-    for (var k = 0; k < [0, 3, 6][count.clamp(0, 2)]; k++) {
-      final x = c.dx - s * 0.55 + (k % 3) * s * 0.55 + (k ~/ 3) * s * 0.25;
-      final y = c.dy + s * 0.62 + (k ~/ 3) * h * 0.11;
-      canvas.drawLine(Offset(x, y), Offset(x - w * 0.04, y + h * 0.1), drop);
-    }
+    const shades = [
+      [Color(0xFFF4F6FB), Color(0xFFDCE2F0), Color(0xFFC8D1E6)],
+      [Color(0xFFDDE3F0), Color(0xFFC3CCE2), Color(0xFFAAB6D4)],
+      [Color(0xFFBFC9E0), Color(0xFFA2AFCE), Color(0xFF8796BC)],
+    ];
+    const borders = [Color(0xFFAAB6D6), Color(0xFF93A1C6), Color(0xFF7584B0)];
+    final k = count.clamp(0, 2);
+    _tile(canvas, size, shades[k], borders[k]);
+    _bolt(canvas, size, scale: 1.25, color: const Color(0xFFF2B705));
   }
 
-  /// A small lightning bolt in the top-left corner, clear of the date.
-  void _bolt(Canvas canvas, Size size) {
-    final w = size.width, h = size.height;
+  /// A small lightning bolt in the bottom-right corner.
+  void _bolt(Canvas canvas, Size size, {double scale = 1, Color color = const Color(0xFFFFD650)}) {
+    final w = size.width * scale, h = size.height * scale;
+    final o = Offset(size.width - w * 0.36, size.height - h * 0.46);
     canvas.drawPath(
       Path()
-        ..moveTo(w * 0.2, h * 0.06)
-        ..lineTo(w * 0.09, h * 0.27)
-        ..lineTo(w * 0.17, h * 0.27)
-        ..lineTo(w * 0.11, h * 0.42)
-        ..lineTo(w * 0.27, h * 0.2)
-        ..lineTo(w * 0.19, h * 0.2)
-        ..lineTo(w * 0.26, h * 0.06)
+        ..moveTo(o.dx + w * 0.15, o.dy)
+        ..lineTo(o.dx + w * 0.03, o.dy + h * 0.22)
+        ..lineTo(o.dx + w * 0.11, o.dy + h * 0.22)
+        ..lineTo(o.dx + w * 0.05, o.dy + h * 0.38)
+        ..lineTo(o.dx + w * 0.22, o.dy + h * 0.15)
+        ..lineTo(o.dx + w * 0.14, o.dy + h * 0.15)
+        ..lineTo(o.dx + w * 0.21, o.dy)
         ..close(),
-      Paint()..color = const Color(0xFFFFD650),
+      Paint()..color = color,
     );
   }
 

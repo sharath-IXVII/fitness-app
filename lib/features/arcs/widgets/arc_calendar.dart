@@ -504,7 +504,7 @@ class _CellPainter extends CustomPainter {
     canvas.drawCircle(c, r, Paint()..color = color);
   }
 
-  /// Thunder Arc: a plain grey-blue tile with a small bolt in the corner.
+  /// Thunder Arc: a plain grey-blue tile with a small storm symbol in the corner.
   /// It grows darker with each goal, like a storm building, until it breaks.
   void _soil(Canvas canvas, Size size) {
     const shades = [
@@ -515,24 +515,45 @@ class _CellPainter extends CustomPainter {
     const borders = [Color(0xFFAAB6D6), Color(0xFF93A1C6), Color(0xFF7584B0)];
     final k = count.clamp(0, 2);
     _tile(canvas, size, shades[k], borders[k]);
-    _bolt(canvas, size, scale: 1.25, color: const Color(0xFFF2B705));
+    _storm(canvas, size, dark: k == 2);
   }
 
-  /// A small lightning bolt in the bottom-right corner.
-  void _bolt(Canvas canvas, Size size, {double scale = 1, Color color = const Color(0xFFFFD650)}) {
-    final w = size.width * scale, h = size.height * scale;
-    final o = Offset(size.width - w * 0.36, size.height - h * 0.46);
+  /// A small storm symbol in the bottom-right corner: a rain cloud with
+  /// drops and a little lightning bolt.
+  void _storm(Canvas canvas, Size size, {bool dark = false}) {
+    final w = size.width, h = size.height;
+    final c = Offset(w * 0.64, h * 0.5), s = w * 0.24;
+    final cloud = Paint()..color = dark ? const Color(0xFF6E7DA6) : const Color(0xFF8C9AC0);
+    for (final (dx, dy, r) in [(-0.45, 0.1, 0.34), (0.0, -0.1, 0.44), (0.45, 0.1, 0.34)]) {
+      canvas.drawCircle(c + Offset(dx * s, dy * s), r * s, cloud);
+    }
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTRB(c.dx - 0.78 * s, c.dy + 0.04 * s, c.dx + 0.78 * s, c.dy + 0.44 * s),
+        Radius.circular(0.2 * s),
+      ),
+      cloud,
+    );
+    final drop = Paint()
+      ..color = const Color(0xFF4F86D9)
+      ..strokeWidth = math.max(1, w * 0.035)
+      ..strokeCap = StrokeCap.round;
+    for (final dx in [-0.45, 0.45]) {
+      final x = c.dx + dx * s, y = c.dy + 0.62 * s;
+      canvas.drawLine(Offset(x, y), Offset(x - s * 0.18, y + s * 0.5), drop);
+    }
+    final b = Offset(c.dx - 0.05 * s, c.dy + 0.5 * s);
     canvas.drawPath(
       Path()
-        ..moveTo(o.dx + w * 0.15, o.dy)
-        ..lineTo(o.dx + w * 0.03, o.dy + h * 0.22)
-        ..lineTo(o.dx + w * 0.11, o.dy + h * 0.22)
-        ..lineTo(o.dx + w * 0.05, o.dy + h * 0.38)
-        ..lineTo(o.dx + w * 0.22, o.dy + h * 0.15)
-        ..lineTo(o.dx + w * 0.14, o.dy + h * 0.15)
-        ..lineTo(o.dx + w * 0.21, o.dy)
+        ..moveTo(b.dx + 0.12 * s, b.dy)
+        ..lineTo(b.dx - 0.12 * s, b.dy + 0.38 * s)
+        ..lineTo(b.dx + 0.02 * s, b.dy + 0.38 * s)
+        ..lineTo(b.dx - 0.08 * s, b.dy + 0.68 * s)
+        ..lineTo(b.dx + 0.22 * s, b.dy + 0.26 * s)
+        ..lineTo(b.dx + 0.08 * s, b.dy + 0.26 * s)
+        ..lineTo(b.dx + 0.2 * s, b.dy)
         ..close(),
-      Paint()..color = color,
+      Paint()..color = const Color(0xFFF2B705),
     );
   }
 

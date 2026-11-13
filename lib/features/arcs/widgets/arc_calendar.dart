@@ -5,6 +5,7 @@ import '../../../core/i18n/i18n.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart' show DateFormat;
 
 import '../../../core/theme/app_colors.dart';
@@ -564,7 +565,8 @@ class _CellPainter extends CustomPainter {
     final tp = TextPainter(
       text: TextSpan(
         text: '$day',
-        style: TextStyle(color: color, fontSize: size.height * 0.48, fontWeight: FontWeight.w800, height: 1),
+        // The app's bundled sport font, so the date looks the same on every phone.
+        style: GoogleFonts.chakraPetch(color: color, fontSize: size.height * 0.5, fontWeight: FontWeight.w700, height: 1),
       ),
       textDirection: TextDirection.ltr,
     )..layout();

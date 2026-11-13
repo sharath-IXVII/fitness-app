@@ -504,41 +504,48 @@ class _CellPainter extends CustomPainter {
     canvas.drawCircle(c, r, Paint()..color = color);
   }
 
-  /// Thunder Arc: a plain grey-blue tile. Each goal done cracks it with a
-  /// lightning-shaped crack, like the winter ice, until the storm breaks.
+  /// Thunder Arc: a plain grey-blue tile. Each goal done strikes it with a
+  /// bright lightning bolt (white with a yellow glow); at two it branches,
+  /// and at three the storm breaks.
   void _soil(Canvas canvas, Size size) {
     _tile(canvas, size, const [Color(0xFFF4F6FB), Color(0xFFDCE2F0), Color(0xFFC8D1E6)], const Color(0xFFAAB6D6));
     if (count == 0) return;
     final w = size.width, h = size.height;
-    final glow = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = math.max(2, w * 0.11)
-      ..strokeJoin = StrokeJoin.miter
-      ..color = const Color(0xFFFFE27A).withValues(alpha: 0.55)
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 1.5);
-    final bolt = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = math.max(1, w * 0.05)
-      ..strokeJoin = StrokeJoin.miter
-      ..color = const Color(0xFF3F5A9E);
-    // A zigzag bolt from top to bottom.
-    final main = Path()
-      ..moveTo(w * 0.62, 0)
-      ..lineTo(w * 0.44, h * 0.36)
-      ..lineTo(w * 0.6, h * 0.42)
-      ..lineTo(w * 0.4, h * 0.78)
-      ..lineTo(w * 0.5, h);
-    canvas.drawPath(main, glow);
-    canvas.drawPath(main, bolt);
+    Path line(List<(double, double)> pts) {
+      final p = Path()..moveTo(w * pts.first.$1, h * pts.first.$2);
+      for (final (x, y) in pts.skip(1)) {
+        p.lineTo(w * x, h * y);
+      }
+      return p;
+    }
+
+    void strike(Path p, double width) {
+      canvas.drawPath(
+        p,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = width * 3.4
+          ..strokeJoin = StrokeJoin.round
+          ..strokeCap = StrokeCap.round
+          ..color = const Color(0xFFFFD750).withValues(alpha: 0.75)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, width * 1.4),
+      );
+      canvas.drawPath(
+        p,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = width
+          ..strokeJoin = StrokeJoin.round
+          ..strokeCap = StrokeCap.round
+          ..color = const Color(0xFFFFFFF5),
+      );
+    }
+
+    final main = math.max(1.2, w * 0.04);
+    strike(line([(0.64, 0.0), (0.52, 0.26), (0.61, 0.3), (0.46, 0.56), (0.56, 0.6), (0.42, 1.0)]), main);
     if (count >= 2) {
-      // It forks: a second branch to the side.
-      final fork = Path()
-        ..moveTo(w * 0.6, h * 0.42)
-        ..lineTo(w * 0.78, h * 0.56)
-        ..lineTo(w * 0.7, h * 0.66)
-        ..lineTo(w, h * 0.8);
-      canvas.drawPath(fork, glow);
-      canvas.drawPath(fork, bolt);
+      strike(line([(0.61, 0.3), (0.75, 0.42), (0.71, 0.48), (0.88, 0.65)]), main * 0.7);
+      strike(line([(0.46, 0.56), (0.32, 0.66), (0.35, 0.73), (0.2, 0.85)]), main * 0.7);
     }
   }
 

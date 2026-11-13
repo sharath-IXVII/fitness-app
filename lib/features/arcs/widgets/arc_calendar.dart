@@ -20,14 +20,14 @@ extension ArcLock on Season {
   String get unlockVerb => switch (this) {
     Season.winter => 'break the ice',
     Season.spring => 'let it bloom',
-    Season.summer => 'put out the fire',
-    Season.monsoon => 'make it bloom',
+    Season.summer => 'let the sun shine',
+    Season.monsoon => 'make it rain',
   };
 
   String get lockedLabel => switch (this) {
     Season.winter => 'Frozen',
     Season.spring => 'Budding',
-    Season.summer => 'On fire',
+    Season.summer => 'Hazy',
     Season.monsoon => 'Dry',
   };
 }
@@ -380,17 +380,7 @@ class _CellPainter extends CustomPainter {
   void _unlocked(Canvas canvas, Size size) {
     final fill = p.heat[(count + 1).clamp(2, 4)];
     canvas.drawRect(Offset.zero & size, Paint()..color = fill);
-    if (season == Season.monsoon) {
-      // A few blades of grass along the bottom.
-      final g = Paint()
-        ..color = Colors.white.withValues(alpha: 0.35)
-        ..strokeWidth = size.width * 0.05
-        ..strokeCap = StrokeCap.round;
-      for (var i = 1; i < 5; i++) {
-        final x = size.width * i / 5;
-        canvas.drawLine(Offset(x, size.height), Offset(x + size.width * 0.04, size.height * 0.82), g);
-      }
-    }
+    if (season == Season.monsoon) _bolt(canvas, size);
     if (count == 5) {
       // Perfect day: a small star in the corner.
       _star(canvas, Offset(size.width * 0.8, size.height * 0.2), size.width * 0.12, p.energyLight);
@@ -495,64 +485,69 @@ class _CellPainter extends CustomPainter {
     canvas.drawCircle(c, w * 0.06, Paint()..color = const Color(0xFFFFE08A));
   }
 
-  /// Summer Arc: a warm peach tile with a soft glow; cool water rises with
-  /// each goal (3 puts the heat out).
+  /// Summer Arc: a pale sunny tile; the sun appears and brightens with
+  /// each goal (3 lets the sun shine).
   void _fire(Canvas canvas, Size size) {
-    _tile(canvas, size, const [Color(0xFFFFF8EE), Color(0xFFFFE4C2), Color(0xFFFFCB8E)], const Color(0xFFF2B36B));
+    _tile(canvas, size, const [Color(0xFFFFFBEC), Color(0xFFFFECBE), Color(0xFFFFDB96)], const Color(0xFFF2BE6E));
+    final w = size.width;
+    final c = Offset(w * 0.66, size.height * 0.66);
+    final r = w * [0.08, 0.11, 0.14][count.clamp(0, 2)];
+    final color = [const Color(0x99FFD678), const Color(0xE6FFBE46), const Color(0xFFFFA028)][count.clamp(0, 2)];
+    final ray = Paint()
+      ..color = color
+      ..strokeWidth = math.max(1, w * 0.045)
+      ..strokeCap = StrokeCap.round;
+    for (var k = 0; k < 8; k++) {
+      final a = k * math.pi / 4;
+      final d = Offset(math.cos(a), math.sin(a));
+      canvas.drawLine(c + d * r * 1.4, c + d * r * 1.95, ray);
+    }
+    canvas.drawCircle(c, r, Paint()..color = color);
+  }
+
+  /// Thunder Arc: a soft grey-blue tile with a cloud; rain starts with each
+  /// goal (3 makes it rain).
+  void _soil(Canvas canvas, Size size) {
+    _tile(canvas, size, const [Color(0xFFF4F6FB), Color(0xFFDCE2F0), Color(0xFFC8D1E6)], const Color(0xFFAAB6D6));
     final w = size.width, h = size.height;
-    canvas.drawCircle(
-      Offset(w * 0.68, h * 0.66),
-      w * 0.22,
-      Paint()
-        ..shader = RadialGradient(colors: [const Color(0xFFFF9E3D).withValues(alpha: 0.75), const Color(0x00FF9E3D)])
-            .createShader(Rect.fromCircle(center: Offset(w * 0.68, h * 0.66), radius: w * 0.22)),
+    final cloud = Paint()..color = const Color(0xFF96A5C8);
+    final c = Offset(w * 0.6, h * 0.46), s = w * 0.27;
+    for (final (dx, dy, r) in [(-0.45, 0.1, 0.32), (0.0, -0.08, 0.42), (0.45, 0.1, 0.32)]) {
+      canvas.drawCircle(c + Offset(dx * s, dy * s), r * s, cloud);
+    }
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTRB(c.dx - 0.75 * s, c.dy + 0.05 * s, c.dx + 0.75 * s, c.dy + 0.42 * s),
+        Radius.circular(0.18 * s),
+      ),
+      cloud,
     );
-    if (count > 0) {
-      final level = h * (1 - count / 3 * 0.75);
-      final water = Path()
-        ..moveTo(0, level)
-        ..quadraticBezierTo(w * 0.25, level - h * 0.05, w * 0.5, level)
-        ..quadraticBezierTo(w * 0.75, level + h * 0.05, w, level)
-        ..lineTo(w, h)
-        ..lineTo(0, h)
-        ..close();
-      canvas.drawPath(water, Paint()..color = const Color(0xFFA9DDF6).withValues(alpha: 0.8));
+    final drop = Paint()
+      ..color = const Color(0xFF5A8CDC)
+      ..strokeWidth = math.max(1, w * 0.04)
+      ..strokeCap = StrokeCap.round;
+    for (var k = 0; k < [0, 3, 6][count.clamp(0, 2)]; k++) {
+      final x = c.dx - s * 0.55 + (k % 3) * s * 0.55 + (k ~/ 3) * s * 0.25;
+      final y = c.dy + s * 0.62 + (k ~/ 3) * h * 0.11;
+      canvas.drawLine(Offset(x, y), Offset(x - w * 0.04, y + h * 0.1), drop);
     }
   }
 
-  /// Thunder Arc: a soft sand tile with a fine crack; a sprout grows with
-  /// each goal (3 makes it bloom).
-  void _soil(Canvas canvas, Size size) {
-    _tile(canvas, size, const [Color(0xFFFAF7F1), Color(0xFFEEE6D8), Color(0xFFDFD1BB)], const Color(0xFFCDBB9C));
+  /// A small lightning bolt in the top-left corner, clear of the date.
+  void _bolt(Canvas canvas, Size size) {
     final w = size.width, h = size.height;
     canvas.drawPath(
       Path()
-        ..moveTo(w * 0.15, h)
-        ..lineTo(w * 0.35, h * 0.7)
-        ..lineTo(w * 0.3, h * 0.5)
-        ..moveTo(w * 0.35, h * 0.7)
-        ..lineTo(w * 0.6, h * 0.62),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = math.max(0.6, w * 0.03)
-        ..color = const Color(0xFFB9A27F),
+        ..moveTo(w * 0.2, h * 0.06)
+        ..lineTo(w * 0.09, h * 0.27)
+        ..lineTo(w * 0.17, h * 0.27)
+        ..lineTo(w * 0.11, h * 0.42)
+        ..lineTo(w * 0.27, h * 0.2)
+        ..lineTo(w * 0.19, h * 0.2)
+        ..lineTo(w * 0.26, h * 0.06)
+        ..close(),
+      Paint()..color = const Color(0xFFFFD650),
     );
-    if (count > 0) {
-      final stem = Paint()
-        ..color = const Color(0xFF4FA76B)
-        ..strokeWidth = math.max(1, w * 0.06)
-        ..strokeCap = StrokeCap.round;
-      final top = h * (count == 1 ? 0.62 : 0.42);
-      canvas.drawLine(Offset(w * 0.7, h * 0.88), Offset(w * 0.7, top), stem);
-      final leaf = Paint()..color = const Color(0xFF6CC28A);
-      canvas.drawOval(Rect.fromCenter(center: Offset(w * 0.6, top + h * 0.06), width: w * 0.2, height: h * 0.1), leaf);
-      if (count >= 2) {
-        canvas.drawOval(
-          Rect.fromCenter(center: Offset(w * 0.8, top + h * 0.02), width: w * 0.2, height: h * 0.1),
-          leaf,
-        );
-      }
-    }
   }
 
   void _number(Canvas canvas, Size size, Color color) {

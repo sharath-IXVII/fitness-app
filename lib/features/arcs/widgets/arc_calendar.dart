@@ -395,7 +395,7 @@ class _CellPainter extends CustomPainter {
       // Perfect day: a small star in the corner.
       _star(canvas, Offset(size.width * 0.8, size.height * 0.2), size.width * 0.12, p.energyLight);
     }
-    _number(canvas, size, Colors.white);
+    _number(canvas, size, fill.computeLuminance() > 0.55 ? p.textPrimary : Colors.white);
   }
 
   void _ice(Canvas canvas, Size size) {
@@ -452,109 +452,103 @@ class _CellPainter extends CustomPainter {
     }
   }
 
-  void _buds(Canvas canvas, Size size) {
+  /// A soft glossy tile like the winter ice: gradient, a shine in the corner
+  /// and a thin border.
+  void _tile(Canvas canvas, Size size, List<Color> colors, Color border) {
     final rect = Offset.zero & size;
     canvas.drawRect(
       rect,
       Paint()
         ..shader = LinearGradient(
-          colors: [p.inkSoft, p.ink],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
+          colors: colors,
         ).createShader(rect),
     );
-    // Three buds across the cell; each goal done opens one into a blossom.
-    final w = size.width, h = size.height;
-    final bud = Paint()..color = const Color(0xFF8E6A79);
-    final bloom = Paint()..color = p.energyLight;
-    for (var i = 0; i < 3; i++) {
-      final c = Offset(w * (0.2 + i * 0.3), h * 0.5);
-      if (i < count) {
-        for (var k = 0; k < 5; k++) {
-          final a = k * 2 * math.pi / 5;
-          canvas.drawCircle(c + Offset(math.cos(a), math.sin(a)) * w * 0.07, w * 0.065, bloom);
-        }
-        canvas.drawCircle(c, w * 0.04, Paint()..color = p.energy);
-      } else {
-        canvas.drawOval(Rect.fromCenter(center: c, width: w * 0.13, height: h * 0.2), bud);
-      }
-    }
+    final shine = Paint()
+      ..color = Colors.white.withValues(alpha: 0.85)
+      ..strokeWidth = size.width * 0.07
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(size.width * 0.2, size.height * 0.22), Offset(size.width * 0.45, size.height * 0.22), shine);
+    canvas.drawLine(Offset(size.width * 0.2, size.height * 0.22), Offset(size.width * 0.2, size.height * 0.4), shine);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect.deflate(0.5), const Radius.circular(5)),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1
+        ..color = border,
+    );
   }
 
-  void _fire(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
+  /// Rise of Revolution: a baby-pink tile; each goal done opens a petal.
+  void _buds(Canvas canvas, Size size) {
+    _tile(canvas, size, const [Color(0xFFFFF6FA), Color(0xFFFFE2EC), Color(0xFFFBCADD)], const Color(0xFFF3B4CB));
+    if (count == 0) return;
     final w = size.width, h = size.height;
-    canvas.drawRect(
-      rect,
-      Paint()
-        ..shader = const LinearGradient(
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-          colors: [Color(0xFFB8360F), Color(0xFFF07A1A), Color(0xFFFFC145)],
-        ).createShader(rect),
-    );
-    // Flame tongues.
-    final flame = Paint()..color = const Color(0xFFFFE08A).withValues(alpha: 0.85);
-    for (final (x, top) in [(0.3, 0.3), (0.62, 0.18), (0.85, 0.42)]) {
-      canvas.drawPath(
-        Path()
-          ..moveTo(w * (x - 0.13), h)
-          ..quadraticBezierTo(w * (x - 0.12), h * (top + 0.25), w * x, h * top)
-          ..quadraticBezierTo(w * (x + 0.12), h * (top + 0.25), w * (x + 0.13), h)
-          ..close(),
-        flame,
-      );
+    final c = Offset(w * 0.62, h * 0.62);
+    final petal = Paint()..color = const Color(0xFFF48FB1).withValues(alpha: 0.9);
+    final petals = count == 1 ? 2 : 5;
+    for (var k = 0; k < petals; k++) {
+      final a = -math.pi / 2 + k * 2 * math.pi / 5;
+      canvas.drawCircle(c + Offset(math.cos(a), math.sin(a)) * w * 0.12, w * 0.085, petal);
     }
-    // Water rises with each goal; at 3 it puts the fire out.
+    canvas.drawCircle(c, w * 0.06, Paint()..color = const Color(0xFFFFE08A));
+  }
+
+  /// Summer Arc: a warm peach tile with a soft glow; cool water rises with
+  /// each goal (3 puts the heat out).
+  void _fire(Canvas canvas, Size size) {
+    _tile(canvas, size, const [Color(0xFFFFF8EE), Color(0xFFFFE4C2), Color(0xFFFFCB8E)], const Color(0xFFF2B36B));
+    final w = size.width, h = size.height;
+    canvas.drawCircle(
+      Offset(w * 0.68, h * 0.66),
+      w * 0.22,
+      Paint()
+        ..shader = RadialGradient(colors: [const Color(0xFFFF9E3D).withValues(alpha: 0.75), const Color(0x00FF9E3D)])
+            .createShader(Rect.fromCircle(center: Offset(w * 0.68, h * 0.66), radius: w * 0.22)),
+    );
     if (count > 0) {
-      final level = h * (1 - count / 3);
+      final level = h * (1 - count / 3 * 0.75);
       final water = Path()
         ..moveTo(0, level)
-        ..quadraticBezierTo(w * 0.25, level - h * 0.06, w * 0.5, level)
-        ..quadraticBezierTo(w * 0.75, level + h * 0.06, w, level)
+        ..quadraticBezierTo(w * 0.25, level - h * 0.05, w * 0.5, level)
+        ..quadraticBezierTo(w * 0.75, level + h * 0.05, w, level)
         ..lineTo(w, h)
         ..lineTo(0, h)
         ..close();
-      canvas.drawPath(water, Paint()..color = const Color(0xFF2EA3D8).withValues(alpha: 0.9));
+      canvas.drawPath(water, Paint()..color = const Color(0xFFA9DDF6).withValues(alpha: 0.8));
     }
   }
 
+  /// Thunder Arc: a soft sand tile with a fine crack; a sprout grows with
+  /// each goal (3 makes it bloom).
   void _soil(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
+    _tile(canvas, size, const [Color(0xFFFAF7F1), Color(0xFFEEE6D8), Color(0xFFDFD1BB)], const Color(0xFFCDBB9C));
     final w = size.width, h = size.height;
-    canvas.drawRect(rect, Paint()..color = const Color(0xFFC9A57A));
-    final crack = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = math.max(0.7, w * 0.035)
-      ..color = const Color(0xFF8E6A43);
     canvas.drawPath(
       Path()
-        ..moveTo(0, h * 0.3)
-        ..lineTo(w * 0.35, h * 0.45)
-        ..lineTo(w * 0.3, h * 0.8)
-        ..moveTo(w * 0.35, h * 0.45)
-        ..lineTo(w * 0.75, h * 0.35)
-        ..lineTo(w, h * 0.55)
-        ..moveTo(w * 0.75, h * 0.35)
-        ..lineTo(w * 0.7, 0),
-      crack,
+        ..moveTo(w * 0.15, h)
+        ..lineTo(w * 0.35, h * 0.7)
+        ..lineTo(w * 0.3, h * 0.5)
+        ..moveTo(w * 0.35, h * 0.7)
+        ..lineTo(w * 0.6, h * 0.62),
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = math.max(0.6, w * 0.03)
+        ..color = const Color(0xFFB9A27F),
     );
-    // A sprout grows with each goal.
     if (count > 0) {
       final stem = Paint()
-        ..color = const Color(0xFF3E9A5B)
-        ..strokeWidth = math.max(1, w * 0.07)
+        ..color = const Color(0xFF4FA76B)
+        ..strokeWidth = math.max(1, w * 0.06)
         ..strokeCap = StrokeCap.round;
-      final top = h * (count == 1 ? 0.62 : 0.38);
-      canvas.drawLine(Offset(w * 0.5, h * 0.88), Offset(w * 0.5, top), stem);
-      final leaf = Paint()..color = const Color(0xFF55B872);
-      canvas.drawOval(
-        Rect.fromCenter(center: Offset(w * 0.38, top + h * 0.06), width: w * 0.24, height: h * 0.12),
-        leaf,
-      );
+      final top = h * (count == 1 ? 0.62 : 0.42);
+      canvas.drawLine(Offset(w * 0.7, h * 0.88), Offset(w * 0.7, top), stem);
+      final leaf = Paint()..color = const Color(0xFF6CC28A);
+      canvas.drawOval(Rect.fromCenter(center: Offset(w * 0.6, top + h * 0.06), width: w * 0.2, height: h * 0.1), leaf);
       if (count >= 2) {
         canvas.drawOval(
-          Rect.fromCenter(center: Offset(w * 0.62, top + h * 0.02), width: w * 0.24, height: h * 0.12),
+          Rect.fromCenter(center: Offset(w * 0.8, top + h * 0.02), width: w * 0.2, height: h * 0.1),
           leaf,
         );
       }
@@ -566,7 +560,12 @@ class _CellPainter extends CustomPainter {
       text: TextSpan(
         text: '$day',
         // The app's bundled sport font, so the date looks the same on every phone.
-        style: GoogleFonts.chakraPetch(color: color, fontSize: size.height * 0.5, fontWeight: FontWeight.w700, height: 1),
+        style: GoogleFonts.chakraPetch(
+          color: color,
+          fontSize: size.height * 0.5,
+          fontWeight: FontWeight.w700,
+          height: 1,
+        ),
       ),
       textDirection: TextDirection.ltr,
     )..layout();

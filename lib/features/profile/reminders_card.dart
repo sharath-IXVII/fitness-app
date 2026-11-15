@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/i18n/i18n.dart';
+import '../../core/reminders.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/glass_card.dart';
 import '../myday/myday_providers.dart';
@@ -86,6 +87,46 @@ class RemindersCard extends ConsumerWidget {
             detail: tr('For the items in your routine'),
             on: myDay,
             onToggle: (v) => ref.read(myDayRemindersProvider.notifier).set(v),
+          ),
+          Divider(height: 1, indent: 12, endIndent: 12, color: AppColors.stroke),
+          // Lets people hear FittArc's own sound, and shows at once if the
+          // phone is blocking notifications.
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 6, 8, 6),
+            child: Row(
+              children: [
+                Icon(Icons.music_note_rounded, color: AppColors.primary, size: 22),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(tr('FittArc sound'), style: Theme.of(context).textTheme.titleSmall),
+                      Text(
+                        tr('Send a sample to hear it'),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final messenger = ScaffoldMessenger.of(context);
+                    final ok = await Reminders.test();
+                    messenger.showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          ok
+                              ? tr('Sent. Check your notifications.')
+                              : tr('Notifications are off for FittArc. Turn them on in your phone settings.'),
+                        ),
+                      ),
+                    );
+                  },
+                  child: Text(tr('Test')),
+                ),
+              ],
+            ),
           ),
         ],
       ),

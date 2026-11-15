@@ -30,6 +30,7 @@ import '../profile/profile_providers.dart';
 import '../steps/steps_providers.dart';
 import '../streaks/daily_log_providers.dart';
 import '../streaks/streak_reminder.dart';
+import '../streaks/widgets/day_celebration.dart';
 import '../training/training_providers.dart';
 import '../training/workout_reminder.dart';
 import '../water/water_providers.dart';
@@ -208,6 +209,25 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
   }
 
+  static const _dayWinKey = 'day.celebrated.v1';
+
+  /// A cheer the moment today reaches 3 goals (the day is unlocked) and again
+  /// at 5 (a perfect day). Once each per day, even if a goal is undone and
+  /// redone.
+  void _celebrateDay(int before, int now) {
+    if (!mounted || now <= before) return;
+    final win = now >= 5 && before < 5 ? DayWin.perfect : (now >= 3 && before < 3 ? DayWin.unlocked : null);
+    if (win == null) return;
+    final prefs = ref.read(sharedPrefsProvider);
+    final today = ref.read(todayProvider).toIso8601String().substring(0, 10);
+    final mark = '$today:${win.name}';
+    final seen = prefs.getStringList(_dayWinKey) ?? const [];
+    if (seen.contains(mark)) return;
+    // Only today's marks are kept.
+    prefs.setStringList(_dayWinKey, [...seen.where((m) => m.startsWith(today)), mark]);
+    showDayCelebration(context, win, ref.read(themeSeasonProvider));
+  }
+
   /// Shows a quiet notice for achievements earned since the last check. The
   /// first time, everything already earned is marked seen without a notice.
   void _announce(Map<BadgeKey, DateTime> earned) {
@@ -277,8 +297,9 @@ class _AppShellState extends ConsumerState<AppShell> {
     );
     ref.listen(trainingProvider.select((t) => t.challenges), (_, _) => _replan());
     // The streak nudge says how many goals are left, and stops at three.
-    ref.listen(dayScoresProvider.select((s) => s[ref.read(todayProvider)]?.count ?? 0), (_, _) {
+    ref.listen(dayScoresProvider.select((s) => s[ref.read(todayProvider)]?.count ?? 0), (prev, next) {
       ref.read(streakReminderProvider.notifier).reschedule();
+      _celebrateDay(prev ?? 0, next);
     });
     ref.listen(todayProvider, (_, _) => _replan());
     // Invite rewards: XP for each friend who joined with this user's code.

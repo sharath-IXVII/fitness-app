@@ -26,6 +26,7 @@ import '../progress/progress_card.dart';
 import '../streaks/daily_log_providers.dart';
 import '../arcs/widgets/arc_widgets.dart';
 import '../friends/friends_providers.dart';
+import 'getting_started.dart';
 import '../steps/steps_providers.dart';
 import '../streaks/domain/daily_log.dart';
 import '../streaks/widgets/consistency_card.dart';
@@ -48,6 +49,8 @@ class HomeScreen extends ConsumerWidget {
     final sections = <Widget>[
       _Header(name: profile.name),
       const SizedBox(height: 18),
+      // For someone new: the first few things worth trying.
+      const GettingStartedCard(),
       // On festival days: "Happy Diwali, Asha!".
       FestivalBanner(name: profile.name),
       // For two weeks after an Arc ends: its Wrapped story.
@@ -372,6 +375,17 @@ class _TaskGrid extends ConsumerWidget {
                     onTap: () {
                       HapticFeedback.mediumImpact();
                       logs.addWater(250);
+                      // A wrong tap is one tap to take back.
+                      ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(
+                          SnackBar(
+                            content: Text(tr('Added 250 ml of water')),
+                            duration: const Duration(seconds: 3),
+                            action: SnackBarAction(label: tr('Undo'), onPressed: () => logs.addWater(-250)),
+                            persist: false,
+                          ),
+                        );
                     },
                   ),
                 ),

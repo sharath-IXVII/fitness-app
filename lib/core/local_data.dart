@@ -8,6 +8,7 @@ import '../features/diet/diet_providers.dart';
 import '../features/snaps/snaps_providers.dart';
 import '../features/clubs/clubs_providers.dart';
 import '../features/health/health_providers.dart';
+import '../features/home/getting_started.dart';
 import '../features/myday/myday_providers.dart';
 import '../features/profile/profile_providers.dart';
 import '../features/progress/progress_providers.dart';
@@ -71,6 +72,7 @@ class LocalData {
       waterSettingsProvider,
       workoutReminderProvider,
       streakReminderProvider,
+      startHiddenProvider,
       reportSettingsProvider,
       stepsProvider,
       badgeVaultProvider,

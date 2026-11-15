@@ -89,6 +89,10 @@ void main() {
 
       await _tap(t, "Let's go");
       await _wait(t, 1500);
+      // Someone new sees their first steps at the top of Today.
+      expect(find.text('Your first steps'), findsOneWidget);
+      expect(find.text('0 / 5'), findsOneWidget);
+      await t.scrollUntilVisible(find.text('Day streak'), 200, scrollable: find.byType(Scrollable).first);
       expect(find.text('Day streak'), findsOneWidget);
       await t.scrollUntilVisible(find.text("TODAY'S SCORE"), 200, scrollable: find.byType(Scrollable).first);
       expect(find.text("TODAY'S SCORE"), findsOneWidget);

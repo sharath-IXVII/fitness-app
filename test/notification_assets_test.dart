@@ -8,7 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   const res = 'android/app/src/main/res';
 
-  for (final name in ['fittarc_routine', 'fittarc_water', 'fittarc_workout']) {
+  for (final name in ['fittarc_routine', 'fittarc_water', 'fittarc_workout', 'fittarc_social']) {
     test('$name.wav is a valid, short, un-clipped sound', () {
       final f = File('$res/raw/$name.wav');
       expect(f.existsSync(), isTrue);

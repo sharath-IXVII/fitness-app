@@ -54,11 +54,14 @@ abstract final class Reminders {
 
   static bool get supported => !kIsWeb && (Platform.isAndroid || Platform.isIOS);
 
-  /// FittArc's own notification look: a short rising chime in the app's
-  /// colours (one sound each for reminders, water and workouts), a distinct
-  /// two-tap vibration, the logo as the picture and the season's colour as
-  /// the accent. The channel ids end in "_v2" because Android keeps a
-  /// channel's sound for good once it exists, so new sounds need new ids.
+  /// FittArc's own notification look and sound. Every kind plays the same
+  /// short tune, two taps and a long note that curves up like an arc, in its
+  /// own voice (bell for reminders, drops for water, a beat for workouts, a
+  /// call and answer for friends), so the app is known by ear. With it: a
+  /// matching two-tap vibration, the logo and the season's colour.
+  /// The sounds are made by tools/sounds/make_sounds.py. Channel ids carry a
+  /// version because Android keeps a channel's sound for good once it
+  /// exists, so new sounds need new ids.
   static final _pattern = Int64List.fromList([0, 90, 60, 90, 60, 240]);
 
   static AndroidNotificationDetails _android({
@@ -90,16 +93,18 @@ abstract final class Reminders {
     actions: actions,
   );
 
-  static NotificationDetails _routine(String body) => NotificationDetails(
+  static NotificationDetails _routine(String body, {bool actions = true}) => NotificationDetails(
     android: _android(
-      id: 'routine_v2',
+      id: 'routine_v3',
       name: 'My Day reminders',
       description: 'Reminders for the items in your daily routine',
       sound: 'fittarc_routine',
       body: body,
-      actions: const [
-        AndroidNotificationAction('done', 'Done ✓', showsUserInterface: false),
-        AndroidNotificationAction('snooze', 'Snooze 10 min', showsUserInterface: false),
+      actions: [
+        if (actions) ...const [
+          AndroidNotificationAction('done', 'Done ✓', showsUserInterface: false),
+          AndroidNotificationAction('snooze', 'Snooze 10 min', showsUserInterface: false),
+        ],
       ],
     ),
     iOS: const DarwinNotificationDetails(),
@@ -107,7 +112,7 @@ abstract final class Reminders {
 
   static NotificationDetails _water(String body) => NotificationDetails(
     android: _android(
-      id: 'water_v2',
+      id: 'water_v3',
       name: 'Water reminders',
       description: 'Regular nudges to drink water',
       sound: 'fittarc_water',
@@ -123,7 +128,7 @@ abstract final class Reminders {
 
   static NotificationDetails _workout(String body) => NotificationDetails(
     android: _android(
-      id: 'workout_v2',
+      id: 'workout_v3',
       name: 'Workout reminders',
       description: 'A daily nudge for your workout or 30-day challenge',
       sound: 'fittarc_workout',
@@ -134,10 +139,10 @@ abstract final class Reminders {
 
   static NotificationDetails _club(String body) => NotificationDetails(
     android: _android(
-      id: 'club_v1',
-      name: 'Club challenges',
-      description: 'Reminders before a club challenge starts',
-      sound: 'fittarc_workout',
+      id: 'club_v2',
+      name: 'Friends and clubs',
+      description: 'Club challenges and nudges from your team',
+      sound: 'fittarc_social',
       body: body,
     ),
     iOS: const DarwinNotificationDetails(),
@@ -145,7 +150,7 @@ abstract final class Reminders {
 
   static NotificationDetails _report(String body) => NotificationDetails(
     android: _android(
-      id: 'report_v1',
+      id: 'report_v2',
       name: 'Daily report',
       description: 'Your day in FittArc, every evening',
       sound: 'fittarc_routine',
@@ -157,7 +162,7 @@ abstract final class Reminders {
 
   static NotificationDetails _streak(String body) => NotificationDetails(
     android: _android(
-      id: 'streak_v1',
+      id: 'streak_v2',
       name: 'Streak reminders',
       description: 'An evening nudge when today\'s streak is still open',
       sound: 'fittarc_routine',
@@ -234,6 +239,22 @@ abstract final class Reminders {
     );
   }
 
+  /// A sample notification right now, so people can hear FittArc's sound
+  /// and see that notifications are allowed. False if they are blocked.
+  static Future<bool> test() async {
+    if (!supported) return false;
+    if (!await requestPermission()) return false;
+    const body = 'This is how FittArc sounds. Reminders, water, workouts and friends each have their own voice.';
+    await _plugin.show(
+      id: _reportId + 2,
+      title: 'FittArc is ready 🔔',
+      body: body,
+      notificationDetails: _routine(body, actions: false),
+      payload: jsonEncode({'type': 'test'}),
+    );
+    return true;
+  }
+
   /// The evening daily report, every day at [minuteOfDay].
   static Future<void> scheduleDailyReport({required int minuteOfDay, required bool enabled}) async {
     if (!supported) return;
@@ -304,9 +325,19 @@ abstract final class Reminders {
       final launch = await _plugin.getNotificationAppLaunchDetails();
       if (launch?.didNotificationLaunchApp == true) _opened(launch!.notificationResponse?.payload);
     } catch (_) {}
-    // The first version's channels had the phone's default sound; remove them.
+    // Channels from earlier versions kept their old sounds; remove them.
     final android = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-    for (final old in const ['routine', 'water', 'workout']) {
+    for (final old in const [
+      'routine',
+      'water',
+      'workout',
+      'routine_v2',
+      'water_v2',
+      'workout_v2',
+      'club_v1',
+      'report_v1',
+      'streak_v1',
+    ]) {
       try {
         await android?.deleteNotificationChannel(channelId: old);
       } catch (_) {}

@@ -833,4 +833,8 @@ const hindi = <String, String>{
   'from wake-up to bedtime': 'उठने से सोने तक',
   'My Day reminders': 'मेरा दिन रिमाइंडर',
   'For the items in your routine': 'आपकी दिनचर्या की चीज़ों के लिए',
+  'Minutes': 'मिनट',
+  'kcal on this plate': 'इस थाली में kcal',
+  "Couldn't find your location. Try again outside.": 'आपकी जगह नहीं मिली। बाहर जाकर फिर कोशिश करें।',
+  "Couldn't load clubs. Check your internet and try again.": 'क्लब लोड नहीं हुए। इंटरनेट जाँचें और फिर कोशिश करें।',
 };

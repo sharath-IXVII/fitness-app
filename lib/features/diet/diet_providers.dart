@@ -45,7 +45,10 @@ class MealLogNotifier extends Notifier<List<MealEntry>> {
     final total = totalOf(next);
     await ref
         .read(dailyLogsProvider.notifier)
-        .update((l) => l.copyWith(mealsLogged: mealsCovered(next), proteinG: total.protein.round()));
+        .update(
+          (l) => l.copyWith(mealsLogged: mealsCovered(next), proteinG: total.protein.round()),
+          date: _day,
+        );
   }
 
   static String newId() => DateTime.now().microsecondsSinceEpoch.toRadixString(36);

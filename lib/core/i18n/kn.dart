@@ -844,4 +844,6 @@ const kannada = <String, String>{
   'from wake-up to bedtime': 'ಎದ್ದಾಗಿನಿಂದ ಮಲಗುವವರೆಗೆ',
   'My Day reminders': 'ನನ್ನ ದಿನ ರಿಮೈಂಡರ್‌ಗಳು',
   'For the items in your routine': 'ನಿಮ್ಮ ದಿನಚರಿಯ ಅಂಶಗಳಿಗೆ',
+  'Minutes': 'ನಿಮಿಷಗಳು',
+  'kcal on this plate': 'ಈ ತಟ್ಟೆಯಲ್ಲಿ kcal',
 };

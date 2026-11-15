@@ -237,12 +237,22 @@ class _WeekCard extends StatelessWidget {
       ),
     );
     return GlassCard(
-      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
-      child: Row(
+      padding: const EdgeInsets.fromLTRB(8, 10, 8, 14),
+      child: Column(
         children: [
-          stat(Icons.bolt_rounded, '$workouts', 'Workouts'),
-          stat(Icons.timer_outlined, '$minutes', 'Minutes'),
-          stat(Icons.local_fire_department_rounded, '$kcal', 'kcal'),
+          // Says what the numbers cover; without it they read as all-time.
+          Text(
+            tr('This week').toUpperCase(),
+            style: text.labelSmall?.copyWith(color: AppColors.textTertiary, letterSpacing: 1.2),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              stat(Icons.bolt_rounded, '$workouts', tr('Workouts')),
+              stat(Icons.timer_outlined, '$minutes', tr('Minutes')),
+              stat(Icons.local_fire_department_rounded, '$kcal', 'kcal'),
+            ],
+          ),
         ],
       ),
     );

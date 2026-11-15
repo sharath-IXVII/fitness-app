@@ -96,8 +96,8 @@ const privacySections = <(String, String)>[
         'turn this on in the food scanner, each meal you log sends a small cut-out (at most 256 pixels) of every dish '
         'with the dish name you confirmed and how sure the app was, to Cloud Firestore (Google), linked to your '
         'account id. We use these only to train FittArc\'s food recognition. The full photo, your location and any '
-        'other details are never sent. You can turn it off at any time; to have samples you already shared deleted, '
-        'write to support@fittarc.in.',
+        'other details are never sent. You can turn it off at any time. Samples you shared are deleted when you '
+        'delete your account; to have them deleted without deleting your account, write to support@fittarc.in.',
   ),
   (
     'Steps, activity and location',
@@ -114,7 +114,7 @@ const privacySections = <(String, String)>[
   (
     'Deleting your data',
     'Use "Delete account" in your profile (tap your picture on Today) to permanently delete your sign-in, your '
-        'progress backup, your Friends profile, friend list and challenges, your club memberships and messages (and clubs you started), and all FittArc data on the phone. You can also email us '
+        'progress backup, your Friends profile, friend list and challenges, your club memberships and messages (and clubs you started), any food samples you shared, and all FittArc data on the phone. You can also email us '
         'to have your account deleted.',
   ),
   ('Children', 'FittArc is not directed at children under 13.'),

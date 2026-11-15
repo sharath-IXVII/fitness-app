@@ -54,6 +54,27 @@ final foodSampleSenderProvider = Provider<Future<void> Function(Uint8List photo,
   };
 });
 
+/// Deletes every sample this account shared (used when the account is
+/// deleted); null without a real account.
+final foodSamplesDeleterProvider = Provider<Future<void> Function(String uid)?>((ref) {
+  if (ref.watch(authServiceProvider) is! FirebaseAuthService) return null;
+  final db = FirebaseFirestore.instance;
+  return (uid) => deleteFoodSamples(db, uid);
+});
+
+/// Removes [uid]'s samples in batches until none are left.
+Future<void> deleteFoodSamples(FirebaseFirestore db, String uid) async {
+  while (true) {
+    final page = await db.collection('foodSamples').where('uid', isEqualTo: uid).limit(200).get();
+    if (page.docs.isEmpty) return;
+    final batch = db.batch();
+    for (final d in page.docs) {
+      batch.delete(d.reference);
+    }
+    await batch.commit();
+  }
+}
+
 /// Cut-outs (JPEG, at most 256 px a side) of each box on the upright centre
 /// square of [bytes]; the whole square for a null box. Null entries for boxes
 /// that can't be cut.

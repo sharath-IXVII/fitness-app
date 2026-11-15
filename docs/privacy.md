@@ -55,7 +55,7 @@ If you choose to connect a watch, FittArc can read its live heart rate over Blue
 
 Food scanning happens entirely on your phone using a built-in recognition model. Meal photos are kept only on your phone, next to the meal you logged.
 
-**Help improve food recognition (optional, off by default).** If you turn this on in the food scanner, each meal you log sends a small cut-out (at most 256 pixels) of every dish on the plate, with the dish name you confirmed and how sure the app was, to Cloud Firestore (Google), linked to your account id. We use these only to train FittArc's food recognition. The full photo, your location and any other details are never sent. You can turn it off at any time; to have samples you already shared deleted, write to support@fittarc.in.
+**Help improve food recognition (optional, off by default).** If you turn this on in the food scanner, each meal you log sends a small cut-out (at most 256 pixels) of every dish on the plate, with the dish name you confirmed and how sure the app was, to Cloud Firestore (Google), linked to your account id. We use these only to train FittArc's food recognition. The full photo, your location and any other details are never sent. You can turn it off at any time. Samples you shared are deleted when you delete your account; to have them deleted without deleting your account, write to support@fittarc.in.
 
 ## Steps, activity and location
 
@@ -67,7 +67,7 @@ Alarms and reminders are scheduled locally on your phone. No notification conten
 
 ## Deleting your data
 
-Use "Delete account" in your profile (tap your picture on Today) to permanently delete your sign-in, your progress backup, your Friends profile, friend list and challenges, your club memberships and messages (and clubs you started), and all FittArc data on the phone. You can also email us to have your account deleted.
+Use "Delete account" in your profile (tap your picture on Today) to permanently delete your sign-in, your progress backup, your Friends profile, friend list and challenges, your club memberships and messages (and clubs you started), any food samples you shared, and all FittArc data on the phone. You can also email us to have your account deleted.
 
 ## Children
 

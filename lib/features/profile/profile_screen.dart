@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:intl/intl.dart';
 
+import '../scan/food_samples.dart';
 import '../snaps/snap_share_providers.dart';
 import '../teams/teams_providers.dart';
 import '../../core/cloud_backup.dart';
@@ -272,6 +273,15 @@ class ProfileScreen extends ConsumerWidget {
                             });
                           }
                           return;
+                        }
+                        // Food samples shared to improve recognition go too. This
+                        // must never hold up the deletion itself.
+                        final samples = ref.read(foodSamplesDeleterProvider);
+                        final account = ref.read(authProvider)?.uid;
+                        if (samples != null && account != null) {
+                          try {
+                            await samples(account).timeout(const Duration(seconds: 20));
+                          } catch (_) {}
                         }
                         try {
                           // Online data first, while still signed in.

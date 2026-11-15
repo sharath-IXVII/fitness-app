@@ -401,9 +401,11 @@ service cloud.firestore {
     }
 
     // Food samples users chose to share to improve recognition: a small dish
-    // cut-out and the name they confirmed. Write-only; read by the owner from
-    // the console or an admin export for training.
+    // cut-out and the name they confirmed. Nobody else can read them; they
+    // are exported from the console for training. The person who shared a
+    // sample can find and delete it, so deleting an account removes them.
     match /foodSamples/{id} {
+      allow read, delete: if signedIn() && resource.data.uid == me();
       allow create: if signedIn()
         && data().keys().hasOnly(['uid', 'name', 'confidence', 'image', 'at'])
         && data().uid == me()

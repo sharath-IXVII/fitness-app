@@ -434,6 +434,10 @@ test('food samples: only with your own id, small, and nobody can read them back'
   await assertFails(setDoc(doc(as('asha'), 'foodSamples/f3'), sample({ image: Bytes.fromUint8Array(new Uint8Array(200000)) })));
   await assertFails(setDoc(doc(as('asha'), 'foodSamples/f4'), sample({ confidence: 'sure' })));
   await assertFails(setDoc(doc(as('asha'), 'foodSamples/f5'), sample({ location: 'Bengaluru' })));
-  await assertFails(getDoc(doc(as('asha'), 'foodSamples/f1')));
-  await assertFails(deleteDoc(doc(as('asha'), 'foodSamples/f1')));
+  // Only the person who shared a sample can see or delete it (account deletion).
+  await assertFails(getDoc(doc(as('ravi'), 'foodSamples/f1')));
+  await assertFails(deleteDoc(doc(as('ravi'), 'foodSamples/f1')));
+  await assertFails(getDocs(collection(as('ravi'), 'foodSamples')));
+  await assertSucceeds(getDocs(query(collection(as('asha'), 'foodSamples'), where('uid', '==', 'asha'))));
+  await assertSucceeds(deleteDoc(doc(as('asha'), 'foodSamples/f1')));
 });

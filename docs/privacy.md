@@ -17,7 +17,7 @@ You sign in with Google. Firebase Authentication (Google) stores your email addr
 
 ## Progress backup
 
-So that your hard-earned levels, badges and streaks survive a lost phone or a reinstall, Cloud Firestore (Google) stores, under your account only: your profile (name, age, gender, height, weight, goal, activity level, diet and wake and sleep times), one entry per day (workout done, water, steps, meals logged and protein), the badges you have earned, the date you started and your water goal. Only you can read it; it is used to restore your progress when you sign in on a new phone, and nothing else. It is deleted when you delete your account.
+So that your hard-earned levels, badges and streaks survive a lost phone or a reinstall, Cloud Firestore (Google) stores, under your account only: your profile (name, age, gender, height, weight, goal, activity level, diet and wake and sleep times), one entry per day (workout done, water, steps, meals logged and protein), the badges you have earned, the date you started, your water goal, your bonus XP, a summary of the runs, walks and rides you tracked (type, date, time, distance and split times, never the route) and the waist, neck and hip measurements you typed into the body check. Only you can read it; it is used to restore your progress when you sign in on a new phone, and nothing else. It is deleted when you delete your account.
 
 ## Friends and challenges
 
@@ -29,7 +29,7 @@ If you create or join a club, Cloud Firestore stores the club's name, descriptio
 
 ## Teams and snaps to friends
 
-If you join a team streak, Cloud Firestore stores the team name, its members' names and, for each day, which members hit their goals (nothing else about the day). If you send a food snap to friends inside FittArc, a small picture of the snap and a short caption are stored for the friends you pick and deleted after 24 hours. Runs, walks and rides you track on your own, and your body-check measurements, stay on your phone.
+If you join a team streak, Cloud Firestore stores the team name, its members' names and, for each day, which members hit their goals (nothing else about the day). If you send a food snap to friends inside FittArc, a small picture of the snap and a short caption are stored for the friends you pick and deleted after 24 hours. The route of a run, walk or ride you track on your own stays on your phone.
 
 ## Data stored on your phone
 

@@ -12,7 +12,9 @@ import '../features/myday/myday_providers.dart';
 import '../features/profile/profile_providers.dart';
 import '../features/progress/progress_providers.dart';
 import '../features/steps/steps_providers.dart';
+import '../features/report/report_providers.dart';
 import '../features/streaks/daily_log_providers.dart';
+import '../features/streaks/streak_reminder.dart';
 import '../features/training/training_providers.dart';
 import '../features/training/workout_reminder.dart';
 import '../features/water/water_providers.dart';
@@ -68,6 +70,8 @@ class LocalData {
       routinesProvider,
       waterSettingsProvider,
       workoutReminderProvider,
+      streakReminderProvider,
+      reportSettingsProvider,
       stepsProvider,
       badgeVaultProvider,
       waterGoalProvider,

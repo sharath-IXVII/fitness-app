@@ -644,14 +644,16 @@ const kannada = <String, String>{
   'min': 'ನಿಮಿಷ',
   'Calm minutes this week': 'ಈ ವಾರದ ಶಾಂತ ನಿಮಿಷಗಳು',
   'Breathing rate': 'ಉಸಿರಾಟದ ದರ',
-  'Sit still and breathe normally. Tap the circle each time you breathe in, for one minute.': 'ಸ್ಥಿರವಾಗಿ ಕುಳಿತು ಸಾಮಾನ್ಯವಾಗಿ ಉಸಿರಾಡಿ. ಒಂದು ನಿಮಿಷ, ನೀವು ಉಸಿರು ಒಳಗೆಳೆದಾಗಲೆಲ್ಲಾ ವೃತ್ತವನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.',
+  'Sit still and breathe normally. Tap the circle each time you breathe in, for one minute.':
+      'ಸ್ಥಿರವಾಗಿ ಕುಳಿತು ಸಾಮಾನ್ಯವಾಗಿ ಉಸಿರಾಡಿ. ಒಂದು ನಿಮಿಷ, ನೀವು ಉಸಿರು ಒಳಗೆಳೆದಾಗಲೆಲ್ಲಾ ವೃತ್ತವನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ.',
   'Tap': 'ಟ್ಯಾಪ್',
   's left': 'ಸೆ ಉಳಿದಿದೆ',
   'breaths a minute': 'ಉಸಿರು / ನಿಮಿಷ',
   'to start': 'ಪ್ರಾರಂಭಿಸಲು',
   'Too few taps to count. Try again.': 'ಎಣಿಸಲು ಟ್ಯಾಪ್‌ಗಳು ಕಡಿಮೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
   'Finish now': 'ಈಗ ಮುಗಿಸಿ',
-  'For your own tracking, not a medical measurement. Compare your own readings over time, taken the same way.': 'ನಿಮ್ಮ ಸ್ವಂತ ಟ್ರ್ಯಾಕಿಂಗ್‌ಗಾಗಿ, ವೈದ್ಯಕೀಯ ಅಳತೆ ಅಲ್ಲ. ಒಂದೇ ರೀತಿಯಲ್ಲಿ ತೆಗೆದ ನಿಮ್ಮ ಓದುಗಳನ್ನು ಕಾಲಾನಂತರದಲ್ಲಿ ಹೋಲಿಸಿ.',
+  'For your own tracking, not a medical measurement. Compare your own readings over time, taken the same way.':
+      'ನಿಮ್ಮ ಸ್ವಂತ ಟ್ರ್ಯಾಕಿಂಗ್‌ಗಾಗಿ, ವೈದ್ಯಕೀಯ ಅಳತೆ ಅಲ್ಲ. ಒಂದೇ ರೀತಿಯಲ್ಲಿ ತೆಗೆದ ನಿಮ್ಮ ಓದುಗಳನ್ನು ಕಾಲಾನಂತರದಲ್ಲಿ ಹೋಲಿಸಿ.',
   'Recent': 'ಇತ್ತೀಚಿನವು',
   'Check-in saved.': 'ಚೆಕ್-ಇನ್ ಉಳಿಸಲಾಗಿದೆ.',
   'Mood & energy': 'ಮನಸ್ಥಿತಿ ಮತ್ತು ಶಕ್ತಿ',
@@ -668,29 +670,43 @@ const kannada = <String, String>{
   'Your heart, breath, mood, body and food, in one place.': 'ನಿಮ್ಮ ಹೃದಯ, ಉಸಿರು, ಮನಸ್ಥಿತಿ, ದೇಹ ಮತ್ತು ಆಹಾರ, ಒಂದೇ ಕಡೆ.',
   'Help improve food recognition': 'ಆಹಾರ ಗುರುತಿಸುವಿಕೆ ಸುಧಾರಿಸಲು ಸಹಾಯ ಮಾಡಿ',
   'Shares a small cut-out of each dish with the name you confirm. Never the full photo or your location. You can turn this off any time.': 'ನೀವು ದೃಢೀಕರಿಸಿದ ಹೆಸರಿನೊಂದಿಗೆ ಪ್ರತಿ ಖಾದ್ಯದ ಸಣ್ಣ ಕಟ್-ಔಟ್ ಹಂಚಿಕೊಳ್ಳುತ್ತದೆ. ಪೂರ್ಣ ಫೋಟೋ ಅಥವಾ ನಿಮ್ಮ ಸ್ಥಳ ಎಂದಿಗೂ ಅಲ್ಲ. ಯಾವಾಗ ಬೇಕಾದರೂ ಆಫ್ ಮಾಡಬಹುದು.',
-  'A bit slower than typical. Sleep, focus and practice all help.': 'ಸಾಮಾನ್ಯಕ್ಕಿಂತ ಸ್ವಲ್ಪ ನಿಧಾನ. ನಿದ್ರೆ, ಏಕಾಗ್ರತೆ ಮತ್ತು ಅಭ್ಯಾಸ ಸಹಾಯ ಮಾಡುತ್ತವೆ.',
-  'A general fitness reference for your own tracking, not a medical assessment.': 'ನಿಮ್ಮ ಸ್ವಂತ ಟ್ರ್ಯಾಕಿಂಗ್‌ಗಾಗಿ ಸಾಮಾನ್ಯ ಫಿಟ್‌ನೆಸ್ ಉಲ್ಲೇಖ, ವೈದ್ಯಕೀಯ ಮೌಲ್ಯಮಾಪನ ಅಲ್ಲ.',
+  'A bit slower than typical. Sleep, focus and practice all help.':
+      'ಸಾಮಾನ್ಯಕ್ಕಿಂತ ಸ್ವಲ್ಪ ನಿಧಾನ. ನಿದ್ರೆ, ಏಕಾಗ್ರತೆ ಮತ್ತು ಅಭ್ಯಾಸ ಸಹಾಯ ಮಾಡುತ್ತವೆ.',
+  'A general fitness reference for your own tracking, not a medical assessment.':
+      'ನಿಮ್ಮ ಸ್ವಂತ ಟ್ರ್ಯಾಕಿಂಗ್‌ಗಾಗಿ ಸಾಮಾನ್ಯ ಫಿಟ್‌ನೆಸ್ ಉಲ್ಲೇಖ, ವೈದ್ಯಕೀಯ ಮೌಲ್ಯಮಾಪನ ಅಲ್ಲ.',
   'As exact as your taps: missing one breath changes the result by about 1. Sit still for a minute first, and breathe without thinking about it.': 'ನಿಮ್ಮ ಟ್ಯಾಪ್‌ಗಳಷ್ಟೇ ನಿಖರ: ಒಂದು ಉಸಿರು ತಪ್ಪಿದರೆ ಫಲಿತಾಂಶ ಸುಮಾರು 1 ಬದಲಾಗುತ್ತದೆ. ಮೊದಲು ಒಂದು ನಿಮಿಷ ಸ್ಥಿರವಾಗಿ ಕುಳಿತು, ಯೋಚಿಸದೆ ಉಸಿರಾಡಿ.',
-  'Ask someone to take a photo from 2–3 m away, phone held level, your whole body and the paper in the photo.': '2–3 ಮೀ ದೂರದಿಂದ, ಫೋನ್ ಸಮತಟ್ಟಾಗಿ ಹಿಡಿದು, ನಿಮ್ಮ ಪೂರ್ಣ ದೇಹ ಮತ್ತು ಕಾಗದ ಬರುವಂತೆ ಯಾರಾದರೂ ಫೋಟೋ ತೆಗೆಯಲಿ.',
-  'Balance can improve quickly with a few minutes of practice a day.': 'ದಿನಕ್ಕೆ ಕೆಲವು ನಿಮಿಷಗಳ ಅಭ್ಯಾಸದಿಂದ ಸಮತೋಲನ ಬೇಗ ಸುಧಾರಿಸಬಹುದು.',
-  'Drag each line to its spot. Blue: the paper. Orange: head and floor.': 'ಪ್ರತಿ ಗೆರೆಯನ್ನು ಅದರ ಜಾಗಕ್ಕೆ ಎಳೆಯಿರಿ. ನೀಲಿ: ಕಾಗದ. ಕಿತ್ತಳೆ: ತಲೆ ಮತ್ತು ನೆಲ.',
-  'Hold the phone flat against your chest. Stand on one leg and tap Stop (or put your foot down) when you lose balance. Up to 60 seconds.': 'ಫೋನ್ ಅನ್ನು ಎದೆಗೆ ಸಮತಟ್ಟಾಗಿ ಹಿಡಿಯಿರಿ. ಒಂದು ಕಾಲಿನ ಮೇಲೆ ನಿಂತು, ಸಮತೋಲನ ತಪ್ಪಿದಾಗ ನಿಲ್ಲಿಸಿ ಒತ್ತಿ. 60 ಸೆಕೆಂಡ್‌ವರೆಗೆ.',
-  'If this is closer, update it in your profile for more accurate calories and stride length.': 'ಇದು ಹೆಚ್ಚು ಸರಿಯಾಗಿದ್ದರೆ, ಹೆಚ್ಚು ನಿಖರ ಕ್ಯಾಲೊರಿ ಮತ್ತು ಹೆಜ್ಜೆ ಉದ್ದಕ್ಕಾಗಿ ಪ್ರೊಫೈಲ್‌ನಲ್ಲಿ ಬದಲಿಸಿ.',
+  'Ask someone to take a photo from 2–3 m away, phone held level, your whole body and the paper in the photo.':
+      '2–3 ಮೀ ದೂರದಿಂದ, ಫೋನ್ ಸಮತಟ್ಟಾಗಿ ಹಿಡಿದು, ನಿಮ್ಮ ಪೂರ್ಣ ದೇಹ ಮತ್ತು ಕಾಗದ ಬರುವಂತೆ ಯಾರಾದರೂ ಫೋಟೋ ತೆಗೆಯಲಿ.',
+  'Balance can improve quickly with a few minutes of practice a day.':
+      'ದಿನಕ್ಕೆ ಕೆಲವು ನಿಮಿಷಗಳ ಅಭ್ಯಾಸದಿಂದ ಸಮತೋಲನ ಬೇಗ ಸುಧಾರಿಸಬಹುದು.',
+  'Drag each line to its spot. Blue: the paper. Orange: head and floor.':
+      'ಪ್ರತಿ ಗೆರೆಯನ್ನು ಅದರ ಜಾಗಕ್ಕೆ ಎಳೆಯಿರಿ. ನೀಲಿ: ಕಾಗದ. ಕಿತ್ತಳೆ: ತಲೆ ಮತ್ತು ನೆಲ.',
+  'Hold the phone flat against your chest. Stand on one leg and tap Stop (or put your foot down) when you lose balance. Up to 60 seconds.':
+      'ಫೋನ್ ಅನ್ನು ಎದೆಗೆ ಸಮತಟ್ಟಾಗಿ ಹಿಡಿಯಿರಿ. ಒಂದು ಕಾಲಿನ ಮೇಲೆ ನಿಂತು, ಸಮತೋಲನ ತಪ್ಪಿದಾಗ ನಿಲ್ಲಿಸಿ ಒತ್ತಿ. 60 ಸೆಕೆಂಡ್‌ವರೆಗೆ.',
+  'If this is closer, update it in your profile for more accurate calories and stride length.':
+      'ಇದು ಹೆಚ್ಚು ಸರಿಯಾಗಿದ್ದರೆ, ಹೆಚ್ಚು ನಿಖರ ಕ್ಯಾಲೊರಿ ಮತ್ತು ಹೆಜ್ಜೆ ಉದ್ದಕ್ಕಾಗಿ ಪ್ರೊಫೈಲ್‌ನಲ್ಲಿ ಬದಲಿಸಿ.',
   'Many adults breathe about 12–20 times a minute when resting. Slower, calm breathing often comes with relaxation and fitness. Compare your own results over time.': 'ಅನೇಕ ವಯಸ್ಕರು ವಿಶ್ರಾಂತಿಯಲ್ಲಿ ನಿಮಿಷಕ್ಕೆ ಸುಮಾರು 12–20 ಬಾರಿ ಉಸಿರಾಡುತ್ತಾರೆ. ನಿಧಾನ, ಶಾಂತ ಉಸಿರಾಟ ಹೆಚ್ಚಾಗಿ ವಿಶ್ರಾಂತಿ ಮತ್ತು ಫಿಟ್‌ನೆಸ್ ಜೊತೆ ಬರುತ್ತದೆ. ನಿಮ್ಮ ಫಲಿತಾಂಶಗಳನ್ನು ಕಾಲಾನಂತರ ಹೋಲಿಸಿ.',
   'Phone screens and touch add about 20–60 ms, so compare your results on the same phone. The average of five taps is steadier than one.': 'ಫೋನ್ ಪರದೆ ಮತ್ತು ಸ್ಪರ್ಶ ಸುಮಾರು 20–60 ms ಸೇರಿಸುತ್ತವೆ, ಆದ್ದರಿಂದ ಒಂದೇ ಫೋನ್‌ನಲ್ಲಿ ಹೋಲಿಸಿ. ಐದು ಟ್ಯಾಪ್‌ಗಳ ಸರಾಸರಿ ಒಂದಕ್ಕಿಂತ ಸ್ಥಿರ.',
   'Shoot from above in good light with the whole plate in frame. Recognition happens on your phone — the full photo is never uploaded.': 'ಉತ್ತಮ ಬೆಳಕಿನಲ್ಲಿ ಮೇಲಿನಿಂದ, ಪೂರ್ಣ ತಟ್ಟೆ ಬರುವಂತೆ ಫೋಟೋ ತೆಗೆಯಿರಿ. ಗುರುತಿಸುವಿಕೆ ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲೇ — ಪೂರ್ಣ ಫೋಟೋ ಎಂದಿಗೂ ಅಪ್‌ಲೋಡ್ ಆಗುವುದಿಲ್ಲ.',
-  'Stand barefoot with your heels, back and head against the wall, next to the paper.': 'ಕಾಗದದ ಪಕ್ಕ, ಹಿಮ್ಮಡಿ, ಬೆನ್ನು ಮತ್ತು ತಲೆ ಗೋಡೆಗೆ ತಾಗುವಂತೆ ಬರಿಗಾಲಿನಲ್ಲಿ ನಿಲ್ಲಿ.',
-  'Strong balance. Many adults under 60 can hold 30 seconds or more.': 'ಉತ್ತಮ ಸಮತೋಲನ. 60 ವರ್ಷದೊಳಗಿನ ಅನೇಕ ವಯಸ್ಕರು 30 ಸೆಕೆಂಡ್ ಅಥವಾ ಹೆಚ್ಚು ಹಿಡಿಯಬಲ್ಲರು.',
+  'Stand barefoot with your heels, back and head against the wall, next to the paper.':
+      'ಕಾಗದದ ಪಕ್ಕ, ಹಿಮ್ಮಡಿ, ಬೆನ್ನು ಮತ್ತು ತಲೆ ಗೋಡೆಗೆ ತಾಗುವಂತೆ ಬರಿಗಾಲಿನಲ್ಲಿ ನಿಲ್ಲಿ.',
+  'Strong balance. Many adults under 60 can hold 30 seconds or more.':
+      'ಉತ್ತಮ ಸಮತೋಲನ. 60 ವರ್ಷದೊಳಗಿನ ಅನೇಕ ವಯಸ್ಕರು 30 ಸೆಕೆಂಡ್ ಅಥವಾ ಹೆಚ್ಚು ಹಿಡಿಯಬಲ್ಲರು.',
   'Take off your shoes and stand with your heels against the wall.': 'ಶೂ ತೆಗೆದು, ಹಿಮ್ಮಡಿ ಗೋಡೆಗೆ ತಾಗುವಂತೆ ನಿಲ್ಲಿ.',
-  'Tape an A4 sheet (29.7 cm tall, standing upright) on a wall, around your chest height.': 'ಒಂದು A4 ಹಾಳೆಯನ್ನು (29.7 ಸೆಂ ಎತ್ತರ, ನೇರವಾಗಿ) ಎದೆಯ ಎತ್ತರದಲ್ಲಿ ಗೋಡೆಗೆ ಅಂಟಿಸಿ.',
-  'Then move four lines: the top and bottom of the paper, the top of your head and the floor.': 'ನಂತರ ನಾಲ್ಕು ಗೆರೆಗಳನ್ನು ಸರಿಸಿ: ಕಾಗದದ ಮೇಲ್ಭಾಗ ಮತ್ತು ಕೆಳಭಾಗ, ತಲೆಯ ಮೇಲ್ಭಾಗ ಮತ್ತು ನೆಲ.',
+  'Tape an A4 sheet (29.7 cm tall, standing upright) on a wall, around your chest height.':
+      'ಒಂದು A4 ಹಾಳೆಯನ್ನು (29.7 ಸೆಂ ಎತ್ತರ, ನೇರವಾಗಿ) ಎದೆಯ ಎತ್ತರದಲ್ಲಿ ಗೋಡೆಗೆ ಅಂಟಿಸಿ.',
+  'Then move four lines: the top and bottom of the paper, the top of your head and the floor.':
+      'ನಂತರ ನಾಲ್ಕು ಗೆರೆಗಳನ್ನು ಸರಿಸಿ: ಕಾಗದದ ಮೇಲ್ಭಾಗ ಮತ್ತು ಕೆಳಭಾಗ, ತಲೆಯ ಮೇಲ್ಭಾಗ ಮತ್ತು ನೆಲ.',
   'Time is exact to about a tenth of a second. Steadiness comes from the phone\'s motion sensor held to your chest, so compare results taken the same way.': 'ಸಮಯ ಸುಮಾರು ಹತ್ತನೇ ಒಂದು ಸೆಕೆಂಡ್‌ವರೆಗೆ ನಿಖರ. ಸ್ಥಿರತೆ ಎದೆಗೆ ಹಿಡಿದ ಫೋನ್‌ನ ಚಲನ ಸಂವೇದಕದಿಂದ ಬರುತ್ತದೆ, ಆದ್ದರಿಂದ ಒಂದೇ ರೀತಿ ತೆಗೆದ ಫಲಿತಾಂಶಗಳನ್ನು ಹೋಲಿಸಿ.',
-  'Use this as your height in the app to make calories and stride length more accurate.': 'ಕ್ಯಾಲೊರಿ ಮತ್ತು ಹೆಜ್ಜೆ ಉದ್ದ ಹೆಚ್ಚು ನಿಖರವಾಗಲು ಇದನ್ನು ಆ್ಯಪ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಎತ್ತರವಾಗಿ ಬಳಸಿ.',
+  'Use this as your height in the app to make calories and stride length more accurate.':
+      'ಕ್ಯಾಲೊರಿ ಮತ್ತು ಹೆಜ್ಜೆ ಉದ್ದ ಹೆಚ್ಚು ನಿಖರವಾಗಲು ಇದನ್ನು ಆ್ಯಪ್‌ನಲ್ಲಿ ನಿಮ್ಮ ಎತ್ತರವಾಗಿ ಬಳಸಿ.',
   'Usually within 1–3 cm when the paper is flat on the wall at your height, you stand straight against the same wall, and the phone is held level about 2–3 m away. Leaning, shoes or a tilted phone add error.': 'ಕಾಗದ ಗೋಡೆಗೆ ಸಮತಟ್ಟಾಗಿದ್ದು, ನೀವು ಅದೇ ಗೋಡೆಗೆ ನೇರವಾಗಿ ನಿಂತು, ಫೋನ್ 2–3 ಮೀ ದೂರದಲ್ಲಿ ಸಮತಟ್ಟಾಗಿದ್ದರೆ ಸಾಮಾನ್ಯವಾಗಿ 1–3 ಸೆಂ ಒಳಗೆ. ಬಾಗುವುದು, ಶೂ ಅಥವಾ ಓರೆ ಫೋನ್ ದೋಷ ಹೆಚ್ಚಿಸುತ್ತದೆ.',
   'Balance': 'ಸಮತೋಲನ',
   'Bottom of the paper': 'ಕಾಗದದ ಕೆಳಭಾಗ',
-  'Each test ends with a report you can track over time.': 'ಪ್ರತಿ ಪರೀಕ್ಷೆಯ ನಂತರ ವರದಿ ಸಿಗುತ್ತದೆ, ಕಾಲಾನಂತರ ಟ್ರ್ಯಾಕ್ ಮಾಡಬಹುದು.',
-  'Fair balance. With practice most people reach 30 seconds.': 'ಸಾಧಾರಣ ಸಮತೋಲನ. ಅಭ್ಯಾಸದಿಂದ ಹೆಚ್ಚಿನವರು 30 ಸೆಕೆಂಡ್ ತಲುಪುತ್ತಾರೆ.',
+  'Each test ends with a report you can track over time.':
+      'ಪ್ರತಿ ಪರೀಕ್ಷೆಯ ನಂತರ ವರದಿ ಸಿಗುತ್ತದೆ, ಕಾಲಾನಂತರ ಟ್ರ್ಯಾಕ್ ಮಾಡಬಹುದು.',
+  'Fair balance. With practice most people reach 30 seconds.':
+      'ಸಾಧಾರಣ ಸಮತೋಲನ. ಅಭ್ಯಾಸದಿಂದ ಹೆಚ್ಚಿನವರು 30 ಸೆಕೆಂಡ್ ತಲುಪುತ್ತಾರೆ.',
   'Fix your eyes on one point in front of you.': 'ಮುಂದಿನ ಒಂದು ಬಿಂದುವಿನ ಮೇಲೆ ದೃಷ್ಟಿ ಇಡಿ.',
   'Floor at the heels': 'ಹಿಮ್ಮಡಿಯ ಬಳಿ ನೆಲ',
   'Hold the phone level, at about chest height.': 'ಫೋನ್ ಅನ್ನು ಎದೆ ಎತ್ತರದಲ್ಲಿ ಸಮತಟ್ಟಾಗಿ ಹಿಡಿಯಿರಿ.',
@@ -717,7 +733,8 @@ const kannada = <String, String>{
   'Test again': 'ಮತ್ತೆ ಪರೀಕ್ಷಿಸಿ',
   'Test at the same time of day to see trends.': 'ಪ್ರವೃತ್ತಿ ನೋಡಲು ದಿನದ ಒಂದೇ ಸಮಯದಲ್ಲಿ ಪರೀಕ್ಷಿಸಿ.',
   'Test each leg and practise the weaker one.': 'ಎರಡೂ ಕಾಲುಗಳನ್ನು ಪರೀಕ್ಷಿಸಿ, ದುರ್ಬಲವಾದದ್ದನ್ನು ಅಭ್ಯಾಸ ಮಾಡಿ.',
-  'That doesn\'t look right. Check the four lines and try again.': 'ಇದು ಸರಿಯಾಗಿ ಕಾಣುತ್ತಿಲ್ಲ. ನಾಲ್ಕು ಗೆರೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
+  'That doesn\'t look right. Check the four lines and try again.':
+      'ಇದು ಸರಿಯಾಗಿ ಕಾಣುತ್ತಿಲ್ಲ. ನಾಲ್ಕು ಗೆರೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.',
   'Tips': 'ಸಲಹೆಗಳು',
   'Tiredness and screen brightness change the result.': 'ಆಯಾಸ ಮತ್ತು ಪರದೆಯ ಪ್ರಕಾಶ ಫಲಿತಾಂಶ ಬದಲಿಸುತ್ತವೆ.',
   'Too soon! Tap to try again': 'ತುಂಬಾ ಬೇಗ! ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಲು ಟ್ಯಾಪ್',
@@ -738,9 +755,11 @@ const kannada = <String, String>{
   'taps in': 'ಟ್ಯಾಪ್‌ಗಳು ಇಷ್ಟರಲ್ಲಿ',
   "Today's plates": 'ಇಂದಿನ ತಟ್ಟೆಗಳು',
   'Your heart, breath, body and food, in one place.': 'ನಿಮ್ಮ ಹೃದಯ, ಉಸಿರು, ದೇಹ ಮತ್ತು ಆಹಾರ, ಒಂದೇ ಕಡೆ.',
-  'A minute for your brain. Each game shows your score and best.': 'ಮೆದುಳಿಗೆ ಒಂದು ನಿಮಿಷ. ಪ್ರತಿ ಆಟ ನಿಮ್ಮ ಸ್ಕೋರ್ ಮತ್ತು ಅತ್ಯುತ್ತಮ ತೋರಿಸುತ್ತದೆ.',
+  'A minute for your brain. Each game shows your score and best.':
+      'ಮೆದುಳಿಗೆ ಒಂದು ನಿಮಿಷ. ಪ್ರತಿ ಆಟ ನಿಮ್ಮ ಸ್ಕೋರ್ ಮತ್ತು ಅತ್ಯುತ್ತಮ ತೋರಿಸುತ್ತದೆ.',
   'A very quick, focused mind.': 'ಬಹಳ ವೇಗದ, ಏಕಾಗ್ರ ಮನಸ್ಸು.',
-  'A warm-up score. Memory span grows quickly with practice and good sleep.': 'ಆರಂಭದ ಸ್ಕೋರ್. ಅಭ್ಯಾಸ ಮತ್ತು ಉತ್ತಮ ನಿದ್ರೆಯಿಂದ ನೆನಪಿನ ಶಕ್ತಿ ಬೇಗ ಹೆಚ್ಚುತ್ತದೆ.',
+  'A warm-up score. Memory span grows quickly with practice and good sleep.':
+      'ಆರಂಭದ ಸ್ಕೋರ್. ಅಭ್ಯಾಸ ಮತ್ತು ಉತ್ತಮ ನಿದ್ರೆಯಿಂದ ನೆನಪಿನ ಶಕ್ತಿ ಬೇಗ ಹೆಚ್ಚುತ್ತದೆ.',
   'BLUE': 'ನೀಲಿ',
   'Blue': 'ನೀಲಿ',
   'GREEN': 'ಹಸಿರು',
@@ -750,21 +769,25 @@ const kannada = <String, String>{
   'YELLOW': 'ಹಳದಿ',
   'Yellow': 'ಹಳದಿ',
   'Colour clash': 'ಬಣ್ಣದ ಗೊಂದಲ',
-  'Excellent memory span. Most people remember about 5–7 items.': 'ಅತ್ಯುತ್ತಮ ನೆನಪಿನ ಶಕ್ತಿ. ಹೆಚ್ಚಿನವರು ಸುಮಾರು 5–7 ನೆನಪಿಡುತ್ತಾರೆ.',
+  'Excellent memory span. Most people remember about 5–7 items.':
+      'ಅತ್ಯುತ್ತಮ ನೆನಪಿನ ಶಕ್ತಿ. ಹೆಚ್ಚಿನವರು ಸುಮಾರು 5–7 ನೆನಪಿಡುತ್ತಾರೆ.',
   'Find the next number before you tap.': 'ಟ್ಯಾಪ್ ಮಾಡುವ ಮೊದಲು ಮುಂದಿನ ಸಂಖ್ಯೆ ಹುಡುಕಿ.',
   'First game: this is your best.': 'ಮೊದಲ ಆಟ: ಇದೇ ನಿಮ್ಮ ಅತ್ಯುತ್ತಮ.',
   'Focus': 'ಏಕಾಗ್ರತೆ',
-  'Good control: your brain wants to read the word, and you held it back.': 'ಉತ್ತಮ ನಿಯಂತ್ರಣ: ಮೆದುಳು ಪದ ಓದಲು ಬಯಸುತ್ತದೆ, ನೀವು ತಡೆದಿರಿ.',
+  'Good control: your brain wants to read the word, and you held it back.':
+      'ಉತ್ತಮ ನಿಯಂತ್ರಣ: ಮೆದುಳು ಪದ ಓದಲು ಬಯಸುತ್ತದೆ, ನೀವು ತಡೆದಿರಿ.',
   'Good focus. Many people take 20–35 seconds.': 'ಉತ್ತಮ ಏಕಾಗ್ರತೆ. ಅನೇಕರು 20–35 ಸೆಕೆಂಡ್ ತೆಗೆದುಕೊಳ್ಳುತ್ತಾರೆ.',
   'Group them into chunks of three.': 'ಮೂರು ಮೂರರ ಗುಂಪಾಗಿ ನೆನಪಿಡಿ.',
-  'Keep at it: most people get much faster within a few games.': 'ಮುಂದುವರಿಸಿ: ಕೆಲವೇ ಆಟಗಳಲ್ಲಿ ಹೆಚ್ಚಿನವರು ತುಂಬಾ ವೇಗವಾಗುತ್ತಾರೆ.',
+  'Keep at it: most people get much faster within a few games.':
+      'ಮುಂದುವರಿಸಿ: ಕೆಲವೇ ಆಟಗಳಲ್ಲಿ ಹೆಚ್ಚಿನವರು ತುಂಬಾ ವೇಗವಾಗುತ್ತಾರೆ.',
   'Keep your eyes in the middle and spot numbers from the side.': 'ಕಣ್ಣು ಮಧ್ಯದಲ್ಲಿಟ್ಟು ಬದಿಯಿಂದ ಸಂಖ್ಯೆಗಳನ್ನು ಗುರುತಿಸಿ.',
   'Look at the colour, not the letters.': 'ಅಕ್ಷರಗಳಲ್ಲ, ಬಣ್ಣ ನೋಡಿ.',
   'Memory': 'ನೆನಪು',
   'Mind games': 'ಮನಸ್ಸಿನ ಆಟಗಳು',
   'New personal best!': 'ಹೊಸ ವೈಯಕ್ತಿಕ ದಾಖಲೆ!',
   'Points': 'ಅಂಕಗಳು',
-  'Points are right answers minus wrong answers in 30 seconds.': '30 ಸೆಕೆಂಡ್‌ನಲ್ಲಿ ಸರಿ ಉತ್ತರಗಳು ಕಳೆದು ತಪ್ಪು ಉತ್ತರಗಳು = ಅಂಕಗಳು.',
+  'Points are right answers minus wrong answers in 30 seconds.':
+      '30 ಸೆಕೆಂಡ್‌ನಲ್ಲಿ ಸರಿ ಉತ್ತರಗಳು ಕಳೆದು ತಪ್ಪು ಉತ್ತರಗಳು = ಅಂಕಗಳು.',
   'Repeat the pattern': 'ಮಾದರಿಯನ್ನು ಪುನರಾವರ್ತಿಸಿ',
   'Right where most people are: about 5–7 items.': 'ಹೆಚ್ಚಿನವರ ಮಟ್ಟದಲ್ಲೇ: ಸುಮಾರು 5–7.',
   'Round': 'ಸುತ್ತು',
@@ -773,14 +796,19 @@ const kannada = <String, String>{
   'Speed comes after accuracy: aim for no mistakes first.': 'ನಿಖರತೆಯ ನಂತರ ವೇಗ: ಮೊದಲು ತಪ್ಪಿಲ್ಲದೆ ಆಡಿ.',
   'Tap 1 to 25 in order': '1 ರಿಂದ 25 ಕ್ರಮವಾಗಿ ಟ್ಯಾಪ್',
   'Tap 1 to 25 in order, as fast as you can.': '1 ರಿಂದ 25 ಕ್ರಮವಾಗಿ, ಸಾಧ್ಯವಾದಷ್ಟು ವೇಗವಾಗಿ ಟ್ಯಾಪ್ ಮಾಡಿ.',
-  'Tap the colour of the ink, not the word. For example, BLUE written in red: tap Red. You have 30 seconds.': 'ಪದವಲ್ಲ, ಅಕ್ಷರದ ಬಣ್ಣವನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ. ಉದಾ. ಕೆಂಪು ಬಣ್ಣದಲ್ಲಿ ‘ನೀಲಿ’ ಬರೆದಿದ್ದರೆ ಕೆಂಪು ಟ್ಯಾಪ್ ಮಾಡಿ. 30 ಸೆಕೆಂಡ್ ಇದೆ.',
+  'Tap the colour of the ink, not the word. For example, BLUE written in red: tap Red. You have 30 seconds.':
+      'ಪದವಲ್ಲ, ಅಕ್ಷರದ ಬಣ್ಣವನ್ನು ಟ್ಯಾಪ್ ಮಾಡಿ. ಉದಾ. ಕೆಂಪು ಬಣ್ಣದಲ್ಲಿ ‘ನೀಲಿ’ ಬರೆದಿದ್ದರೆ ಕೆಂಪು ಟ್ಯಾಪ್ ಮಾಡಿ. 30 ಸೆಕೆಂಡ್ ಇದೆ.',
   'Tap the ink, not the word': 'ಪದವಲ್ಲ, ಬಣ್ಣ ಟ್ಯಾಪ್',
-  'This one is hard at first. Most people improve fast with practice.': 'ಮೊದಲು ಇದು ಕಷ್ಟ. ಅಭ್ಯಾಸದಿಂದ ಹೆಚ್ಚಿನವರು ಬೇಗ ಸುಧಾರಿಸುತ್ತಾರೆ.',
-  'Time from your first tap to 25, plus 1 second for each wrong tap': 'ಮೊದಲ ಟ್ಯಾಪ್‌ನಿಂದ 25ರವರೆಗೆ ಸಮಯ, ಪ್ರತಿ ತಪ್ಪು ಟ್ಯಾಪ್‌ಗೆ 1 ಸೆಕೆಂಡ್ ಸೇರಿಸಿ',
-  'Watch the tiles light up, then tap them in the same order. Each round adds one more.': 'ಟೈಲ್‌ಗಳು ಬೆಳಗುವುದನ್ನು ನೋಡಿ, ನಂತರ ಅದೇ ಕ್ರಮದಲ್ಲಿ ಟ್ಯಾಪ್ ಮಾಡಿ. ಪ್ರತಿ ಸುತ್ತಿಗೆ ಒಂದು ಹೆಚ್ಚು.',
+  'This one is hard at first. Most people improve fast with practice.':
+      'ಮೊದಲು ಇದು ಕಷ್ಟ. ಅಭ್ಯಾಸದಿಂದ ಹೆಚ್ಚಿನವರು ಬೇಗ ಸುಧಾರಿಸುತ್ತಾರೆ.',
+  'Time from your first tap to 25, plus 1 second for each wrong tap':
+      'ಮೊದಲ ಟ್ಯಾಪ್‌ನಿಂದ 25ರವರೆಗೆ ಸಮಯ, ಪ್ರತಿ ತಪ್ಪು ಟ್ಯಾಪ್‌ಗೆ 1 ಸೆಕೆಂಡ್ ಸೇರಿಸಿ',
+  'Watch the tiles light up, then tap them in the same order. Each round adds one more.':
+      'ಟೈಲ್‌ಗಳು ಬೆಳಗುವುದನ್ನು ನೋಡಿ, ನಂತರ ಅದೇ ಕ್ರಮದಲ್ಲಿ ಟ್ಯಾಪ್ ಮಾಡಿ. ಪ್ರತಿ ಸುತ್ತಿಗೆ ಒಂದು ಹೆಚ್ಚು.',
   'Watch…': 'ನೋಡಿ…',
   'Your best': 'ನಿಮ್ಮ ಅತ್ಯುತ್ತಮ',
-  'Your score is the longest sequence you repeated without a mistake.': 'ತಪ್ಪಿಲ್ಲದೆ ನೀವು ಪುನರಾವರ್ತಿಸಿದ ಅತಿ ಉದ್ದದ ಸರಣಿಯೇ ನಿಮ್ಮ ಸ್ಕೋರ್.',
+  'Your score is the longest sequence you repeated without a mistake.':
+      'ತಪ್ಪಿಲ್ಲದೆ ನೀವು ಪುನರಾವರ್ತಿಸಿದ ಅತಿ ಉದ್ದದ ಸರಣಿಯೇ ನಿಮ್ಮ ಸ್ಕೋರ್.',
   'Your turn': 'ನಿಮ್ಮ ಸರದಿ',
   'points': 'ಅಂಕಗಳು',
   'right': 'ಸರಿ',
@@ -788,4 +816,32 @@ const kannada = <String, String>{
   'tiles': 'ಟೈಲ್‌ಗಳು',
   'was': 'ಹಿಂದೆ',
   'wrong': 'ತಪ್ಪು',
+  'Wrapped': 'ಸಾರಾಂಶ',
+  'Sign in to add friends': 'ಸ್ನೇಹಿತರನ್ನು ಸೇರಿಸಲು ಸೈನ್ ಇನ್ ಆಗಿ',
+  'Friends, challenges and the leaderboard need a Google account and an internet connection.':
+      'ಸ್ನೇಹಿತರು, ಸವಾಲುಗಳು ಮತ್ತು ಲೀಡರ್‌ಬೋರ್ಡ್‌ಗೆ Google ಖಾತೆ ಮತ್ತು ಇಂಟರ್ನೆಟ್ ಬೇಕು.',
+  'Open profile': 'ಪ್ರೊಫೈಲ್ ತೆರೆಯಿರಿ',
+  'Sign in to join clubs': 'ಕ್ಲಬ್ ಸೇರಲು ಸೈನ್ ಇನ್ ಆಗಿ',
+  'No activities yet': 'ಇನ್ನೂ ಯಾವುದೇ ಚಟುವಟಿಕೆ ಇಲ್ಲ',
+  'Start one': 'ಒಂದನ್ನು ಪ್ರಾರಂಭಿಸಿ',
+  'Closest': 'ಅತಿ ಹತ್ತಿರ',
+  "TODAY'S SCORE": 'ಇಂದಿನ ಸ್ಕೋರ್',
+  'Good morning': 'ಶುಭೋದಯ',
+  'Good afternoon': 'ನಮಸ್ಕಾರ',
+  'Good evening': 'ಶುಭ ಸಂಜೆ',
+  'Coming up': 'ಮುಂದೆ ಏನಿದೆ',
+  'Set a workout alarm': 'ವರ್ಕೌಟ್ ಅಲಾರಂ ಇಡಿ',
+  'Wake up and move. The camera checks.': 'ಎದ್ದು ಚಲಿಸಿ. ಕ್ಯಾಮೆರಾ ಪರಿಶೀಲಿಸುತ್ತದೆ.',
+  'Completed': 'ಮುಗಿದಿದೆ',
+  'Pending': 'ಬಾಕಿ ಇದೆ',
+  'Streak reminder': 'ಸ್ಟ್ರೀಕ್ ರಿಮೈಂಡರ್',
+  'Only when today still needs goals': 'ಇಂದಿನ ಗುರಿಗಳು ಬಾಕಿ ಇದ್ದಾಗ ಮಾತ್ರ',
+  'Daily report': 'ದಿನದ ವರದಿ',
+  'Your day, every evening': 'ನಿಮ್ಮ ದಿನ, ಪ್ರತಿ ಸಂಜೆ',
+  "Quiet once today's workout is done": 'ಇಂದಿನ ವರ್ಕೌಟ್ ಮುಗಿದ ಮೇಲೆ ಮೌನ',
+  'Water reminders': 'ನೀರಿನ ರಿಮೈಂಡರ್‌ಗಳು',
+  'Every': 'ಪ್ರತಿ',
+  'from wake-up to bedtime': 'ಎದ್ದಾಗಿನಿಂದ ಮಲಗುವವರೆಗೆ',
+  'My Day reminders': 'ನನ್ನ ದಿನ ರಿಮೈಂಡರ್‌ಗಳು',
+  'For the items in your routine': 'ನಿಮ್ಮ ದಿನಚರಿಯ ಅಂಶಗಳಿಗೆ',
 };

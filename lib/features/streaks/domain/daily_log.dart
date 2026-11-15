@@ -79,6 +79,37 @@ class DayScore {
   bool get keepsStreak => count >= 3;
 }
 
+/// The unfinished goal that is nearest to done, with what is still missing
+/// ("300 ml of water"). Null when all five are done. A workout has no
+/// part-way state, so it is suggested only when nothing else has been started.
+({DailyTask task, String left})? closestGoal(DailyLog log, HealthTargets t) {
+  final done = DayScore.of(log, t).completed;
+  String count(int n) => n >= 1000 ? '${(n / 1000).toStringAsFixed(1)}k' : '$n';
+  final open = <(DailyTask, double, String)>[
+    if (!done.contains(DailyTask.water))
+      (DailyTask.water, log.waterMl / t.waterMl, '${t.waterMl - log.waterMl} ml of water'),
+    if (!done.contains(DailyTask.steps)) (DailyTask.steps, log.steps / t.steps, '${count(t.steps - log.steps)} steps'),
+    if (!done.contains(DailyTask.diet))
+      (
+        DailyTask.diet,
+        log.mealsLogged / 3,
+        log.mealsLogged == 2 ? '1 meal to log' : '${3 - log.mealsLogged} meals to log',
+      ),
+    if (!done.contains(DailyTask.protein))
+      (DailyTask.protein, log.proteinG / t.proteinG, '${t.proteinG - log.proteinG} g of protein'),
+    if (!done.contains(DailyTask.workout)) (DailyTask.workout, 0.0, 'one workout'),
+  ];
+  if (open.isEmpty) return null;
+  // The first of equals wins, so the order above breaks ties.
+  var best = open.first;
+  for (final o in open.skip(1)) {
+    if (o.$2 > best.$2) best = o;
+  }
+  // Nothing started yet: a workout is the one goal a single session finishes.
+  if (best.$2 == 0 && !done.contains(DailyTask.workout)) best = open.last;
+  return (task: best.$1, left: best.$3);
+}
+
 DateTime dayOnly(DateTime d) => DateTime(d.year, d.month, d.day);
 
 /// [d] moved by [n] calendar days. Safe across daylight-saving changes,

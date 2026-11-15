@@ -12,6 +12,7 @@ import 'package:intl/intl.dart';
 import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/gradient_button.dart';
+import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/page_background.dart';
 import '../clubs/domain/club_challenge.dart';
 import '../clubs/domain/run_report.dart';
@@ -309,7 +310,13 @@ class ActivityHistoryScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(tr('My activities'))),
       body: PageBackground(
         child: list.isEmpty
-            ? Center(child: Text(tr('Your runs, walks and rides will show here.'), style: text.bodyLarge))
+            ? EmptyState(
+                icon: Icons.directions_run_rounded,
+                title: tr('No activities yet'),
+                body: tr('Your runs, walks and rides will show here.'),
+                action: tr('Start one'),
+                onAction: () => context.go(Routes.training),
+              )
             : ListView(
                 padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                 children: [

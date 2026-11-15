@@ -78,7 +78,7 @@ void main() {
     await _open(t, online: false);
     await t.tap(find.byTooltip('Friends'));
     await _wait(t);
-    expect(find.text('Friends is almost here'), findsOneWidget);
+    expect(find.text('Sign in to add friends'), findsOneWidget);
   });
 
   testWidgets('create a challenge, join one by code, see friends on the leaderboard', (t) async {

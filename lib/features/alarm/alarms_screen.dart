@@ -135,8 +135,8 @@ class _AlarmsScreenState extends ConsumerState<AlarmsScreen> with WidgetsBinding
                 'Emergency? Restart your phone to leave Strict mode.',
               ],
             ),
-            _NextUpBanner(next: ref.watch(nextAlarmProvider)),
-            const SizedBox(height: 16),
+            // With no alarms the card below already says so; one message is enough.
+            if (alarms.isNotEmpty) ...[_NextUpBanner(next: ref.watch(nextAlarmProvider)), const SizedBox(height: 16)],
             if (!_permissionsOk) ...[_PermissionBanner(onFixed: _checkPermissions), const SizedBox(height: 14)],
             if (alarms.isEmpty)
               _EmptyAlarms(onAdd: () => _edit(ref.read(alarmsProvider.notifier).draft(), isNew: true))

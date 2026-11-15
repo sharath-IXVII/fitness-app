@@ -97,7 +97,7 @@ class _ScanFoodScreenState extends ConsumerState<ScanFoodScreen> {
     try {
       img = await ref.read(pickImageProvider)(source);
     } on PlatformException {
-      setState(() => _error = 'Allow camera and photo access in Settings to scan food.');
+      if (mounted) setState(() => _error = 'Allow camera and photo access in Settings to scan food.');
       return;
     }
     if (img == null || !mounted) return;

@@ -40,6 +40,8 @@ abstract final class Reminders {
   static const _clubBase = 500000;
   static const _clubEnd = 510000;
   static const _reportId = 510001;
+  static const _streakBase = 520000;
+  static const _streakEnd = 520100;
 
   /// Days ahead that one-off reminders are scheduled for. They are
   /// re-planned whenever the app opens, so this only matters if the app
@@ -152,6 +154,51 @@ abstract final class Reminders {
     ),
     iOS: const DarwinNotificationDetails(),
   );
+
+  static NotificationDetails _streak(String body) => NotificationDetails(
+    android: _android(
+      id: 'streak_v1',
+      name: 'Streak reminders',
+      description: 'An evening nudge when today\'s streak is still open',
+      sound: 'fittarc_routine',
+      body: body,
+    ),
+    iOS: const DarwinNotificationDetails(),
+  );
+
+  /// Days ahead the streak nudge is planned for. Short on purpose: if the
+  /// app stays closed for days, it goes quiet instead of nagging.
+  static const streakDaysAhead = 3;
+
+  /// One evening nudge a day at [minuteOfDay] while that day's streak is
+  /// still open. [textFor] gives the words per day; null skips the day.
+  static Future<void> scheduleStreak({
+    required int minuteOfDay,
+    required bool enabled,
+    required (String, String)? Function(DateTime day) textFor,
+  }) async {
+    if (!supported) return;
+    await init();
+    await _cancelRange(_streakBase, _streakEnd);
+    if (!enabled) return;
+    final now = tz.TZDateTime.now(tz.local);
+    for (var d = 0; d < streakDaysAhead; d++) {
+      final day = DateTime(now.year, now.month, now.day + d);
+      final at = tz.TZDateTime(tz.local, day.year, day.month, day.day, minuteOfDay ~/ 60, minuteOfDay % 60);
+      if (!at.isAfter(now)) continue;
+      final text = textFor(day);
+      if (text == null) continue;
+      await _plugin.zonedSchedule(
+        id: _streakBase + d,
+        title: text.$1,
+        body: text.$2,
+        scheduledDate: at,
+        notificationDetails: _streak(text.$2),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: jsonEncode({'type': 'streak'}),
+      );
+    }
+  }
 
   /// Replaces club challenge reminders with [items] (time, title, body).
   /// Only future ones, at most 60.

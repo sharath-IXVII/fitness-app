@@ -63,7 +63,7 @@ class HomeScreen extends ConsumerWidget {
         freezes: ref.watch(streakFreezeProvider).freezes,
       ),
       const SizedBox(height: 14),
-      _ScoreCard(score: score),
+      _ScoreCard(score: score, next: closestGoal(log, targets)),
       const SizedBox(height: 12),
       _TaskGrid(log: log, targets: targets, score: score),
       const SizedBox(height: 18),
@@ -72,7 +72,7 @@ class HomeScreen extends ConsumerWidget {
       const SizedBox(height: 10),
       const ActivityQuickRow(),
       const SizedBox(height: 26),
-      const _SectionTitle('Coming up'),
+      _SectionTitle(tr('Coming up')),
       const SizedBox(height: 12),
       const _NextAlarmCard(),
       const SizedBox(height: 12),
@@ -108,9 +108,9 @@ class _Header extends StatelessWidget {
 
   String get _greeting {
     final h = DateTime.now().hour;
-    if (h < 12) return 'Good morning';
-    if (h < 17) return 'Good afternoon';
-    return 'Good evening';
+    if (h < 12) return tr('Good morning');
+    if (h < 17) return tr('Good afternoon');
+    return tr('Good evening');
   }
 
   @override
@@ -160,9 +160,20 @@ class _Header extends StatelessWidget {
 }
 
 class _ScoreCard extends StatelessWidget {
-  const _ScoreCard({required this.score});
+  const _ScoreCard({required this.score, this.next});
 
   final DayScore score;
+
+  /// The goal nearest to done; tapping the card opens it.
+  final ({DailyTask task, String left})? next;
+
+  void _open(BuildContext context) => switch (next?.task) {
+    DailyTask.water => context.push(Routes.water),
+    DailyTask.steps => context.push(Routes.steps),
+    DailyTask.diet || DailyTask.protein => context.go(Routes.diet),
+    DailyTask.workout => context.go(Routes.training),
+    null => null,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -176,6 +187,10 @@ class _ScoreCard extends StatelessWidget {
     };
 
     // Dark "energy" hero card: the sportiest moment on the page.
+    return Pressable(onTap: next == null ? null : () => _open(context), scale: 0.985, child: _card(text, message));
+  }
+
+  Widget _card(TextTheme text, String message) {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -213,11 +228,30 @@ class _ScoreCard extends StatelessWidget {
                   children: [
                     Icon(Icons.bolt_rounded, color: AppColors.energyLight, size: 20),
                     const SizedBox(width: 4),
-                    Text("TODAY'S SCORE", style: text.titleSmall?.copyWith(color: Colors.white, letterSpacing: 1.2)),
+                    Text(
+                      tr("TODAY'S SCORE"),
+                      style: text.titleSmall?.copyWith(color: Colors.white, letterSpacing: 1.2),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 4),
                 Text(message, style: text.bodyMedium?.copyWith(height: 1.4, color: Colors.white70)),
+                if (next case final n?) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          '${tr('Closest')}: ${n.left}',
+                          style: text.labelLarge?.copyWith(color: AppColors.energyLight),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.energyLight),
+                    ],
+                  ),
+                ],
                 const SizedBox(height: 12),
                 Row(
                   children: [
@@ -253,8 +287,8 @@ class _NextAlarmCard extends ConsumerWidget {
     final routines = ref.watch(routinesProvider);
     final String title, subtitle;
     if (next == null) {
-      title = 'Set a workout alarm';
-      subtitle = 'Wake up and move — the camera checks';
+      title = tr('Set a workout alarm');
+      subtitle = tr('Wake up and move. The camera checks.');
     } else {
       final (alarm, at) = next;
       final day = DateUtils.isSameDay(at, DateTime.now()) ? 'Today' : DateFormat.EEEE().format(at);
@@ -355,7 +389,7 @@ class _TaskGrid extends ConsumerWidget {
                   done: score.completed.contains(DailyTask.steps),
                   // Distance walked today, from GPS where it ran and steps × stride elsewhere.
                   caption:
-                      '${(ref.watch(stepsProvider).day.distanceMeters(targets.strideM) / 1000).toStringAsFixed(1)} km today',
+                      '${(ref.watch(stepsProvider).day.distanceMeters(targets.strideM) / 1000).toStringAsFixed(1)} km',
                   action: _QuickAction(
                     label: tr('Track walk'),
                     color: AppColors.steps,
@@ -375,7 +409,7 @@ class _TaskGrid extends ConsumerWidget {
                 child: _TaskTile(
                   onTap: () => context.go(Routes.alarms),
                   title: tr('Workout'),
-                  value: log.workoutDone ? 'Completed' : 'Pending',
+                  value: log.workoutDone ? tr('Completed') : tr('Pending'),
                   progress: log.workoutDone ? 1 : 0,
                   color: AppColors.workout,
                   icon: Icons.fitness_center_rounded,
@@ -517,11 +551,10 @@ class _TaskTile extends StatelessWidget {
                         color: color.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Text(
-                        caption!,
-                        style: text.labelSmall?.copyWith(color: color),
-                        overflow: TextOverflow.fade,
-                        softWrap: false,
+                      // Shrinks rather than cuts off on narrow phones.
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(caption!, style: text.labelSmall?.copyWith(color: color), softWrap: false),
                       ),
                     ),
                   ),

@@ -29,6 +29,7 @@ import '../myday/myday_providers.dart';
 import '../profile/profile_providers.dart';
 import '../steps/steps_providers.dart';
 import '../streaks/daily_log_providers.dart';
+import '../streaks/streak_reminder.dart';
 import '../training/training_providers.dart';
 import '../training/workout_reminder.dart';
 import '../water/water_providers.dart';
@@ -97,6 +98,7 @@ class _AppShellState extends ConsumerState<AppShell> {
   void _replan() {
     ref.read(waterSettingsProvider.notifier).reschedule();
     ref.read(workoutReminderProvider.notifier).reschedule();
+    ref.read(streakReminderProvider.notifier).reschedule();
   }
 
   static const _permIntroKey = 'perm.intro.v1';
@@ -274,6 +276,10 @@ class _AppShellState extends ConsumerState<AppShell> {
       },
     );
     ref.listen(trainingProvider.select((t) => t.challenges), (_, _) => _replan());
+    // The streak nudge says how many goals are left, and stops at three.
+    ref.listen(dayScoresProvider.select((s) => s[ref.read(todayProvider)]?.count ?? 0), (_, _) {
+      ref.read(streakReminderProvider.notifier).reschedule();
+    });
     ref.listen(todayProvider, (_, _) => _replan());
     // Invite rewards: XP for each friend who joined with this user's code.
     ref.listen(inviteesProvider, (_, next) {

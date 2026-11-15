@@ -86,7 +86,7 @@ class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
     if (_index + 1 < _games.length) {
       HapticFeedback.mediumImpact();
       await _progress();
-      setState(() => _index++);
+      if (mounted) setState(() => _index++);
       return;
     }
     HapticFeedback.heavyImpact();

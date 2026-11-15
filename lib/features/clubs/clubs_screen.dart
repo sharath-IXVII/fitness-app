@@ -8,6 +8,7 @@ import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/gradient_button.dart';
+import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/page_background.dart';
 import '../../core/widgets/pressable.dart';
 import '../friends/friends_backend.dart' show FriendsFailure;
@@ -98,11 +99,12 @@ class _ClubsScreenState extends ConsumerState<ClubsScreen> {
       return Scaffold(
         appBar: AppBar(title: Text(tr('Clubs'))),
         body: PageBackground(
-          child: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Text(tr('Sign in with Google to create and join clubs.'), style: text.bodyLarge),
-            ),
+          child: EmptyState(
+            icon: Icons.groups_rounded,
+            title: tr('Sign in to join clubs'),
+            body: tr('Sign in with Google to create and join clubs.'),
+            action: tr('Open profile'),
+            onAction: () => context.push(Routes.profile),
           ),
         ),
       );

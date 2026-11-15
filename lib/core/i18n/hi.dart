@@ -632,14 +632,16 @@ const hindi = <String, String>{
   'min': 'मिनट',
   'Calm minutes this week': 'इस हफ़्ते के शांत मिनट',
   'Breathing rate': 'साँस की दर',
-  'Sit still and breathe normally. Tap the circle each time you breathe in, for one minute.': 'शांत बैठें और सामान्य साँस लें। एक मिनट तक, हर बार साँस अंदर लेते समय गोले पर टैप करें।',
+  'Sit still and breathe normally. Tap the circle each time you breathe in, for one minute.':
+      'शांत बैठें और सामान्य साँस लें। एक मिनट तक, हर बार साँस अंदर लेते समय गोले पर टैप करें।',
   'Tap': 'टैप',
   's left': 'से बाकी',
   'breaths a minute': 'साँस / मिनट',
   'to start': 'शुरू करने के लिए',
   'Too few taps to count. Try again.': 'गिनने के लिए टैप कम हैं। फिर कोशिश करें।',
   'Finish now': 'अभी खत्म करें',
-  'For your own tracking, not a medical measurement. Compare your own readings over time, taken the same way.': 'आपकी अपनी ट्रैकिंग के लिए, मेडिकल माप नहीं। एक ही तरीके से ली गई अपनी रीडिंग समय के साथ मिलाएँ।',
+  'For your own tracking, not a medical measurement. Compare your own readings over time, taken the same way.':
+      'आपकी अपनी ट्रैकिंग के लिए, मेडिकल माप नहीं। एक ही तरीके से ली गई अपनी रीडिंग समय के साथ मिलाएँ।',
   'Recent': 'हाल के',
   'Check-in saved.': 'चेक-इन सेव हुआ।',
   'Mood & energy': 'मूड और ऊर्जा',
@@ -657,29 +659,44 @@ const hindi = <String, String>{
   'Help improve food recognition': 'खाने की पहचान बेहतर बनाने में मदद करें',
   'Shares a small cut-out of each dish with the name you confirm. Never the full photo or your location. You can turn this off any time.': 'आपके पुष्टि किए नाम के साथ हर डिश का छोटा कट-आउट साझा करता है। पूरी फ़ोटो या आपकी लोकेशन कभी नहीं। आप इसे कभी भी बंद कर सकते हैं।',
   'BETA': 'बीटा',
-  'A bit slower than typical. Sleep, focus and practice all help.': 'सामान्य से थोड़ा धीमा। नींद, ध्यान और अभ्यास से मदद मिलती है।',
-  'A general fitness reference for your own tracking, not a medical assessment.': 'आपकी अपनी ट्रैकिंग के लिए सामान्य फिटनेस संदर्भ, मेडिकल जाँच नहीं।',
-  'As exact as your taps: missing one breath changes the result by about 1. Sit still for a minute first, and breathe without thinking about it.': 'आपके टैप जितना सटीक: एक साँस छूटने पर नतीजा लगभग 1 बदलता है। पहले एक मिनट शांत बैठें और बिना सोचे साँस लें।',
-  'Ask someone to take a photo from 2–3 m away, phone held level, your whole body and the paper in the photo.': 'किसी से 2–3 मीटर दूर से फ़ोटो लेने को कहें, फ़ोन सीधा रखें, पूरा शरीर और कागज़ फ़ोटो में हो।',
-  'Balance can improve quickly with a few minutes of practice a day.': 'रोज़ कुछ मिनट के अभ्यास से संतुलन जल्दी सुधर सकता है।',
-  'Drag each line to its spot. Blue: the paper. Orange: head and floor.': 'हर लाइन को उसकी जगह खींचें। नीली: कागज़। नारंगी: सिर और फ़र्श।',
-  'Hold the phone flat against your chest. Stand on one leg and tap Stop (or put your foot down) when you lose balance. Up to 60 seconds.': 'फ़ोन को सीने से सटाकर पकड़ें। एक पैर पर खड़े हों और संतुलन बिगड़ने पर रोकें दबाएँ। 60 सेकंड तक।',
-  'If this is closer, update it in your profile for more accurate calories and stride length.': 'अगर यह ज़्यादा सही है, तो सटीक कैलोरी और कदम की लंबाई के लिए प्रोफ़ाइल में बदलें।',
+  'A bit slower than typical. Sleep, focus and practice all help.':
+      'सामान्य से थोड़ा धीमा। नींद, ध्यान और अभ्यास से मदद मिलती है।',
+  'A general fitness reference for your own tracking, not a medical assessment.':
+      'आपकी अपनी ट्रैकिंग के लिए सामान्य फिटनेस संदर्भ, मेडिकल जाँच नहीं।',
+  'As exact as your taps: missing one breath changes the result by about 1. Sit still for a minute first, and breathe without thinking about it.':
+      'आपके टैप जितना सटीक: एक साँस छूटने पर नतीजा लगभग 1 बदलता है। पहले एक मिनट शांत बैठें और बिना सोचे साँस लें।',
+  'Ask someone to take a photo from 2–3 m away, phone held level, your whole body and the paper in the photo.':
+      'किसी से 2–3 मीटर दूर से फ़ोटो लेने को कहें, फ़ोन सीधा रखें, पूरा शरीर और कागज़ फ़ोटो में हो।',
+  'Balance can improve quickly with a few minutes of practice a day.':
+      'रोज़ कुछ मिनट के अभ्यास से संतुलन जल्दी सुधर सकता है।',
+  'Drag each line to its spot. Blue: the paper. Orange: head and floor.':
+      'हर लाइन को उसकी जगह खींचें। नीली: कागज़। नारंगी: सिर और फ़र्श।',
+  'Hold the phone flat against your chest. Stand on one leg and tap Stop (or put your foot down) when you lose balance. Up to 60 seconds.':
+      'फ़ोन को सीने से सटाकर पकड़ें। एक पैर पर खड़े हों और संतुलन बिगड़ने पर रोकें दबाएँ। 60 सेकंड तक।',
+  'If this is closer, update it in your profile for more accurate calories and stride length.':
+      'अगर यह ज़्यादा सही है, तो सटीक कैलोरी और कदम की लंबाई के लिए प्रोफ़ाइल में बदलें।',
   'Many adults breathe about 12–20 times a minute when resting. Slower, calm breathing often comes with relaxation and fitness. Compare your own results over time.': 'कई वयस्क आराम में प्रति मिनट लगभग 12–20 बार साँस लेते हैं। धीमी, शांत साँस अक्सर आराम और फिटनेस से जुड़ी होती है। अपने नतीजे समय के साथ मिलाएँ।',
   'Phone screens and touch add about 20–60 ms, so compare your results on the same phone. The average of five taps is steadier than one.': 'फ़ोन स्क्रीन और टच लगभग 20–60 ms जोड़ते हैं, इसलिए एक ही फ़ोन पर तुलना करें। पाँच टैप का औसत एक से ज़्यादा स्थिर है।',
   'Shoot from above in good light with the whole plate in frame. Recognition happens on your phone — the full photo is never uploaded.': 'अच्छी रोशनी में ऊपर से, पूरी प्लेट फ़्रेम में रखकर फ़ोटो लें। पहचान आपके फ़ोन पर होती है — पूरी फ़ोटो कभी अपलोड नहीं होती।',
-  'Stand barefoot with your heels, back and head against the wall, next to the paper.': 'कागज़ के पास, एड़ी, पीठ और सिर दीवार से लगाकर नंगे पैर खड़े हों।',
-  'Strong balance. Many adults under 60 can hold 30 seconds or more.': 'अच्छा संतुलन। 60 से कम उम्र के कई वयस्क 30 सेकंड या ज़्यादा टिक पाते हैं।',
+  'Stand barefoot with your heels, back and head against the wall, next to the paper.':
+      'कागज़ के पास, एड़ी, पीठ और सिर दीवार से लगाकर नंगे पैर खड़े हों।',
+  'Strong balance. Many adults under 60 can hold 30 seconds or more.':
+      'अच्छा संतुलन। 60 से कम उम्र के कई वयस्क 30 सेकंड या ज़्यादा टिक पाते हैं।',
   'Take off your shoes and stand with your heels against the wall.': 'जूते उतारें और एड़ी दीवार से लगाकर खड़े हों।',
-  'Tape an A4 sheet (29.7 cm tall, standing upright) on a wall, around your chest height.': 'एक A4 शीट (29.7 सेमी ऊँची, सीधी) सीने की ऊँचाई पर दीवार पर चिपकाएँ।',
-  'Then move four lines: the top and bottom of the paper, the top of your head and the floor.': 'फिर चार लाइनें खिसकाएँ: कागज़ का ऊपर और नीचे, सिर का ऊपर और फ़र्श।',
+  'Tape an A4 sheet (29.7 cm tall, standing upright) on a wall, around your chest height.':
+      'एक A4 शीट (29.7 सेमी ऊँची, सीधी) सीने की ऊँचाई पर दीवार पर चिपकाएँ।',
+  'Then move four lines: the top and bottom of the paper, the top of your head and the floor.':
+      'फिर चार लाइनें खिसकाएँ: कागज़ का ऊपर और नीचे, सिर का ऊपर और फ़र्श।',
   'Time is exact to about a tenth of a second. Steadiness comes from the phone\'s motion sensor held to your chest, so compare results taken the same way.': 'समय लगभग 0.1 सेकंड तक सटीक है। स्थिरता सीने पर रखे फ़ोन के मोशन सेंसर से आती है, इसलिए एक ही तरीके से लिए नतीजे मिलाएँ।',
-  'Use this as your height in the app to make calories and stride length more accurate.': 'कैलोरी और कदम की लंबाई ज़्यादा सटीक करने के लिए इसे ऐप में अपनी ऊँचाई के रूप में इस्तेमाल करें।',
+  'Use this as your height in the app to make calories and stride length more accurate.':
+      'कैलोरी और कदम की लंबाई ज़्यादा सटीक करने के लिए इसे ऐप में अपनी ऊँचाई के रूप में इस्तेमाल करें।',
   'Usually within 1–3 cm when the paper is flat on the wall at your height, you stand straight against the same wall, and the phone is held level about 2–3 m away. Leaning, shoes or a tilted phone add error.': 'जब कागज़ दीवार पर सपाट हो, आप उसी दीवार से सीधे खड़े हों और फ़ोन 2–3 मीटर दूर सीधा हो, तब आमतौर पर 1–3 सेमी के अंदर। झुकना, जूते या टेढ़ा फ़ोन गलती बढ़ाते हैं।',
   'Balance': 'संतुलन',
   'Bottom of the paper': 'कागज़ का नीचे',
-  'Each test ends with a report you can track over time.': 'हर टेस्ट के बाद रिपोर्ट मिलती है, जिसे समय के साथ ट्रैक कर सकते हैं।',
-  'Fair balance. With practice most people reach 30 seconds.': 'ठीक-ठाक संतुलन। अभ्यास से ज़्यादातर लोग 30 सेकंड तक पहुँचते हैं।',
+  'Each test ends with a report you can track over time.':
+      'हर टेस्ट के बाद रिपोर्ट मिलती है, जिसे समय के साथ ट्रैक कर सकते हैं।',
+  'Fair balance. With practice most people reach 30 seconds.':
+      'ठीक-ठाक संतुलन। अभ्यास से ज़्यादातर लोग 30 सेकंड तक पहुँचते हैं।',
   'Fix your eyes on one point in front of you.': 'सामने एक बिंदु पर नज़र टिकाएँ।',
   'Floor at the heels': 'एड़ी के पास फ़र्श',
   'Hold the phone level, at about chest height.': 'फ़ोन को सीने की ऊँचाई पर सीधा पकड़ें।',
@@ -706,7 +723,8 @@ const hindi = <String, String>{
   'Test again': 'फिर से टेस्ट करें',
   'Test at the same time of day to see trends.': 'ट्रेंड देखने के लिए दिन में एक ही समय पर टेस्ट करें।',
   'Test each leg and practise the weaker one.': 'दोनों पैर टेस्ट करें और कमज़ोर वाले का अभ्यास करें।',
-  'That doesn\'t look right. Check the four lines and try again.': 'यह सही नहीं लग रहा। चारों लाइनें जाँचें और फिर कोशिश करें।',
+  'That doesn\'t look right. Check the four lines and try again.':
+      'यह सही नहीं लग रहा। चारों लाइनें जाँचें और फिर कोशिश करें।',
   'Tips': 'सुझाव',
   'Tiredness and screen brightness change the result.': 'थकान और स्क्रीन की रोशनी नतीजा बदलती है।',
   'Too soon! Tap to try again': 'बहुत जल्दी! फिर कोशिश के लिए टैप करें',
@@ -727,9 +745,11 @@ const hindi = <String, String>{
   'taps in': 'टैप, समय',
   "Today's plates": 'आज की प्लेटें',
   'Your heart, breath, body and food, in one place.': 'आपका दिल, साँस, शरीर और खाना, एक ही जगह।',
-  'A minute for your brain. Each game shows your score and best.': 'दिमाग के लिए एक मिनट। हर गेम आपका स्कोर और बेस्ट दिखाता है।',
+  'A minute for your brain. Each game shows your score and best.':
+      'दिमाग के लिए एक मिनट। हर गेम आपका स्कोर और बेस्ट दिखाता है।',
   'A very quick, focused mind.': 'बहुत तेज़, एकाग्र दिमाग।',
-  'A warm-up score. Memory span grows quickly with practice and good sleep.': 'शुरुआती स्कोर। अभ्यास और अच्छी नींद से याददाश्त जल्दी बढ़ती है।',
+  'A warm-up score. Memory span grows quickly with practice and good sleep.':
+      'शुरुआती स्कोर। अभ्यास और अच्छी नींद से याददाश्त जल्दी बढ़ती है।',
   'BLUE': 'नीला',
   'Blue': 'नीला',
   'GREEN': 'हरा',
@@ -739,14 +759,17 @@ const hindi = <String, String>{
   'YELLOW': 'पीला',
   'Yellow': 'पीला',
   'Colour clash': 'रंग की उलझन',
-  'Excellent memory span. Most people remember about 5–7 items.': 'बेहतरीन याददाश्त। ज़्यादातर लोग लगभग 5–7 चीज़ें याद रखते हैं।',
+  'Excellent memory span. Most people remember about 5–7 items.':
+      'बेहतरीन याददाश्त। ज़्यादातर लोग लगभग 5–7 चीज़ें याद रखते हैं।',
   'Find the next number before you tap.': 'टैप से पहले अगला नंबर ढूँढ लें।',
   'First game: this is your best.': 'पहला गेम: यही आपका बेस्ट है।',
   'Focus': 'फ़ोकस',
-  'Good control: your brain wants to read the word, and you held it back.': 'अच्छा नियंत्रण: दिमाग शब्द पढ़ना चाहता है, और आपने उसे रोका।',
+  'Good control: your brain wants to read the word, and you held it back.':
+      'अच्छा नियंत्रण: दिमाग शब्द पढ़ना चाहता है, और आपने उसे रोका।',
   'Good focus. Many people take 20–35 seconds.': 'अच्छा फ़ोकस। कई लोग 20–35 सेकंड लेते हैं।',
   'Group them into chunks of three.': 'तीन-तीन के समूह में याद करें।',
-  'Keep at it: most people get much faster within a few games.': 'लगे रहें: कुछ ही गेम में ज़्यादातर लोग काफ़ी तेज़ हो जाते हैं।',
+  'Keep at it: most people get much faster within a few games.':
+      'लगे रहें: कुछ ही गेम में ज़्यादातर लोग काफ़ी तेज़ हो जाते हैं।',
   'Keep your eyes in the middle and spot numbers from the side.': 'नज़र बीच में रखें और किनारे से नंबर पहचानें।',
   'Look at the colour, not the letters.': 'अक्षर नहीं, रंग देखें।',
   'Memory': 'याददाश्त',
@@ -762,14 +785,19 @@ const hindi = <String, String>{
   'Speed comes after accuracy: aim for no mistakes first.': 'सटीकता के बाद गति: पहले बिना गलती के खेलें।',
   'Tap 1 to 25 in order': '1 से 25 क्रम से टैप करें',
   'Tap 1 to 25 in order, as fast as you can.': '1 से 25 क्रम से, जितनी जल्दी हो सके टैप करें।',
-  'Tap the colour of the ink, not the word. For example, BLUE written in red: tap Red. You have 30 seconds.': 'शब्द नहीं, स्याही का रंग टैप करें। जैसे लाल रंग में ‘नीला’ लिखा हो तो लाल टैप करें। 30 सेकंड हैं।',
+  'Tap the colour of the ink, not the word. For example, BLUE written in red: tap Red. You have 30 seconds.':
+      'शब्द नहीं, स्याही का रंग टैप करें। जैसे लाल रंग में ‘नीला’ लिखा हो तो लाल टैप करें। 30 सेकंड हैं।',
   'Tap the ink, not the word': 'शब्द नहीं, रंग टैप करें',
-  'This one is hard at first. Most people improve fast with practice.': 'यह शुरू में मुश्किल है। अभ्यास से ज़्यादातर लोग जल्दी सुधरते हैं।',
-  'Time from your first tap to 25, plus 1 second for each wrong tap': 'पहले टैप से 25 तक का समय, हर गलत टैप पर 1 सेकंड जोड़कर',
-  'Watch the tiles light up, then tap them in the same order. Each round adds one more.': 'टाइल्स चमकते देखें, फिर उसी क्रम में टैप करें। हर राउंड में एक और जुड़ता है।',
+  'This one is hard at first. Most people improve fast with practice.':
+      'यह शुरू में मुश्किल है। अभ्यास से ज़्यादातर लोग जल्दी सुधरते हैं।',
+  'Time from your first tap to 25, plus 1 second for each wrong tap':
+      'पहले टैप से 25 तक का समय, हर गलत टैप पर 1 सेकंड जोड़कर',
+  'Watch the tiles light up, then tap them in the same order. Each round adds one more.':
+      'टाइल्स चमकते देखें, फिर उसी क्रम में टैप करें। हर राउंड में एक और जुड़ता है।',
   'Watch…': 'देखें…',
   'Your best': 'आपका बेस्ट',
-  'Your score is the longest sequence you repeated without a mistake.': 'बिना गलती दोहराया सबसे लंबा क्रम आपका स्कोर है।',
+  'Your score is the longest sequence you repeated without a mistake.':
+      'बिना गलती दोहराया सबसे लंबा क्रम आपका स्कोर है।',
   'Your turn': 'आपकी बारी',
   'points': 'पॉइंट्स',
   'right': 'सही',
@@ -777,4 +805,32 @@ const hindi = <String, String>{
   'tiles': 'टाइल्स',
   'was': 'पहले',
   'wrong': 'गलत',
+  'Wrapped': 'सार',
+  'Sign in to add friends': 'दोस्त जोड़ने के लिए साइन इन करें',
+  'Friends, challenges and the leaderboard need a Google account and an internet connection.':
+      'दोस्त, चैलेंज और लीडरबोर्ड के लिए Google खाता और इंटरनेट चाहिए।',
+  'Open profile': 'प्रोफ़ाइल खोलें',
+  'Sign in to join clubs': 'क्लब से जुड़ने के लिए साइन इन करें',
+  'No activities yet': 'अभी कोई गतिविधि नहीं',
+  'Start one': 'एक शुरू करें',
+  'Closest': 'सबसे नज़दीक',
+  "TODAY'S SCORE": 'आज का स्कोर',
+  'Good morning': 'सुप्रभात',
+  'Good afternoon': 'नमस्ते',
+  'Good evening': 'शुभ संध्या',
+  'Coming up': 'आगे क्या है',
+  'Set a workout alarm': 'वर्कआउट अलार्म लगाएँ',
+  'Wake up and move. The camera checks.': 'उठें और हिलें-डुलें। कैमरा जाँचता है।',
+  'Completed': 'पूरा हुआ',
+  'Pending': 'बाकी है',
+  'Streak reminder': 'स्ट्रीक रिमाइंडर',
+  'Only when today still needs goals': 'तभी, जब आज के लक्ष्य बाकी हों',
+  'Daily report': 'रोज़ की रिपोर्ट',
+  'Your day, every evening': 'आपका दिन, हर शाम',
+  "Quiet once today's workout is done": 'आज का वर्कआउट होते ही शांत',
+  'Water reminders': 'पानी के रिमाइंडर',
+  'Every': 'हर',
+  'from wake-up to bedtime': 'उठने से सोने तक',
+  'My Day reminders': 'मेरा दिन रिमाइंडर',
+  'For the items in your routine': 'आपकी दिनचर्या की चीज़ों के लिए',
 };

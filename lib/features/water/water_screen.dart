@@ -33,13 +33,13 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
     HapticFeedback.lightImpact();
     _added.add(ml);
     await ref.read(dailyLogsProvider.notifier).addWater(ml);
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   Future<void> _undo() async {
     if (_added.isEmpty) return;
     await ref.read(dailyLogsProvider.notifier).addWater(-_added.removeLast());
-    setState(() {});
+    if (mounted) setState(() {});
   }
 
   Future<void> _custom() async {
@@ -218,8 +218,9 @@ class _WaterScreenState extends ConsumerState<WaterScreen> {
             const SizedBox(height: 14),
             Text(
               custom == null
-                  ? 'Your goal is about 35 ml per kg of body weight, plus extra on active days and in hot months '
-                        '(${season.title}: +${season.waterBoostMl} ml). It changes by itself with the season.'
+                  ? 'Your goal is about 35 ml per kg of body weight, plus extra on active days and in hot months'
+                        '${season.waterBoostMl > 0 ? ' (${season.title}: +${season.waterBoostMl} ml)' : ''}. '
+                        'It changes by itself with the season.'
                   : 'You set this goal yourself. Tap "change" to go back to the automatic one.',
               style: text.bodySmall,
             ),

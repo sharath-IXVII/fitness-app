@@ -32,13 +32,15 @@ class ArcScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(arc.label),
+        title: FittedBox(fit: BoxFit.scaleDown, child: Text(arc.label)),
         actions: [
+          // Short label, so the arc's name beside it is never cut off.
           TextButton.icon(
             onPressed: () => context.push(Routes.wrapped, extra: arc),
-            icon: const Icon(Icons.auto_awesome_rounded),
-            label: Text(tr('Wrapped so far')),
+            icon: const Icon(Icons.auto_awesome_rounded, size: 18),
+            label: Text(tr('Wrapped')),
           ),
+          const SizedBox(width: 4),
         ],
       ),
       body: PageBackground(

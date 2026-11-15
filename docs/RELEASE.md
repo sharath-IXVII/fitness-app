@@ -54,7 +54,7 @@ Before uploading, test the release build on a real phone (`flutter install --rel
 | Privacy policy | Host `docs/privacy.md` at a public URL (GitHub Pages on this repo: Settings → Pages → branch, folder `/docs`). Once the domain is connected, the link is https://fittarc.in/privacy/ |
 | Ads | No ads |
 | App access | Give reviewers a way in: the email and password of a throwaway Google account made for review (sign-in is Google only) |
-| Content rating | Questionnaire: health & fitness, no user-generated content shared with others |
+| Content rating | Questionnaire: health & fitness. Users can exchange content (club chat, snaps to friends): answer yes, and list the report and block tools |
 | Target audience | 13+ (or 18+) |
 | Health apps | Category: fitness / activity tracking, nutrition. Not a medical device |
 | Data safety | See below |
@@ -65,13 +65,7 @@ Before uploading, test the release build on a real phone (`flutter install --rel
 
 ### Data safety answers
 
-| Data type | Collected | Shared | Purpose | Notes |
-|---|---|---|---|---|
-| Email, name, user ID | Yes | No | Account management | Firebase Auth (Google sign-in) |
-| Photos (meal photos) | No, stays on device | No | — | Recognised on the phone; never uploaded |
-| Health & fitness (steps, workouts, water, meals, protein, profile such as weight) | Yes | No | App functionality: backup and restore of progress | Cloud Firestore, per account, deleted with the account |
-| Location | No, stays on device | No | — | Used only during GPS walks |
-| Camera video (workouts) | No, on-device | No | — | ML Kit on-device |
+Use the current list in `docs/store/listing.md` ("Data safety answers" and "Permissions to justify"). It covers the backup, Friends, Clubs, Teams, snaps, optional food samples and location.
 
 Answer these as well: data is encrypted in transit (yes), and users can request deletion (yes: in-app "Delete account").
 
@@ -83,4 +77,4 @@ Answer these as well: data is encrypted in transit (yes), and users can request 
 
 ## 5. After launch
 
-- Watch Firebase Crashlytics. Adding it is a small next step.
+- Watch Firebase Crashlytics (already built in; turn it on in the Firebase console).

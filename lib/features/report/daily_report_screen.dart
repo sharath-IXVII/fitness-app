@@ -359,9 +359,27 @@ class DailyReportCard extends StatelessWidget {
                     ],
                   ),
                 ],
-                const Spacer(),
                 // With plates to show, the tip makes room for them.
-                if (r.tip case final tip? when plates.isEmpty) Text(tip, style: body(11, muted)),
+                if (r.tip case final tip? when plates.isEmpty) ...[
+                  const SizedBox(height: 16),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.primarySoft.withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Icon(Icons.lightbulb_outline_rounded, size: 16, color: accent),
+                        const SizedBox(width: 8),
+                        Expanded(child: Text(tip, style: body(11, ink, FontWeight.w500))),
+                      ],
+                    ),
+                  ),
+                ],
+                const Spacer(),
               ],
             ),
           ),

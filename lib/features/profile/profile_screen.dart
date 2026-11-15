@@ -27,6 +27,7 @@ import '../diet/widgets/sheet_frame.dart';
 import 'domain/user_profile.dart';
 import 'edit_profile_sheet.dart';
 import 'profile_providers.dart';
+import 'reminders_card.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
@@ -138,12 +139,16 @@ class ProfileScreen extends ConsumerWidget {
                     row('Calories', '${t.calories} kcal'),
                     row('Protein · carbs · fat', '${t.proteinG} · ${t.carbsG} · ${t.fatG} g'),
                     row('Fiber', '${t.fiberG} g'),
-                    row('Water', '${(t.waterMl / 1000).toStringAsFixed(1)} L'),
+                    row('Water', '${(t.waterMl / 1000).toStringAsFixed(2).replaceFirst(RegExp(r'\.?0+$'), '')} L'),
                     row('Steps', NumberFormat.decimalPattern().format(t.steps)),
                     row('Stride length', '${t.strideM} m'),
                   ],
                 ),
               ),
+              const SizedBox(height: 22),
+              Text(tr('Reminders'), style: text.titleMedium),
+              const SizedBox(height: 10),
+              const RemindersCard(),
               const SizedBox(height: 22),
               GlassCard(
                 child: Row(

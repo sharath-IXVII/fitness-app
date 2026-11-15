@@ -18,9 +18,10 @@ EVERYTHING YOU DO COUNTS
 • Steps and distance: your phone's motion sensors and GPS work together, so your step count and kilometres stay steady. Set your own goals.
 • Water: a daily goal that follows your body and the season, with gentle reminders. You can set your own goal too.
 • Workouts: guided exercises with clear moving demos, body-part sessions and 30-day challenges.
-• Diet (beta): plan and log meals, and scan your plate for a suggested dish with calories and macros. It is still being improved, so always check and correct the result. Scanning happens on your phone.
+• Diet (beta): snap your plate and FittArc suggests the dishes with calories and macros, then logs the meal. It is still being improved, so always check and correct the result. Scanning happens on your phone. Share your plate as a story card.
 • Food guide: see which foods are rich in carbs, protein, fibre, vitamins and water per 100 g, and compare two foods side by side.
-• Health check (beta): an approximate heart-rate estimate with your fingertip on the camera, your resting pulse over time, and your height, weight and BMI.
+• Health check (beta): an approximate heart-rate estimate with your fingertip on the camera, your resting pulse over time, guided breathing, and your height, weight and BMI.
+• Mind games: one-minute reaction, memory, focus and colour games that keep your best scores.
 • Watch (beta): connect a Bluetooth watch or chest strap for live heart rate and earn Arc minutes for the time you spend in your hard and moderate zones. Optionally read steps, heart rate and sleep from your watch app through Health Connect.
 • Alarms that get you moving: workout alarms with brain challenges to switch them off. If you stop moving, the alarm rings again.
 • Strict mode: a loud alarm you cannot cheat. In an emergency, restarting your phone ends it.
@@ -58,7 +59,8 @@ Data collected:
 - Health and fitness: steps, workouts, water, sleep and meal logs (app functionality, backup)
 - Watch data from Health Connect (steps, heart rate, sleep) and live Bluetooth heart rate: read on the phone only, never uploaded or shared
 - Health readings you save (heart-rate estimate, height, weight): kept on the phone only, not uploaded
-- Photos: food photos are processed on the device and not uploaded
+- Photos: food photos are processed on the device and not uploaded. Optional and off by default: if the user turns on "Help improve food recognition", a small cut-out of each dish (with the dish name) is collected to improve the app. Declare Photos as collected and optional. For the purpose, choose "App functionality".
+- Health and fitness (backup) also includes: a summary of tracked runs, walks and rides (no route) and the body-check measurements the user types in (waist, neck, hip).
 - App activity: progress, levels, badges and streaks (backup)
 - Messages (Other in-app messages): club chat text, shown to club members, deleted after 24 hours
 - Photos: food snaps a user chooses to send to FittArc friends (small JPEG), shown only to those friends, deleted after 24 hours
@@ -70,14 +72,15 @@ Users can delete their account and data: yes (in the app under Profile, or by wr
 Ads: none
 
 ## Permissions to justify
-- Exact alarms (SCHEDULE_EXACT_ALARM): workout and sleep alarms are the core feature and must ring at the time the user sets.
+- Exact alarms (USE_EXACT_ALARM on Android 13 and newer, SCHEDULE_EXACT_ALARM on Android 12): workout and sleep alarms are a core feature and must ring at the time the user sets. Google allows USE_EXACT_ALARM only for alarm-clock and calendar apps, so say clearly in the declaration that FittArc is an alarm clock that makes you work out. If Google still refuses it, tell the developer: the app can switch to SCHEDULE_EXACT_ALARM (the user allows it once in Settings).
 - Full-screen intent: the alarm screen must appear over the lock screen when it rings.
 - Camera (and its flash): rep counting during workouts, the food scanner, and the fingertip heart-rate estimate. All processed on the phone; nothing is uploaded.
 - Activity recognition and location: merged step counting and distance, and measuring club challenges (run, walk, cycle).
 - Foreground service (location): keeps measuring a club challenge with the screen off; a notification shows while it runs. Play Console → App content → Foreground service permissions: choose "Location" and describe: "Measures the distance of a run, walk or ride the user starts in a club challenge, while the screen is off. Stops when the challenge ends." A short video of starting a challenge may be requested.
 - Nearby devices (Bluetooth scan and connect): finds and reads heart rate from a watch or chest strap the user picks. Declared "never for location".
 - Health Connect (read steps, heart rate, resting heart rate, sleep): shows what the user's watch app recorded. Read-only, user-initiated, nothing leaves the phone. The Health Connect permissions declaration form in Play Console asks why each is needed; answer: to show the user their own watch data inside the app.
-- Notifications: reminders for water, workouts and meals.
+- Notifications: reminders for water, workouts, meals, the evening streak nudge and the daily report. Each can be switched off under Profile → Reminders.
+- Display over other apps (SYSTEM_ALERT_WINDOW): only for the optional Strict alarm mode, to bring the alarm back if the user leaves it before finishing. Asked for when Strict mode is turned on.
 
 ## Health apps declaration
 General fitness and wellness only. No diagnosis, treatment or medical advice.
@@ -87,8 +90,8 @@ General fitness and wellness only. No diagnosis, treatment or medical advice.
 
 ## Assets
 - Icon 512x512: docs/store/play-icon-512.png
-- Feature graphic 1024x500: still to make
-- Phone screenshots (2 to 8): still to capture on a real phone
+- Feature graphic 1024x500: docs/store/feature-graphic-1024x500.png
+- Phone and tablet screenshots: docs/store/screenshots/
 
 ## Clubs (user-generated content)
 - Content rating questionnaire: answer YES to "users can interact / exchange content" (text chat in clubs).

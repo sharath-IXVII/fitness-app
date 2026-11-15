@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,7 +36,19 @@ class DailyLogsNotifier extends Notifier<Map<DateTime, DailyLog>> {
   /// Changes today's log (or [date]'s). Re-reads storage first: notification
   /// buttons ("Yes, I had a glass") write from a background isolate, and
   /// building on a stale copy would erase what they added.
-  Future<void> update(DailyLog Function(DailyLog) change, {DateTime? date}) async {
+  ///
+  /// Changes run one after another: two quick taps on "+250 ml" must each
+  /// build on the other's result, never on the same older copy.
+  Future<void> update(DailyLog Function(DailyLog) change, {DateTime? date}) {
+    final run = _queue.then((_) => _apply(change, date));
+    // A failed change must not block the ones after it.
+    _queue = run.catchError((_) {});
+    return run;
+  }
+
+  Future<void> _queue = Future.value();
+
+  Future<void> _apply(DailyLog Function(DailyLog) change, DateTime? date) async {
     final d = dayOnly(date ?? DateTime.now());
     final prefs = ref.read(sharedPrefsProvider);
     final key = '$_prefix${_keyFormat.format(d)}';

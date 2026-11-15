@@ -15,6 +15,7 @@ import '../../core/router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/glass_card.dart';
 import '../../core/widgets/gradient_button.dart';
+import '../../core/widgets/empty_state.dart';
 import '../../core/widgets/page_background.dart';
 import '../../core/widgets/pressable.dart';
 import '../arcs/arc_providers.dart';
@@ -585,28 +586,13 @@ class _Unavailable extends StatelessWidget {
   const _Unavailable();
 
   @override
-  Widget build(BuildContext context) {
-    final text = Theme.of(context).textTheme;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.group_rounded, size: 56, color: AppColors.primary),
-            const SizedBox(height: 14),
-            Text(tr('Friends is almost here'), style: text.headlineSmall, textAlign: TextAlign.center),
-            const SizedBox(height: 8),
-            Text(
-              tr('Challenges and the leaderboard need an online account. They turn on in the next update.'),
-              style: text.bodyMedium?.copyWith(color: AppColors.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => EmptyState(
+    icon: Icons.group_rounded,
+    title: tr('Sign in to add friends'),
+    body: tr('Friends, challenges and the leaderboard need a Google account and an internet connection.'),
+    action: tr('Open profile'),
+    onAction: () => context.push(Routes.profile),
+  );
 }
 
 /// This user's public card: what friends see.

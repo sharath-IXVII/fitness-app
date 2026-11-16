@@ -78,3 +78,14 @@ Answer these as well: data is encrypted in transit (yes), and users can request 
 ## 5. After launch
 
 - Watch Firebase Crashlytics (already built in; turn it on in the Firebase console).
+
+## 6. Security settings (you, once)
+
+The app's rules already decide who can read and write what. These switches add to that.
+
+1. **App Check (Firebase console → App Check).** Register the Android app with the **Play Integrity** provider (it asks for the SHA-256 of the Play app signing key, from Play Console → App integrity). Leave it on "Monitor" first. When the requests screen shows your Play Store build as verified, press **Enforce** for Cloud Firestore and Authentication. After that only the real app from Google Play can reach the database. An APK installed by hand stops working once it is enforced, so test through Play's internal testing track.
+2. **Restrict the Android API key (Google Cloud console → APIs & Services → Credentials).** Open the "Android key (auto created by Firebase)". Under Application restrictions choose Android apps and add package `com.GetYr_io.FittArc` with your SHA-1 fingerprints (upload key and Play signing key). Under API restrictions keep only the Firebase APIs it lists. The key is inside every copy of the app by design, so the restriction is what protects it.
+3. **Firebase Authentication → Settings.** Turn on email enumeration protection, and keep only Google as a sign-in method.
+4. **Keep the GitHub repository private** and never share the upload keystore or its passwords.
+5. **Firestore TTL policies** on `messages` and `snapShares` (field `expireAt`), so old chat and snaps are really deleted.
+

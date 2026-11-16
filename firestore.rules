@@ -372,15 +372,25 @@ service cloud.firestore {
 
     match /teamCodes/{code} {
       allow get: if signedIn();
-      allow create: if signedIn() && data().keys().hasOnly(['teamId'])
+      allow create: if signedIn() && code.matches('^[A-HJKMNP-Z2-9]{6}$') && data().keys().hasOnly(['teamId'])
         && getAfter(/databases/$(database)/documents/teams/$(data().teamId)).data.createdBy == me()
         && getAfter(/databases/$(database)/documents/teams/$(data().teamId)).data.code == code;
     }
 
     // Snaps sent to friends inside the app (a small JPEG, gone in 24 hours).
     match /snapShares/{id} {
+      // Snaps go to friends only: every person named must be in the
+      // sender's friend list, so nobody can push pictures at strangers.
+      function friendAt(i) {
+        return data().to.size() <= i
+          || exists(/databases/$(database)/documents/users/$(me())/friends/$(data().to[i]));
+      }
+      function allFriends() {
+        return friendAt(0) && friendAt(1) && friendAt(2) && friendAt(3) && friendAt(4)
+          && friendAt(5) && friendAt(6) && friendAt(7) && friendAt(8) && friendAt(9);
+      }
       allow read: if signedIn() && (me() in resource.data.to || resource.data.from == me());
-      allow create: if signedIn()
+      allow create: if signedIn() && allFriends()
         && data().keys().hasOnly(['from', 'fromName', 'to', 'caption', 'image', 'at', 'expireAt'])
         && data().from == me() && shortText(data().fromName, 40)
         && data().to is list && data().to.size() > 0 && data().to.size() <= 10 && !(me() in data().to)
@@ -427,8 +437,12 @@ service cloud.firestore {
 
     // Reports of abuse: write-only, reviewed in the console.
     match /reports/{id} {
-      allow create: if signedIn() && data().by == me() && data().about is string
-        && data().reason is string && data().reason.size() <= 500;
+      allow create: if signedIn()
+        && data().keys().hasOnly(['by', 'about', 'reason', 'at'])
+        && data().by == me()
+        && shortText(data().about, 128)
+        && data().reason is string && data().reason.size() <= 500
+        && (data().get('at', null) == null || data().at == request.time);
     }
   }
 }

@@ -134,6 +134,8 @@ test('reports, and deleting your challenges', async () => {
   await assertSucceeds(addDoc(collection(as('ravi'), 'reports'), { by: 'ravi', about: 'asha', reason: 'spam' }));
   await assertFails(addDoc(collection(as('ravi'), 'reports'), { by: 'asha', about: 'ravi', reason: 'fake' }));
   await assertFails(getDocs(collection(as('ravi'), 'reports')));
+  await assertFails(addDoc(collection(as('ravi'), 'reports'), { by: 'ravi', about: 'asha', reason: 'spam', extra: 'x' }));
+  await assertFails(addDoc(collection(as('ravi'), 'reports'), { by: 'ravi', about: 'a'.repeat(500), reason: 'spam' }));
   await assertSucceeds(openChallenge(as('asha')));
   await assertFails(deleteDoc(doc(as('ravi'), 'challenges/c1')));
   await assertSucceeds(deleteDoc(doc(as('asha'), 'codes/K7Q2MX')));
@@ -427,6 +429,15 @@ test('snap shares: sender writes, only recipients read, small and short-lived', 
     from: 'asha', fromName: 'Asha', to: ['ravi'], caption: 'Lunch: about 450 kcal', image: img,
     at: serverTimestamp(), expireAt: inHours(24), ...over,
   });
+  // Not friends yet: refused. Snaps go to friends only.
+  await assertFails(setDoc(doc(as('asha'), 'snapShares/s0'), snap()));
+  await asAdmin(async (db) => {
+    await setDoc(doc(db, 'users/asha/friends/ravi'), { since: 1, via: 'request' });
+    for (let i = 0; i < 9; i++) await setDoc(doc(db, `users/asha/friends/f${i}`), { since: 1, via: 'request' });
+  });
+  await assertFails(setDoc(doc(as('asha'), 'snapShares/s0'), snap({ to: ['ravi', 'stranger'] })));
+  const ten = ['ravi', ...Array.from({ length: 9 }, (_, i) => `f${i}`)];
+  await assertSucceeds(setDoc(doc(as('asha'), 'snapShares/s10'), snap({ to: ten })));
   await assertSucceeds(setDoc(doc(as('asha'), 'snapShares/s1'), snap()));
   await assertFails(setDoc(doc(as('asha'), 'snapShares/s2'), snap({ from: 'ravi' })));
   await assertFails(setDoc(doc(as('asha'), 'snapShares/s3'), snap({ expireAt: inHours(24 * 7) })));

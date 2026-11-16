@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -91,6 +92,17 @@ Future<AuthService> _authService(SharedPreferences prefs) async {
   if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
     try {
       await Firebase.initializeApp().timeout(const Duration(seconds: 5));
+      // App Check: proves to Firebase that a request comes from the real
+      // FittArc app installed from Google Play, not from a script using the
+      // app's public key. It only takes effect once it is enforced in the
+      // Firebase console; until then nothing changes. Never blocks start-up.
+      if (kReleaseMode) {
+        try {
+          await FirebaseAppCheck.instance.activate().timeout(const Duration(seconds: 5));
+        } catch (e) {
+          debugPrint('App Check not active: $e');
+        }
+      }
       // Crash reports for release builds, so problems on testers' phones
       // can be seen and fixed. No personal data is attached.
       if (kReleaseMode) {

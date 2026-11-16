@@ -182,6 +182,21 @@ test('progress backup: the state document', async () => {
   await assertSucceeds(deleteDoc(doc(a, 'users/asha/backup/state')));
 });
 
+test('progress backup: the plans document', async () => {
+  const a = as('asha');
+  const more = (over = {}) => ({ myDay: '[]', training: '{}', updatedAt: serverTimestamp(), ...over });
+  await assertSucceeds(setDoc(doc(a, 'users/asha/backup/more'), more()));
+  await assertSucceeds(setDoc(doc(a, 'users/asha/backup/more'), more({ templates: '[]', routines: '[]' })));
+  await assertSucceeds(getDoc(doc(a, 'users/asha/backup/more')));
+  await assertFails(getDoc(doc(as('ravi'), 'users/asha/backup/more')));
+  await assertFails(setDoc(doc(as('ravi'), 'users/asha/backup/more'), more()));
+  await assertFails(setDoc(doc(a, 'users/asha/backup/more'), more({ weight: '[]' })));
+  await assertFails(setDoc(doc(a, 'users/asha/backup/more'), more({ myDay: { a: 1 } })));
+  await assertFails(setDoc(doc(a, 'users/asha/backup/more'), more({ myDay: 'x'.repeat(150001) })));
+  await assertFails(setDoc(doc(a, 'users/asha/backup/more'), more({ updatedAt: 5 })));
+  await assertSucceeds(deleteDoc(doc(a, 'users/asha/backup/more')));
+});
+
 // ---------------------------------------------------------- friend requests
 
 const FR = ['asha', 'ravi', 'meena'];

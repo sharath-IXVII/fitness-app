@@ -34,6 +34,7 @@ import '../streaks/widgets/day_celebration.dart';
 import '../training/training_providers.dart';
 import '../training/workout_reminder.dart';
 import '../water/water_providers.dart';
+import '../workout/routine_providers.dart';
 
 class AppShell extends ConsumerStatefulWidget {
   const AppShell({super.key, required this.shell});
@@ -283,6 +284,11 @@ class _AppShellState extends ConsumerState<AppShell> {
     ref.listen(profileProvider, (_, _) => backup.schedule());
     ref.listen(badgeVaultProvider, (_, _) => backup.schedule());
     ref.listen(waterGoalProvider, (_, _) => backup.schedule());
+    // Plans the user built travel to a new phone too.
+    ref.listen(trainingProvider, (_, _) => backup.schedule());
+    ref.listen(myDayProvider, (_, _) => backup.schedule());
+    ref.listen(myTemplatesProvider, (_, _) => backup.schedule());
+    ref.listen(routinesProvider, (_, _) => backup.schedule());
     ref.listen(computedBadgesProvider, (_, next) => ref.read(badgeVaultProvider.notifier).merge(next));
     ref.listen(achievementsProvider, (_, next) => _announce(next));
     // Streak milestones (3, 7, 14, 30 … days): offer a share card, once each.

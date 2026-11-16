@@ -71,6 +71,16 @@ service cloud.firestore {
 
       match /backup/{doc} {
         allow read, delete: if me() == uid;
+        // Plans the user built (challenge progress, My Day plan and templates,
+        // own routines), each kept as the text the phone stores.
+        allow create, update: if me() == uid
+          && doc == 'more'
+          && data().keys().hasOnly(['training', 'myDay', 'templates', 'routines', 'updatedAt'])
+          && (data().get('training', '') is string && data().get('training', '').size() <= 150000)
+          && (data().get('myDay', '') is string && data().get('myDay', '').size() <= 150000)
+          && (data().get('templates', '') is string && data().get('templates', '').size() <= 150000)
+          && (data().get('routines', '') is string && data().get('routines', '').size() <= 150000)
+          && data().updatedAt == request.time;
         allow create, update: if me() == uid
           && doc == 'state'
           && data().keys().hasOnly(['profile', 'badges', 'firstUse', 'waterGoal', 'xpBonus', 'activities', 'body', 'updatedAt'])

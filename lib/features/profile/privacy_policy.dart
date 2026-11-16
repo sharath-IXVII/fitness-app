@@ -22,7 +22,9 @@ const privacySections = <(String, String)>[
         'activity level, diet and wake and sleep times), one entry per day (workout done, water, steps, meals '
         'logged and protein), the badges you have earned, the date you started, your water goal, your bonus XP, a '
         'summary of the runs, walks and rides you tracked (type, date, time, distance and split times, never the '
-        'route) and the waist, neck and hip measurements you typed into the body check. Only you can '
+        'route) and the waist, neck and hip measurements you typed into the body check. So that a new phone '
+        'carries on where the old one stopped, it also stores the plans you built: your 30-day challenge progress '
+        'and workout history, your My Day plan and templates, and the workout routines you made. Only you can '
         'read it; it is used to restore your progress when you sign in on a new phone, and nothing else. It is '
         'deleted when you delete your account.',
   ),
@@ -57,7 +59,7 @@ const privacySections = <(String, String)>[
   ),
   (
     'Data stored on your phone',
-    'Alarms, routines, your My Day plan, weigh-ins, weight goal, saved foods, meal photos, and the pulse, breathing and game '
+    'Alarms, weigh-ins, weight goal, saved foods, meal photos, and the pulse, breathing and game '
         'records you save in the Health tab are stored only on your device and are not backed up, so they are not restored on a new phone. Your progress backup (above) '
         'is kept in your account. Uninstalling the app or using "Reset data on this device" removes what is on the '
         'phone.',

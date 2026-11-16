@@ -17,19 +17,25 @@ import '../features/auth/auth_service.dart';
 import '../features/profile/profile_providers.dart';
 import '../features/progress/domain/progress.dart';
 import '../features/progress/progress_providers.dart';
+import '../features/myday/myday_providers.dart';
 import '../features/streaks/daily_log_providers.dart';
+import '../features/training/training_providers.dart';
+import '../features/workout/routine_providers.dart';
 import 'storage.dart';
 
 /// What is kept in the cloud for one account: every day's log, plus the
 /// profile, the badges ever earned, the start date and the water goal.
 class BackupSnapshot {
-  const BackupSnapshot({this.days = const {}, this.state});
+  const BackupSnapshot({this.days = const {}, this.state, this.more});
 
   /// "yyyy-MM-dd" → the day's log JSON.
   final Map<String, Map<String, dynamic>> days;
 
   /// {profile, badges, firstUse, waterGoal}, or null if nothing is stored.
   final Map<String, dynamic>? state;
+
+  /// The plans the user built (see [CloudBackup.planKeys]), or null.
+  final Map<String, dynamic>? more;
 }
 
 /// Where backups live. A seam so tests can use a fake.
@@ -37,12 +43,14 @@ abstract class CloudStore {
   Future<BackupSnapshot> load(String uid);
   Future<void> saveDays(String uid, Map<String, Map<String, dynamic>> days);
   Future<void> saveState(String uid, Map<String, dynamic> state);
+  Future<void> saveMore(String uid, Map<String, dynamic> more);
   Future<void> delete(String uid);
 }
 
 /// Cloud Firestore layout (see firestore.rules):
 ///   users/{uid}/days/{yyyy-MM-dd}   one document per day
 ///   users/{uid}/backup/state        profile, badges, start date, water goal
+///   users/{uid}/backup/more         challenge progress, My Day plan, own routines
 class FirestoreCloudStore implements CloudStore {
   FirestoreCloudStore(this._db);
 
@@ -54,7 +62,12 @@ class FirestoreCloudStore implements CloudStore {
   Future<BackupSnapshot> load(String uid) async {
     final days = await _me(uid).collection('days').get();
     final state = await _me(uid).collection('backup').doc('state').get();
-    return BackupSnapshot(days: {for (final d in days.docs) d.id: d.data()}, state: state.data());
+    // A separate document, so a problem with it can never cost the progress above.
+    Map<String, dynamic>? more;
+    try {
+      more = (await _me(uid).collection('backup').doc('more').get()).data();
+    } catch (_) {}
+    return BackupSnapshot(days: {for (final d in days.docs) d.id: d.data()}, state: state.data(), more: more);
   }
 
   @override
@@ -73,6 +86,10 @@ class FirestoreCloudStore implements CloudStore {
   @override
   Future<void> saveState(String uid, Map<String, dynamic> state) =>
       _me(uid).collection('backup').doc('state').set({...state, 'updatedAt': FieldValue.serverTimestamp()});
+
+  @override
+  Future<void> saveMore(String uid, Map<String, dynamic> more) =>
+      _me(uid).collection('backup').doc('more').set({...more, 'updatedAt': FieldValue.serverTimestamp()});
 
   @override
   Future<void> delete(String uid) async {
@@ -129,6 +146,18 @@ class CloudBackup {
   static final _dateKey = DateFormat('yyyy-MM-dd');
   static const _sentKey = 'cloud.sent.v1';
   static const _firstUseKey = 'app.firstUse.v1';
+
+  /// Plans the user built, kept as they are stored on the phone: cloud field
+  /// → storage key. A new phone takes them only where it has none of its own.
+  static const planKeys = {
+    'training': 'training.v1', // 30-day challenge progress and workout history
+    'myDay': 'myday.v1', // the My Day plan
+    'templates': 'myday.templates.v1', // My Day templates the user saved
+    'routines': 'routines.v1', // workout routines the user made
+  };
+
+  /// Larger than any real plan; keeps the document well inside its limit.
+  static const maxPlanChars = 150000;
   Timer? _timer;
   bool _busy = false;
 
@@ -142,8 +171,27 @@ class CloudBackup {
     if (store == null) return false;
     try {
       final snap = await store.load(uid).timeout(const Duration(seconds: 12));
-      if (snap.days.isEmpty && snap.state == null) return false;
+      if (snap.days.isEmpty && snap.state == null && snap.more == null) return false;
       final prefs = _ref.read(sharedPrefsProvider);
+
+      // Plans: only where this phone has none, so nothing made here is lost.
+      final more = snap.more;
+      if (more != null) {
+        for (final e in planKeys.entries) {
+          final v = more[e.key];
+          if (v is! String || v.length > maxPlanChars || prefs.getString(e.value) != null) continue;
+          try {
+            jsonDecode(v);
+          } catch (_) {
+            continue; // not something the app wrote
+          }
+          await prefs.setString(e.value, v);
+        }
+        _ref.invalidate(trainingProvider);
+        _ref.invalidate(myDayProvider);
+        _ref.invalidate(myTemplatesProvider);
+        _ref.invalidate(routinesProvider);
+      }
 
       for (final e in snap.days.entries) {
         if (_dateKey.tryParse(e.key) == null) continue;
@@ -259,10 +307,30 @@ class CloudBackup {
         _sentKey,
         jsonEncode({...sent, for (final e in days.entries) e.key: jsonEncode(e.value), '_state': stateJson}),
       );
+      await _pushPlans(store, uid, prefs);
     } catch (e) {
       debugPrint('cloud backup failed: $e');
     } finally {
       _busy = false;
+    }
+  }
+
+  /// Uploads the plans when they changed. On its own, so a failure here
+  /// never stops the progress backup.
+  Future<void> _pushPlans(CloudStore store, String uid, SharedPreferences prefs) async {
+    try {
+      final more = <String, dynamic>{};
+      for (final e in planKeys.entries) {
+        final v = prefs.getString(e.value);
+        if (v != null && v.length <= maxPlanChars) more[e.key] = v;
+      }
+      final json = jsonEncode(more);
+      final sent = jsonDecode(prefs.getString(_sentKey) ?? '{}') as Map<String, dynamic>;
+      if (more.isEmpty || sent['_more'] == json) return;
+      await store.saveMore(uid, more);
+      await prefs.setString(_sentKey, jsonEncode({...sent, '_more': json}));
+    } catch (e) {
+      debugPrint('plan backup failed: $e');
     }
   }
 

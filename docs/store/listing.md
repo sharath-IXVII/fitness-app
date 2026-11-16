@@ -28,7 +28,7 @@ EVERYTHING YOU DO COUNTS
 • Sleep alarm: set a bedtime and FittArc quiets your phone until morning. An optional mode blocks other apps, while phone calls always work. Restarting your phone ends it.
 
 LEVELS AND BADGES
-Earn XP, climb the level ladder and collect badge sets across every Arc. Your progress, levels, badges and streaks are backed up to your account, so a new phone picks up where the old one stopped.
+Earn XP, climb the level ladder and collect badge sets across every Arc. Your progress, levels, badges, streaks, challenge progress, My Day plan and routines are backed up to your account, so a new phone picks up where the old one stopped.
 
 FRIENDS
 Add friends with a code, challenge them (do it together or each when you are free), compare streaks and climb the leaderboard. Finish a challenge together and you both earn XP.
@@ -60,6 +60,7 @@ Data collected:
 - Watch data from Health Connect (steps, heart rate, sleep) and live Bluetooth heart rate: read on the phone only, never uploaded or shared
 - Health readings you save (heart-rate estimate, height, weight): kept on the phone only, not uploaded
 - Photos: food photos are processed on the device and not uploaded. Optional and off by default: if the user turns on "Help improve food recognition", a small cut-out of each dish (with the dish name) is collected to improve the app. Declare Photos as collected and optional. For the purpose, choose "App functionality".
+- App activity (backup) also includes the plans the user built: 30-day challenge progress and workout history, the My Day plan and templates, and their own workout routines.
 - Health and fitness (backup) also includes: a summary of tracked runs, walks and rides (no route) and the body-check measurements the user types in (waist, neck, hip).
 - App activity: progress, levels, badges and streaks (backup)
 - Messages (Other in-app messages): club chat text, shown to club members, deleted after 24 hours

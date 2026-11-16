@@ -6,9 +6,12 @@ import 'package:fitalarm/core/storage.dart';
 import 'package:fitalarm/features/auth/auth_providers.dart';
 import 'package:fitalarm/features/auth/auth_service.dart';
 import 'package:fitalarm/features/profile/profile_providers.dart';
-import 'package:fitalarm/features/progress/domain/progress.dart';
+import 'package:fitalarm/features/progress/domain/progress.dart' hide Level;
 import 'package:fitalarm/features/progress/progress_providers.dart';
+import 'package:fitalarm/features/myday/myday_providers.dart';
 import 'package:fitalarm/features/streaks/daily_log_providers.dart';
+import 'package:fitalarm/features/training/domain/plans.dart';
+import 'package:fitalarm/features/training/training_providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -43,6 +46,14 @@ Future<ProviderContainer> _phone(FakeFirebaseFirestore db, Map<String, Object> i
   );
   addTearDown(c.dispose);
   return c;
+}
+
+/// A cloud whose rules don't know about plans yet (not published).
+class _NoPlans extends FirestoreCloudStore {
+  _NoPlans(super.db);
+
+  @override
+  Future<void> saveMore(String uid, Map<String, dynamic> more) => throw Exception('permission-denied');
 }
 
 void main() {
@@ -108,6 +119,61 @@ void main() {
     final phone = await _phone(db, {'profile.v1': jsonEncode(_profile)});
     expect(await phone.read(cloudBackupProvider).restore('asha'), isFalse);
     expect(phone.read(profileProvider)!.name, 'Asha');
+  });
+
+  test('plans the user built follow them to a new phone', () async {
+    final db = FakeFirebaseFirestore();
+    final old = await _phone(db, {'profile.v1': jsonEncode(_profile)});
+    await old.read(trainingProvider.notifier).startChallenge(challenges.first.id, Level.values.first);
+    await old.read(trainingProvider.notifier).completeDay(challenges.first.id, 1);
+    final block = old.read(myDayProvider.notifier).draft(weekday: 1);
+    await old.read(myDayProvider.notifier).save(block);
+    await old.read(myTemplatesProvider.notifier).save('My Monday', [block]);
+    await old.read(cloudBackupProvider).push();
+
+    final fresh = await _phone(db, {});
+    expect(await fresh.read(cloudBackupProvider).restore('asha'), isTrue);
+    expect(fresh.read(trainingProvider).challenges[challenges.first.id]!.done, {1});
+    expect(fresh.read(myDayProvider), hasLength(1));
+    expect(fresh.read(myTemplatesProvider).single.name, 'My Monday');
+  });
+
+  test('a plan made on this phone is never replaced by the cloud copy, and junk is ignored', () async {
+    final db = FakeFirebaseFirestore();
+    await db.doc('users/asha/backup/more').set({
+      'myDay': jsonEncode([]),
+      'training': 'not json at all',
+      'routines': 'x' * (CloudBackup.maxPlanChars + 1),
+    });
+    final phone = await _phone(db, {'profile.v1': jsonEncode(_profile)});
+    final mine = phone.read(myDayProvider.notifier).draft(weekday: 3);
+    await phone.read(myDayProvider.notifier).save(mine);
+    await phone.read(cloudBackupProvider).restore('asha');
+    expect(phone.read(myDayProvider), hasLength(1)); // kept, not emptied
+    final prefs = phone.read(sharedPrefsProvider);
+    expect(prefs.getString('training.v1'), isNull);
+    expect(prefs.getString('routines.v1'), isNull);
+  });
+
+  test('a refused plan backup never stops the progress backup', () async {
+    final db = FakeFirebaseFirestore();
+    final phone = await _phone(db, {
+      'profile.v1': jsonEncode(_profile),
+      'log.v1.2026-10-02': jsonEncode({'workout': true}),
+      'myday.v1': jsonEncode([]),
+    });
+    final store = _NoPlans(db);
+    final c = ProviderContainer(
+      overrides: [
+        sharedPrefsProvider.overrideWithValue(phone.read(sharedPrefsProvider)),
+        authServiceProvider.overrideWithValue(DemoAuthService(phone.read(sharedPrefsProvider))),
+        cloudStoreProvider.overrideWithValue(store),
+      ],
+    );
+    addTearDown(c.dispose);
+    await c.read(cloudBackupProvider).push();
+    expect((await db.collection('users/asha/days').get()).docs, hasLength(1));
+    expect((await db.doc('users/asha/backup/state').get()).exists, isTrue);
   });
 
   test('badges keep the earliest date and are never dropped', () {

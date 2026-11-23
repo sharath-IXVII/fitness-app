@@ -263,6 +263,8 @@ class _AlarmCard extends StatelessWidget {
                       children: [
                         if (alarm.isSleep)
                           _Tag(icon: Icons.nightlight_round, label: sleepWindowLabel(alarm))
+                        else if (alarm.challenge == AlarmChallenge.dance)
+                          _Tag(icon: alarm.challenge.icon, label: tr('Dance · 20 s'))
                         else if (alarm.challenge.isGame)
                           _Tag(icon: alarm.challenge.icon, label: '${alarm.challenge.label} · ${alarm.level.label}')
                         else

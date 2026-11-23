@@ -356,7 +356,16 @@ class _AlarmEditorSheetState extends ConsumerState<AlarmEditorSheet> {
                             AnimatedSize(
                               duration: const Duration(milliseconds: 250),
                               alignment: Alignment.topCenter,
-                              child: _a.challenge.isGame
+                              child: _a.challenge == AlarmChallenge.dance
+                                  ? Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: TextButton.icon(
+                                        onPressed: () => context.push(Routes.dance),
+                                        icon: const Icon(Icons.play_arrow_rounded),
+                                        label: Text(tr('Try it')),
+                                      ),
+                                    )
+                                  : _a.challenge.isGame
                                   ? Row(
                                       children: [
                                         Expanded(

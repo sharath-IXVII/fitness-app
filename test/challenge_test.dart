@@ -102,6 +102,21 @@ void main() {
     expect(old.challenge, AlarmChallenge.workout);
   });
 
+  test('a dance alarm keeps its choice through saving and ringing', () {
+    final a = WorkoutAlarm(
+      id: 2,
+      time: const TimeOfDay(hour: 6, minute: 0),
+      routineId: 'beginner',
+      challenge: AlarmChallenge.dance,
+      strict: true,
+    );
+    expect(WorkoutAlarm.fromJson(a.toJson()).challenge, AlarmChallenge.dance);
+    final info = RingInfo.fromPayload(RingInfo.forAlarm(a, 'beginner').toPayload())!;
+    expect(info.challenge, AlarmChallenge.dance);
+    // If a dance alarm ever reaches the games screen, it falls back to games.
+    expect(gamesFor(AlarmChallenge.dance, math.Random(1)), isEmpty);
+  });
+
   testWidgets('solving the number-order game turns a strict alarm off', (t) async {
     t.view.physicalSize = const Size(390, 844) * 3;
     t.view.devicePixelRatio = 3;

@@ -23,7 +23,7 @@ EVERYTHING YOU DO COUNTS
 • Health check (beta): an approximate heart-rate estimate with your fingertip on the camera, your resting pulse over time, guided breathing, and your height, weight and BMI.
 • Mind games: one-minute reaction, memory, focus and colour games that keep your best scores.
 • Watch (beta): connect a Bluetooth watch or chest strap for live heart rate and earn Arc minutes for the time you spend in your hard and moderate zones. Optionally read steps, heart rate and sleep from your watch app through Health Connect.
-• Alarms that get you moving: workout alarms with brain challenges to switch them off. If you stop moving, the alarm rings again.
+• Alarms that get you moving: switch them off with a workout, a brain game, or 20 seconds of dancing in front of the camera (with a beat to dance to). If you stop moving, the alarm rings again.
 • Strict mode: a loud alarm you cannot cheat. In an emergency, restarting your phone ends it.
 • Sleep alarm: set a bedtime and FittArc quiets your phone until morning. An optional mode blocks other apps, while phone calls always work. Restarting your phone ends it.
 

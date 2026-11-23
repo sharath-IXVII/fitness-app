@@ -864,4 +864,21 @@ const kannada = <String, String>{
   'Morning warm-up is a gentle first one': 'ಮಾರ್ನಿಂಗ್ ವಾರ್ಮ್-ಅಪ್ ಸುಲಭ ಆರಂಭ',
   'Pick a template in My Day': 'ನನ್ನ ದಿನದಲ್ಲಿ ಟೆಂಪ್ಲೇಟ್ ಆರಿಸಿ',
   'Added 250 ml of water': '250 ml ನೀರು ಸೇರಿಸಲಾಗಿದೆ',
+  'Dance · 20 s': 'ನೃತ್ಯ · 20 ಸೆ',
+  "Let's dance": 'ನೃತ್ಯ ಮಾಡೋಣ',
+  'Keep dancing: the alarm rings again if you stop': 'ನೃತ್ಯ ಮುಂದುವರಿಸಿ: ನಿಲ್ಲಿಸಿದರೆ ಅಲಾರಂ ಮತ್ತೆ ಬಾರಿಸುತ್ತದೆ',
+  'Dance · practice': 'ನೃತ್ಯ · ಅಭ್ಯಾಸ',
+  'seconds left': 'ಸೆಕೆಂಡ್ ಬಾಕಿ',
+  'Dance for 20 seconds': '20 ಸೆಕೆಂಡ್ ನೃತ್ಯ ಮಾಡಿ',
+  'Stand the phone up, step back so your whole body is in view, and move your arms and legs.':
+      'ಫೋನ್ ನಿಲ್ಲಿಸಿ, ಇಡೀ ದೇಹ ಕಾಣುವಂತೆ ಹಿಂದೆ ಸರಿಯಿರಿ, ಕೈ ಕಾಲುಗಳನ್ನು ಆಡಿಸಿ.',
+  'Nice moves!': 'ಅದ್ಭುತ ಹೆಜ್ಜೆಗಳು!',
+  'Alarm off. What a way to wake up!': 'ಅಲಾರಂ ಆಫ್. ಎಂಥ ಸುಂದರ ಬೆಳಗು!',
+  '20 seconds of dancing. You are awake now.': '20 ಸೆಕೆಂಡ್ ನೃತ್ಯ. ಈಗ ನೀವು ಎಚ್ಚರವಾಗಿದ್ದೀರಿ.',
+  'The camera sees you dance. Nothing is recorded or uploaded; it all happens on your phone.':
+      'ಕ್ಯಾಮೆರಾ ನಿಮ್ಮ ನೃತ್ಯ ನೋಡುತ್ತದೆ. ಏನೂ ರೆಕಾರ್ಡ್ ಅಥವಾ ಅಪ್‌ಲೋಡ್ ಆಗುವುದಿಲ್ಲ; ಎಲ್ಲವೂ ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲೇ.',
+  'Move your legs too!': 'ಕಾಲುಗಳನ್ನೂ ಆಡಿಸಿ!',
+  'Keep dancing!': 'ನೃತ್ಯ ಮುಂದುವರಿಸಿ!',
+  'Dance': 'ನೃತ್ಯ',
+  'Dance in front of the camera for 20 seconds': 'ಕ್ಯಾಮೆರಾ ಮುಂದೆ 20 ಸೆಕೆಂಡ್ ನೃತ್ಯ ಮಾಡಿ',
 };

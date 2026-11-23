@@ -1,4 +1,5 @@
 import '../../core/i18n/i18n.dart';
+import 'domain/challenge.dart';
 
 import 'dart:async';
 
@@ -65,7 +66,9 @@ class _RingScreenState extends ConsumerState<RingScreen> {
   void _start(Routine routine) {
     HapticFeedback.mediumImpact();
     final info = widget.info;
-    if (info.challenge.isGame) {
+    if (info.challenge == AlarmChallenge.dance) {
+      context.go(Routes.dance, extra: info);
+    } else if (info.challenge.isGame) {
       context.go(
         Routes.challenge,
         extra: ChallengeArgs(challenge: info.challenge, level: info.level, ring: info),
@@ -153,7 +156,7 @@ class _RingScreenState extends ConsumerState<RingScreen> {
                         ],
                       ),
                       const SizedBox(height: 6),
-                      if (info.challenge.isGame)
+                      if (info.challenge.isGame || info.challenge == AlarmChallenge.dance)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 5),
                           child: Row(
@@ -161,7 +164,7 @@ class _RingScreenState extends ConsumerState<RingScreen> {
                               Icon(info.challenge.icon, size: 20, color: AppColors.primary),
                               const SizedBox(width: 12),
                               Expanded(child: Text(info.challenge.description, style: text.titleSmall)),
-                              Text(info.level.label, style: text.titleSmall),
+                              if (info.challenge.isGame) Text(info.level.label, style: text.titleSmall),
                             ],
                           ),
                         )
@@ -190,7 +193,11 @@ class _RingScreenState extends ConsumerState<RingScreen> {
                 ).animate().fadeIn(duration: 300.ms, delay: 150.ms).moveY(begin: 8, end: 0, curve: Curves.easeOutCubic),
                 const SizedBox(height: 16),
                 GradientButton(
-                  label: info.challenge.isGame ? 'Start ${info.challenge.label.toLowerCase()}' : 'Start workout',
+                  label: switch (info.challenge) {
+                    AlarmChallenge.dance => tr("Let's dance"),
+                    final c when c.isGame => 'Start ${c.label.toLowerCase()}',
+                    _ => 'Start workout',
+                  },
                   icon: Icons.play_arrow_rounded,
                   onPressed: () => _start(routine),
                 ),

@@ -69,5 +69,5 @@ List<GameKind> gamesFor(AlarmChallenge c, math.Random rng) => switch (c) {
   AlarmChallenge.memory => [GameKind.memory],
   AlarmChallenge.order => [GameKind.order],
   AlarmChallenge.mixed => [...GameKind.values]..shuffle(rng),
-  AlarmChallenge.workout => const [],
+  AlarmChallenge.workout || AlarmChallenge.dance => const [],
 };

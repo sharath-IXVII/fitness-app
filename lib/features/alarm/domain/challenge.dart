@@ -6,7 +6,8 @@ enum AlarmChallenge {
   math('Maths', 'Solve a few sums', Icons.calculate_outlined),
   memory('Memory', 'Repeat a pattern of tiles', Icons.grid_view_rounded),
   order('Number order', 'Tap the numbers 1, 2, 3… in order', Icons.format_list_numbered_rounded),
-  mixed('Mixed games', 'A different brain game each round', Icons.shuffle_rounded);
+  mixed('Mixed games', 'A different brain game each round', Icons.shuffle_rounded),
+  dance('Dance', 'Dance in front of the camera for 20 seconds', Icons.music_note_rounded);
 
   const AlarmChallenge(this.label, this.description, this.icon);
 
@@ -14,7 +15,8 @@ enum AlarmChallenge {
   final String description;
   final IconData icon;
 
-  bool get isGame => this != workout;
+  /// A brain game (no camera).
+  bool get isGame => this != workout && this != dance;
 }
 
 enum ChallengeLevel {

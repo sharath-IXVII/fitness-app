@@ -855,4 +855,21 @@ const hindi = <String, String>{
   'Morning warm-up is a gentle first one': 'मॉर्निंग वार्म-अप एक आसान शुरुआत है',
   'Pick a template in My Day': 'मेरा दिन में एक टेम्पलेट चुनें',
   'Added 250 ml of water': '250 ml पानी जोड़ा गया',
+  'Dance · 20 s': 'डांस · 20 सेकंड',
+  "Let's dance": 'चलो डांस करें',
+  'Keep dancing: the alarm rings again if you stop': 'डांस करते रहें: रुकेंगे तो अलार्म फिर बजेगा',
+  'Dance · practice': 'डांस · अभ्यास',
+  'seconds left': 'सेकंड बाकी',
+  'Dance for 20 seconds': '20 सेकंड डांस करें',
+  'Stand the phone up, step back so your whole body is in view, and move your arms and legs.':
+      'फ़ोन खड़ा रखें, पीछे हटें ताकि पूरा शरीर दिखे, और हाथ-पैर हिलाएँ।',
+  'Nice moves!': 'शानदार मूव्स!',
+  'Alarm off. What a way to wake up!': 'अलार्म बंद। क्या शानदार सुबह!',
+  '20 seconds of dancing. You are awake now.': '20 सेकंड का डांस। अब आप जाग गए।',
+  'The camera sees you dance. Nothing is recorded or uploaded; it all happens on your phone.':
+      'कैमरा आपका डांस देखता है। कुछ भी रिकॉर्ड या अपलोड नहीं होता; सब आपके फ़ोन पर होता है।',
+  'Move your legs too!': 'पैर भी हिलाएँ!',
+  'Keep dancing!': 'डांस करते रहें!',
+  'Dance': 'डांस',
+  'Dance in front of the camera for 20 seconds': 'कैमरे के सामने 20 सेकंड डांस करें',
 };

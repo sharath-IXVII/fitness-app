@@ -46,7 +46,7 @@ class ChallengeScreen extends ConsumerStatefulWidget {
 class _ChallengeScreenState extends ConsumerState<ChallengeScreen> {
   final _rng = math.Random();
   late final List<GameKind> _games = gamesFor(
-    widget.args.challenge == AlarmChallenge.workout ? AlarmChallenge.mixed : widget.args.challenge,
+    widget.args.challenge.isGame ? widget.args.challenge : AlarmChallenge.mixed,
     _rng,
   );
   int _index = 0;

@@ -61,6 +61,7 @@ import '../features/water/water_screen.dart';
 import '../features/workout/domain/routine.dart';
 import '../features/workout/routine_editor_screen.dart';
 import '../features/workout/workout_done_screen.dart';
+import '../features/workout/dance_screen.dart';
 import '../features/workout/workout_screen.dart';
 
 abstract final class Routes {
@@ -89,6 +90,7 @@ abstract final class Routes {
   // Full-screen flows outside the tab shell.
   static const ring = '/ring';
   static const workout = '/workout';
+  static const dance = '/dance';
   static const workoutDone = '/workout-done';
   static const routineEditor = '/routine-editor';
   static const steps = '/steps';
@@ -170,6 +172,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.workout,
         redirect: (_, s) => s.extra is WorkoutArgs ? null : Routes.home,
         pageBuilder: (_, s) => _fade(s, WorkoutScreen(args: s.extra! as WorkoutArgs)),
+      ),
+      // Dance to switch off an alarm (a RingInfo), or try it (no extra).
+      GoRoute(
+        path: Routes.dance,
+        pageBuilder: (_, s) => _fade(s, DanceScreen(ring: s.extra is RingInfo ? s.extra! as RingInfo : null)),
       ),
       GoRoute(
         path: Routes.workoutDone,

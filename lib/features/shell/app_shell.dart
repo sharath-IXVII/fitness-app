@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../teams/teams_providers.dart';
 import '../friends/friends_backend.dart';
 import '../share/share_card.dart';
+import '../snaps/snap_share_providers.dart';
 import '../report/report_providers.dart';
 import '../clubs/clubs_providers.dart';
 import '../../core/cloud_backup.dart';
@@ -64,6 +65,13 @@ class _AppShellState extends ConsumerState<AppShell> {
       _announce(ref.read(achievementsProvider));
       ref.read(cloudBackupProvider).schedule(after: const Duration(seconds: 5));
       ref.read(reportSettingsProvider.notifier).reschedule();
+      // Club chat and snaps older than a day are deleted from the server,
+      // not only hidden. Quietly; it never holds anything up.
+      final uid = ref.read(friendsUidProvider);
+      if (uid != null) {
+        ref.read(clubsBackendProvider)?.sweepExpired(uid).catchError((_) => 0);
+        ref.read(snapShareBackendProvider)?.sweepExpired(uid).catchError((_) => 0);
+      }
       // Opened by tapping a notification: go to what it's about.
       Reminders.onOpen = _openFromNotification;
       if (Reminders.pendingOpen case final type?) {

@@ -42,8 +42,9 @@ const privacySections = <(String, String)>[
     'Clubs',
     'If you create or join a club, Cloud Firestore stores the club\'s name, description and type, who started it, '
         'its members\' names, and the text messages sent in it. Every signed-in user can see a club\'s name and '
-        'description; only members can read its chat. Messages are text only (no photos or links) and are deleted '
-        'automatically 24 hours after they are sent. You can delete your own messages, leave a club, report a '
+        'description; only members can read its chat. Messages are text only (no photos or links). They are shown '
+        'for 24 hours and then deleted from our servers, usually the next time the sender or the club\'s owner '
+        'opens FittArc, and in any case when the sender deletes their account. You can delete your own messages, leave a club, report a '
         'message or block a person at any time; the person who started a club can remove messages and members. '
         'Club admins can set challenges such as "Run 8 km", optionally with a start point (a location). When you '
         'do a challenge, FittArc uses your phone\'s location only while it runs, to measure the distance, also '
@@ -54,8 +55,9 @@ const privacySections = <(String, String)>[
     'Teams and snaps to friends',
     'If you join a team streak, Cloud Firestore stores the team name, its members\' names and, for each day, '
         'which members hit their goals (nothing else about the day). If you send a food snap to friends inside '
-        'FittArc, a small picture of the snap and a short caption are stored for the friends you pick and deleted '
-        'after 24 hours. The route of a run, walk or ride you track on your own stays on your phone.',
+        'FittArc, a small picture of the snap and a short caption are stored for the friends you pick. It is shown '
+        'for 24 hours and then deleted from our servers, usually the next time you open FittArc, and in any case '
+        'when you delete your account. The route of a run, walk or ride you track on your own stays on your phone.',
   ),
   (
     'Data stored on your phone',

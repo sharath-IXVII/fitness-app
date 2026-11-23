@@ -216,6 +216,27 @@ class ClubsBackend {
   /// The sender, or the club owner, takes a message down.
   Future<void> deleteMessage(String club, String id) => _messages(club).doc(id).delete();
 
+  /// Deletes chat older than a day that [uid] may delete: everything old in
+  /// clubs they started, and their own old messages elsewhere. Run when the
+  /// app opens, so old chat is removed from the server, not only hidden.
+  Future<int> sweepExpired(String uid) async {
+    final cutoff = Timestamp.fromDate(clock.now().subtract(ClubMessage.lifetime));
+    var removed = 0;
+    for (final c in (await _mine(uid).get()).docs) {
+      final owner = (await _clubs.doc(c.id).get()).data()?['ownerUid'] == uid;
+      final old = owner
+          ? await _messages(c.id).where('at', isLessThan: cutoff).limit(400).get()
+          : await _messages(c.id).where('uid', isEqualTo: uid).get();
+      for (final m in old.docs) {
+        final at = m.data()['at'];
+        if (at is! Timestamp || at.compareTo(cutoff) >= 0) continue;
+        await m.reference.delete();
+        removed++;
+      }
+    }
+    return removed;
+  }
+
   Future<void> report({
     required String me,
     required String club,

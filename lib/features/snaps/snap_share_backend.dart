@@ -90,6 +90,21 @@ class SnapShareBackend {
     'at': FieldValue.serverTimestamp(),
   });
 
+  /// Deletes snaps [uid] sent more than a day ago. Run when the app opens,
+  /// so old snaps are removed from the server, not only hidden.
+  Future<int> sweepExpired(String uid) async {
+    final cutoff = clock.now().subtract(const Duration(hours: 24));
+    var removed = 0;
+    for (final d in (await _snaps.where('from', isEqualTo: uid).get()).docs) {
+      final at = d.data()['at'];
+      if (at is Timestamp && at.toDate().isBefore(cutoff)) {
+        await d.reference.delete();
+        removed++;
+      }
+    }
+    return removed;
+  }
+
   /// Removes snaps [uid] sent (account deletion).
   Future<void> deleteMine(String uid) async {
     for (final d in (await _snaps.where('from', isEqualTo: uid).get()).docs) {

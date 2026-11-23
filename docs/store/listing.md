@@ -63,8 +63,8 @@ Data collected:
 - App activity (backup) also includes the plans the user built: 30-day challenge progress and workout history, the My Day plan and templates, and their own workout routines.
 - Health and fitness (backup) also includes: a summary of tracked runs, walks and rides (no route) and the body-check measurements the user types in (waist, neck, hip).
 - App activity: progress, levels, badges and streaks (backup)
-- Messages (Other in-app messages): club chat text, shown to club members, deleted after 24 hours
-- Photos: food snaps a user chooses to send to FittArc friends (small JPEG), shown only to those friends, deleted after 24 hours
+- Messages (Other in-app messages): club chat text, shown to club members for 24 hours, then deleted (when the sender or club owner next opens the app, or with the account). In the Data safety form this is NOT "ephemeral": answer that data is stored and users can delete it
+- Photos: food snaps a user chooses to send to FittArc friends (small JPEG), shown only to those friends for 24 hours, then deleted (when the sender next opens the app, or with the account)
 - App activity: team streaks (team name, member names, which members finished each day)
 - Location (precise): used on the phone during a club challenge to measure distance; not uploaded (only time and distance are shared with the club). Also challenge start points set by club admins.
 Shared with third parties: none
@@ -97,4 +97,4 @@ General fitness and wellness only. No diagnosis, treatment or medical advice.
 ## Clubs (user-generated content)
 - Content rating questionnaire: answer YES to "users can interact / exchange content" (text chat in clubs).
 - In-app tools: report a message, block a person, delete own messages, club owner removes messages and members.
-- Links are blocked in the app and on the server (firestore.rules). Messages expire after 24 hours.
+- Links are blocked in the app and on the server (firestore.rules). Messages are hidden after 24 hours and deleted from the server when the sender or the club owner next opens the app.

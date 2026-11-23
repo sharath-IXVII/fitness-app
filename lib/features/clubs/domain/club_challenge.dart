@@ -358,3 +358,15 @@ double distanceToRoute((double, double) p, List<(double, double)> route) {
   }
   return best;
 }
+
+/// A club route: the start, the points in between and the finish.
+typedef PlannedRoute = List<(double, double)>;
+
+/// Length of a planned route in metres.
+double routeLength(PlannedRoute r) {
+  var m = 0.0;
+  for (var i = 1; i < r.length; i++) {
+    m += distanceBetween(r[i - 1], r[i]);
+  }
+  return m;
+}

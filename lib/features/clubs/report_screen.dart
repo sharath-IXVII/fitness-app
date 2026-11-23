@@ -117,19 +117,6 @@ class _RunReportScreenState extends ConsumerState<RunReportScreen> {
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
                       child: Column(
                         children: [
-                          if (hasMaps && r.route.length > 1)
-                            TextButton.icon(
-                              onPressed: () => Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (_) => Scaffold(
-                                    appBar: AppBar(title: Text(r.title)),
-                                    body: RouteMap(route: r.route),
-                                  ),
-                                ),
-                              ),
-                              icon: const Icon(Icons.map_rounded),
-                              label: Text(tr('See the route on the map')),
-                            ),
                           if (kept)
                             Text(
                               'Kept until ${DateFormat('h:mm a').format(r.expiresAt)}. Download it to keep it.',

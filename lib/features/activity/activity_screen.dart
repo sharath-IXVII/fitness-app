@@ -17,15 +17,14 @@ import '../../core/widgets/page_background.dart';
 import '../clubs/domain/club_challenge.dart';
 import '../clubs/domain/run_report.dart';
 import '../clubs/gps.dart';
-import '../clubs/widgets/route_map.dart';
 import '../streaks/daily_log_providers.dart';
 import 'activity_providers.dart';
 import 'domain/activity_session.dart';
 
 enum _Phase { checking, ready, running, paused, done }
 
-/// A run, walk or ride on your own: GPS on, go, see the route on the map;
-/// pause any time; Finish saves it.
+/// A run, walk or ride on your own: GPS measures distance, time and pace,
+/// also with the screen locked; pause any time; Finish saves it.
 class ActivityScreen extends ConsumerStatefulWidget {
   const ActivityScreen({super.key, required this.kind});
 
@@ -189,28 +188,34 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
             padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
             child: Column(
               children: [
-                Expanded(
-                  child: ClipRRect(
+                _GpsCard(accuracy: _accuracy, phase: _phase, problem: _problem != null),
+                const Spacer(),
+                Icon(kind.icon, size: 40, color: AppColors.primary),
+                const SizedBox(height: 6),
+                Text(formatKm(_meters.round()), style: text.displayLarge?.copyWith(fontSize: 64, height: 1.05)),
+                Text(tr('Distance'), style: text.titleSmall?.copyWith(color: AppColors.textSecondary)),
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(20),
-                    child: RouteMap(route: _route, follow: true),
+                    border: Border.all(color: AppColors.stroke),
+                  ),
+                  child: Row(
+                    children: [
+                      _Stat(tr('Time'), formatDuration(_movingMs)),
+                      _Stat(
+                        kind == ActivityKind.cycle ? tr('Speed') : tr('Pace'),
+                        kind == ActivityKind.cycle
+                            ? '${(_movingMs <= 0 ? 0 : _meters / 1000 / (_movingMs / 3600000)).toStringAsFixed(1)} km/h'
+                            : formatPace(_movingMs, _meters),
+                      ),
+                      _Stat('kcal', '${(_meters / 1000 * kind.kcalPerKm).round()}'),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                Text(formatKm(_meters.round()), style: text.displayMedium),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _Stat('Time', formatDuration(_movingMs)),
-                    _Stat(
-                      kind == ActivityKind.cycle ? 'Speed' : 'Pace',
-                      kind == ActivityKind.cycle
-                          ? '${(_movingMs <= 0 ? 0 : _meters / 1000 / (_movingMs / 3600000)).toStringAsFixed(1)} km/h'
-                          : formatPace(_movingMs, _meters),
-                    ),
-                    _Stat('kcal', '${(_meters / 1000 * kind.kcalPerKm).round()}'),
-                  ],
-                ),
+                const Spacer(),
                 const SizedBox(height: 16),
                 if (_problem != null) ...[
                   Text(_problem!, style: text.bodyLarge, textAlign: TextAlign.center),
@@ -220,13 +225,17 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                   ...switch (_phase) {
                     _Phase.checking => [const CircularProgressIndicator()],
                     _Phase.ready => [
-                      Text(
-                        _accuracy == null
-                            ? 'GPS: searching…'
-                            : 'GPS: ${RouteTracker.signal(_accuracy!)} (±${_accuracy!.round()} m)',
-                        style: text.titleSmall,
-                      ),
-                      const SizedBox(height: 10),
+                      if ((_accuracy ?? 99) > _goodEnough)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Text(
+                            tr(
+                              'Start unlocks when the GPS signal is good. Stand in the open, away from tall buildings.',
+                            ),
+                            style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                       GradientButton(
                         label: tr('Start'),
                         icon: Icons.play_arrow_rounded,
@@ -275,11 +284,94 @@ class _Stat extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
-    return Column(
-      children: [
-        Text(value, style: text.titleLarge),
-        Text(label, style: text.bodySmall),
-      ],
+    return Expanded(
+      child: Column(
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(value, style: text.titleLarge),
+          ),
+          const SizedBox(height: 2),
+          Text(label, style: text.bodySmall?.copyWith(color: AppColors.textSecondary)),
+        ],
+      ),
+    );
+  }
+}
+
+/// The GPS at a glance: signal bars, how exact it is, and what's happening
+/// ("Tracking, also with the screen locked").
+class _GpsCard extends StatelessWidget {
+  const _GpsCard({required this.accuracy, required this.phase, required this.problem});
+
+  final double? accuracy;
+  final _Phase phase;
+  final bool problem;
+
+  /// 0 (no fix) to 4 (strong).
+  int get _bars {
+    final a = accuracy;
+    if (a == null || problem) return 0;
+    if (a <= 10) return 4;
+    if (a <= 20) return 3;
+    if (a <= 40) return 2;
+    return 1;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    final bars = _bars;
+    final color = bars >= 3 ? AppColors.steps : (bars == 2 ? AppColors.amber : AppColors.textMuted);
+    final (title, line) = switch (phase) {
+      _ when problem => (tr('GPS is off'), tr('Turn on location to measure your distance.')),
+      _Phase.checking => (tr('Checking GPS…'), tr('This takes a few seconds.')),
+      _Phase.running => (tr('Tracking'), tr('Keeps measuring with the screen locked.')),
+      _Phase.paused => (tr('Paused'), tr('Distance and time are on hold.')),
+      _ when accuracy == null => (tr('Finding GPS…'), tr('Stand in the open for the best signal.')),
+      _ => ('${tr('GPS')}: ${tr(RouteTracker.signal(accuracy!))}', '${tr('Accurate to about')} ${accuracy!.round()} m'),
+    };
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: phase == _Phase.running ? AppColors.steps.withValues(alpha: 0.5) : AppColors.stroke),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            phase == _Phase.running ? Icons.gps_fixed_rounded : Icons.gps_not_fixed_rounded,
+            color: phase == _Phase.running ? AppColors.steps : AppColors.primary,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: text.titleMedium),
+                Text(line, style: text.bodySmall?.copyWith(color: AppColors.textSecondary)),
+              ],
+            ),
+          ),
+          // Signal bars, like the phone's own.
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              for (var i = 0; i < 4; i++)
+                Container(
+                  width: 6,
+                  height: 8.0 + i * 5,
+                  margin: const EdgeInsets.only(left: 3),
+                  decoration: BoxDecoration(
+                    color: i < bars ? color : AppColors.surfaceHigh,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

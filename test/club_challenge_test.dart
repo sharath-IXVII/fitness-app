@@ -6,7 +6,6 @@ import 'package:fitalarm/features/clubs/clubs_backend.dart';
 import 'package:fitalarm/features/clubs/clubs_providers.dart' show clubReminderItems;
 import 'package:fitalarm/features/clubs/domain/club.dart';
 import 'package:fitalarm/features/clubs/domain/club_challenge.dart';
-import 'package:fitalarm/features/clubs/map_picker_screen.dart' show routeLength;
 import 'package:fitalarm/features/friends/friends_backend.dart' show FriendsFailure;
 import 'package:flutter_test/flutter_test.dart';
 

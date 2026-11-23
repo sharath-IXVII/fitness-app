@@ -22,7 +22,6 @@ import 'domain/club.dart';
 import 'domain/club_challenge.dart';
 import 'domain/run_report.dart';
 import 'gps.dart';
-import 'map_picker_screen.dart';
 import 'widgets/route_map.dart';
 
 final _day = DateFormat('d MMM, h:mm a');
@@ -198,29 +197,6 @@ class _NewChallengeSheetState extends ConsumerState<_NewChallengeSheet> {
     super.dispose();
   }
 
-  Future<void> _onMap() async {
-    final gps = ref.read(gpsProvider);
-    setState(() => _busy = true);
-    final problem = await gps.ensure();
-    final here = problem == null ? await gps.current() : null;
-    if (!mounted) return;
-    setState(() => _busy = false);
-    final picked = await Navigator.of(context).push<PlannedRoute>(
-      MaterialPageRoute(
-        builder: (_) => RoutePlannerScreen(around: here?.point ?? _start ?? (12.97, 77.59), initial: _plan),
-      ),
-    );
-    if (picked == null || picked.isEmpty || !mounted) return;
-    setState(() {
-      _plan = picked;
-      _start = picked.first;
-      _finish = picked.length > 1 ? picked.last : null;
-      // The distance follows the drawn route.
-      if (picked.length > 1) _km = (routeLength(picked) / 100).round().clamp(5, 420) / 10;
-      _error = null;
-    });
-  }
-
   Future<void> _here() async {
     final gps = ref.read(gpsProvider);
     setState(() => _busy = true);
@@ -342,12 +318,6 @@ class _NewChallengeSheetState extends ConsumerState<_NewChallengeSheet> {
             ),
             const SizedBox(height: 14),
             if (_start == null) ...[
-              if (hasMaps)
-                OutlinedButton.icon(
-                  onPressed: _busy ? null : _onMap,
-                  icon: const Icon(Icons.map_rounded),
-                  label: Text(tr('Draw the route on the map (optional)')),
-                ),
               OutlinedButton.icon(
                 onPressed: _busy ? null : _here,
                 icon: const Icon(Icons.my_location_rounded),
@@ -361,14 +331,13 @@ class _NewChallengeSheetState extends ConsumerState<_NewChallengeSheet> {
                   Expanded(
                     child: Text(
                       _plan.length > 1
-                          ? 'Route drawn: ${formatKm(routeLength(_plan).round())}. Members see it on the map and follow it.'
+                          ? 'Route set: ${formatKm(routeLength(_plan).round())}.'
                           : _finish == null
                           ? 'Start set. Members must be within 300 m to begin.'
                           : 'Start and finish set. Members begin within 300 m of the start and end at the finish.',
                       style: text.bodyMedium,
                     ),
                   ),
-                  if (hasMaps) TextButton(onPressed: _busy ? null : _onMap, child: Text(tr('Map'))),
                   TextButton(
                     onPressed: () => setState(() {
                       _start = _finish = null;
@@ -456,16 +425,22 @@ class ClubChallengeScreen extends ConsumerWidget {
             if (c.plan.length > 1 || c.start != null) ...[
               const SizedBox(height: 14),
               SizedBox(
-                height: 240,
+                height: 160,
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
-                  child: RouteMap(plan: c.plan, start: c.start, finish: c.finish),
+                  child: ColoredBox(
+                    color: AppColors.surface,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: RouteSketch(route: const [], plan: c.plan, start: c.start, finish: c.finish),
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 6),
               Text(
                 c.plan.length > 1
-                    ? 'Follow the route on the map: green is the start, red the finish.'
+                    ? 'The club route: green is the start, red the finish.'
                     : 'Green is the start${c.finish == null ? '' : ', red the finish'}.',
                 style: text.bodySmall,
               ),
@@ -827,22 +802,7 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
             padding: const EdgeInsets.all(24),
             child: Column(
               children: [
-                if (_phase == _RunPhase.running || c.start != null || c.plan.length > 1)
-                  Expanded(
-                    flex: 3,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: RouteMap(
-                        route: [for (final p in _tracker.route) p.point],
-                        plan: c.plan,
-                        start: c.start,
-                        finish: c.finish,
-                        follow: _phase == _RunPhase.running,
-                      ),
-                    ),
-                  )
-                else
-                  const Spacer(),
+                const Spacer(),
                 const SizedBox(height: 16),
                 SizedBox(
                   width: 190,
@@ -935,7 +895,7 @@ class _ClubRunScreenState extends ConsumerState<ClubRunScreen> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                tr('You are off the route. Head back to the line on the map.'),
+                                tr('You are off the club route. Head back towards it.'),
                                 style: text.bodyMedium,
                               ),
                             ),

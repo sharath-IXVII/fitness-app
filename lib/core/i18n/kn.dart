@@ -888,7 +888,8 @@ const kannada = <String, String>{
   'Good': 'ಚೆನ್ನಾಗಿದೆ',
   'Weak': 'ದುರ್ಬಲ',
   'Searching': 'ಹುಡುಕುತ್ತಿದೆ',
-  'Start unlocks when the GPS signal is good. Stand in the open, away from tall buildings.': 'GPS ಸಿಗ್ನಲ್ ಚೆನ್ನಾಗಿದ್ದಾಗ Start ತೆರೆಯುತ್ತದೆ. ಎತ್ತರದ ಕಟ್ಟಡಗಳಿಂದ ದೂರ ತೆರೆದ ಜಾಗದಲ್ಲಿ ನಿಲ್ಲಿ.',
+  'Start unlocks when the GPS signal is good. Stand in the open, away from tall buildings.':
+      'GPS ಸಿಗ್ನಲ್ ಚೆನ್ನಾಗಿದ್ದಾಗ Start ತೆರೆಯುತ್ತದೆ. ಎತ್ತರದ ಕಟ್ಟಡಗಳಿಂದ ದೂರ ತೆರೆದ ಜಾಗದಲ್ಲಿ ನಿಲ್ಲಿ.',
   'GPS is off': 'GPS ಆಫ್ ಆಗಿದೆ',
   'Turn on location to measure your distance.': 'ದೂರ ಅಳೆಯಲು ಲೊಕೇಶನ್ ಆನ್ ಮಾಡಿ.',
   'Checking GPS…': 'GPS ಪರಿಶೀಲಿಸುತ್ತಿದೆ…',
@@ -901,4 +902,15 @@ const kannada = <String, String>{
   'Stand in the open for the best signal.': 'ಉತ್ತಮ ಸಿಗ್ನಲ್‌ಗೆ ತೆರೆದ ಜಾಗದಲ್ಲಿ ನಿಲ್ಲಿ.',
   'Accurate to about': 'ಸುಮಾರು ನಿಖರತೆ',
   'You are off the club route. Head back towards it.': 'ನೀವು ಕ್ಲಬ್ ಮಾರ್ಗದಿಂದ ಹೊರಗಿದ್ದೀರಿ. ಮತ್ತೆ ಅದರ ಕಡೆ ಹೋಗಿ.',
+  'steps': 'ಹೆಜ್ಜೆಗಳು',
+  'per min': 'ಪ್ರತಿ ನಿಮಿಷ',
+  'Try GPS again': 'GPS ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ',
+  'Start without GPS (count steps)': 'GPS ಇಲ್ಲದೆ ಪ್ರಾರಂಭಿಸಿ (ಹೆಜ್ಜೆ ಎಣಿಸಿ)',
+  'Counting steps': 'ಹೆಜ್ಜೆ ಎಣಿಸುತ್ತಿದೆ',
+  'No GPS: distance comes from your steps.': 'GPS ಇಲ್ಲ: ದೂರ ನಿಮ್ಮ ಹೆಜ್ಜೆಗಳಿಂದ ಬರುತ್ತದೆ.',
+  'Turn on location for the most exact distance.': 'ಅತ್ಯಂತ ನಿಖರ ದೂರಕ್ಕೆ ಲೊಕೇಶನ್ ಆನ್ ಮಾಡಿ.',
+  'Tracking with steps': 'ಹೆಜ್ಜೆಗಳಿಂದ ಟ್ರ್ಯಾಕಿಂಗ್',
+  'GPS is weak here, so steps measure the distance.': 'ಇಲ್ಲಿ GPS ದುರ್ಬಲವಾಗಿದೆ, ಹಾಗಾಗಿ ಹೆಜ್ಜೆಗಳು ದೂರ ಅಳೆಯುತ್ತವೆ.',
+  'GPS and steps together. Keeps going with the screen locked.':
+      'GPS ಮತ್ತು ಹೆಜ್ಜೆಗಳು ಒಟ್ಟಿಗೆ. ಸ್ಕ್ರೀನ್ ಲಾಕ್ ಆಗಿದ್ದರೂ ಮುಂದುವರಿಯುತ್ತದೆ.',
 };

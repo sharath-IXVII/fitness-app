@@ -17,6 +17,8 @@ import '../../core/widgets/page_background.dart';
 import '../clubs/domain/club_challenge.dart';
 import '../clubs/domain/run_report.dart';
 import '../clubs/gps.dart';
+import '../profile/profile_providers.dart';
+import '../steps/steps_providers.dart';
 import '../streaks/daily_log_providers.dart';
 import 'activity_providers.dart';
 import 'domain/activity_session.dart';
@@ -55,7 +57,24 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
 
   ActivityKind get kind => widget.kind;
 
-  double get _meters => _parts.fold(0.0, (a, p) => a + p.meters) + (_part?.meters ?? 0);
+  /// GPS distance only.
+  double get _gpsMeters => _parts.fold(0.0, (a, p) => a + p.meters) + (_part?.meters ?? 0);
+
+  /// Steps from the step counter, accelerometer and gyroscope: those in
+  /// finished stretches, plus the current one since [_stepsAtStart].
+  int _stepsBefore = 0;
+  int? _stepsAtStart;
+  int get _todaySteps => ref.read(stepsProvider).day.total;
+  int get _steps => _stepsBefore + (_stepsAtStart == null ? 0 : (_todaySteps - _stepsAtStart!).clamp(0, 200000));
+  bool get _countsSteps => kind != ActivityKind.cycle;
+
+  /// GPS where it worked, steps × stride where it didn't.
+  double get _meters => fusedDistance(
+    kind: kind,
+    gpsMeters: _gpsMeters,
+    steps: _steps,
+    strideM: ref.read(targetsProvider)?.strideM ?? 0.72,
+  );
   int get _movingMs => _movedMs + (_since == null ? 0 : clock.now().difference(_since!).inMilliseconds);
 
   @override
@@ -101,6 +120,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
     _startedAt ??= clock.now();
     _part = RouteTracker(kind);
     _since = clock.now();
+    if (_countsSteps) _stepsAtStart = _todaySteps;
     _tick ??= Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) setState(() {});
     });
@@ -113,6 +133,8 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
     _since = null;
     if (_part != null) _parts.add(_part!);
     _part = null;
+    _stepsBefore = _steps;
+    _stepsAtStart = null;
     setState(() => _phase = _Phase.paused);
   }
 
@@ -141,8 +163,9 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
       distanceM: _meters.round(),
       route: simplifyRoute([for (final p in _route) GpsFix(p.$1, p.$2, 5, DateTime(2026))]),
       splitsMs: splits,
+      steps: _countsSteps ? _steps : 0,
     );
-    if (s.distanceM >= 50) {
+    if (s.distanceM >= 50 || s.steps >= 50) {
       await ref.read(activitiesProvider.notifier).add(s);
       // Ten minutes on the move counts as today's workout.
       if (s.movingMs >= 10 * 60 * 1000) {
@@ -150,7 +173,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
       }
     }
     if (!mounted) return;
-    if (s.distanceM < 50) {
+    if (s.distanceM < 50 && s.steps < 50) {
       Navigator.of(context).pop();
       return;
     }
@@ -176,6 +199,8 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final active = _phase == _Phase.running || _phase == _Phase.paused;
+    // New steps redraw the numbers straight away.
+    ref.watch(stepsProvider.select((st) => st.day.total));
     return PopScope(
       canPop: !active,
       onPopInvokedWithResult: (popped, _) {
@@ -215,17 +240,43 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                     ],
                   ),
                 ),
+                if (_countsSteps) ...[
+                  const SizedBox(height: 10),
+                  Container(
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: AppColors.stroke),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.directions_walk_rounded, color: AppColors.steps),
+                        const SizedBox(width: 10),
+                        Text(NumberFormat.decimalPattern().format(_steps), style: text.titleLarge),
+                        const SizedBox(width: 6),
+                        Text(tr('steps'), style: text.bodyMedium?.copyWith(color: AppColors.textSecondary)),
+                        const Spacer(),
+                        Text(
+                          _movingMs < 10000 ? '' : '${(_steps / (_movingMs / 60000)).round()} ${tr('per min')}',
+                          style: text.bodySmall?.copyWith(color: AppColors.textSecondary),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
                 const Spacer(),
                 const SizedBox(height: 16),
-                if (_problem != null) ...[
-                  Text(_problem!, style: text.bodyLarge, textAlign: TextAlign.center),
+                if (_problem != null && !(_countsSteps && active)) ...[
+                  Text(_problem!, style: text.bodyMedium, textAlign: TextAlign.center),
                   const SizedBox(height: 10),
-                  GradientButton(label: tr('Try again'), icon: Icons.refresh_rounded, onPressed: _check),
+                  GradientButton(label: tr('Try GPS again'), icon: Icons.refresh_rounded, onPressed: _check),
+                  if (_countsSteps) TextButton(onPressed: _start, child: Text(tr('Start without GPS (count steps)'))),
                 ] else
                   ...switch (_phase) {
                     _Phase.checking => [const CircularProgressIndicator()],
                     _Phase.ready => [
-                      if ((_accuracy ?? 99) > _goodEnough)
+                      if ((_accuracy ?? 99) > _goodEnough && !_countsSteps)
                         Padding(
                           padding: const EdgeInsets.only(bottom: 10),
                           child: Text(
@@ -239,7 +290,9 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                       GradientButton(
                         label: tr('Start'),
                         icon: Icons.play_arrow_rounded,
-                        onPressed: (_accuracy ?? 99) <= _goodEnough ? _start : null,
+                        // Walks and runs also count with the motion sensors, so
+                        // they can start without GPS; rides need it.
+                        onPressed: _countsSteps || (_accuracy ?? 99) <= _goodEnough ? _start : null,
                       ),
                     ],
                     _Phase.running || _Phase.paused => [
@@ -324,9 +377,17 @@ class _GpsCard extends StatelessWidget {
     final bars = _bars;
     final color = bars >= 3 ? AppColors.steps : (bars == 2 ? AppColors.amber : AppColors.textMuted);
     final (title, line) = switch (phase) {
-      _ when problem => (tr('GPS is off'), tr('Turn on location to measure your distance.')),
+      _ when problem && phase == _Phase.running => (
+        tr('Counting steps'),
+        tr('No GPS: distance comes from your steps.'),
+      ),
+      _ when problem => (tr('GPS is off'), tr('Turn on location for the most exact distance.')),
       _Phase.checking => (tr('Checking GPS…'), tr('This takes a few seconds.')),
-      _Phase.running => (tr('Tracking'), tr('Keeps measuring with the screen locked.')),
+      _Phase.running when (accuracy ?? 99) > 40 => (
+        tr('Tracking with steps'),
+        tr('GPS is weak here, so steps measure the distance.'),
+      ),
+      _Phase.running => (tr('Tracking'), tr('GPS and steps together. Keeps going with the screen locked.')),
       _Phase.paused => (tr('Paused'), tr('Distance and time are on hold.')),
       _ when accuracy == null => (tr('Finding GPS…'), tr('Stand in the open for the best signal.')),
       _ => ('${tr('GPS')}: ${tr(RouteTracker.signal(accuracy!))}', '${tr('Accurate to about')} ${accuracy!.round()} m'),
@@ -422,7 +483,8 @@ class ActivityHistoryScreen extends ConsumerWidget {
                         leading: Icon(s.kind.icon, color: AppColors.primary),
                         title: Text('${s.title} · ${formatKm(s.distanceM)}'),
                         subtitle: Text(
-                          '${DateFormat('d MMM, h:mm a').format(s.startedAt)} · ${formatDuration(s.movingMs)}',
+                          '${DateFormat('d MMM, h:mm a').format(s.startedAt)} · ${formatDuration(s.movingMs)}'
+                          '${s.steps > 0 ? ' · ${NumberFormat.decimalPattern().format(s.steps)} steps' : ''}',
                         ),
                         trailing: const Icon(Icons.chevron_right_rounded),
                         onTap: () => context.push(Routes.activitySummary, extra: s),

@@ -879,7 +879,8 @@ const hindi = <String, String>{
   'Good': 'अच्छा',
   'Weak': 'कमज़ोर',
   'Searching': 'खोज रहा है',
-  'Start unlocks when the GPS signal is good. Stand in the open, away from tall buildings.': 'GPS सिग्नल अच्छा होने पर Start खुलेगा। ऊँची इमारतों से दूर खुले में खड़े हों।',
+  'Start unlocks when the GPS signal is good. Stand in the open, away from tall buildings.':
+      'GPS सिग्नल अच्छा होने पर Start खुलेगा। ऊँची इमारतों से दूर खुले में खड़े हों।',
   'GPS is off': 'GPS बंद है',
   'Turn on location to measure your distance.': 'दूरी नापने के लिए लोकेशन चालू करें।',
   'Checking GPS…': 'GPS जाँच रहे हैं…',
@@ -892,4 +893,15 @@ const hindi = <String, String>{
   'Stand in the open for the best signal.': 'सबसे अच्छे सिग्नल के लिए खुले में खड़े हों।',
   'Accurate to about': 'लगभग सटीकता',
   'You are off the club route. Head back towards it.': 'आप क्लब रूट से हट गए हैं। वापस उसकी ओर चलें।',
+  'steps': 'कदम',
+  'per min': 'प्रति मिनट',
+  'Try GPS again': 'GPS फिर आज़माएँ',
+  'Start without GPS (count steps)': 'GPS के बिना शुरू करें (कदम गिनें)',
+  'Counting steps': 'कदम गिन रहे हैं',
+  'No GPS: distance comes from your steps.': 'GPS नहीं: दूरी आपके कदमों से नापी जा रही है।',
+  'Turn on location for the most exact distance.': 'सबसे सटीक दूरी के लिए लोकेशन चालू करें।',
+  'Tracking with steps': 'कदमों से ट्रैकिंग',
+  'GPS is weak here, so steps measure the distance.': 'यहाँ GPS कमज़ोर है, इसलिए कदम दूरी नाप रहे हैं।',
+  'GPS and steps together. Keeps going with the screen locked.':
+      'GPS और कदम साथ में। स्क्रीन लॉक होने पर भी चलता रहता है।',
 };

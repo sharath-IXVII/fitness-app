@@ -64,7 +64,9 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
   /// finished stretches, plus the current one since [_stepsAtStart].
   int _stepsBefore = 0;
   int? _stepsAtStart;
-  int get _todaySteps => ref.read(stepsProvider).day.total;
+  // Live steps only: Android's background record can jump when it catches up
+  // with earlier steps, which must not be added to this walk.
+  int get _todaySteps => ref.read(stepsProvider).day.live;
   int get _steps => _stepsBefore + (_stepsAtStart == null ? 0 : (_todaySteps - _stepsAtStart!).clamp(0, 200000));
   bool get _countsSteps => kind != ActivityKind.cycle;
 
@@ -200,7 +202,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
     final text = Theme.of(context).textTheme;
     final active = _phase == _Phase.running || _phase == _Phase.paused;
     // New steps redraw the numbers straight away.
-    ref.watch(stepsProvider.select((st) => st.day.total));
+    ref.watch(stepsProvider.select((st) => st.day.live));
     return PopScope(
       canPop: !active,
       onPopInvokedWithResult: (popped, _) {

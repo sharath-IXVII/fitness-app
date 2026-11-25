@@ -53,6 +53,11 @@ class StepDay {
   /// background record is a floor: steps before the app opened still count.
   int get total => math.max(math.max(_merged, recorded), motionSteps);
 
+  /// Steps measured live by this phone (sensor, GPS and motion), without
+  /// Android's background record. It only grows as the person walks, so a
+  /// walk or run can count its steps as the change in this number.
+  int get live => math.max(_merged, motionSteps);
+
   int get _merged => verified + math.max(0, gpsSteps - sensorWhileGps);
 
   /// Today's distance: GPS where it was tracking, steps × stride elsewhere.

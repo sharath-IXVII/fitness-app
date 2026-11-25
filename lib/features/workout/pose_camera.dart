@@ -100,7 +100,9 @@ class PoseCamera {
     );
   }
 
+  /// Safe to call more than once.
   Future<void> dispose() async {
+    if (_disposed) return;
     _disposed = true;
     final c = controller;
     controller = null;

@@ -1,0 +1,94 @@
+# Runs the real app on an Android 14 phone emulator and taps through every
+# screen (integration_test/app_tour_test.dart). Screenshots, an error report
+# and the phone's crash log are published to the "device-test" release, so
+# problems that only show on a real phone are found after every change.
+name: Device test
+
+on:
+  push:
+    branches: ["claude/**"]
+    paths: ["lib/**", "integration_test/**", "pubspec.yaml", "android/**", "assets/**", ".github/workflows/device-test.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: device-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tour:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/node_modules /opt/ghc /usr/local/.ghcup \
+            /usr/share/swift /usr/local/share/powershell /usr/local/share/chromium /opt/hostedtoolcache/CodeQL || true
+          df -h /
+
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.7"
+          channel: stable
+          cache: true
+
+      - name: Install packages
+        run: flutter pub get
+
+      # The emulator needs hardware acceleration.
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Run the app on an Android phone
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_6
+          ram-size: 4096M
+          disk-size: 8G
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-front emulated -camera-back emulated
+          script: |
+            adb logcat -c || true
+            flutter test integration_test/app_tour_test.dart -d emulator-5554 --reporter expanded 2>&1 | tee tour.log || true
+            mkdir -p results && adb pull /sdcard/Android/data/com.GetYr_io.FittArc/files/tour results/ || true
+            adb logcat -d > results/logcat.txt || true
+            grep -E "FATAL EXCEPTION|AndroidRuntime|E/flutter" results/logcat.txt > results/crashes.txt || true
+            cp tour.log results/ || true
+
+      - name: Summary
+        if: always()
+        run: |
+          ls -R results || true
+          echo "Screens: $(ls results/tour/*.png 2>/dev/null | wc -l)"
+          echo "Crash lines: $(wc -l < results/crashes.txt 2>/dev/null || echo 0)"
+          cat results/tour/report.json 2>/dev/null | head -100 || true
+          (cd results && zip -qr ../device-test.zip .)
+
+      - name: Publish results
+        if: always()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: device-test
+          name: Device test (latest)
+          prerelease: true
+          make_latest: false
+          body: |
+            Real-phone test of `${{ github.ref_name }}` at ${{ github.sha }}: screenshots of every screen,
+            report.json (errors per screen), crashes.txt and logcat.txt.
+          files: device-test.zip
+          fail_on_unmatched_files: false
